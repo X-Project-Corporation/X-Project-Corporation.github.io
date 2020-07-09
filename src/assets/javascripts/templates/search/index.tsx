@@ -20,7 +20,11 @@
  * IN THE SOFTWARE.
  */
 
-import { SearchResult } from "integrations/search"
+import {
+  ArticleDocument,
+  SearchResult,
+  SectionDocument
+} from "integrations/search"
 import { h, truncate } from "utilities"
 
 /* ----------------------------------------------------------------------------
@@ -33,6 +37,7 @@ import { h, truncate } from "utilities"
 const css = {
   item:    "md-search-result__item",
   link:    "md-search-result__link",
+  more:    "md-search-result__more",
   article: "md-search-result__article md-search-result__article--document",
   section: "md-search-result__article",
   title:   "md-search-result__title",
@@ -54,18 +59,19 @@ const path =
   "14,16.5A2.5,2.5 0 0,1 16.5,14A2.5,2.5 0 0,1 19,16.5A2.5,2.5 0 0,1 16.5,19Z"
 
 /* ----------------------------------------------------------------------------
- * Functions
+ * Helper function
  * ------------------------------------------------------------------------- */
 
 /**
- * Render a search result
+ * Render an article document
  *
- * @param result - Search result
+ * @param document - Article document
+ * @param teaser - Whether to render the teaser
  *
  * @return Element
  */
-export function renderSearchResult(
-  { article, sections }: SearchResult
+function renderArticleDocument(
+  document: ArticleDocument, teaser: boolean
 ) {
 
   /* Render icon */
@@ -77,19 +83,79 @@ export function renderSearchResult(
     </div>
   )
 
-  /* Render article and sections */
-  const children = [article, ...sections].map(document => {
-    const { location, title, text } = document
-    return (
-      <a href={location} class={css.link} tabIndex={-1}>
-        <article class={"parent" in document ? css.section : css.article}>
-          {!("parent" in document) && icon}
-          <h1 class={css.title}>{title}</h1>
-          {text.length > 0 && <p class={css.teaser}>{truncate(text, 320)}</p>}
-        </article>
-      </a>
-    )
-  })
+  /* Render article */
+  const { location, title, text } = document
+  return (
+    <a href={location} class={css.link} tabIndex={-1}>
+      <article class={css.article}>
+        {icon}
+        <h1 class={css.title}>{title}</h1>
+        {text.length > 0 && teaser &&
+          <p class={css.teaser}>{truncate(text, 320)}</p>
+        }
+      </article>
+    </a>
+  )
+}
+
+/**
+ * Render a section document
+ *
+ * @param document - Section document
+ *
+ * @return Element
+ */
+function renderSectionDocument(
+  document: SectionDocument
+) {
+  const { location, title, text } = document
+  return (
+    <a href={location} class={css.link} tabIndex={-1}>
+      <article class={css.section}>
+        <h1 class={css.title}>{title}</h1>
+        {text.length > 0 &&
+          <p class={css.teaser}>{truncate(text, 320)}
+        </p>}
+      </article>
+    </a>
+  )
+}
+
+/* ----------------------------------------------------------------------------
+ * Functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Render a search result
+ *
+ * @param result - Search result
+ *
+ * @return Element
+ */
+export function renderSearchResult(
+  result: SearchResult, threshold: number = Infinity
+) {
+
+  const copy = [...result]
+
+
+  const found = copy.findIndex(x => !("parent" in x))
+  const [article] = copy.splice(found, 1)
+
+  const smaller = Math.max(copy.findIndex(x => x.score < threshold), 0)
+  // console.log(threshold, smaller, copy.map(x => x.score))
+
+  const muchRelevant = copy.slice(0, smaller)
+  const lessRelevant = copy.slice(smaller)
+
+  const children = [
+    renderArticleDocument(article as ArticleDocument, !found || smaller === 0),
+    ...muchRelevant.map(renderSectionDocument as any),
+    <details class={css.more}>
+      <summary>{lessRelevant.length} more on this page</summary>
+      {...lessRelevant.map(renderSectionDocument as any)}
+    </details>
+  ]
 
   /* Render search result */
   return (
