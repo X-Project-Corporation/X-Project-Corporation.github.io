@@ -86,9 +86,14 @@ export interface SearchIndex {
 
 /**
  * Search result document
+ *
+ * @template T - Document type
  */
-export type SearchResultDocument = SearchDocument & {
+export type SearchResultDocument<
+  T extends SearchDocument = SearchDocument
+> = T & {
   score: number                        /* Score (relevance) */
+  terms: string[]                      /* Matched terms */
 }
 
 /**
@@ -226,7 +231,7 @@ export class Search {
       try {
 
         /* Group sections by containing article */
-        const groups = this.index.search(value)
+        const groups = this.index.search(`${value}*`)
           .reduce((results, result) => {
             const document = this.documents.get(result.ref)
             if (typeof document !== "undefined") {
@@ -243,9 +248,10 @@ export class Search {
 
         /* Map groups to search results */
         return [...groups.values()].map(results => (
-          results.map(result => fn({
+          results.map<SearchResultDocument>(result => fn({
             ...this.documents.get(result.ref) as SectionDocument,
-            score: result.score
+            score: result.score,
+            terms: Object.keys(result.matchData.metadata)
           }))
         ))
 

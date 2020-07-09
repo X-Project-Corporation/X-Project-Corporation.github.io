@@ -23,6 +23,7 @@
 import {
   ArticleDocument,
   SearchResult,
+  SearchResultDocument,
   SectionDocument
 } from "integrations/search"
 import { h, truncate } from "utilities"
@@ -41,7 +42,8 @@ const css = {
   article: "md-search-result__article md-search-result__article--document",
   section: "md-search-result__article",
   title:   "md-search-result__title",
-  teaser:  "md-search-result__teaser"
+  teaser:  "md-search-result__teaser",
+  terms:   "md-search-result__terms"
 }
 
 /* ------------------------------------------------------------------------- */
@@ -71,7 +73,7 @@ const path =
  * @return Element
  */
 function renderArticleDocument(
-  document: ArticleDocument, teaser: boolean
+  document: SearchResultDocument<ArticleDocument>, teaser: boolean
 ) {
 
   /* Render icon */
@@ -84,7 +86,7 @@ function renderArticleDocument(
   )
 
   /* Render article */
-  const { location, title, text } = document
+  const { location, title, text, terms } = document
   return (
     <a href={location} class={css.link} tabIndex={-1}>
       <article class={css.article}>
@@ -93,6 +95,9 @@ function renderArticleDocument(
         {text.length > 0 && teaser &&
           <p class={css.teaser}>{truncate(text, 320)}</p>
         }
+        {teaser && terms.length > 0 && <p class={css.terms}>
+          Missing: <del>{terms.join(", ")}</del>
+        </p>}
       </article>
     </a>
   )
@@ -106,15 +111,18 @@ function renderArticleDocument(
  * @return Element
  */
 function renderSectionDocument(
-  document: SectionDocument
+  document: SearchResultDocument<SectionDocument>
 ) {
-  const { location, title, text } = document
+  const { location, title, text, terms } = document
   return (
     <a href={location} class={css.link} tabIndex={-1}>
       <article class={css.section}>
         <h1 class={css.title}>{title}</h1>
         {text.length > 0 &&
-          <p class={css.teaser}>{truncate(text, 320)}
+          <p class={css.teaser}>{truncate(text, 320)}</p>
+        }
+        {terms.length > 0 && <p class={css.terms}>
+          Missing: <del>{terms.join(", ")}</del>
         </p>}
       </article>
     </a>
@@ -133,28 +141,47 @@ function renderSectionDocument(
  * @return Element
  */
 export function renderSearchResult(
-  result: SearchResult, threshold: number = Infinity
+  result: SearchResult, threshold: number = Infinity, query: string
 ) {
+  const docs = [...result]
 
-  const copy = [...result]
+  // TODO: write a function that removes control characters
+  query = query.replace(/[*+\-~^]/g, "")
+  // TODO: also add query terms as a URL parameter, so we can highlight
+  // them when moving to the respective page. Every word with "-" should be
+  // filtered out.
 
+  /* Only leave terms which we didn't find */ // TODO: get tokenizer configuration
+  const terms = query.split(/[\s\-]+/g)
+  for (const doc of docs) {
+    doc.terms = terms.filter(term => (
+      doc.terms.every(t => !t.startsWith(term)) // TODO: could be more efficient
+    ))
+  }
 
-  const found = copy.findIndex(x => !("parent" in x))
-  const [article] = copy.splice(found, 1)
+  /* Find and extract parent article */
+  const parent = docs.findIndex(x => !("parent" in x))
+  const [article] = docs.splice(parent, 1)
 
-  const smaller = Math.max(copy.findIndex(x => x.score < threshold), 0)
-  // console.log(threshold, smaller, copy.map(x => x.score))
+  /* Determine last index above threshold */
+  let index = docs.findIndex(x => x.score < threshold)
+  if (index === -1)
+    index = docs.length
 
-  const muchRelevant = copy.slice(0, smaller)
-  const lessRelevant = copy.slice(smaller)
+  /* Partition sections */
+  const best = docs.slice(0, index)
+  const more = docs.slice(index)
 
+  /* Render children */
   const children = [
-    renderArticleDocument(article as ArticleDocument, !found || smaller === 0),
-    ...muchRelevant.map(renderSectionDocument as any),
-    <details class={css.more}>
-      <summary>{lessRelevant.length} more on this page</summary>
-      {...lessRelevant.map(renderSectionDocument as any)}
-    </details>
+    renderArticleDocument(article as any, !parent && index === 0),
+    ...best.map(renderSectionDocument as any), // TODO: fix typings
+    ...more.length ? [
+      <details class={css.more}>
+        <summary>{more.length} more on this page</summary>
+        {...more.map(renderSectionDocument as any)}
+      </details>
+    ] : []
   ]
 
   /* Render search result */

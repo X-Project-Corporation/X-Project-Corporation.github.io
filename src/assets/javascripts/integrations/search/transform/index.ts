@@ -66,12 +66,11 @@ export type SearchTransformFn = (value: string) => string
 export function defaultTransform(value: string): string {
   return value
     .split(/"([^"]+)"/g)                            /* => 1 */
-      .map((terms, i) => i & 1
+      .map((terms, index) => index & 1
         ? terms.replace(/^\b|^(?![^\x00-\x7F]|$)|\s+/g, " +")
         : terms
       )
       .join("")
     .replace(/"|(?:^|\s+)[*+\-:^~]+(?=\s+|$)/g, "") /* => 2 */
     .trim()                                         /* => 3 */
-    .replace(/\s+|(?![^\x00-\x7F]|^)$|\b$/g, "* ")  /* => 4 */
 }

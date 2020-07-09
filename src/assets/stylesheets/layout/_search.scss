@@ -560,8 +560,8 @@ $md-toggle__search--checked:
       }
     }
 
-    // Add a little spacing on the teaser of the last link
-    &:last-child .md-search-result__teaser {
+    // Add a little spacing on the last element of the last link
+    &:last-child p:last-child {
       margin-bottom: px2rem(12px);
     }
   }
@@ -695,6 +695,13 @@ $md-toggle__search--checked:
   }
 
   // stylelint-enable value-no-vendor-prefix, property-no-vendor-prefix
+
+  // Terms
+  &__terms {
+    margin: 0.5em 0;
+    font-size: ms(-1);
+    font-style: italic;
+  }
 
   // Search term highlighting
   em {
