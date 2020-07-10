@@ -192,7 +192,7 @@ export default (_env: never, args: Configuration): Configuration[] => {
         "assets/stylesheets/palette": "src/assets/stylesheets/palette.scss"
       },
       output: {
-        path: path.resolve(__dirname, "material"),
+        path: path.resolve(__dirname, "material-next"),
         filename: `[name]${hash}.js`,
         hashDigestLength: 8,
         libraryTarget: "window"
@@ -224,7 +224,7 @@ export default (_env: never, args: Configuration): Configuration[] => {
           /* Material Design icons */
           new CopyPlugin({
             patterns: [
-              { to: ".icons/material", from: "*.svg" }
+              { to: ".icons/material-next", from: "*.svg" }
             ].map(pattern => ({
               context: "node_modules/@mdi/svg/svg",
               ...pattern
@@ -314,14 +314,14 @@ export default (_env: never, args: Configuration): Configuration[] => {
 
             /* Replace asset URLs in base template */
             if (args.mode === "production") {
-              const manifest = require("./material/assets/manifest.json")
+              const manifest = require("./material-next/assets/manifest.json")
               const template = toPairs<string>(manifest)
                 .reduce((content, [from, to]) => {
                   return content.replace(new RegExp(from, "g"), to)
-                }, fs.readFileSync("material/base.html", "utf8"))
+                }, fs.readFileSync("material-next/base.html", "utf8"))
 
               /* Save template with replaced assets */
-              fs.writeFileSync("material/base.html", template, "utf8")
+              fs.writeFileSync("material-next/base.html", template, "utf8")
             }
           }
         }),
@@ -359,7 +359,7 @@ export default (_env: never, args: Configuration): Configuration[] => {
           "src/assets/javascripts/integrations/search/worker/main"
       },
       output: {
-        path: path.resolve(__dirname, "material"),
+        path: path.resolve(__dirname, "material-next"),
         filename: `[name]${hash}.js`,
         hashDigestLength: 8,
         libraryTarget: "var"

@@ -63,7 +63,7 @@ setup(
     install_requires = install_requires,
     entry_points = {
         "mkdocs.themes": [
-            "material = material",
+            "material-next = material-next",
         ]
     },
     zip_safe = False
