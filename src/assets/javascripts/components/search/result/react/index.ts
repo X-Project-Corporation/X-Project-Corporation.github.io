@@ -28,11 +28,11 @@ import {
 } from "rxjs"
 import {
   finalize,
+  map,
   mapTo,
   observeOn,
   scan,
   switchMap,
-  tap,
   withLatestFrom
 } from "rxjs/operators"
 
@@ -86,16 +86,17 @@ export function applySearchResult(
 
     /* Apply search result metadata */
     withLatestFrom(query$, ready$),
-    tap(([result, query]) => {
+    map(([result, query]) => {
       if (query.value) {
         setSearchResultMeta(meta, result.length)
       } else {
         resetSearchResultMeta(meta)
       }
+      return result
     }),
 
     /* Apply search result list */
-    switchMap(([result, query]) => {
+    switchMap(result => {
       const thresholds = [...result.map(([best]) => best.score), 0]
       return fetch$
         .pipe(
@@ -106,7 +107,7 @@ export function applySearchResult(
             const container = el.parentElement!
             while (index < result.length) {
               addToSearchResultList(list, renderSearchResult(
-                result[index++], thresholds[index], query.value
+                result[index++], thresholds[index]
               ))
               if (container.scrollHeight - container.offsetHeight > 16)
                 break

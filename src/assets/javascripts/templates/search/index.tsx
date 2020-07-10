@@ -21,12 +21,11 @@
  */
 
 import {
-  ArticleDocument,
-  SearchResult,
-  SearchResultDocument,
-  SectionDocument
+  SearchDocument,
+  SearchMetadata,
+  SearchResult
 } from "integrations/search"
-import { h, truncate } from "utilities"
+import { h, translate, truncate } from "utilities"
 
 /* ----------------------------------------------------------------------------
  * Data
@@ -73,47 +72,51 @@ const path =
  * @return Element
  */
 function renderArticleDocument(
-  document: SearchResultDocument<ArticleDocument>, teaser: boolean
+  { location, title, text, terms }: SearchDocument & SearchMetadata,
+  teaser: boolean
 ) {
-
-  /* Render icon */
-  const icon = (
-    <div class="md-search-result__icon md-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d={path}></path>
-      </svg>
-    </div>
-  )
-
-  /* Render article */
-  const { location, title, text, terms } = document
+  const miss = Object.keys(terms)
+    // tslint:disable-next-line: array-type
+    .reduce<Array<Element | string>>((list, key) => [
+      ...list, ...!terms[key] ? [<del>{key}</del>, " "] : []
+    ], [])
   return (
     <a href={location} class={css.link} tabIndex={-1}>
       <article class={css.article}>
-        {icon}
+        <div class="md-search-result__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d={path}></path>
+          </svg>
+        </div>
         <h1 class={css.title}>{title}</h1>
-        {text.length > 0 && teaser &&
+        {teaser && text.length > 0 &&
           <p class={css.teaser}>{truncate(text, 320)}</p>
         }
-        {teaser && terms.length > 0 && <p class={css.terms}>
-          Missing: <del>{terms.join(", ")}</del>
-        </p>}
+        {teaser && miss.length > 0 &&
+          <p class={css.terms}>
+            {translate("search.result.term.missing")}: {...miss.slice(0, -1)}
+          </p>
+        }
       </article>
     </a>
   )
 }
 
 /**
- * Render a section document
+ * Render a search document
  *
- * @param document - Section document
+ * @param section - Search document
  *
  * @return Element
  */
-function renderSectionDocument(
-  document: SearchResultDocument<SectionDocument>
+function renderSection(
+  { location, title, text, terms }: SearchDocument & SearchMetadata
 ) {
-  const { location, title, text, terms } = document
+  const miss = Object.keys(terms)
+    // tslint:disable-next-line: array-type
+    .reduce<Array<Element | string>>((list, key) => [
+      ...list, ...!terms[key] ? [<del>{key}</del>, " "] : []
+    ], [])
   return (
     <a href={location} class={css.link} tabIndex={-1}>
       <article class={css.section}>
@@ -121,9 +124,11 @@ function renderSectionDocument(
         {text.length > 0 &&
           <p class={css.teaser}>{truncate(text, 320)}</p>
         }
-        {terms.length > 0 && <p class={css.terms}>
-          Missing: <del>{terms.join(", ")}</del>
-        </p>}
+        {miss.length > 0 &&
+          <p class={css.terms}>
+            {translate("search.result.term.missing")}: {...miss.slice(0, -1)}
+          </p>
+        }
       </article>
     </a>
   )
@@ -141,26 +146,12 @@ function renderSectionDocument(
  * @return Element
  */
 export function renderSearchResult(
-  result: SearchResult, threshold: number = Infinity, query: string
+  result: SearchResult, threshold: number = Infinity
 ) {
   const docs = [...result]
 
-  // TODO: write a function that removes control characters
-  query = query.replace(/[*+\-~^]/g, "")
-  // TODO: also add query terms as a URL parameter, so we can highlight
-  // them when moving to the respective page. Every word with "-" should be
-  // filtered out.
-
-  /* Only leave terms which we didn't find */ // TODO: get tokenizer configuration
-  const terms = query.split(/[\s\-]+/g)
-  for (const doc of docs) {
-    doc.terms = terms.filter(term => (
-      doc.terms.every(t => !t.startsWith(term)) // TODO: could be more efficient
-    ))
-  }
-
   /* Find and extract parent article */
-  const parent = docs.findIndex(x => !("parent" in x))
+  const parent = docs.findIndex(doc => !doc.location.includes("#"))
   const [article] = docs.splice(parent, 1)
 
   /* Determine last index above threshold */
@@ -174,12 +165,17 @@ export function renderSearchResult(
 
   /* Render children */
   const children = [
-    renderArticleDocument(article as any, !parent && index === 0),
-    ...best.map(renderSectionDocument as any), // TODO: fix typings
+    renderArticleDocument(article, !parent && index === 0),
+    ...best.map(renderSection),
     ...more.length ? [
       <details class={css.more}>
-        <summary>{more.length} more on this page</summary>
-        {...more.map(renderSectionDocument as any)}
+        <summary>
+          {more.length > 0 && more.length === 1
+            ? translate("search.result.more.one")
+            : translate("search.result.more.other", more.length)
+          }
+        </summary>
+        {...more.map(renderSection)}
       </details>
     ] : []
   ]

@@ -20,37 +20,73 @@
  * IN THE SOFTWARE.
  */
 
-import { h } from "utilities"
-
 /* ----------------------------------------------------------------------------
- * Data
+ * Types
  * ------------------------------------------------------------------------- */
 
 /**
- * CSS classes
+ * Search query clause
  */
-const css = {
-  wrapper: "md-typeset__scrollwrap",
-  table:   "md-typeset__table"
+export interface SearchQueryClause {
+  presence: lunr.Query.presence        /* Clause presence */
+  term: string                         /* Clause term */
 }
+
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Search query terms
+ */
+export type SearchQueryTerms = Record<string, boolean>
 
 /* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
 
 /**
- * Render a table inside a wrapper to improve scrolling on mobile
+ * Parse a search query for analysis
  *
- * @param table - Table element
+ * @param value - Query value
  *
- * @return Element
+ * @return Search query clauses
  */
-export function renderTable(table: HTMLTableElement) {
-  return (
-    <div class={css.wrapper}>
-      <div class={css.table}>
-        {table}
-      </div>
-    </div>
-  )
+export function parseSearchQuery(
+  value: string
+): SearchQueryClause[] {
+  const query  = new (lunr as any).Query(["title", "text"])
+  const parser = new (lunr as any).QueryParser(value, query)
+
+  /* Parse and return query clauses */
+  parser.parse()
+  return query.clauses
+}
+
+/**
+ * Analyze the search query clauses in regard to the search terms found
+ *
+ * @param query - Search query clauses
+ * @param terms - Search terms
+ *
+ * Search query terms
+ */
+export function getSearchQueryTerms(
+  query: SearchQueryClause[], terms: string[]
+): SearchQueryTerms {
+  const clauses = new Set<SearchQueryClause>(query)
+
+  /* Match query clauses against terms */
+  const result: SearchQueryTerms = {}
+  for (let t = 0; t < terms.length; t++)
+    for (const clause of clauses)
+      if (terms[t].startsWith(clause.term)) {
+        result[clause.term] = true
+        clauses.delete(clause)
+      }
+
+  /* Annotate unmatched query clauses */
+  for (const clause of clauses)
+    result[clause.term] = false
+
+  /* Return query terms */
+  return result
 }

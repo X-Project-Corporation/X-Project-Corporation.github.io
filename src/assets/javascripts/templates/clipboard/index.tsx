@@ -53,9 +53,7 @@ const path =
  *
  * @return Element
  */
-export function renderClipboardButton(
-  id: string
-) {
+export function renderClipboardButton(id: string) {
   return (
     <button
       class={css.container}

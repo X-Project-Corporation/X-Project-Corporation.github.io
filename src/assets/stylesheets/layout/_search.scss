@@ -599,7 +599,7 @@ $md-toggle__search--checked:
 
     // All following elements
     & ~ * {
-      background-color: var(--md-default-fg-color--lightest);
+      background-color: hsla(0, 0%, 0%, 0.07);
     }
   }
 

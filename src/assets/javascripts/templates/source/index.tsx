@@ -46,9 +46,7 @@ const css = {
  *
  * @return Element
  */
-export function renderSource(
-  facts: SourceFacts
-) {
+export function renderSource(facts: SourceFacts) {
   const children = facts.map(fact => (
     <li class={css.fact}>{fact}</li>
   ))

@@ -23,13 +23,17 @@
 import {
   SearchDocument,
   SearchDocumentMap,
-  SectionDocument,
   setupSearchDocumentMap
 } from "../document"
 import {
   SearchHighlightFactoryFn,
   setupSearchHighlighter
 } from "../highlighter"
+import {
+  SearchQueryTerms,
+  getSearchQueryTerms,
+  parseSearchQuery
+} from "../query"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -85,21 +89,21 @@ export interface SearchIndex {
 /* ------------------------------------------------------------------------- */
 
 /**
- * Search result document
- *
- * @template T - Document type
+ * Search metadata
  */
-export type SearchResultDocument<
-  T extends SearchDocument = SearchDocument
-> = T & {
+export interface SearchMetadata {
   score: number                        /* Score (relevance) */
-  terms: string[]                      /* Matched terms */
+  terms: SearchQueryTerms              /* Search query terms */
 }
+
+/* ------------------------------------------------------------------------- */
 
 /**
  * Search result
  */
-export type SearchResult = SearchResultDocument[]
+export type SearchResult = Array<
+  SearchDocument & SearchMetadata
+> // tslint:disable-line
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -236,7 +240,7 @@ export class Search {
             const document = this.documents.get(result.ref)
             if (typeof document !== "undefined") {
               const ref = "parent" in document
-                ? document.parent.location
+                ? document.parent!.location
                 : document.location
               results.set(ref, [...results.get(ref) || [], result])
             }
@@ -246,13 +250,24 @@ export class Search {
         /* Create highlighter for query */
         const fn = this.highlight(value)
 
+        /* Parse query to extract clauses for analysis */
+        const clauses = parseSearchQuery(value).filter(clause => (
+          clause.presence !== lunr.Query.presence.PROHIBITED
+        ))
+
         /* Map groups to search results */
         return [...groups.values()].map(results => (
-          results.map<SearchResultDocument>(result => fn({
-            ...this.documents.get(result.ref) as SectionDocument,
-            score: result.score,
-            terms: Object.keys(result.matchData.metadata)
-          }))
+          results.map(result => {
+            const { parent, ...document } = this.documents.get(result.ref)!
+            return fn({
+              ...document,
+              score: result.score,
+              terms: getSearchQueryTerms(
+                clauses,
+                Object.keys(result.matchData.metadata)
+              )
+            })
+          })
         ))
 
       /* Log errors to console (for now) */

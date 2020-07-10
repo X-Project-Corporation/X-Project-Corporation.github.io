@@ -41,7 +41,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.21f22e79.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.56c7457e.min.css' | url }}">
       {% if palette.scheme or palette.primary or palette.accent %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.bb622e91.min.css' | url }}">
       {% endif %}
@@ -182,8 +182,8 @@
       {% endblock %}
     </div>
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/vendor.568ba93b.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.7ac9a339.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/vendor.e4fbd996.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.453942d5.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",
@@ -194,7 +194,10 @@
         "search.result.placeholder",
         "search.result.none",
         "search.result.one",
-        "search.result.other"
+        "search.result.other",
+        "search.result.more.one",
+        "search.result.more.other",
+        "search.result.term.missing"
       ] -%}
         {%- set _ = translations.update({ key: lang.t(key) }) -%}
       {%- endfor -%}
@@ -207,7 +210,7 @@
           base: "{{ base_url }}",
           features: {{ config.theme.features | tojson }},
           search: Object.assign({
-            worker: "{{ 'assets/javascripts/worker/search.0fc8f0fd.min.js' | url }}"
+            worker: "{{ 'assets/javascripts/worker/search.48ff7978.min.js' | url }}"
           }, typeof search !== "undefined" && search)
         })
       </script>
