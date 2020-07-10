@@ -77,12 +77,6 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      # - uses: actions/cache@v1
-      #   id: cache-python
-      #   with:
-      #     path: ~/.cache/pip
-      #     key: ${{ runner.os }}-pip-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/requirements.txt') }}
-
       # - if: steps.cache-python.outputs.cache-hit != 'true'
       - run: pip install -r requirements.txt
 
@@ -103,9 +97,7 @@ jobs:
           pip install mkdocs-minify-plugin>=0.2
 
       # Build documentation
-      - env:
-          GOOGLE_ANALYTICS_KEY: ${{ secrets.GOOGLE_ANALYTICS_KEY }}
-        run: |
+      - run: |
           mkdocs gh-deploy --force
           mkdocs --version
 
@@ -138,26 +130,15 @@ jobs:
       # Build distribution files
       - run: npm run build
 
-      # Install Python runtime and dependencies
+      # Install Python runtime
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - run: pip install --upgrade setuptools wheel twine
 
       # Build and test Docker image
       - run: |
           docker build -t ${GITHUB_REPOSITORY} .
           docker run --rm -i -v $(pwd):/docs ${GITHUB_REPOSITORY} build
-
-      # Build Python package
-      - run: python setup.py build sdist bdist_wheel --universal
-
-      # Push package to PyPI
-      - env:
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: twine upload -u ${PYPI_USERNAME} -p ${PYPI_PASSWORD} dist/*
 
       # Push image to Docker Hub
       - env:
