@@ -25,7 +25,7 @@
   },
   "scripts": {
     "build": "npm run clean && npx webpack --mode production",
-    "clean": "npx rimraf material*",
+    "clean": "npx rimraf material",
     "lint": "npm run lint:ts && npm run lint:scss",
     "lint:scss": "npx stylelint \"src/assets/**/*.scss\"",
     "lint:ts": "npx tslint -p tsconfig.json \"src/**/*.ts\"",
