@@ -60,9 +60,9 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
+  favicon: assets/favicon.png
   icon:
     logo: logo
-  favicon: assets/favicon.png
 
 # Plugins
 plugins:
@@ -165,11 +165,13 @@ nav:
     - Code blocks: reference/code-blocks.md
     - Content tabs: reference/content-tabs.md
     - Footnotes: reference/footnotes.md
+    - Icons + Emojis: reference/icons-emojis.md
     - Lists: reference/lists.md
     - Meta tags: reference/meta-tags.md
   - Changelog:
     - Release notes: changelog.md
     - Upgrading: upgrading.md
+    - Deprecations: deprecations.md
 
 # Google Analytics
 google_analytics:

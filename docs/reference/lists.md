@@ -15,16 +15,16 @@ are supported through extensions.
 
 [:octicons-file-code-24: Source][1] · [:octicons-workflow-24: Extension][2]
 
-The [Definition List][1] extension, which is part of the standard Markdown
+The [Definition List][2] extension, which is part of the standard Markdown
 library, adds the ability to add definitions lists to a document and can be 
-enabled from `mkdocs.yml`:
+enabled via `mkdocs.yml`:
 
 ``` yaml
 markdown_extensions:
   - def_list
 ```
 
-  [1]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/base/_typeset.scss
+  [1]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/_typeset.scss
   [2]: https://python-markdown.github.io/extensions/definition_lists/
 
 ### Tasklist
@@ -35,7 +35,7 @@ The [Tasklist][4] extension, which is part of [Python Markdown Extensions][5],
 adds support for lists with styled checkboxes, and provides several options for 
 configuring the style:
 
-`custom_checkbox`{: #custom_checkbox }
+`custom_checkbox`{: #custom-checkbox }
 
 :   :octicons-milestone-24: Default: `false` · This option toggles the rendering
     style of checkboxes, replacing native checkbox styles with beautiful icons, 
@@ -47,7 +47,7 @@ configuring the style:
           custom_checkbox: true
     ```
 
-`clickable_checkbox`{: #clickable_checkbox }
+`clickable_checkbox`{: #clickable-checkbox }
 
 :   :octicons-milestone-24: Default: `false` · This option toggles whether
     checkboxes are clickable. As the state is not persisted, the use of this 
@@ -59,7 +59,7 @@ configuring the style:
           clickable_checkbox: true
     ```
 
-  [3]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/extensions/pymdown/_tasklist.scss
+  [3]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/pymdownx/_tasklist.scss
   [4]: https://facelessuser.github.io/pymdown-extensions/extensions/tasklist/
   [5]: https://facelessuser.github.io/pymdown-extensions/
 

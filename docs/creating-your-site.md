@@ -8,7 +8,7 @@ After you've [installed][1] Material for MkDocs, you can bootstrap your project
 documentation using the `mkdocs` executable. Go to the directory where you want
 your project to be located and enter:
 
-``` sh
+```
 mkdocs new .
 ```
 
@@ -60,7 +60,7 @@ theme:
 
 ### Advanced configuration
 
-Material for MkDocs comes with a lot of configuration options. The _guides_
+Material for MkDocs comes with a lot of configuration options. The _setup_
 section explains in great detail how to configure and customize colors, fonts,
 icons and much more:
 

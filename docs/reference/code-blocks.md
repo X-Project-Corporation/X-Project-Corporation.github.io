@@ -22,7 +22,7 @@ The [Highlight][3] extension, which is part of [Python Markdown Extensions][5],
 integrates with Material for MkDocs and provides several options for
 configuring syntax highlighting of code blocks:
 
-`use_pygments`{: #use_pygments }
+`use_pygments`{: #use-pygments }
 
 :   :octicons-milestone-24: Default: `true` – This option allows to control
     whether highlighting should be carried out during build time by
@@ -84,7 +84,7 @@ configuring syntax highlighting of code blocks:
           linenums: true
     ```
 
-`linenums_style`{: #linenums_style }
+`linenums_style`{: #linenums-style }
 
 :   :octicons-milestone-24: Default: `table` – The Highlight extension provides
     three ways to add line numbers, all of which are supported by Material for
@@ -106,7 +106,7 @@ _Material for MkDocs doesn't provide official support for the other options of
 this extension, so they may be supported but can also yield weird results. Use
 them at your own risk._
 
-  [2]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/extensions/pymdown/_highlight.scss
+  [2]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/pymdownx/_highlight.scss
   [3]: https://facelessuser.github.io/pymdown-extensions/extensions/highlight/
   [4]: https://python-markdown.github.io/extensions/code_hilite/
   [5]: https://facelessuser.github.io/pymdown-extensions/
@@ -123,7 +123,7 @@ them at your own risk._
 The [InlineHilite][11] extension, which is part of [Python Markdown 
 Extensions][5] also integrates with Material for MkDocs and adds support for
 __syntax highlighting of inline code blocks__. It's built on top of the
-[Highlight][3] extension and can be enabled from `mkdocs.yml`:
+[Highlight][3] extension and can be enabled via `mkdocs.yml`:
 
 ``` yaml
 markdown_extensions:
@@ -135,11 +135,25 @@ See the section on [inline code blocks][12] for usage information.
   [11]: https://facelessuser.github.io/pymdown-extensions/extensions/inlinehilite/
   [12]: #highlighting-inline-code-blocks
 
-### SuperFences
+### Keys
 
 [:octicons-file-code-24: Source][13] · [:octicons-workflow-24: Extension][14]
 
-The [SuperFences][14] extension, which is also part of [Python Markdown
+The [Keys][14] extension, which is part of [Python Markdown Extensions][5],
+allows for inserting __keyboard keys__, e.g. ++ctrl+alt+delete++ , and
+can be enabled via `mkdocs.yml`:
+
+``` yaml
+markdown_extensions:
+  - pymdownx.keys
+```
+
+  [13]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/pymdownx/_keys.scss
+  [14]: https://facelessuser.github.io/pymdown-extensions/extensions/keys/
+
+### SuperFences
+
+The [SuperFences][15] extension, which is also part of [Python Markdown
 Extensions][5], allows for the __nesting of code blocks inside other blocks__,
 and is therefore strongly recommended:
 
@@ -148,24 +162,20 @@ markdown_extensions:
   - pymdownx.superfences
 ```
 
-  [13]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/base/_typeset.scss
-  [14]: https://facelessuser.github.io/pymdown-extensions/extensions/superfences/
+  [15]: https://facelessuser.github.io/pymdown-extensions/extensions/superfences/
 
-### Keys
+### Snippets
 
-[:octicons-file-code-24: Source][15] · [:octicons-workflow-24: Extension][16]
-
-The [Keys][16] extension, which is part of [Python Markdown Extensions][5],
-allows for inserting __keyboard keys__, e.g. ++ctrl+alt+delete++ , and
-can be enabled from `mkdocs.yml`:
+The [Snippets][16] extension, which is also part of [Python Markdown
+Extensions][5], allows to __insert content from other files__ or other, regular
+content, and can be enabled via `mkdocs.yml`:
 
 ``` yaml
 markdown_extensions:
-  - pymdownx.keys
+  - pymdownx.snippets
 ```
 
-  [15]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/extensions/pymdown/_keys.scss
-  [16]: https://facelessuser.github.io/pymdown-extensions/extensions/keys/
+  [16]: https://facelessuser.github.io/pymdown-extensions/extensions/snippets/
 
 ## Usage
 
@@ -261,7 +271,7 @@ the [language short name][17].
 
 _Example_:
 
-```
+``` markdown
 The `#!python range()` function is used to generate a sequence of numbers.
 ```
 
@@ -271,15 +281,15 @@ The `#!python range()` function is used to generate a sequence of numbers.
 
   [18]: #inlinehilite
 
-### Displaying keyboard keys
+### Adding keyboard keys
 
-When [Keys][19] is enabled, keyboard keys can be inserted with a simple syntax.
-See the [Python Markdown Extensions][16] documentation for a list of all
-available keys.
+When [Keys][19] is enabled, keyboard keys can be rendered with a simple syntax.
+Consult the [Python Markdown Extensions][16] documentation to learn about all
+available short key codes.
 
 _Example_:
 
-```
+``` markdown
 ++ctrl+alt+del++
 ```
 
@@ -288,3 +298,43 @@ _Result_:
 ++ctrl+alt+del++
 
   [19]: #keys
+
+### Embedding external files
+
+When [Snippets][20] is enabled, content from other files can be embedded, which
+is especially useful to reference and embed the contents of source files
+directly into your project documentation.
+
+_Example_:
+
+```` markdown
+```
+--8<--​ ".browserslistrc"
+```
+````
+
+_Result_:
+
+```
+--8<-- ".browserslistrc"
+```
+
+Note that [Snippets][20] is not limited to code blocks, but can be used anywhere
+from a document to move repeating content to separate files, which is also
+explained in the [official documentation][16].
+
+  [20]: #snippets
+
+## Customization
+
+### Custom syntax theme
+
+[:octicons-file-code-24: Source][21] ·
+:octicons-mortar-board-24: Difficulty: _easy_
+
+If syntax highlighting is done with [Pygments][22], Material for MkDocs
+provides the styles defining the [appeareance][21] of code blocks, which can
+be adjusted with [additional stylesheets][6].
+
+  [21]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/markdown/_codehilite.scss
+  [22]: #use-pygments

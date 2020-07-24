@@ -29,7 +29,7 @@
         <meta name="author" content="{{ config.site_author }}">
       {% endif %}
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-5.4.0+next-1.0.0">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-5.5.0+next-1.0.0">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -41,9 +41,9 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.4c66fafa.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.9b1c7fdc.min.css' | url }}">
       {% if palette.scheme or palette.primary or palette.accent %}
-        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.8e103e5d.min.css' | url }}">
+        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.4bac645e.min.css' | url }}">
       {% endif %}
       {% if palette.primary %}
         {% import "partials/palette.html" as map %}
@@ -183,7 +183,7 @@
     </div>
     {% block scripts %}
       <script src="{{ 'assets/javascripts/vendor.8163dd4b.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.74ad6625.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.df38149f.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",

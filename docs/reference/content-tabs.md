@@ -15,32 +15,29 @@ environments. Material for MkDocs allows for beautiful and functional tabs, grou
 [:octicons-file-code-24: Source][1] · [:octicons-workflow-24: Extension][2]
 
 The [Tabbed][2] extension, which is part of [Python Markdown Extensions][3],
-integrates with Material for MkDocs and can be enabled from `mkdocs.yml`:
+integrates with Material for MkDocs and can be enabled via `mkdocs.yml`:
 
 ``` yaml
 markdown_extensions:
   - pymdownx.tabbed
 ```
 
-  [1]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/extensions/pymdown/_tabbed.scss
+  [1]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/pymdownx/_tabbed.scss
   [2]: https://facelessuser.github.io/pymdown-extensions/extensions/tabbed/
   [3]: https://facelessuser.github.io/pymdown-extensions/
 
 ### SuperFences
 
-[:octicons-file-code-24: Source][4] · [:octicons-workflow-24: Extension][5]
-
-The [SuperFences][5] extension, which is also part of [Python Markdown
-Extensions][3], allows for the __nesting of code blocks inside tabs__, and is
-therefore strongly recommended:
+The [SuperFences][4] extension, which is also part of [Python Markdown
+Extensions][3], allows for the __nesting of code and content blocks inside
+tabs__, and is therefore strongly recommended:
 
 ``` yaml
 markdown_extensions:
   - pymdownx.superfences
 ```
 
-  [4]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/base/_typeset.scss
-  [5]: https://facelessuser.github.io/pymdown-extensions/extensions/superfences/
+  [4]: https://facelessuser.github.io/pymdown-extensions/extensions/superfences/
 
 ## Usage
 
@@ -138,9 +135,9 @@ _Result_:
 
 ### Embedded content
 
-Content tabs can contain arbitrary nested content, including further content
-tabs, and can be nested in other blocks like [admonitions][6], [details][7] or
-blockquotes:
+When [SuperFences][5] is enabled, content tabs can contain arbitrary nested
+content, including further content tabs, and can be nested in other blocks like
+[admonitions][6], [details][7] or blockquotes:
 
 _Example_:
 
@@ -216,5 +213,6 @@ _Result_:
         2. Donec vitae suscipit est
         3. Nulla tempor lobortis orci
 
+  [5]: #superfences
   [6]: admonitions.md
   [7]: admonitions.md#details

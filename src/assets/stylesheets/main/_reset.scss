@@ -20,64 +20,94 @@
 /// DEALINGS
 ////
 
+// stylelint-disable no-duplicate-selectors
+
 // ----------------------------------------------------------------------------
 // Rules
 // ----------------------------------------------------------------------------
 
-// Scoped in typesetted content to match specificity of regular content
-.md-typeset {
+// Enforce correct box model
+html {
+  box-sizing: border-box;
+}
 
-  // Deletions, additions and comments
-  del.critic,
-  ins.critic,
-  .critic.comment {
-    padding: 0 px2em(4px, 16px);
-    border-radius: px2rem(2px);
-    box-decoration-break: clone;
-  }
+// All elements shall inherit the document default
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
 
-  // Deletion
-  del.critic {
-    background-color: $codehilite-diff-deleted;
-  }
+// Prevent adjustments of font size after orientation changes in IE and iOS
+html {
+  text-size-adjust: none;
+}
 
-  // Addition
-  ins.critic {
-    background-color: $codehilite-diff-inserted;
-  }
+// Remove margin in all browsers
+body {
+  margin: 0;
+}
 
-  // Comment
-  .critic.comment {
-    color: $codehilite-comment;
+// Reset horizontal rules in FF
+hr {
+  box-sizing: content-box;
+  overflow: visible;
+}
 
-    // Comment opening mark
-    &::before {
-      content: "/* ";
-    }
+// Reset tap outlines on iOS and Android
+a,
+button,
+label,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
 
-    // Comment closing mark
-    &::after {
-      content: " */";
-    }
-  }
+// Reset link styles
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
-  // Block
-  .critic.block {
-    display: block;
-    margin: 1em 0;
-    padding-right: px2rem(16px);
-    padding-left: px2rem(16px);
-    overflow: auto;
-    box-shadow: none;
+// Normalize font-size in all browsers
+small {
+  font-size: 80%;
+}
 
-    // Decrease spacing on first element
-    :first-child {
-      margin-top: 0.5em;
-    }
+// Prevent subscript and superscript from affecting line-height
+sub,
+sup {
+  line-height: 1em;
+}
 
-    // Decrease spacing on last element
-    :last-child {
-      margin-bottom: 0.5em;
-    }
-  }
+// Remove borders on images
+img {
+  border-style: none;
+}
+
+// Reset table styles
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+// Reset table cell styles
+td,
+th {
+  font-weight: normal; // stylelint-disable-line
+  vertical-align: top;
+}
+
+// Reset button styles
+button {
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  background: transparent;
+  border: 0;
+}
+
+// Reset input styles
+input {
+  border: 0;
+  outline: 0;
 }
