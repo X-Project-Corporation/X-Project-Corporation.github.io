@@ -15,8 +15,9 @@ made available [offline][1].
 
 ### Built-in search
 
-[:octicons-file-code-24: Source][2] · 
-[:octicons-cpu-24: Plugin][3]
+[:octicons-file-code-24: Source][2] ·
+[:octicons-cpu-24: Plugin][3] ·
+[:octicons-heart-fill-24:{: .tx-heart } Insiders: new search UI/UX](../insiders.md){: .tx-insiders }
 
 The [built-in search plugin][3] integrates seamlessly with Material for MkDocs,
 adding multilingual client-side search with [lunr][4] and [lunr-languages][5].
@@ -212,7 +213,7 @@ template, both of which don't transform the query prior to submission, or
 customize the `transform` function, you can do this by [overriding the 
 `config` block][14]:
 
-``` jinja
+``` html
 {% block config %}
   <script>
     var search = {
@@ -241,7 +242,7 @@ want to switch the web worker with your own implementation, e.g. to submit
 search to an external service, you can add a custom JavaScript file to the `docs`
 directory and [override the `config` block][14]:
 
-``` jinja
+``` html
 {% block config %}
   <script>
     var search = {
@@ -256,15 +257,15 @@ message format using _discriminated unions_, i.e. through the `type` property
 of the message. See the following interface definitions to learn about the
 message formats:
 
-- [:octicons-file-code-24: `SearchMessage`][17]
-- [:octicons-file-code-24: `SearchIndex` and `SearchResult`][18]
+* [:octicons-file-code-24: `SearchMessage`][17]
+* [:octicons-file-code-24: `SearchIndex` and `SearchResult`][18]
 
 The sequence and direction of messages is rather intuitive:
 
-- :octicons-arrow-right-24: `SearchSetupMessage` 
-- :octicons-arrow-left-24: `SearchReadyMessage`
-- :octicons-arrow-right-24: `SearchQueryMessage` 
-- :octicons-arrow-left-24: `SearchResultMessage`
+* :octicons-arrow-right-24: `SearchSetupMessage`
+* :octicons-arrow-left-24: `SearchReadyMessage`
+* :octicons-arrow-right-24: `SearchQueryMessage`
+* :octicons-arrow-left-24: `SearchResultMessage`
 
   [15]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/javascripts/integrations/search/worker
   [16]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers

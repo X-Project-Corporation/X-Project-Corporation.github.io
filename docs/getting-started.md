@@ -1,5 +1,6 @@
 ---
 template: overrides/main.html
+title: Getting started - Material for MkDocs
 ---
 
 # Getting started
@@ -46,8 +47,8 @@ the `GH_TOKEN` environment variable to the token's value.
   [5]: https://python-markdown.github.io/
   [6]: https://pygments.org/
   [7]: https://facelessuser.github.io/pymdown-extensions/
-  [8]: sponsorship.md
-  [9]: sponsorship.md#how-to-become-a-sponsor
+  [8]: insiders.md
+  [9]: insiders.md#how-to-become-a-sponsor
   [10]: https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
 
 ### with docker
@@ -64,11 +65,22 @@ The `mkdocs` executable is provided as an entry point and `serve` is the
 default command. If you're not familiar with Docker don't worry, we have you
 covered in the following sections.
 
+The following plugins are bundled with the Docker image:
+
+* [mkdocs-awesome-pages-plugin][12]
+* [mkdocs-git-revision-date-localized-plugin][13]
+* [mkdocs-minify-plugin][14]
+* [mkdocs-redirects][15]
+
   [11]: https://hub.docker.com/r/squidfunk/mkdocs-material/
+  [12]: https://github.com/lukasgeiter/mkdocs-awesome-pages-plugin
+  [13]: https://github.com/timvink/mkdocs-git-revision-date-localized-plugin
+  [14]: https://github.com/byrnereese/mkdocs-minify-plugin
+  [15]: https://github.com/datarobot/mkdocs-redirects
 
 ### with git
 
-Material for MkDocs can be directly used from [GitHub][12] by cloning the
+Material for MkDocs can be directly used from [GitHub][16] by cloning the
 repository into a subfolder of your project root which might be useful if you
 want to use the very latest version:
 
@@ -94,4 +106,4 @@ pip install -r mkdocs-material/requirements.txt
 Note that in order to install [__Material for MkDocs Insiders__][8], you'll
 need to [become a sponsor][9].
 
-  [12]: https://github.com/squidfunk/mkdocs-material
+  [16]: https://github.com/squidfunk/mkdocs-material
