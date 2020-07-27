@@ -19,8 +19,8 @@
 # IN THE SOFTWARE.
 
 # Project information
-site_name: Material for MkDocs
-site_url: https://squidfunk.github.io/mkdocs-material/
+site_name: Material for MkDocs Insiders
+site_url: https://squidfunk.github.io/mkdocs-material-insiders/
 site_author: Martin Donath
 site_description: >-
   Create a branded static site from a set of Markdown files to host the
@@ -55,7 +55,7 @@ theme:
     #- instant
   palette:
     scheme: default
-    primary: indigo
+    primary: pink
     accent: indigo
   font:
     text: Roboto
