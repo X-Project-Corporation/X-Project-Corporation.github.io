@@ -55,7 +55,7 @@ theme:
     #- instant
   palette:
     scheme: default
-    primary: pink
+    primary: indigo
     accent: indigo
   font:
     text: Roboto
