@@ -29,7 +29,7 @@
         <meta name="author" content="{{ config.site_author }}">
       {% endif %}
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-5.5.0+next-1.0.0">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-5.5.1+insiders-1.0.0">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -41,9 +41,9 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.25956a60.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.e477c053.min.css' | url }}">
       {% if palette.scheme or palette.primary or palette.accent %}
-        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.44fe6a8c.min.css' | url }}">
+        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.1905b831.min.css' | url }}">
       {% endif %}
       {% if palette.primary %}
         {% import "partials/palette.html" as map %}
@@ -182,8 +182,8 @@
       {% endblock %}
     </div>
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/vendor.8163dd4b.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.a6ed48fa.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/vendor.76c8dbbe.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.dfc99ae1.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",
@@ -210,7 +210,7 @@
           base: "{{ base_url }}",
           features: {{ config.theme.features | tojson }},
           search: Object.assign({
-            worker: "{{ 'assets/javascripts/worker/search.6ef9b7be.min.js' | url }}"
+            worker: "{{ 'assets/javascripts/worker/search.a8311cd0.min.js' | url }}"
           }, typeof search !== "undefined" && search)
         })
       </script>
