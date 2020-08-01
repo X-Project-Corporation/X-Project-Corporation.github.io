@@ -61,7 +61,8 @@ import {
   watchViewport,
   isLocalLocation,
   setLocationHash,
-  watchLocationBase
+  watchLocationBase,
+  getToggle
 } from "browser"
 import {
   mountHeader,
@@ -415,6 +416,30 @@ export function initialize(config: unknown) {
         for (const link of getElements(".headerlink"))
           link.style.visibility = "visible"
       })
+
+  // initially, hide all second level stuff
+  const first = getElements("[data-md-component=toc] [for=__toc] ~ ul > li")!
+  for (const el of first) {
+    const nav = el.querySelector("nav")!
+    nav.hidden = true
+  }
+  // level1
+
+
+
+  toc$.subscribe(toc => {
+    if ("anchors" in toc) {
+
+      const prev = toc.anchors.prev
+      if (prev.length) {
+        const last = prev[prev.length - 1]
+        console.log(last)
+        const navi = last[last.length - 1]
+        console.log((navi.nextElementSibling as HTMLElement)!.hidden = false)
+      }
+      console.log(prev) // active section
+    }
+  })
 
   /* ----------------------------------------------------------------------- */
 
