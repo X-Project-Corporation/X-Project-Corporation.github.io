@@ -95,6 +95,7 @@ New features and improvements for _table of contents_, including:
 
 - [ ] Table of contents can be moved into navigation for more space
 - [ ] Table of contents shows which sections have search results
+- [ ] Table of contents auto-collapses and expands only the active section
 - [ ] Better support for wide screens, i.e. more horizontal space
 - [ ] ... more to come
 
@@ -118,6 +119,7 @@ New features and improvements for _hosting multiple versions_, including:
 New features and improvements for _user preferences_, including:
 
 - [ ] Support for user-toggleable themes
+- [ ] Support for user-toggleable code-block styles (light/dark)
 - [ ] Display last searches when search is empty
 - [ ] ... more to come
 
