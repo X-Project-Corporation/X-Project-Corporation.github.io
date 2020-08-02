@@ -449,7 +449,7 @@ export function initialize(config: unknown) {
             text.parentElement!.replaceChild(h("span", null , fn(text.textContent!)), text)
 
         el = el.nextSibling
-        if (hx && el instanceof HTMLElement && el.tagName.match(/^h[1-6]/))
+        if (hx && el instanceof HTMLElement && el.tagName.match(/^H[1-6]/))
           break
       } while (el !== null)
     }
