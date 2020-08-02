@@ -85,7 +85,7 @@ async function fetchSearchIndex(url: string): Promise<SearchIndex> {
  *
  * @return Promise resolving with no result
  */
-async function fetchSearchLanguages(
+async function setupSearchLanguages(
   config: SearchIndexConfig
 ): Promise<void> {
   const base = "../lunr"
@@ -132,7 +132,7 @@ export async function handler(
         : message.data
 
       /* Set up search index with multi-language support */
-      await fetchSearchLanguages(data.config)
+      await setupSearchLanguages(data.config)
       index = new Search(data)
       return {
         type: SearchMessageType.READY

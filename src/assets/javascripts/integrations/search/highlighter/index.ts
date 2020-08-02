@@ -60,7 +60,7 @@ export function setupSearchHighlighter(
 ): SearchHighlightFactoryFn {
   const separator = new RegExp(config.separator, "img")
   const highlight = (_: unknown, data: string, term: string) => {
-    return `${data}<mark>${term}</mark>`
+    return `${data}<mark data-md-highlight>${term}</mark>`
   }
 
   /* Return factory function */
@@ -77,6 +77,8 @@ export function setupSearchHighlighter(
     })`, "img")
 
     /* Highlight string value */
-    return value => value.replace(match, highlight)
+    return value => value
+      .replace(match, highlight)
+      .replace(/<\/mark>(\s+)<mark[^>]*>/img, "\$1")
   }
 }
