@@ -180,7 +180,9 @@ export function initialize(config: unknown) {
 
   const keyboard$ = setupKeyboard()
 
-  patchCodeBlocks({ document$, viewport$ })
+  // Hack: only make code blocks focusable on non-touch devices
+  if (matchMedia("(hover)").matches)
+    patchCodeBlocks({ document$, viewport$ })
   patchDetails({ document$, hash$ })
   patchScripts({ document$ })
   patchSource({ document$ })
