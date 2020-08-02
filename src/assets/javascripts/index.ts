@@ -62,7 +62,8 @@ import {
   isLocalLocation,
   setLocationHash,
   watchLocationBase,
-  getToggle
+  getToggle,
+  getElement
 } from "browser"
 import {
   mountHeader,
@@ -84,7 +85,8 @@ import {
   setupKeyboard,
   setupInstantLoading,
   setupSearchWorker,
-  SearchIndex
+  SearchIndex,
+  setupSearchHighlighter
 } from "integrations"
 import {
   patchCodeBlocks,
@@ -94,7 +96,7 @@ import {
   patchSource,
   patchScripts
 } from "patches"
-import { isConfig } from "utilities"
+import { isConfig, h } from "utilities"
 
 /* ------------------------------------------------------------------------- */
 
@@ -418,6 +420,40 @@ export function initialize(config: unknown) {
         for (const link of getElements(".headerlink"))
           link.style.visibility = "visible"
       })
+
+
+  const highlight = setupSearchHighlighter({ lang: ["en"], separator: "[\\s-]+" })
+
+  location$.subscribe(url => {
+    const hgh = url.searchParams.get("h")
+    if (hgh) {
+      const fn = highlight(hgh)
+
+      let el: Node | null | undefined = url.hash ? getElement(`[id="${url.hash.slice(1)}"]`) : null
+      const hx = el ? (el as HTMLElement).tagName : ""
+      if (!el) {
+        el = getElement("article")!.firstChild!
+      }
+
+      do {
+        const textnodes: any[] = []
+        const it = document.createNodeIterator(el, NodeFilter.SHOW_TEXT)
+        let node = it.nextNode()
+        do {
+          if (node)
+            textnodes.push(node)
+        } while (node = it.nextNode())
+
+        for (const text of textnodes)
+          if (text.textContent.trim())
+            text.parentElement!.replaceChild(h("span", null , fn(text.textContent!)), text)
+
+        el = el.nextSibling
+        if (hx && el instanceof HTMLElement && el.tagName.match(/^h[1-6]/))
+          break
+      } while (el !== null)
+    }
+  })
 
   /* ----------------------------------------------------------------------- */
 

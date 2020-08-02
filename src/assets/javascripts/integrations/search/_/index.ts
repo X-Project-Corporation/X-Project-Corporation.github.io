@@ -259,14 +259,16 @@ export class Search {
         return [...groups.values()].map(results => (
           results.map(result => {
             const { parent, ...document } = this.documents.get(result.ref)!
-            return fn({
-              ...document,
+            return {
+              location: document.location,
+              title: fn(document.title),
+              text: fn(document.text),
               score: result.score,
               terms: getSearchQueryTerms(
                 clauses,
                 Object.keys(result.matchData.metadata)
               )
-            })
+            }
           })
         ))
 

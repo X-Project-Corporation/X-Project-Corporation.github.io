@@ -75,13 +75,22 @@ function renderArticleDocument(
   { location, title, text, terms }: SearchDocument & SearchMetadata,
   teaser: boolean
 ) {
+
+  const highlight: string[] = []
+  for (const [value, found] of Object.entries(terms))
+    if (found)
+      highlight.push(value)
+
+  const url = new URL(location)
+  url.searchParams.append("h", highlight.join(" "))
+
   const miss = Object.keys(terms)
     // tslint:disable-next-line: array-type
     .reduce<Array<Element | string>>((list, key) => [
       ...list, ...!terms[key] ? [<del>{key}</del>, " "] : []
     ], [])
   return (
-    <a href={location} class={css.link} tabIndex={-1}>
+    <a href={url.toString().replace(/%20/g, "+")} class={css.link} tabIndex={-1}>
       <article class={css.article}>
         <div class="md-search-result__icon md-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -112,13 +121,22 @@ function renderArticleDocument(
 function renderSection(
   { location, title, text, terms }: SearchDocument & SearchMetadata
 ) {
+
+  const highlight: string[] = []
+  for (const [value, found] of Object.entries(terms))
+    if (found)
+      highlight.push(value)
+
+  const url = new URL(location)
+  url.searchParams.append("h", highlight.join(" "))
+
   const miss = Object.keys(terms)
     // tslint:disable-next-line: array-type
     .reduce<Array<Element | string>>((list, key) => [
       ...list, ...!terms[key] ? [<del>{key}</del>, " "] : []
     ], [])
   return (
-    <a href={location} class={css.link} tabIndex={-1}>
+    <a href={url.toString().replace(/%20/g, "+")} class={css.link} tabIndex={-1}>
       <article class={css.section}>
         <h1 class={css.title}>{title}</h1>
         {text.length > 0 &&
