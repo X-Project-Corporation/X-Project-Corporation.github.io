@@ -29,9 +29,9 @@ import { SearchIndexConfig } from "../_"
 /**
  * Search highlight function
  *
- * @param value - Value to highlight
+ * @param value - Value
  *
- * @return Highlighted document
+ * @return Highlighted value
  */
 export type SearchHighlightFn = (value: string) => string
 

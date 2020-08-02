@@ -54,12 +54,12 @@ export type SearchTransformFn = (value: string) => string
  *
  * 3. Trim excess whitespace from left and right.
  *
- * @param value - Query value
+ * @param query - Query value
  *
  * @return Transformed query value
  */
-export function defaultTransform(value: string): string {
-  return value
+export function defaultTransform(query: string): string {
+  return query
     .split(/"([^"]+)"/g)                            /* => 1 */
       .map((terms, index) => index & 1
         ? terms.replace(/^\b|^(?![^\x00-\x7F]|$)|\s+/g, " +")

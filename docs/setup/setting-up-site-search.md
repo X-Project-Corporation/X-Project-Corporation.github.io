@@ -190,12 +190,12 @@ following transformations, which can be customized by [extending the theme][13]:
  *    asterisk (wildcard) in between terms, which can be denoted by whitespace,
  *    any non-control character, or a word boundary.
  *
- * @param value - Query value
+ * @param query - Query value
  *
  * @return Transformed query value
  */
-function defaultTransform(value: string): string {
-  return value
+function defaultTransform(query: string): string {
+  return query
     .split(/"([^"]+)"/g)                            /* => 1 */
       .map((terms, i) => i & 1
         ? terms.replace(/^\b|^(?![^\x00-\x7F]|$)|\s+/g, " +")

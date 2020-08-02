@@ -129,7 +129,7 @@ function difference(a: string[], b: string[]): string[] {
  * ------------------------------------------------------------------------- */
 
 /**
- * Search
+ * Search index
  *
  * Note that `lunr` is injected via Webpack, as it will otherwise also be
  * bundled in the application bundle.
@@ -152,7 +152,7 @@ export class Search {
   protected highlight: SearchHighlightFactoryFn
 
   /**
-   * The `lunr` search index
+   * The underlying `lunr` search index
    */
   protected index: lunr.Index
 
@@ -172,7 +172,7 @@ export class Search {
     if (typeof index === "undefined") {
       this.index = lunr(function() {
 
-        /* Set up alternate search languages */
+        /* Set up multi-language support */
         if (config.lang.length === 1 && config.lang[0] !== "en") {
           this.use((lunr as any)[config.lang[0]])
         } else if (config.lang.length > 1) {
@@ -184,7 +184,7 @@ export class Search {
           "trimmer", "stopWordFilter", "stemmer"
         ], pipeline!)
 
-        /* Remove functions from the pipeline for every language */
+        /* Remove functions from the pipeline for registered languages */
         for (const lang of config.lang.map(language => (
           language === "en" ? lunr : (lunr as any)[language]
         ))) {
@@ -204,7 +204,7 @@ export class Search {
           this.add(doc)
       })
 
-    /* Prebuilt or serialized index */
+    /* Handle prebuilt or serialized index */
     } else {
       this.index = lunr.Index.load(
         typeof index === "string"
@@ -226,16 +226,16 @@ export class Search {
    * page. For this reason, section results are grouped within their respective
    * articles which are the top-level results that are returned.
    *
-   * @param value - Query value
+   * @param query - Query value
    *
    * @return Search results
    */
-  public query(value: string): SearchResult[] {
-    if (value) {
+  public search(query: string): SearchResult[] {
+    if (query) {
       try {
 
         /* Group sections by containing article */
-        const groups = this.index.search(`${value}*`)
+        const groups = this.index.search(`${query}*`)
           .reduce((results, result) => {
             const document = this.documents.get(result.ref)
             if (typeof document !== "undefined") {
@@ -248,12 +248,13 @@ export class Search {
           }, new Map<string, lunr.Index.Result[]>())
 
         /* Create highlighter for query */
-        const fn = this.highlight(value)
+        const fn = this.highlight(query)
 
         /* Parse query to extract clauses for analysis */
-        const clauses = parseSearchQuery(value).filter(clause => (
-          clause.presence !== lunr.Query.presence.PROHIBITED
-        ))
+        const clauses = parseSearchQuery(query)
+          .filter(clause => (
+            clause.presence !== lunr.Query.presence.PROHIBITED
+          ))
 
         /* Map groups to search results */
         return [...groups.values()].map(results => (
@@ -275,7 +276,7 @@ export class Search {
       /* Log errors to console (for now) */
       } catch (err) {
         // tslint:disable-next-line no-console
-        console.warn(`Invalid query: ${value} – see https://bit.ly/2s3ChXG`)
+        console.warn(`Invalid query: ${query} – see https://bit.ly/2s3ChXG`)
       }
     }
 
