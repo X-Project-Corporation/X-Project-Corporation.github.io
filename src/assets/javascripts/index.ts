@@ -24,7 +24,7 @@
 // which must be tackled after we gathered some feedback on v5.
 // tslint:disable
 
-import { sortBy, prop, values } from "ramda"
+import { sortBy, prop, values, identity } from "ramda"
 import {
   merge,
   combineLatest,
@@ -86,7 +86,8 @@ import {
   setupInstantLoading,
   setupSearchWorker,
   SearchIndex,
-  setupSearchHighlighter
+  setupSearchHighlighter,
+  SearchIndexPipeline
 } from "integrations"
 import {
   patchCodeBlocks,
@@ -96,7 +97,7 @@ import {
   patchSource,
   patchScripts
 } from "patches"
-import { isConfig, h } from "utilities"
+import { isConfig, h, translate } from "utilities"
 
 /* ------------------------------------------------------------------------- */
 
@@ -134,6 +135,38 @@ export function resetScrollLock(
   el.style.top = ""
   if (value)
     window.scrollTo(0, value)
+}
+
+/* ----------------------------------------------------------------------------
+ * Helper functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Set up search index
+ *
+ * @param data - Search index
+ *
+ * @return Search index
+ */
+function setupSearchIndex(                                                      // Hack: move this outside here, temporarily...
+  { config, docs, index }: SearchIndex
+): SearchIndex {
+
+  /* Override default language with value from translation */
+  if (config.lang.length === 1 && config.lang[0] === "en")
+    config.lang = [translate("search.config.lang")]
+
+  /* Override default separator with value from translation */
+  if (config.separator === "[\\s\\-]+")
+    config.separator = translate("search.config.separator")
+
+  /* Set pipeline from translation */
+  const pipeline = translate("search.config.pipeline")
+    .split(/\s*,\s*/)
+    .filter(identity) as SearchIndexPipeline
+
+  /* Return search index after defaulting */
+  return { config, docs, index, pipeline }
 }
 
 /* ----------------------------------------------------------------------------
@@ -247,20 +280,77 @@ export function initialize(config: unknown) {
       : undefined
 
     /* Fetch index if it wasn't passed explicitly */
-    const index$ = typeof index !== "undefined"
-      ? from(index)
-      : base$
-          .pipe(
-            switchMap(base => ajax({
-              url: `${base}/search/search_index.json`,
-              responseType: "json",
-              withCredentials: true
-            })
-              .pipe<SearchIndex>(
-                pluck("response")
+    const index$ = (
+      typeof index !== "undefined"
+        ? from(index)
+        : base$
+            .pipe(
+              switchMap(base => ajax({
+                url: `${base}/search/search_index.json`,
+                responseType: "json",
+                withCredentials: true
+              })
+                .pipe<SearchIndex>(
+                  pluck("response")
+                )
               )
             )
-          )
+    )
+      .pipe(
+        map(setupSearchIndex),
+        shareReplay(1)
+      )
+
+    // TODO: clean up hacky implementation
+    if (config.features.includes("search.highlight"))
+      combineLatest([location$, index$])
+        .subscribe(([url, index]) => {
+          if (!url.searchParams.has("h"))
+            return
+
+          /* Set up highlighter and get query from params */
+          const highlight = setupSearchHighlighter(index.config)
+          const fn = highlight(url.searchParams.get("h")!)
+
+          /* Retrieve element of interest */
+          let el = url.hash
+            ? getElement(`[id="${url.hash.slice(1)}"]`)
+            : getElement("article")
+          if (typeof el === "undefined")
+            return
+
+          /* Keep highlighting */
+          while (el) {
+            const it = document.createNodeIterator(el, NodeFilter.SHOW_TEXT)
+
+            /* Collect text nodes */
+            const nodes: ChildNode[] = []
+            while (true) {
+              const node = it.nextNode() as ChildNode
+              if (node)
+                nodes.push(node)
+              else
+                break
+            }
+
+            /* Highlight */
+            for (const node of nodes)
+              if (node.textContent!.trim())
+                node.replaceWith(
+                  h("span", null, fn(node.textContent!)) // TODO: remove the unnecessary span
+                )
+
+            if (el.tagName === "article") {
+              break
+            } else {
+              const next = el.nextSibling
+              if (next instanceof HTMLElement && next.tagName.match(/^H[1-6]/))
+                break
+
+              el = next as any // Hack: fix typings later
+            }
+          }
+        })
 
     return of(setupSearchWorker(config.search.worker, {
       base$, index$
@@ -420,40 +510,6 @@ export function initialize(config: unknown) {
         for (const link of getElements(".headerlink"))
           link.style.visibility = "visible"
       })
-
-
-  const highlight = setupSearchHighlighter({ lang: ["en"], separator: "[\\s-]+" })
-
-  location$.subscribe(url => {
-    const hgh = url.searchParams.get("h")
-    if (hgh) {
-      const fn = highlight(hgh)
-
-      let el: Node | null | undefined = url.hash ? getElement(`[id="${url.hash.slice(1)}"]`) : null
-      const hx = el ? (el as HTMLElement).tagName : ""
-      if (!el) {
-        el = getElement("article")!.firstChild!
-      }
-
-      do {
-        const textnodes: any[] = []
-        const it = document.createNodeIterator(el, NodeFilter.SHOW_TEXT)
-        let node = it.nextNode()
-        do {
-          if (node)
-            textnodes.push(node)
-        } while (node = it.nextNode())
-
-        for (const text of textnodes)
-          if (text.textContent.trim())
-            text.parentElement!.replaceChild(h("span", null , fn(text.textContent!)), text)
-
-        el = el.nextSibling
-        if (hx && el instanceof HTMLElement && el.tagName.match(/^H[1-6]/))
-          break
-      } while (el !== null)
-    }
-  })
 
   /* ----------------------------------------------------------------------- */
 

@@ -127,7 +127,7 @@ export function setupInstantLoading(
           const el = ev.target.closest("a")
           if (
             el && !el.target &&
-            isLocalLocation(el) &&
+            isLocalLocation(el) && // shouldnt be necessary with urls
             urls.includes(el.href)
           ) {
             if (!isAnchorLocation(el))
