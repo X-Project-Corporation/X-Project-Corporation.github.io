@@ -20,6 +20,8 @@
  * IN THE SOFTWARE.
  */
 
+import "lunr"
+
 import {
   Search,
   SearchIndex,

@@ -8,7 +8,7 @@ template: overrides/main.html
 
 ### 1.1.0 <small>_ August 3, 2020</small>
 
-  * Added highlighting of search results
+* Added highlighting of search results
 
 ### 1.0.0 <small>_ July 14, 2020</small>
 
@@ -17,6 +17,10 @@ template: overrides/main.html
 * Improved search result relevance and scoring
 
 ## Material for MkDocs
+
+### 5.5.3 <small>_ August 4, 2020</small>
+
+* Fixed search for languages other than English (5.5.1 regression)
 
 ### 5.5.2 <small>_ August 3, 2020</small>
 
