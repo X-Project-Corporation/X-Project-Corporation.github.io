@@ -487,8 +487,9 @@
       display: none;
     }
 
-    // Show nested navigation, if toggle is checked
-    .md-nav__toggle:checked ~ & {
+    // Show nested navigation, if toggle is checked or indeterminate
+    .md-nav__toggle:checked ~ &,
+    .md-nav__toggle:indeterminate ~ & {
       display: block;
     }
 

@@ -511,6 +511,13 @@ export function initialize(config: unknown) {
           link.style.visibility = "visible"
       })
 
+  // Make indeterminate toggles indeterminate to expand navigation on screen
+  const toggles = getElements<HTMLInputElement>(".md-toggle--indeterminate")
+  for (const toggle of toggles) {
+    toggle.indeterminate = true
+    toggle.checked = false
+  }
+
   /* ----------------------------------------------------------------------- */
 
   const state = {

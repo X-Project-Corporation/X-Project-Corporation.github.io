@@ -7,8 +7,10 @@
 {% endif %}
 {% if nav_item.children %}
   <li class="{{ class }} md-nav__item--nested">
-    {% if nav_item.active or "navigation.expand" in config.theme.features %}
+    {% if nav_item.active %}
       <input class="md-nav__toggle md-toggle" data-md-toggle="{{ path }}" type="checkbox" id="{{ path }}" checked>
+    {% elif "navigation.expand" in config.theme.features %}
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="{{ path }}" type="checkbox" id="{{ path }}" checked>
     {% else %}
       <input class="md-nav__toggle md-toggle" data-md-toggle="{{ path }}" type="checkbox" id="{{ path }}">
     {% endif %}
