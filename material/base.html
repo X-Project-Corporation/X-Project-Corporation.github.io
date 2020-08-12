@@ -29,7 +29,7 @@
         <meta name="author" content="{{ config.site_author }}">
       {% endif %}
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-5.5.5+insiders-1.2.0">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-5.5.6+insiders-1.2.0">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -183,7 +183,7 @@
     </div>
     {% block scripts %}
       <script src="{{ 'assets/javascripts/vendor.96268493.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.02da4eaa.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.f623f29d.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",
