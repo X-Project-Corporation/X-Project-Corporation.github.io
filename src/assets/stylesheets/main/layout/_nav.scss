@@ -519,7 +519,8 @@
       }
 
       // Rotate icon for expanded lists
-      .md-nav__item--nested .md-nav__toggle:checked ~ .md-nav__link & {
+      .md-nav__item--nested .md-nav__toggle:checked ~ .md-nav__link &,
+      .md-nav__item--nested .md-nav__toggle:indeterminate ~ .md-nav__link & {
         transform: rotate(90deg);
       }
     }
