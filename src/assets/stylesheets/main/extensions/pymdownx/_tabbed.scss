@@ -65,7 +65,8 @@
 
     // Hide radio buttons
     > input {
-      display: none;
+      position: absolute;
+      opacity: 0;
 
       // Active tab label
       &:checked + label {
@@ -76,6 +77,11 @@
         & + .tabbed-content {
           display: block;
         }
+      }
+
+      // Focused tab label
+      &:focus + label {
+        outline: auto;
       }
     }
 
@@ -91,7 +97,7 @@
       cursor: pointer;
       transition: color 250ms;
 
-      // Hovered tab label
+      // Hovered label
       html &:hover {
         color: var(--md-accent-fg-color);
       }
