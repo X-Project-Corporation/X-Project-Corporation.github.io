@@ -35,6 +35,7 @@
     padding: 0 px2rem(12px);
     overflow: hidden;
     font-weight: 700;
+    font-variant: all-small-caps;
     text-overflow: ellipsis;
 
     // Hide buttons by default
@@ -222,6 +223,7 @@
         &[for="__drawer"] {
           position: relative;
           color: var(--md-primary-bg-color);
+          font-variant: normal;
           background-color: var(--md-primary-fg-color);
 
           // Site logo
