@@ -24,14 +24,17 @@
 // Rules
 // ----------------------------------------------------------------------------
 
-// Icon
-.md-icon {
+// Options and user preferences
+.md-options {
 
-  // SVG defaults
-  svg {
-    display: block;
-    width: px2rem(24px);
-    height: px2rem(24px);
-    fill: currentColor;
+  // Option list
+  &__list {
+    padding: 0;
+  }
+
+  // Options icon
+  &__icon {
+    display: inline-block;
+    vertical-align: middle;
   }
 }

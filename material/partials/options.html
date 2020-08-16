@@ -1,0 +1,19 @@
+{#-
+  This file was automatically generated - do not edit
+-#}
+<div class="md-options">
+  {% set palette = config.theme.palette %}
+  {% if palette is iterable %}
+    <ol class="md-options__list">
+      {% for option in palette %}
+        <li class="md-options__item">
+          <span class="md-options__icon md-icon">
+            {% include ".icons/" ~ option.toggle.icon ~ ".svg" %}
+          </span>
+          {{ option.toggle.name }}
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+  <hr>
+</div>

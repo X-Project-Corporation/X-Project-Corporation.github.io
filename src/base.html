@@ -23,8 +23,11 @@
 {% import "partials/language.html" as lang with context %}
 
 <!-- Theme options -->
-{% set palette = config.theme.palette %}
 {% set font = config.theme.font %}
+{% set palette = config.theme.palette %}
+{% if palette is iterable %}
+  {% set palette = palette | first %}
+{% endif %}
 
 <!doctype html>
 <html lang="{{ lang.t('language') }}" class="no-js">
@@ -93,7 +96,7 @@
       <link rel="stylesheet" href="{{ 'assets/stylesheets/main.css' | url }}" />
 
       <!-- Extra color palette -->
-      {% if palette.scheme or palette.primary or palette.accent %}
+      {% if palette %}
         <link
           rel="stylesheet"
           href="{{ 'assets/stylesheets/palette.css' | url }}"
@@ -166,8 +169,8 @@
 
   <!-- Text direction and color palette, if defined -->
   {% set direction = config.theme.direction or lang.t('direction') %}
-  {% if palette.scheme or palette.primary or palette.accent %}
-    {% set scheme  = palette.scheme | lower %}
+  {% if palette %}
+    {% set scheme  = palette.scheme  | replace(" ", "-") | lower %}
     {% set primary = palette.primary | replace(" ", "-") | lower %}
     {% set accent  = palette.accent  | replace(" ", "-") | lower %}
     <body

@@ -2,8 +2,11 @@
   This file was automatically generated - do not edit
 -#}
 {% import "partials/language.html" as lang with context %}
-{% set palette = config.theme.palette %}
 {% set font = config.theme.font %}
+{% set palette = config.theme.palette %}
+{% if palette is iterable %}
+  {% set palette = palette | first %}
+{% endif %}
 <!doctype html>
 <html lang="{{ lang.t('language') }}" class="no-js">
   <head>
@@ -41,8 +44,8 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.1ae7862c.min.css' | url }}">
-      {% if palette.scheme or palette.primary or palette.accent %}
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.374123a6.min.css' | url }}">
+      {% if palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.1f64d4ca.min.css' | url }}">
       {% endif %}
       {% if palette.primary %}
@@ -78,8 +81,8 @@
     {% block extrahead %}{% endblock %}
   </head>
   {% set direction = config.theme.direction or lang.t('direction') %}
-  {% if palette.scheme or palette.primary or palette.accent %}
-    {% set scheme  = palette.scheme | lower %}
+  {% if palette %}
+    {% set scheme  = palette.scheme  | replace(" ", "-") | lower %}
     {% set primary = palette.primary | replace(" ", "-") | lower %}
     {% set accent  = palette.accent  | replace(" ", "-") | lower %}
     <body dir="{{ direction }}" data-md-color-scheme="{{ scheme }}" data-md-color-primary="{{ primary }}" data-md-color-accent="{{ accent }}">
