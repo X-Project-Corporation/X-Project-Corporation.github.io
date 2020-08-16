@@ -190,6 +190,16 @@
           document.body.setAttribute("data-md-color-scheme", "slate")
       </script>
     {% endif %}
+    <script>
+      var palette = localStorage.getItem("__palette")
+      if (typeof palette !== "undefined") {
+        palette = JSON.parse(palette)
+        for (const key in palette) {
+          if (palette[key])
+            document.body.dataset[key] = palette[key]
+        }
+      }
+    </script>
 
     <!--
       State toggles - we need to set autocomplete="off" in order to reset the
@@ -288,6 +298,9 @@
                     {% include "partials/toc.html" %}
                   </div>
                 </div>
+
+                <!-- Options and user preferences -->
+                {% include "partials/options.html" %}
               </div>
             {% endif %}
           {% endblock %}

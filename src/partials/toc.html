@@ -26,9 +26,6 @@
 <nav class="md-nav md-nav--secondary" aria-label="{{ lang.t('toc.title') }}">
   {% set toc = page.toc %}
 
-  <!-- Options and user preferences -->
-  {% include "partials/options.html" %}
-
   <!--
     Hack: check whether the content contains a h1 headline. If it does, the
     top-level anchor must be skipped, since it would be redundant to the link

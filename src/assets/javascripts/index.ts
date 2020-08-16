@@ -518,6 +518,35 @@ export function initialize(config: unknown) {
     toggle.checked = false
   }
 
+  // Theme switcher
+  const palettes = getElements("[name=__palette]")
+  for (const palette of palettes) {
+    fromEvent(palette, "change")
+      .subscribe(ev => {
+        const el = ev.target as HTMLElement
+        for (const key in el.dataset) {
+          if (el.dataset[key])
+            document.body.dataset[key] = el.dataset[key]
+        }
+
+        // Persist in local storage
+        localStorage.setItem(
+          "__palette",
+          JSON.stringify(el.dataset)
+        )
+
+        // Determine next theme for cycle
+        const next = (palettes.indexOf(el) + 1) % palettes.length
+        for (const [index, palette] of palettes.entries()) {
+          if (index === next) {
+            palette.classList.add("md-options__toggle--active")
+          } else {
+            palette.classList.remove("md-options__toggle--active")
+          }
+        }
+      })
+  }
+
   /* ----------------------------------------------------------------------- */
 
   const state = {

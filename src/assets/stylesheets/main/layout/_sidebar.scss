@@ -110,10 +110,12 @@ $md-toggle__drawer--checked:
 
     // [tablet landscape +]: Show table of contents next to body copy
     @include break-from-device(tablet landscape) {
-      display: block;
+      display: flex;
+      flex-direction: column;
 
       // Ensure smooth scrolling on iOS
       .md-sidebar__scrollwrap {
+        flex-grow: 1;
         touch-action: pan-y;
       }
     }
