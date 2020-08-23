@@ -81,7 +81,13 @@
 
       // Focused tab label
       &:focus + label {
-        outline: auto;
+        outline-style: auto;
+      }
+
+      // Disable focus indicator for pointer devices
+      &:not(.focus-visible) + label {
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
       }
     }
 
