@@ -24,6 +24,8 @@
 // which must be tackled after we gathered some feedback on v5.
 // tslint:disable
 
+import "focus-visible"
+
 import { sortBy, prop, values, identity } from "ramda"
 import {
   merge,
@@ -236,13 +238,13 @@ export function initialize(config: unknown) {
   const header$ = useComponent("header")
     .pipe(
       mountHeader({ document$, viewport$ }),
-      shareReplay(1)
+      shareReplay({ bufferSize: 1, refCount: true })
     )
 
   const main$ = useComponent("main")
     .pipe(
       mountMain({ header$, viewport$ }),
-      shareReplay(1)
+      shareReplay({ bufferSize: 1, refCount: true })
     )
 
   /* ----------------------------------------------------------------------- */
@@ -250,112 +252,114 @@ export function initialize(config: unknown) {
   const navigation$ = useComponent("navigation")
     .pipe(
       mountNavigation({ header$, main$, viewport$, screen$ }),
-      shareReplay(1) // shareReplay because there might be late subscribers
+      shareReplay({ bufferSize: 1, refCount: true }) // shareReplay because there might be late subscribers
     )
 
   const toc$ = useComponent("toc")
     .pipe(
       mountTableOfContents({ header$, main$, viewport$, tablet$ }),
-      shareReplay(1)
+      shareReplay({ bufferSize: 1, refCount: true })
     )
 
   const tabs$ = useComponent("tabs")
     .pipe(
       mountTabs({ header$, viewport$, screen$ }),
-      shareReplay(1)
+      shareReplay({ bufferSize: 1, refCount: true })
     )
 
   const hero$ = useComponent("hero")
     .pipe(
       mountHero({ header$, viewport$ }),
-      shareReplay(1)
+      shareReplay({ bufferSize: 1, refCount: true })
     )
 
   /* ----------------------------------------------------------------------- */
 
-  /* Search worker */
-  const worker$ = defer(() => {
-    const index = config.search && config.search.index
-      ? config.search.index
-      : undefined
+  const worker$ = useComponent("search")
+    .pipe(
+      switchMap(() => defer(() => {
+        const index = config.search && config.search.index
+          ? config.search.index
+          : undefined
 
-    /* Fetch index if it wasn't passed explicitly */
-    const index$ = (
-      typeof index !== "undefined"
-        ? from(index)
-        : base$
-            .pipe(
-              switchMap(base => ajax({
-                url: `${base}/search/search_index.json`,
-                responseType: "json",
-                withCredentials: true
-              })
-                .pipe<SearchIndex>(
-                  pluck("response")
+        /* Fetch index if it wasn't passed explicitly */
+        const index$ = (
+          typeof index !== "undefined"
+            ? from(index)
+            : base$
+                .pipe(
+                  switchMap(base => ajax({
+                    url: `${base}/search/search_index.json`,
+                    responseType: "json",
+                    withCredentials: true
+                  })
+                    .pipe<SearchIndex>(
+                      pluck("response")
+                    )
+                  )
                 )
-              )
-            )
+        )
+          .pipe(
+            map(setupSearchIndex),
+            shareReplay(1)
+          )
+
+        // TODO: clean up hacky implementation
+        if (config.features.includes("search.highlight"))
+          combineLatest([location$, index$])
+            .subscribe(([url, index]) => {
+              if (!url.searchParams.has("h"))
+                return
+
+              /* Set up highlighter and get query from params */
+              const highlight = setupSearchHighlighter(index.config)
+              const fn = highlight(url.searchParams.get("h")!)
+
+              /* Retrieve element of interest */
+              let el = url.hash
+                ? getElement(`[id="${url.hash.slice(1)}"]`)
+                : getElement("article")
+              if (typeof el === "undefined")
+                return
+
+              /* Keep highlighting */
+              while (el) {
+                const it = document.createNodeIterator(el, NodeFilter.SHOW_TEXT)
+
+                /* Collect text nodes */
+                const nodes: ChildNode[] = []
+                while (true) {
+                  const node = it.nextNode() as ChildNode
+                  if (node)
+                    nodes.push(node)
+                  else
+                    break
+                }
+
+                /* Highlight */
+                for (const node of nodes)
+                  if (node.textContent!.trim())
+                    node.replaceWith(
+                      h("span", null, fn(node.textContent!)) // TODO: remove the unnecessary span
+                    )
+
+                if (el.tagName === "article") {
+                  break
+                } else {
+                  const next = el.nextSibling
+                  if (next instanceof HTMLElement && next.tagName.match(/^H[1-6]/))
+                    break
+
+                  el = next as any // Hack: fix typings later
+                }
+              }
+            })
+
+            return of(setupSearchWorker(config.search.worker, {
+              base$, index$
+            }))
+      }))
     )
-      .pipe(
-        map(setupSearchIndex),
-        shareReplay(1)
-      )
-
-    // TODO: clean up hacky implementation
-    if (config.features.includes("search.highlight"))
-      combineLatest([location$, index$])
-        .subscribe(([url, index]) => {
-          if (!url.searchParams.has("h"))
-            return
-
-          /* Set up highlighter and get query from params */
-          const highlight = setupSearchHighlighter(index.config)
-          const fn = highlight(url.searchParams.get("h")!)
-
-          /* Retrieve element of interest */
-          let el = url.hash
-            ? getElement(`[id="${url.hash.slice(1)}"]`)
-            : getElement("article")
-          if (typeof el === "undefined")
-            return
-
-          /* Keep highlighting */
-          while (el) {
-            const it = document.createNodeIterator(el, NodeFilter.SHOW_TEXT)
-
-            /* Collect text nodes */
-            const nodes: ChildNode[] = []
-            while (true) {
-              const node = it.nextNode() as ChildNode
-              if (node)
-                nodes.push(node)
-              else
-                break
-            }
-
-            /* Highlight */
-            for (const node of nodes)
-              if (node.textContent!.trim())
-                node.replaceWith(
-                  h("span", null, fn(node.textContent!)) // TODO: remove the unnecessary span
-                )
-
-            if (el.tagName === "article") {
-              break
-            } else {
-              const next = el.nextSibling
-              if (next instanceof HTMLElement && next.tagName.match(/^H[1-6]/))
-                break
-
-              el = next as any // Hack: fix typings later
-            }
-          }
-        })
-
-    return of(setupSearchWorker(config.search.worker, {
-      base$, index$
-    }))
-  })
 
   /* ----------------------------------------------------------------------- */
 
@@ -367,21 +371,21 @@ export function initialize(config: unknown) {
         const query$ = useComponent("search-query")
           .pipe(
             mountSearchQuery(worker, { transform: config.search.transform }),
-            shareReplay(1)
+            shareReplay({ bufferSize: 1, refCount: true })
           )
 
         /* Mount search reset */
         const reset$ = useComponent("search-reset")
           .pipe(
             mountSearchReset(),
-            shareReplay(1)
+            shareReplay({ bufferSize: 1, refCount: true })
           )
 
         /* Mount search result */
         const result$ = useComponent("search-result")
           .pipe(
             mountSearchResult(worker, { query$ }),
-            shareReplay(1)
+            shareReplay({ bufferSize: 1, refCount: true })
           )
 
         return useComponent("search")
@@ -394,7 +398,7 @@ export function initialize(config: unknown) {
           .subscribe(el => el.hidden = true) // TODO: Hack
         return NEVER
       }),
-      shareReplay(1)
+      shareReplay({ bufferSize: 1, refCount: true })
     )
 
   /* ----------------------------------------------------------------------- */
