@@ -78,16 +78,13 @@
     display: block;
     margin: px2rem(4px);
     padding: px2rem(8px);
+    color: currentColor;
     cursor: pointer;
     transition: opacity 250ms;
 
-    // Adjust for right-to-left languages
-    [dir="rtl"] & {
-
-      // Flip icon vertically
-      svg {
-        transform: scaleX(-1);
-      }
+    // Disable focus indicator for pointer devices
+    &:not(.focus-visible) {
+      outline: none;
     }
 
     // Focused or hovered icon
@@ -108,6 +105,15 @@
         width: px2rem(24px);
         height: px2rem(24px);
         fill: currentColor;
+      }
+    }
+
+    // Adjust for right-to-left languages
+    [dir="rtl"] &[for="__search"] {
+
+      // Flip icon vertically
+      svg {
+        transform: scaleX(-1);
       }
     }
 
@@ -218,6 +224,28 @@
       position: relative;
       width: 100%;
       height: 100%;
+    }
+  }
+
+  // User preferences and options
+  &__options {
+    max-width: 100%;
+    transition:
+      max-width  0ms 250ms,
+      opacity  250ms 250ms;
+
+    // Hide toggles on expanded search
+    [data-md-toggle="search"]:checked ~ .md-header & {
+      max-width: 0;
+      opacity: 0;
+      transition:
+        max-width 0ms,
+        opacity   0ms;
+    }
+
+    // Hide inactive buttons
+    > [data-md-state="hidden"] {
+      display: none;
     }
   }
 

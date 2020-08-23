@@ -1,6 +1,7 @@
 {#-
   This file was automatically generated - do not edit
 -#}
+{% set palette = config.theme.palette %}
 <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid" aria-label="{{ lang.t('header.title') }}">
     <a href="{{ config.site_url | default(nav.homepage.url, true) | url }}" title="{{ config.site_name }}" class="md-header-nav__button md-logo" aria-label="{{ config.site_name }}">
@@ -27,6 +28,19 @@
             {% endif %}
           </span>
         </div>
+      {% endif %}
+    </div>
+    <div class="md-header-nav__options">
+      {% if palette is iterable %}
+        {% for option in palette %}
+          {% set scheme  = option.scheme  | replace(" ", "-") | lower %}
+          {% set primary = option.primary | replace(" ", "-") | lower %}
+          {% set accent  = option.accent  | replace(" ", "-") | lower %}
+          <button class="md-header-nav__button md-icon" title="{{ option.toggle.name }}" aria-label="{{ option.toggle.name }}" data-md-option="palette" data-md-color-scheme="{{ scheme }}" data-md-color-primary="{{ primary }}" data-md-color-accent="{{ accent }}" data-md-state="hidden">
+            {% include ".icons/" ~ option.toggle.icon ~ ".svg" %}
+          </button>
+        {% endfor %}
+        <script>var active=document.querySelector("[data-md-option=palette]:nth-child("+(+(localStorage.getItem("palette")||"0")+1)+")"),colors=["data-md-color-scheme","data-md-color-primary","data-md-color-accent"];if(void 0!==active)for(var i=0;i<colors[i].length;i++){var value=active.getAttribute(colors[i]);value&&document.body.setAttribute(colors[i],value)}</script>
       {% endif %}
     </div>
     {% if "search" in config["plugins"] %}

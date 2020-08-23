@@ -524,34 +524,39 @@ export function initialize(config: unknown) {
     }
   })
 
-  // Theme switcher
-  const palettes = getElements("[name=__palette]")
-  for (const palette of palettes) {
-    fromEvent(palette, "change")
-      .subscribe(ev => {
-        const el = ev.target as HTMLElement
-        for (const key in el.dataset) {
-          if (el.dataset[key])
-            document.body.dataset[key] = el.dataset[key]
+  // getOption? what about local storage?
+  const palettes = getElements("[data-md-option=palette]")
+  for (let i = 0; i < palettes.length; i++) {
+    const palette = palettes[i]
+    fromEvent(palette, "click")
+      .subscribe(() => {
+        for (const key of [
+          "mdColorScheme",
+          "mdColorPrimary",
+          "mdColorAccent"
+        ]) {
+          if (palette.dataset[key])
+            document.body.dataset[key] = palette.dataset[key]
         }
+
+        // Hide this button and show the next one
+        palettes[i].dataset.mdState = "hidden"
+
+        const next = palettes[(i + 1) % palettes.length]
+        next.dataset.mdState = ""
+        next.focus()
 
         // Persist in local storage
         localStorage.setItem(
-          "__palette",
-          JSON.stringify(el.dataset)
+          "palette",
+          JSON.stringify(i)
         )
-
-        // Determine next theme for cycle
-        const next = (palettes.indexOf(el) + 1) % palettes.length
-        for (const [index, palette] of palettes.entries()) {
-          if (index === next) {
-            palette.classList.add("md-options__toggle--active")
-          } else {
-            palette.classList.remove("md-options__toggle--active")
-          }
-        }
       })
   }
+
+  // Just use the first button for now
+  const start = localStorage.getItem("palette") || "0"
+  palettes[(+start + 1) % palettes.length].dataset.mdState = ""
 
   /* ----------------------------------------------------------------------- */
 

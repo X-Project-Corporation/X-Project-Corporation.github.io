@@ -44,7 +44,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.b612d303.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.8cb7b0af.min.css' | url }}">
       {% if palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.62642c5a.min.css' | url }}">
       {% endif %}
@@ -89,19 +89,6 @@
   {% else %}
     <body dir="{{ direction }}">
   {% endif %}
-    {% if "preference" == palette.scheme %}
-      <script>matchMedia("(prefers-color-scheme: dark)").matches&&document.body.setAttribute("data-md-color-scheme","slate")</script>
-    {% endif %}
-    <script>
-      var palette = localStorage.getItem("__palette")
-      if (typeof palette !== "undefined") {
-        palette = JSON.parse(palette)
-        for (const key in palette) {
-          if (palette[key])
-            document.body.dataset[key] = palette[key]
-        }
-      }
-    </script>
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
@@ -155,7 +142,6 @@
                     {% include "partials/toc.html" %}
                   </div>
                 </div>
-                {% include "partials/options.html" %}
               </div>
             {% endif %}
           {% endblock %}
@@ -197,7 +183,7 @@
     </div>
     {% block scripts %}
       <script src="{{ 'assets/javascripts/vendor.41bfb93b.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.3ec8ec01.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.618d8646.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",

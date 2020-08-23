@@ -20,6 +20,9 @@
   IN THE SOFTWARE.
 -->
 
+<!-- Theme options -->
+{% set palette = config.theme.palette %}
+
 <!-- Application header -->
 <header class="md-header" data-md-component="header">
 
@@ -60,6 +63,52 @@
             {% endif %}
           </span>
         </div>
+      {% endif %}
+    </div>
+
+    <!-- User preferences and options -->
+    <div class="md-header-nav__options">
+      {% if palette is iterable %}
+        {% for option in palette %}
+          {% set scheme  = option.scheme  | replace(" ", "-") | lower %}
+          {% set primary = option.primary | replace(" ", "-") | lower %}
+          {% set accent  = option.accent  | replace(" ", "-") | lower %}
+
+          <!-- Palette switch -->
+          <button
+            class="md-header-nav__button md-icon"
+            title="{{ option.toggle.name }}"
+            aria-label="{{ option.toggle.name }}"
+            data-md-option="palette"
+            data-md-color-scheme="{{ scheme }}"
+            data-md-color-primary="{{ primary }}"
+            data-md-color-accent="{{ accent }}"
+            data-md-state="hidden"
+          >
+            {% include ".icons/" ~ option.toggle.icon ~ ".svg" %}
+          </button>
+        {% endfor %}
+
+        <!-- Load and set palette from local storage -->
+        <script>
+          var active = document.querySelector(
+            "[data-md-option=palette]:nth-child(" + (
+              +(localStorage.getItem("palette") || "0") + 1
+            ) + ")"
+          )
+          var colors = [
+            "data-md-color-scheme",
+            "data-md-color-primary",
+            "data-md-color-accent",
+          ]
+          if (typeof active !== "undefined") {
+            for (var i = 0; i < colors[i].length; i++) {
+              var value = active.getAttribute(colors[i])
+              if (value)
+                document.body.setAttribute(colors[i], value)
+            }
+          }
+        </script>
       {% endif %}
     </div>
 
