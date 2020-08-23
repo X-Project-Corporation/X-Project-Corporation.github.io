@@ -516,11 +516,13 @@ export function initialize(config: unknown) {
       })
 
   // Make indeterminate toggles indeterminate to expand navigation on screen
-  const toggles = getElements<HTMLInputElement>(".md-toggle--indeterminate")
-  for (const toggle of toggles) {
-    toggle.indeterminate = true
-    toggle.checked = false
-  }
+  document$.subscribe(() => {
+    const toggles = getElements<HTMLInputElement>(".md-toggle--indeterminate")
+    for (const toggle of toggles) {
+      toggle.indeterminate = true
+      toggle.checked = false
+    }
+  })
 
   // Theme switcher
   const palettes = getElements("[name=__palette]")
