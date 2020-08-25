@@ -31,7 +31,7 @@
       {% endif %}
     </div>
     <div class="md-header-nav__options">
-      {% if palette is iterable %}
+      {% if not palette is mapping %}
         {% for option in palette %}
           {% set scheme  = option.scheme  | replace(" ", "-") | lower %}
           {% set primary = option.primary | replace(" ", "-") | lower %}
