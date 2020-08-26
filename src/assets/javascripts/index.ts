@@ -548,15 +548,24 @@ export function initialize(config: unknown) {
 
         // Persist in local storage
         localStorage.setItem(
-          "palette",
-          JSON.stringify(i)
+          "__palette",
+          JSON.stringify({
+            index: i,
+            color: {
+              scheme:  palette.dataset.mdColorScheme,
+              primary: palette.dataset.mdColorPrimary,
+              accent:  palette.dataset.mdColorAccent
+            }
+          })
         )
       })
   }
 
   // Just use the first button for now
-  const start = localStorage.getItem("palette") || "0"
-  palettes[(+start + 1) % palettes.length].dataset.mdState = ""
+  const { index } = JSON.parse(
+    localStorage.getItem("__palette") || "{ \"index\": 0 }"
+  )
+  palettes[(+index + 1) % palettes.length].dataset.mdState = ""
 
   /* ----------------------------------------------------------------------- */
 

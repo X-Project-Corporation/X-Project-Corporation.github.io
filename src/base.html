@@ -22,13 +22,6 @@
 
 {% import "partials/language.html" as lang with context %}
 
-<!-- Theme options -->
-{% set font = config.theme.font %}
-{% set palette = config.theme.palette %}
-{% if not palette is mapping %}
-  {% set palette = palette | first %}
-{% endif %}
-
 <!doctype html>
 <html lang="{{ lang.t('language') }}" class="no-js">
   <head>
@@ -96,20 +89,21 @@
       <link rel="stylesheet" href="{{ 'assets/stylesheets/main.css' | url }}" />
 
       <!-- Extra color palette -->
-      {% if palette %}
+      {% if config.theme.palette %}
+        {% set palette = config.theme.palette %}
         <link
           rel="stylesheet"
           href="{{ 'assets/stylesheets/palette.css' | url }}"
         />
-      {% endif %}
 
-      <!-- Theme-color meta tag for Android -->
-      {% if palette.primary %}
-        {% import "partials/palette.html" as map %}
-        {% set primary = map.primary(
-          palette.primary | replace(" ", "-") | lower
-        ) %}
-        <meta name="theme-color" content="{{ primary }}" />
+        <!-- Theme-color meta tag for Android -->
+        {% if palette.primary %}
+          {% import "partials/palette.html" as map %}
+          {% set primary = map.primary(
+            palette.primary | replace(" ", "-") | lower
+          ) %}
+          <meta name="theme-color" content="{{ primary }}" />
+        {% endif %}
       {% endif %}
     {% endblock %}
 
@@ -120,7 +114,8 @@
     {% block fonts %}
 
       <!-- Load fonts from Google -->
-      {% if font != false %}
+      {% if config.theme.font != false %}
+        {% set font = config.theme.font %}
         <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin />
         <link
           rel="stylesheet"
@@ -169,7 +164,11 @@
 
   <!-- Text direction and color palette, if defined -->
   {% set direction = config.theme.direction or lang.t('direction') %}
-  {% if palette %}
+  {% if config.theme.palette %}
+    {% set palette = config.theme.palette %}
+    {% if not palette is mapping %}
+      {% set palette = palette | first %}
+    {% endif %}
     {% set scheme  = palette.scheme  | replace(" ", "-") | lower %}
     {% set primary = palette.primary | replace(" ", "-") | lower %}
     {% set accent  = palette.accent  | replace(" ", "-") | lower %}
@@ -182,6 +181,21 @@
   {% else %}
     <body dir="{{ direction }}">
   {% endif %}
+
+    <!-- Load and set color palette from local storage -->
+    {% if not config.theme.palette is mapping %}
+      <script>
+        var palette = JSON.parse(localStorage.getItem("__palette") || "{}")
+        if (typeof palette.color !== "undefined") {
+          for (var key in palette.color) {
+            document.body.setAttribute(
+              "data-md-color-" + key,
+              palette.color[key]
+            )
+          }
+        }
+      </script>
+    {% endif %}
 
     <!--
       State toggles - we need to set autocomplete="off" in order to reset the

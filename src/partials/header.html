@@ -20,9 +20,6 @@
   IN THE SOFTWARE.
 -->
 
-<!-- Theme options -->
-{% set palette = config.theme.palette %}
-
 <!-- Application header -->
 <header class="md-header" data-md-component="header">
 
@@ -68,8 +65,8 @@
 
     <!-- User preferences and options -->
     <div class="md-header-nav__options">
-      {% if not palette is mapping %}
-        {% for option in palette %}
+      {% if not config.theme.palette is mapping %}
+        {% for option in config.theme.palette %}
           {% set scheme  = option.scheme  | replace(" ", "-") | lower %}
           {% set primary = option.primary | replace(" ", "-") | lower %}
           {% set accent  = option.accent  | replace(" ", "-") | lower %}
@@ -88,27 +85,6 @@
             {% include ".icons/" ~ option.toggle.icon ~ ".svg" %}
           </button>
         {% endfor %}
-
-        <!-- Load and set palette from local storage -->
-        <script>
-          var active = document.querySelector(
-            "[data-md-option=palette]:nth-child(" + (
-              +(localStorage.getItem("palette") || "0") + 1
-            ) + ")"
-          )
-          var colors = [
-            "data-md-color-scheme",
-            "data-md-color-primary",
-            "data-md-color-accent"
-          ]
-          if (typeof active !== "undefined") {
-            for (var i = 0; i < colors.length; i++) {
-              var value = active.getAttribute(colors[i])
-              if (value)
-                document.body.setAttribute(colors[i], value)
-            }
-          }
-        </script>
       {% endif %}
     </div>
 
