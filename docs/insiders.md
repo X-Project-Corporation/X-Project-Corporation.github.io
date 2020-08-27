@@ -14,7 +14,7 @@ and how you can [become a sponsor][3].
   [3]: #how-to-become-a-sponsor
 
 <div style="width:100%;height:0px;position:relative;padding-bottom:56.138%;">
-  <iframe src="https://streamable.com/e/h9pyjk" frameborder="0" width="100%" height="100%" allowfullscreen style="width:100%;height:100%;position:absolute;left:0px;top:0px;overflow:hidden;"></iframe>
+  <iframe src="https://streamable.com/e/lz4me5" frameborder="0" width="100%" height="100%" allowfullscreen style="width:100%;height:100%;position:absolute;left:0px;top:0px;overflow:hidden;"></iframe>
 </div>
 <p style="text-align: center; font-style: oblique">
   A demo is worth a thousand words — check it out at <br />
@@ -103,7 +103,7 @@ New features and improvements for _content and toc_, including:
 ### Bhut Jolokia
 
 [:octicons-fire-24: Funding goal: __$1,500__][6] ·
-:octicons-lock-24: Status: _pending_
+:octicons-lock-24: Status: _exclusive_
 
 New features and improvements for _hosting multiple versions_, including:
 
@@ -115,7 +115,7 @@ New features and improvements for _hosting multiple versions_, including:
 ### Black Pearl
 
 [:octicons-fire-24: Funding goal: __$2,000__][6] ·
-:octicons-lock-24: Status: _pending_
+:octicons-lock-24: Status: _exclusive_
 
 New features and improvements for _user preferences_, including:
 
@@ -127,7 +127,7 @@ New features and improvements for _user preferences_, including:
 ### Caribbean Red
 
 [:octicons-fire-24: Funding goal: __$3,000__][6] ·
-:octicons-lock-24: Status: _pending_
+:octicons-lock-24: Status: _exclusive_
 
 Alternative, completely different _vertical layout_, optimized to read
 documentation and code side-by-side, e.g. for the documentation of APIs with
