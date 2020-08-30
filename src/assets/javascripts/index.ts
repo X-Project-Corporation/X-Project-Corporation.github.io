@@ -49,7 +49,10 @@ import {
   shareReplay,
   pluck,
   catchError,
-  map
+  map,
+  bufferCount,
+  distinctUntilKeyChanged,
+  mapTo
 } from "rxjs/operators"
 
 import {
@@ -64,7 +67,6 @@ import {
   isLocalLocation,
   setLocationHash,
   watchLocationBase,
-  getToggle,
   getElement
 } from "browser"
 import {
@@ -566,6 +568,33 @@ export function initialize(config: unknown) {
     localStorage.getItem("__palette") || "{ \"index\": 0 }"
   )
   palettes[(+index + 1) % palettes.length].dataset.mdState = ""
+
+  // Auto hide header - there are still some problems with this, mainly when
+  // the search is open (always show header) and when moving fast to the top.
+  if (config.features.includes("header.hide")) {
+    viewport$
+      .pipe(
+        pluck("offset", "y"),
+        bufferCount(2, 1),
+        map(([a, b]) => [a < b, b] as const),
+        distinctUntilKeyChanged(0),
+        switchMap(([direction, y0]) => viewport$
+          .pipe(
+            pluck("offset", "y"),
+            filter(y1 => y1 > 400),
+            map(y1 => Math.abs(y0 - y1)),
+            filter(y => y > 100),
+            mapTo(direction),
+            take(1)
+          )
+        )
+      )
+        // this must be done directly in the header component
+        .subscribe(hide => {
+          const header = getElement("[data-md-component=header]")
+          header?.setAttribute("data-md-state", hide ? "hidden": "shadow")
+        })
+  }
 
   /* ----------------------------------------------------------------------- */
 
