@@ -564,10 +564,12 @@ export function initialize(config: unknown) {
   }
 
   // Just use the first button for now
-  const { index } = JSON.parse(
-    localStorage.getItem("__palette") || "{ \"index\": 0 }"
-  )
-  palettes[(+index + 1) % palettes.length].dataset.mdState = ""
+  if (palettes.length) {
+    const { index } = JSON.parse(
+      localStorage.getItem("__palette") || "{ \"index\": 0 }"
+    )
+    palettes[(+index + 1) % palettes.length].dataset.mdState = ""
+  }
 
   // Auto hide header - there are still some problems with this, mainly when
   // the search is open (always show header) and when moving fast to the top.
