@@ -212,7 +212,7 @@
       <script>
         app = initialize({
           base: "{{ base_url }}",
-          features: {{ config.theme.features | tojson }},
+          features: {{ config.theme.features or [] | tojson }},
           search: Object.assign({
             worker: "{{ 'assets/javascripts/worker/search.9f8dce40.min.js' | url }}"
           }, typeof search !== "undefined" && search)
