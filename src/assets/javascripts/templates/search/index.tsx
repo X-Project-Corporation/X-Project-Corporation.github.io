@@ -72,7 +72,7 @@ const path =
  * @return Element
  */
 function renderArticleDocument(
-  { location, title, text, terms }: SearchDocument & SearchMetadata,
+  { location, title, text, terms, score }: SearchDocument & SearchMetadata,
   teaser: boolean
 ) {
 
@@ -91,7 +91,7 @@ function renderArticleDocument(
     ], [])
   return (
     <a href={url.toString().replace(/%20/g, "+")} class={css.link} tabIndex={-1}>
-      <article class={css.article}>
+      <article class={css.article} data-md-score={score.toFixed(2)}>
         <div class="md-search-result__icon md-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path d={path}></path>
@@ -119,7 +119,7 @@ function renderArticleDocument(
  * @return Element
  */
 function renderSection(
-  { location, title, text, terms }: SearchDocument & SearchMetadata
+  { location, title, text, terms, score }: SearchDocument & SearchMetadata
 ) {
 
   const highlight: string[] = []
@@ -137,7 +137,7 @@ function renderSection(
     ], [])
   return (
     <a href={url.toString().replace(/%20/g, "+")} class={css.link} tabIndex={-1}>
-      <article class={css.section}>
+      <article class={css.section} data-md-score={score.toFixed(2)}>
         <h1 class={css.title}>{title}</h1>
         {text.length > 0 &&
           <p class={css.teaser}>{truncate(text, 320)}</p>
@@ -173,7 +173,7 @@ export function renderSearchResult(
   const [article] = docs.splice(parent, 1)
 
   /* Determine last index above threshold */
-  let index = docs.findIndex(x => x.score < threshold)
+  let index = docs.findIndex(doc => doc.score < threshold)
   if (index === -1)
     index = docs.length
 

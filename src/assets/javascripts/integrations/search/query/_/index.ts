@@ -67,7 +67,7 @@ export function parseSearchQuery(
  * @param query - Search query clauses
  * @param terms - Search terms
  *
- * Search query terms
+ * @return Search query terms
  */
 export function getSearchQueryTerms(
   query: SearchQueryClause[], terms: string[]

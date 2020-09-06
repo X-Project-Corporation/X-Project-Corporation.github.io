@@ -186,8 +186,8 @@
       {% endblock %}
     </div>
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/vendor.cf8b402d.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.175fd47e.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/vendor.47399281.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.d562cbe1.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",
@@ -214,7 +214,7 @@
           base: "{{ base_url }}",
           features: {{ config.theme.features or [] | tojson }},
           search: Object.assign({
-            worker: "{{ 'assets/javascripts/worker/search.9f8dce40.min.js' | url }}"
+            worker: "{{ 'assets/javascripts/worker/search.91c205cd.min.js' | url }}"
           }, typeof search !== "undefined" && search)
         })
       </script>

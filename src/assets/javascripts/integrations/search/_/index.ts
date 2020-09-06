@@ -233,22 +233,7 @@ export class Search {
   public search(query: string): SearchResult[] {
     if (query) {
       try {
-
-        /* Group sections by containing article */
-        const groups = this.index.search(`${query}*`)
-          .reduce((results, result) => {
-            const document = this.documents.get(result.ref)
-            if (typeof document !== "undefined") {
-              const ref = "parent" in document
-                ? document.parent!.location
-                : document.location
-              results.set(ref, [...results.get(ref) || [], result])
-            }
-            return results
-          }, new Map<string, lunr.Index.Result[]>())
-
-        /* Create highlighter for query */
-        const fn = this.highlight(query)
+        const highlight = this.highlight(query)
 
         /* Parse query to extract clauses for analysis */
         const clauses = parseSearchQuery(query)
@@ -256,25 +241,54 @@ export class Search {
             clause.presence !== lunr.Query.presence.PROHIBITED
           ))
 
-        /* Map groups to search results */
-        return [...groups.values()].map(results => (
-          results.map(result => {
-            const { parent, ...document } = this.documents.get(result.ref)!
-            return {
-              location: document.location,
-              title: fn(document.title),
-              text: fn(document.text),
-              score: result.score,
-              terms: getSearchQueryTerms(
+        /* Perform search and post-process results */
+        const groups = this.index.search(`${query}*`)
+
+          /* Apply post-query boosts based on title and search query terms */
+          .reduce<SearchResult>((results, { ref, score, matchData }) => {
+            const document = this.documents.get(ref)
+            if (typeof document !== "undefined") {
+              const { location, title, text, parent } = document
+
+              /* Compute and analyze search query terms */
+              const terms = getSearchQueryTerms(
                 clauses,
-                Object.keys(result.matchData.metadata)
+                Object.keys(matchData.metadata)
               )
+
+              /* Highlight title and text and apply post-query boosts */
+              const boost = +!parent + +Object.values(terms).every(t => t)
+              results.push({
+                location,
+                title: highlight(title),
+                text: highlight(text),
+                score: score * (1 + boost),
+                terms
+              })
             }
-          })
-        ))
+            return results
+          }, [])
+
+          /* Sort search results again after applying boosts */
+          .sort((a, b) => b.score - a.score)
+
+          /* Group search results by page */
+          .reduce((results, result) => {
+            const document = this.documents.get(result.location)
+            if (typeof document !== "undefined") {
+              const ref = "parent" in document
+                ? document.parent!.location
+                : document.location
+              results.set(ref, [...results.get(ref) || [], result])
+            }
+            return results
+          }, new Map<string, SearchResult>())
+
+        /* Expand grouped search results */
+        return [...groups.values()]
 
       /* Log errors to console (for now) */
-      } catch (err) {
+      } catch {
         // tslint:disable-next-line no-console
         console.warn(`Invalid query: ${query} – see https://bit.ly/2s3ChXG`)
       }
