@@ -674,8 +674,6 @@ $md-toggle__search--checked:
     line-height: 1.6;
   }
 
-  // stylelint-disable value-no-vendor-prefix, property-no-vendor-prefix
-
   // Teaser
   &__teaser {
     display: -webkit-box;
@@ -707,8 +705,6 @@ $md-toggle__search--checked:
       border-bottom: px2rem(1px) solid var(--md-accent-fg-color);
     }
   }
-
-  // stylelint-enable value-no-vendor-prefix, property-no-vendor-prefix
 
   // Terms
   &__terms {
