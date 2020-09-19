@@ -114,6 +114,7 @@ extra:
 # Extensions
 markdown_extensions:
   - markdown.extensions.admonition
+  - markdown.extensions.abbr
   - markdown.extensions.attr_list
   - markdown.extensions.def_list
   - markdown.extensions.footnotes
@@ -177,6 +178,7 @@ nav:
     - Adding a comment system: setup/adding-a-comment-system.md
     #- Adding a landing page: setup/adding-a-landing-page.md
   - Reference:
+    - Abbreviations: reference/abbreviations.md
     - Admonitions: reference/admonitions.md
     - Buttons: reference/buttons.md
     - Code blocks: reference/code-blocks.md
@@ -189,6 +191,7 @@ nav:
     - Lists: reference/lists.md
     - MathJax: reference/mathjax.md
     - Meta tags: reference/meta-tags.md
+    - Variables and macros: reference/variables-macros.md
   - Changelog:
     - Release notes: changelog.md
     - Upgrading: upgrading.md

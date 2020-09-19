@@ -27,7 +27,7 @@
         <meta name="author" content="{{ config.site_author }}">
       {% endif %}
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-5.5.12+insiders-1.4.1">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-5.5.13+insiders-1.4.1">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -39,10 +39,10 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.30cf4222.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.473f5505.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
-        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.674aa776.min.css' | url }}">
+        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.289f1ef6.min.css' | url }}">
         {% if palette.primary %}
           {% import "partials/palette.html" as map %}
           {% set primary = map.primary(
