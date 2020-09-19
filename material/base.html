@@ -140,13 +140,21 @@
               </div>
             {% endif %}
             {% if page.toc %}
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    {% include "partials/toc.html" %}
+              {% set toc = page.toc %}
+              {% if toc | first is defined and "\x3ch1 id=" in page.content %}
+                {% set toc = (toc | first).children %}
+              {% endif %}
+              {% if toc or not (
+                "toc.autohide" in config.theme.features
+              ) %}
+                <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                  <div class="md-sidebar__scrollwrap">
+                    <div class="md-sidebar__inner">
+                      {% include "partials/toc.html" %}
+                    </div>
                   </div>
                 </div>
-              </div>
+              {% endif %}
             {% endif %}
           {% endblock %}
           <div class="md-content">

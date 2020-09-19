@@ -285,16 +285,28 @@
 
             <!-- Table of contents -->
             {% if page.toc %}
-              <div
-                class="md-sidebar md-sidebar--secondary"
-                data-md-component="toc"
-              >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    {% include "partials/toc.html" %}
+              {% set toc = page.toc %}
+
+              <!-- Hack: check whether the content contains a h1 headline -->
+              {% if toc | first is defined and "\x3ch1 id=" in page.content %}
+                {% set toc = (toc | first).children %}
+              {% endif %}
+
+              <!-- Check if empty table of contents should be rendered -->
+              {% if toc or not (
+                "toc.autohide" in config.theme.features
+              ) %}
+                <div
+                  class="md-sidebar md-sidebar--secondary"
+                  data-md-component="toc"
+                >
+                  <div class="md-sidebar__scrollwrap">
+                    <div class="md-sidebar__inner">
+                      {% include "partials/toc.html" %}
+                    </div>
                   </div>
                 </div>
-              </div>
+              {% endif %}
             {% endif %}
           {% endblock %}
 
