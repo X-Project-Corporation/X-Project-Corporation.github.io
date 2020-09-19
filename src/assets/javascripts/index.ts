@@ -573,7 +573,7 @@ export function initialize(config: unknown) {
 
   // Auto hide header - there are still some problems with this, mainly when
   // the search is open (always show header) and when moving fast to the top.
-  if (config.features.includes("header.hide")) {
+  if (config.features.includes("header.autohide")) {
     viewport$
       .pipe(
         pluck("offset", "y"),
