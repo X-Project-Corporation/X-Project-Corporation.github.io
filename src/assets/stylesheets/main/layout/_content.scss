@@ -26,8 +26,7 @@
 
 // Content container
 .md-content {
-  flex: 1;
-  max-width: 100%;
+  overflow: auto;
 
   // Define spacing
   &__inner {
