@@ -136,10 +136,10 @@ export function round(value: number): string {
  * @return Hash as 32bit integer
  */
 export function hash(value: string): number {
-    let h = 0
-    for (let i = 0, len = value.length; i < len; i++) {
-      h  = ((h << 5) - h) + value.charCodeAt(i)
-      h |= 0 // Convert to 32bit integer
-    }
-    return h
+  let h = 0
+  for (let i = 0, len = value.length; i < len; i++) {
+    h  = ((h << 5) - h) + value.charCodeAt(i)
+    h |= 0 // Convert to 32bit integer
   }
+  return h
+}

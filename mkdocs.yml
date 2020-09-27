@@ -52,8 +52,8 @@ theme:
   language: en
   features:
     - header.autohide
+    - navigation.tabs
     - search.highlight
-    - tabs
     #- instant
   palette:
     - scheme: default

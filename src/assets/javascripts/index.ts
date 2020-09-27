@@ -71,7 +71,6 @@ import {
 } from "browser"
 import {
   mountHeader,
-  mountHero,
   mountMain,
   mountNavigation,
   mountSearch,
@@ -205,7 +204,6 @@ export function initialize(config: unknown) {
     "container",                       /* Container */
     "header",                          /* Header */
     "header-title",                    /* Header title */
-    "hero",                            /* Hero */
     "main",                            /* Main area */
     "navigation",                      /* Navigation */
     "search",                          /* Search */
@@ -266,12 +264,6 @@ export function initialize(config: unknown) {
   const tabs$ = useComponent("tabs")
     .pipe(
       mountTabs({ header$, viewport$, screen$ }),
-      shareReplay({ bufferSize: 1, refCount: true })
-    )
-
-  const hero$ = useComponent("hero")
-    .pipe(
-      mountHero({ header$, viewport$ }),
       shareReplay({ bufferSize: 1, refCount: true })
     )
 
@@ -456,7 +448,10 @@ export function initialize(config: unknown) {
       })
 
   /* Enable instant loading, if not on file:// protocol */
-  if (config.features.includes("instant") && location.protocol !== "file:") {
+  if (
+    config.features.includes("navigation.instant") &&
+    location.protocol !== "file:"
+  ) {
 
     /* Fetch sitemap and extract URL whitelist */
     base$
@@ -609,7 +604,6 @@ export function initialize(config: unknown) {
 
     /* Component observables */
     header$,
-    hero$,
     main$,
     navigation$,
     search$,
