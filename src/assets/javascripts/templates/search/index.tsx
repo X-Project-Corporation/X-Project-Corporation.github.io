@@ -66,7 +66,7 @@ function renderSearchDocument(
 
   /* Assemble query string for highlighting */
   const url = new URL(document.location)
-  url.searchParams.append("h", Object.keys(document.terms)
+  url.searchParams.append("h", Object.entries(document.terms)
     .reduce((highlight, [value, match]) => (
       `${highlight} ${match ? value : ""}`
     ), "")
