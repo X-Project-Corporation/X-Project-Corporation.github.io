@@ -22,11 +22,7 @@
 
 import "lunr"
 
-import {
-  Search,
-  SearchIndex,
-  SearchIndexConfig
-} from "../../_"
+import { Search, SearchIndexConfig } from "../../_"
 import {
   SearchMessage,
   SearchMessageType
@@ -39,7 +35,7 @@ import {
 /**
  * Add support for usage with `iframe-worker` polyfill
  *
- * While `importScripts` is synchronous when executed inside of a webworker,
+ * While `importScripts` is synchronous when executed inside of a web worker,
  * it's not possible to provide a synchronous polyfilled implementation. The
  * cool thing is that awaiting a non-Promise is a noop, so extending the type
  * definition to return a `Promise` shouldn't break anything.
@@ -64,24 +60,15 @@ let index: Search
  * ------------------------------------------------------------------------- */
 
 /**
- * Fetch search index from given URL
- *
- * @param url - Search index URL
- *
- * @return Promise resolving with search index
- */
-async function fetchSearchIndex(url: string): Promise<SearchIndex> {
-  return fetch(url, {
-    credentials: "same-origin"
-  })
-    .then(res => res.json())
-}
-
-/**
  * Fetch (= import) multi-language support through `lunr-languages`
  *
  * This function will automatically import the stemmers necessary to process
  * the languages which were given through the search index configuration.
+ *
+ * If the worker runs inside of an `iframe` (when using `iframe-worker` as
+ * a shim), the base URL for the stemmers to be loaded must be determined by
+ * searching for the first `script` element with a `src` attribute, which will
+ * contain the contents of this script.
  *
  * @param config - Search index configuration
  *
@@ -90,7 +77,16 @@ async function fetchSearchIndex(url: string): Promise<SearchIndex> {
 async function setupSearchLanguages(
   config: SearchIndexConfig
 ): Promise<void> {
-  const base = "../lunr"
+  let base = "../lunr"
+
+  /* Detect `iframe-worker` and fix base URL */
+  if (typeof parent !== "undefined" && "IFrameWorker" in parent) {
+    const worker = document.querySelector<HTMLScriptElement>("script[src]")!
+    const [path] = worker.src.split("/worker")
+
+    /* Prefix base with path */
+    base = base.replace("..", path)
+  }
 
   /* Add scripts for languages */
   const scripts = []
@@ -129,13 +125,8 @@ export async function handler(
 
     /* Search setup message */
     case SearchMessageType.SETUP:
-      const data = typeof message.data === "string"
-        ? await fetchSearchIndex(message.data)
-        : message.data
-
-      /* Set up search index with multi-language support */
-      await setupSearchLanguages(data.config)
-      index = new Search(data)
+      await setupSearchLanguages(message.data.config)
+      index = new Search(message.data)
       return {
         type: SearchMessageType.READY
       }

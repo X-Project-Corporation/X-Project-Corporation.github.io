@@ -21,7 +21,7 @@
  */
 
 import * as ClipboardJS from "clipboard"
-import { NEVER, Observable, Subject, fromEventPattern } from "rxjs"
+import { NEVER, Observable, Subject } from "rxjs"
 import { mapTo, share, tap } from "rxjs/operators"
 
 import { getElements } from "browser"
@@ -66,13 +66,16 @@ export function setupClipboard(
     blocks.forEach((block, index) => {
       const parent = block.parentElement!
       parent.id = `__code_${index}`
-      parent.insertBefore(renderClipboardButton(parent.id), block)
+      parent.insertBefore(
+        renderClipboardButton(parent.id),
+        block
+      )
     })
   })
 
   /* Initialize clipboard */
-  const clipboard$ = fromEventPattern<ClipboardJS.Event>(next => {
-    new ClipboardJS(".md-clipboard").on("success", next)
+  const clipboard$ = new Observable<ClipboardJS.Event>(subscriber => {
+    new ClipboardJS(".md-clipboard").on("success", ev => subscriber.next(ev))
   })
     .pipe(
       share()

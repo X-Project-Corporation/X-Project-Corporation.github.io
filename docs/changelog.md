@@ -42,6 +42,15 @@ template: overrides/main.html
 
 ## Material for MkDocs
 
+### 6.0.1 <small>_ September 26, 2020</small>
+
+* Fixed stemmer support for `file://` protocol through `iframe-worker`
+* Fixed details marker showing for search result in Firefox
+* Fixed tabbing behavior when search query is not empty
+* Switched TypeScript compilation target to ES2015
+* Reduced size of JavaScript by 30% (`176kb` → `124kb`)
+* Removed `mkdocs` and `readthedocs` themes from Docker image
+
 ### 6.0.0 <small>_ September 25, 2020</small>
 
 * Improved search result look and feel
@@ -49,7 +58,7 @@ template: overrides/main.html
 * Improved search result grouping (pages + headings)
 * Improved search result relevance and scoring
 * Added display of missing query terms to search results
-* Reduced size of vendor bundle by 25% (84kb → 67kb)
+* Reduced size of vendor bundle by 25% (`84kb` → `67kb`)
 * Reduced size of the Docker image to improve CI build performance
 * Removed hero partial in favor of custom implementation
 * Removed deprecated front matter features

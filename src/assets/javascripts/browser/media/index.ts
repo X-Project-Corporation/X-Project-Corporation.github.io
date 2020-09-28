@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, fromEventPattern } from "rxjs"
+import { Observable } from "rxjs"
 import { shareReplay, startWith } from "rxjs/operators"
 
 /* ----------------------------------------------------------------------------
@@ -36,9 +36,9 @@ import { shareReplay, startWith } from "rxjs/operators"
  */
 export function watchMedia(query: string): Observable<boolean> {
   const media = matchMedia(query)
-  return fromEventPattern<boolean>(next =>
-    media.addListener(() => next(media.matches))
-  )
+  return new Observable<boolean>(subscriber => {
+    media.addListener(ev => subscriber.next(ev.matches))
+  })
     .pipe(
       startWith(media.matches),
       shareReplay({ bufferSize: 1, refCount: true })

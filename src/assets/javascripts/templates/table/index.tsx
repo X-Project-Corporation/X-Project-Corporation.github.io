@@ -23,18 +23,6 @@
 import { h } from "utilities"
 
 /* ----------------------------------------------------------------------------
- * Data
- * ------------------------------------------------------------------------- */
-
-/**
- * CSS classes
- */
-const css = {
-  wrapper: "md-typeset__scrollwrap",
-  table:   "md-typeset__table"
-}
-
-/* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
 
@@ -47,8 +35,8 @@ const css = {
  */
 export function renderTable(table: HTMLTableElement) {
   return (
-    <div class={css.wrapper}>
-      <div class={css.table}>
+    <div class="md-typeset__scrollwrap">
+      <div class="md-typeset__table">
         {table}
       </div>
     </div>

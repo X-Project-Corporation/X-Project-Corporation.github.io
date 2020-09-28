@@ -29,8 +29,9 @@ import {
 } from "rxjs/operators"
 
 import { WorkerHandler, watchWorker } from "browser"
+import { translate } from "utilities"
 
-import { SearchIndex } from "../../_"
+import { SearchIndex, SearchIndexPipeline } from "../../_"
 import {
   SearchMessage,
   SearchMessageType,
@@ -52,6 +53,38 @@ interface SetupOptions {
 
 /* ----------------------------------------------------------------------------
  * Functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Set up search index
+ *
+ * @param data - Search index
+ *
+ * @return Search index
+ */
+function setupSearchIndex(
+  { config, docs, index }: SearchIndex
+): SearchIndex {
+
+  /* Override default language with value from translation */
+  if (config.lang.length === 1 && config.lang[0] === "en")
+    config.lang = [translate("search.config.lang")]
+
+  /* Override default separator with value from translation */
+  if (config.separator === "[\\s\\-]+")
+    config.separator = translate("search.config.separator")
+
+  /* Set pipeline from translation */
+  const pipeline = translate("search.config.pipeline")
+    .split(/\s*,\s*/)
+    .filter(Boolean) as SearchIndexPipeline
+
+  /* Return search index after defaulting */
+  return { config, docs, index, pipeline }
+}
+
+/* ----------------------------------------------------------------------------
+ * Helper functions
  * ------------------------------------------------------------------------- */
 
 /**
@@ -92,7 +125,7 @@ export function setupSearchWorker(
     .pipe(
       map<SearchIndex, SearchSetupMessage>(data => ({
         type: SearchMessageType.SETUP,
-        data
+        data: setupSearchIndex(data)
       })),
       observeOn(asyncScheduler)
     )

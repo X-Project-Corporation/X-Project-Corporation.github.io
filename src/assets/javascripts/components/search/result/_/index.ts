@@ -20,14 +20,12 @@
  * IN THE SOFTWARE.
  */
 
-import { identity } from "ramda"
 import { Observable, OperatorFunction, pipe } from "rxjs"
 import {
   distinctUntilChanged,
   filter,
   map,
   mapTo,
-  pluck,
   startWith,
   switchMap
 } from "rxjs/operators"
@@ -87,14 +85,14 @@ export function mountSearchResult(
             return y >= container.scrollHeight - container.offsetHeight - 16
           }),
           distinctUntilChanged(),
-          filter(identity)
+          filter(Boolean)
         )
 
       /* Apply search results */
       return rx$
         .pipe(
           filter(isSearchResultMessage),
-          pluck("data"),
+          map(({ data }) => data),
           applySearchResult(el, { query$, ready$, fetch$ }),
           startWith([])
         )
