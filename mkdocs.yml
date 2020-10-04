@@ -51,10 +51,8 @@ theme:
   # Default values, taken from mkdocs_theme.yml
   language: en
   features:
-    - header.autohide
     - navigation.tabs
     - search.highlight
-    #- instant
   palette:
     - scheme: default
       primary: indigo
