@@ -96,14 +96,20 @@ export interface SearchMetadata {
   terms: SearchQueryTerms              /* Search query terms */
 }
 
-/* ------------------------------------------------------------------------- */
+/**
+ * Search result item
+ */
+export type SearchResultItem = Array<
+  SearchDocument & SearchMetadata
+> // tslint:disable-line
 
 /**
  * Search result
  */
-export type SearchResult = Array<
-  SearchDocument & SearchMetadata
-> // tslint:disable-line
+export interface SearchResult {
+  items: SearchResultItem[]            /* Search result items */ // TODO: rename stuff...
+  suggestions: string[]                /* Search result suggestions */
+}
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -226,7 +232,7 @@ export class Search {
    *
    * @return Search results
    */
-  public search(query: string): SearchResult[] {
+  public search(query: string): SearchResult {
     if (query) {
       try {
         const highlight = this.highlight(query)
@@ -241,7 +247,7 @@ export class Search {
         const groups = this.index.search(`${query}*`)
 
           /* Apply post-query boosts based on title and search query terms */
-          .reduce<SearchResult>((results, { ref, score, matchData }) => {
+          .reduce<SearchResultItem>((results, { ref, score, matchData }) => {
             const document = this.documents.get(ref)
             if (typeof document !== "undefined") {
               const { location, title, text, parent } = document
@@ -278,19 +284,36 @@ export class Search {
               results.set(ref, [...results.get(ref) || [], result])
             }
             return results
-          }, new Map<string, SearchResult>())
+          }, new Map<string, SearchResultItem>())
+
+        // Search for suggestions
+        const suggest = this.index.search(
+          `+title:${clauses.map(({ term }) => term).join("* +title:")}*`
+        )
+        const suggestions: string[] = []
+        if (suggest.length) {
+          // 1. take the best match
+          const [best] = suggest
+
+          const terms = Object.keys(best.matchData.metadata)
+          suggestions.push(...terms)
+        }
 
         /* Expand grouped search results */
-        return [...groups.values()]
+        return {
+          items: [...groups.values()],
+          suggestions
+        }
 
       /* Log errors to console (for now) */
-      } catch {
+      } catch (err) {
+        console.log(err)
         // tslint:disable-next-line no-console
         console.warn(`Invalid query: ${query} – see https://bit.ly/2s3ChXG`)
       }
     }
 
     /* Return nothing in case of error or empty query */
-    return []
+    return { items: [], suggestions: [] }
   }
 }

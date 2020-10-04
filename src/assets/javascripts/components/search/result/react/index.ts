@@ -37,7 +37,7 @@ import {
 } from "rxjs/operators"
 
 import { getElementOrThrow } from "browser"
-import { SearchResult } from "integrations/search"
+import { SearchResultItem } from "integrations/search" // TODO: rename...
 import { renderSearchResult } from "templates"
 
 import { SearchQuery } from "../../query"
@@ -79,7 +79,7 @@ interface ApplyOptions {
  */
 export function applySearchResult(
   el: HTMLElement, { query$, ready$, fetch$ }: ApplyOptions
-): MonoTypeOperatorFunction<SearchResult[]> {
+): MonoTypeOperatorFunction<SearchResultItem[]> {
   const list = getElementOrThrow(".md-search-result__list", el)
   const meta = getElementOrThrow(".md-search-result__meta", el)
   return pipe(

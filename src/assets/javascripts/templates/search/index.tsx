@@ -23,7 +23,7 @@
 import {
   SearchDocument,
   SearchMetadata,
-  SearchResult
+  SearchResultItem // TODO: rename
 } from "integrations/search"
 import { h, translate, truncate } from "utilities"
 
@@ -113,7 +113,7 @@ function renderSearchDocument(
  * @return Element
  */
 export function renderSearchResult(
-  result: SearchResult, threshold: number = Infinity
+  result: SearchResultItem, threshold: number = Infinity
 ) {
   const docs = [...result]
 

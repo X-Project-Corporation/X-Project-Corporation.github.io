@@ -27,13 +27,14 @@ import {
   map,
   mapTo,
   startWith,
-  switchMap
+  switchMap,
+  withLatestFrom
 } from "rxjs/operators"
 
 import { WorkerHandler, watchElementOffset } from "browser"
 import {
   SearchMessage,
-  SearchResult,
+  SearchResultItem, // TODO: rename
   isSearchReadyMessage,
   isSearchResultMessage
 } from "integrations"
@@ -66,7 +67,7 @@ interface MountOptions {
  */
 export function mountSearchResult(
   { rx$ }: WorkerHandler<SearchMessage>, { query$ }: MountOptions
-): OperatorFunction<HTMLElement, SearchResult[]> {
+): OperatorFunction<HTMLElement, SearchResultItem[]> {
   return pipe(
     switchMap(el => {
       const container = el.parentElement!
@@ -88,11 +89,64 @@ export function mountSearchResult(
           filter(Boolean)
         )
 
+      // POC for suggestion rendering
+      const query = document.querySelector<HTMLInputElement>("[data-md-component=search-query]")!
+      query.addEventListener("keydown", ev => {
+        setTimeout(() => {
+          const span = document.querySelector(".md-search__suggest span")!
+          if (span) {
+
+            if (!span.innerHTML.startsWith(query.value) || query.value.endsWith(" ")) {
+              span.innerHTML = ""
+            }
+          }
+        }, 1)
+
+        if (ev.key === "ArrowRight" && query.selectionStart === query.value.length) {
+          const span = document.querySelector(".md-search__suggest span")!
+          if (span) {
+            query.value = span.innerHTML
+          }
+        }
+      })
+
+      // POC for search suggestions
+      rx$.pipe(
+        filter(isSearchResultMessage),
+        map(({ data }) => data.suggestions),
+        withLatestFrom(query$),
+      )
+        .subscribe(([suggestions, query]) => {
+          const container = document.querySelector(".md-search__suggest")!
+
+          // split using the tokenizer separator... for now just use the default
+          // wrapped in parenthesis, so we know how much whitespace is stripped.
+          const words = query.value.split(/([\s-]+)/)
+
+          // now, take the last word and check how much we entered of it
+          if (suggestions.length) {
+            const [last] = suggestions.slice(-1)
+            console.log(words, last)
+
+            // now just replace the last word with the last suggestion!
+            const span = document.createElement("span")
+            span.innerHTML = [...words.slice(0, -1), last].join("")
+            container.innerHTML = ""
+            container.appendChild(span)
+
+          } else {
+            container.innerHTML = ""
+          }
+
+          // now, find query positions
+
+        })
+
       /* Apply search results */
       return rx$
         .pipe(
           filter(isSearchResultMessage),
-          map(({ data }) => data),
+          map(({ data }) => data.items),
           applySearchResult(el, { query$, ready$, fetch$ }),
           startWith([])
         )
