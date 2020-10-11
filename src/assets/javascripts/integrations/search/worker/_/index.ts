@@ -64,7 +64,7 @@ interface SetupOptions {
  * @return Search index
  */
 function setupSearchIndex(
-  { config, docs, index }: SearchIndex
+  { config, docs, index, options }: SearchIndex
 ): SearchIndex {
 
   /* Override default language with value from translation */
@@ -76,12 +76,16 @@ function setupSearchIndex(
     config.separator = translate("search.config.separator")
 
   /* Set pipeline from translation */
-  const pipeline = translate("search.options.pipeline")
+  const pipeline = translate("search.config.pipeline")
     .split(/\s*,\s*/)
     .filter(Boolean) as SearchPipeline
 
   /* Return search index after defaulting */
-  return { config, docs, index, options: { pipeline } }
+  return { config, docs, index, options: {
+    ...options,
+    pipeline,
+    suggestions: true // TODO: make this configurable
+  } }
 }
 
 /* ----------------------------------------------------------------------------

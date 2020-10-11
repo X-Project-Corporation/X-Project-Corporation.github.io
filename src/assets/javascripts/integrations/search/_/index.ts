@@ -57,8 +57,6 @@ export interface SearchIndexDocument {
   text: string                         /* Document text */
 }
 
-/* ------------------------------------------------------------------------- */
-
 /**
  * Search index
  *
@@ -84,19 +82,26 @@ export interface SearchMetadata {
   terms: SearchQueryTerms              /* Search query terms */
 }
 
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Search result document
+ */
+export type SearchResultDocument = SearchDocument & SearchMetadata
+
 /**
  * Search result item
  */
-export type SearchResultItem = Array<
-  SearchDocument & SearchMetadata
-> // tslint:disable-line
+export type SearchResultItem = SearchResultDocument[]
+
+/* ------------------------------------------------------------------------- */
 
 /**
  * Search result
  */
 export interface SearchResult {
-  items: SearchResultItem[]            /* Search result items */ // TODO: rename stuff...
-  suggestions: string[]                /* Search result suggestions */
+  items: SearchResultItem[]            /* Search result items */
+  suggestions?: string[]               /* Search suggestions */
 }
 
 /* ----------------------------------------------------------------------------
@@ -151,11 +156,19 @@ export class Search {
   protected index: lunr.Index
 
   /**
+   * Search options
+   */
+  protected options: SearchOptions
+
+  /**
    * Create the search integration
    *
    * @param data - Search index
    */
   public constructor({ config, docs, index, options }: SearchIndex) {
+    this.options = options
+
+    /* Set up document map and highlighter factory */
     this.documents = setupSearchDocumentMap(docs)
     this.highlight = setupSearchHighlighter(config)
 
@@ -232,7 +245,7 @@ export class Search {
           ))
 
         /* Perform search and post-process results */
-        const groups = this.index.search(`${query}*`)
+        const items = this.index.search(`${query}*`)
 
           /* Apply post-query boosts based on title and search query terms */
           .reduce<SearchResultItem>((results, { ref, score, matchData }) => {
@@ -274,34 +287,38 @@ export class Search {
             return results
           }, new Map<string, SearchResultItem>())
 
-        // Search for suggestions
-        const suggest = this.index.search(
-          `+title:${clauses.map(({ term }) => term).join("* +title:")}*`
-        )
-        const suggestions: string[] = []
-        if (suggest.length) {
-          // 1. take the best match
-          const [best] = suggest
+        /* Generate search suggestions, if desired */
+        let suggestions: string[] | undefined
+        if (this.options.suggestions) {
+          const titles = this.index.query(builder => {
+            for (const clause of clauses)
+              builder.term(clause.term, {
+                fields: ["title"],
+                presence: lunr.Query.presence.REQUIRED,
+                wildcard: lunr.Query.wildcard.TRAILING
+              })
+          })
 
-          const terms = Object.keys(best.matchData.metadata)
-          suggestions.push(...terms)
+          /* Retrieve suggestions for best match */
+          suggestions = titles.length
+            ? Object.keys(titles[0].matchData.metadata)
+            : []
         }
 
-        /* Expand grouped search results */
+        /* Return items and suggestions */
         return {
-          items: [...groups.values()],
-          suggestions
+          items: [...items.values()],
+          ...typeof suggestions !== "undefined" && { suggestions }
         }
 
       /* Log errors to console (for now) */
       } catch (err) {
-        console.log(err)
         // tslint:disable-next-line no-console
         console.warn(`Invalid query: ${query} – see https://bit.ly/2s3ChXG`)
       }
     }
 
     /* Return nothing in case of error or empty query */
-    return { items: [], suggestions: [] }
+    return { items: [] }
   }
 }

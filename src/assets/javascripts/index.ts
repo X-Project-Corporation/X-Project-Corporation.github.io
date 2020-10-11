@@ -34,7 +34,8 @@ import {
   from,
   defer,
   of,
-  NEVER
+  NEVER,
+  asyncScheduler
 } from "rxjs"
 import {
   delay,
@@ -49,7 +50,8 @@ import {
   map,
   bufferCount,
   distinctUntilKeyChanged,
-  mapTo
+  mapTo,
+  distinctUntilChanged
 } from "rxjs/operators"
 
 import {
@@ -173,6 +175,7 @@ export function initialize(config: unknown) {
     "search-query",                    /* Search input */
     "search-reset",                    /* Search reset */
     "search-result",                   /* Search results */
+    "search-suggest",                  /* Search suggestions */
     "skip",                            /* Skip link */
     "tabs",                            /* Tabs */
     "toc"                              /* Table of contents */
@@ -247,11 +250,11 @@ export function initialize(config: unknown) {
                 .pipe(
                   switchMap(base => fetch(`${base}/search/search_index.json`, {
                     credentials: "same-origin"
-                  }).then(res => res.json())) // SearchIndex
+                  }).then(res => res.json()))
                 )
         )
 
-        // TODO: clean up hacky implementation
+        // TODO: clean up implementation
         if (config.features.includes("search.highlight"))
           combineLatest([location$, index$])
             .subscribe(([url, index]) => {
@@ -334,6 +337,66 @@ export function initialize(config: unknown) {
             mountSearchResult(worker, { query$ }),
             shareReplay({ bufferSize: 1, refCount: true })
           )
+
+        // Experimental search suggestions...
+        if (config.features.includes("search.suggest")) {
+          result$
+            .pipe(
+              withLatestFrom(query$)
+            )
+              .subscribe(([{ suggestions }, query]) => {
+                if (typeof suggestions !== "undefined") {
+                  const container = document.querySelector(".md-search__suggest")!
+
+                  // split using the tokenizer separator... for now just use the default
+                  // wrapped in parenthesis, so we know how much whitespace is stripped.
+                  const words = query.value.split(/([\s-]+)/)
+
+                  // now, take the last word and check how much we entered of it
+                  if (suggestions.length) {
+                    const [last] = suggestions.slice(-1)
+                    if (
+                      suggestions.length >= query.value.split(/[\s-]+/).length &&
+                      last.startsWith(words[words.length - 1])
+                    ) {
+                      // now just replace the last word with the last suggestion!
+                      const span = document.createElement("span")
+                      span.innerHTML = [...words.slice(0, -1), last].join("")
+                      container.innerHTML = ""
+                      container.appendChild(span)
+                    } else {
+                      container.innerHTML = ""
+                    }
+                  } else {
+                    container.innerHTML = ""
+                  }
+                }
+              })
+
+          useComponent("search-query")
+            .pipe(
+              switchMap(el => fromEvent(el, "keydown")
+                .pipe(
+                  observeOn(asyncScheduler),
+                  map(() => el.value),
+                  distinctUntilChanged(),
+                  map(() => {
+                    const span = document.querySelector(".md-search__suggest span")
+                    if (span) {
+                      if (
+                        !span.innerHTML.startsWith(el.value) ||
+                        el.value.endsWith(" ") ||
+                        el.value.length === 0
+                      ) {
+                        span.innerHTML = ""
+                      }
+                    }
+                  })
+                )
+              )
+            )
+              .subscribe()
+        }
 
         return useComponent("search")
           .pipe(

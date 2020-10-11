@@ -60,7 +60,7 @@ export type SearchStatus =
 export interface Search {
   status: SearchStatus                 /* Search status */
   query: SearchQuery                   /* Search query */
-  result: SearchResult[]               /* Search result list */
+  result: SearchResult                 /* Search result */
 }
 
 /* ----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ export interface Search {
 interface MountOptions {
   query$: Observable<SearchQuery>      /* Search query observable */
   reset$: Observable<void>             /* Search reset observable */
-  result$: Observable<SearchResult[]>  /* Search result observable */
+  result$: Observable<SearchResult>    /* Search result observable */
 }
 
 /* ----------------------------------------------------------------------------

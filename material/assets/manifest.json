@@ -1,8 +1,8 @@
 {
-  "assets/javascripts/bundle.js": "assets/javascripts/bundle.b42f3d8b.min.js",
-  "assets/javascripts/vendor.js": "assets/javascripts/vendor.87ecc580.min.js",
-  "assets/javascripts/worker/search.js": "assets/javascripts/worker/search.d5fbd928.min.js",
-  "assets/stylesheets/main.css": "assets/stylesheets/main.7346da6f.min.css",
-  "assets/stylesheets/overrides.css": "assets/stylesheets/overrides.fcb0d5fb.min.css",
-  "assets/stylesheets/palette.css": "assets/stylesheets/palette.144cb1e2.min.css"
+  "assets/javascripts/bundle.js": "assets/javascripts/bundle.a5ac9bd8.min.js",
+  "assets/javascripts/vendor.js": "assets/javascripts/vendor.4d7724a9.min.js",
+  "assets/javascripts/worker/search.js": "assets/javascripts/worker/search.bd8089ca.min.js",
+  "assets/stylesheets/main.css": "assets/stylesheets/main.144331bf.min.css",
+  "assets/stylesheets/overrides.css": "assets/stylesheets/overrides.064ba9cd.min.css",
+  "assets/stylesheets/palette.css": "assets/stylesheets/palette.4cb0898d.min.css"
 }

@@ -53,6 +53,7 @@ theme:
   features:
     - navigation.tabs
     - search.highlight
+    - search.suggest
   palette:
     - scheme: default
       primary: indigo

@@ -44,4 +44,5 @@ export type SearchPipeline = SearchPipelineFn[]
  */
 export interface SearchOptions {
   pipeline: SearchPipeline             /* Search pipeline */
+  suggestions: boolean                 /* Search suggestions */
 }

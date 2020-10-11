@@ -34,6 +34,7 @@ export type Feature =
   | "navigation.tabs"                  /* Tabs navigation */
   | "navigation.instant"               /* Instant loading */
   | "search.highlight"                 /* Search highlighting */
+  | "search.suggest"                   /* Search suggestions */
 
 /* ------------------------------------------------------------------------- */
 
