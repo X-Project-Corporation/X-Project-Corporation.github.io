@@ -323,6 +323,7 @@ $md-toggle__search--checked:
     height: 100%;
     padding: 0 px2rem(44px) 0 px2rem(72px);
     color: var(--md-default-fg-color--lighter);
+    font-size: px2rem(18px);
 
     // Adjust for right-to-left languages
     [dir="rtl"] & {
@@ -339,11 +340,6 @@ $md-toggle__search--checked:
         padding-right: px2rem(44px);
       }
     }
-
-    // // Search suggestion items
-    // span {
-
-    // }
   }
 
   // Search icon
