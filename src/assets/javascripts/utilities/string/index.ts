@@ -33,7 +33,7 @@ type TranslateKey =
   | "clipboard.copy"                   /* Copy to clipboard */
   | "clipboard.copied"                 /* Copied to clipboard */
   | "search.config.lang"               /* Search language */
-  | ""           /* Search pipeline */
+  | "search.config.pipeline"           /* Search pipeline */
   | "search.config.separator"          /* Search separator */
   | "search.placeholder"               /* Search */
   | "search.result.placeholder"        /* Type to start searching */
