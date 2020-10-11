@@ -28,6 +28,7 @@ import {
 } from "rxjs"
 import {
   finalize,
+  map,
   mapTo,
   observeOn,
   scan,
@@ -82,16 +83,22 @@ export function applySearchResult(
   const list = getElementOrThrow(".md-search-result__list", el)
   const meta = getElementOrThrow(".md-search-result__meta", el)
   return pipe(
-    withLatestFrom(query$, ready$),
-    switchMap(([result, query]) => {
-      const { items } = result
 
-      /* Render search result metadata */
+    /* Apply search result metadata */
+    withLatestFrom(query$, ready$),
+    map(([result, query]) => {
+      const { items } = result
       if (query.value) {
         setSearchResultMeta(meta, items.length)
       } else {
         resetSearchResultMeta(meta)
       }
+      return result
+    }),
+
+    /* Apply search result list */
+    switchMap(result => {
+      const { items } = result
 
       /* Render search result items */
       const thresholds = [...items.map(([best]) => best.score), 0]
