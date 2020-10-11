@@ -29,6 +29,7 @@ import {
   SearchHighlightFactoryFn,
   setupSearchHighlighter
 } from "../highlighter"
+import { SearchOptions } from "../options"
 import {
   SearchQueryTerms,
   getSearchQueryTerms,
@@ -59,31 +60,18 @@ export interface SearchIndexDocument {
 /* ------------------------------------------------------------------------- */
 
 /**
- * Search index pipeline function
- */
-export type SearchIndexPipelineFn =
-  | "trimmer"                          /* Trimmer */
-  | "stopWordFilter"                   /* Stop word filter */
-  | "stemmer"                          /* Stemmer */
-
-/**
- * Search index pipeline
- */
-export type SearchIndexPipeline = SearchIndexPipelineFn[]
-
-/* ------------------------------------------------------------------------- */
-
-/**
  * Search index
  *
  * This interfaces describes the format of the `search_index.json` file which
- * is automatically built by the MkDocs search plugin.
+ * is automatically built and provided by the MkDocs search plugin. However,
+ * note that Material for MkDocs adds some further configuration options for
+ * search, which are added as `options` by the theme.
  */
 export interface SearchIndex {
   config: SearchIndexConfig            /* Search index configuration */
   docs: SearchIndexDocument[]          /* Search index documents */
   index?: object                       /* Prebuilt index */
-  pipeline?: SearchIndexPipeline       /* Search index pipeline */
+  options: SearchOptions               /* Search options */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -167,7 +155,7 @@ export class Search {
    *
    * @param data - Search index
    */
-  public constructor({ config, docs, pipeline, index }: SearchIndex) {
+  public constructor({ config, docs, index, options }: SearchIndex) {
     this.documents = setupSearchDocumentMap(docs)
     this.highlight = setupSearchHighlighter(config)
 
@@ -188,7 +176,7 @@ export class Search {
         /* Compute functions to be removed from the pipeline */
         const fns = difference([
           "trimmer", "stopWordFilter", "stemmer"
-        ], pipeline!)
+        ], options.pipeline)
 
         /* Remove functions from the pipeline for registered languages */
         for (const lang of config.lang.map(language => (

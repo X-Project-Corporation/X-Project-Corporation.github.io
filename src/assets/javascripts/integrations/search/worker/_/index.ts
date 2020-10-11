@@ -31,7 +31,8 @@ import {
 import { WorkerHandler, watchWorker } from "browser"
 import { translate } from "utilities"
 
-import { SearchIndex, SearchIndexPipeline } from "../../_"
+import { SearchIndex } from "../../_"
+import { SearchPipeline } from "../../options"
 import {
   SearchMessage,
   SearchMessageType,
@@ -75,12 +76,12 @@ function setupSearchIndex(
     config.separator = translate("search.config.separator")
 
   /* Set pipeline from translation */
-  const pipeline = translate("search.config.pipeline")
+  const pipeline = translate("search.options.pipeline")
     .split(/\s*,\s*/)
-    .filter(Boolean) as SearchIndexPipeline
+    .filter(Boolean) as SearchPipeline
 
   /* Return search index after defaulting */
-  return { config, docs, index, pipeline }
+  return { config, docs, index, options: { pipeline } }
 }
 
 /* ----------------------------------------------------------------------------

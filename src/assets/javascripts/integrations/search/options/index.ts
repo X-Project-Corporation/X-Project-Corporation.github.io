@@ -20,9 +20,28 @@
  * IN THE SOFTWARE.
  */
 
-export * from "./_"
-export * from "./document"
-export * from "./highlighter"
-export * from "./options"
-export * from "./query"
-export * from "./worker"
+/* ----------------------------------------------------------------------------
+ * Types
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Search pipeline function
+ */
+export type SearchPipelineFn =
+  | "trimmer"                          /* Trimmer */
+  | "stopWordFilter"                   /* Stop word filter */
+  | "stemmer"                          /* Stemmer */
+
+/**
+ * Search pipeline
+ */
+export type SearchPipeline = SearchPipelineFn[]
+
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Search options
+ */
+export interface SearchOptions {
+  pipeline: SearchPipeline             /* Search pipeline */
+}
