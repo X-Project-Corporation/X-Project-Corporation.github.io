@@ -305,9 +305,9 @@ export function initialize(config: unknown) {
               }
             })
 
-            return of(setupSearchWorker(config.search.worker, {
-              base$, index$
-            }))
+          return of(setupSearchWorker(config.search.worker, {
+            base$, index$
+          }))
       }))
     )
 

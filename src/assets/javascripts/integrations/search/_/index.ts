@@ -245,10 +245,10 @@ export class Search {
           ))
 
         /* Perform search and post-process results */
-        const items = this.index.search(`${query}*`)
+        const groups = this.index.search(`${query}*`)
 
           /* Apply post-query boosts based on title and search query terms */
-          .reduce<SearchResultItem>((results, { ref, score, matchData }) => {
+          .reduce<SearchResultItem>((items, { ref, score, matchData }) => {
             const document = this.documents.get(ref)
             if (typeof document !== "undefined") {
               const { location, title, text, parent } = document
@@ -261,7 +261,7 @@ export class Search {
 
               /* Highlight title and text and apply post-query boosts */
               const boost = +!parent + +Object.values(terms).every(t => t)
-              results.push({
+              items.push({
                 location,
                 title: highlight(title),
                 text: highlight(text),
@@ -269,22 +269,22 @@ export class Search {
                 terms
               })
             }
-            return results
+            return items
           }, [])
 
           /* Sort search results again after applying boosts */
           .sort((a, b) => b.score - a.score)
 
           /* Group search results by page */
-          .reduce((results, result) => {
+          .reduce((items, result) => {
             const document = this.documents.get(result.location)
             if (typeof document !== "undefined") {
               const ref = "parent" in document
                 ? document.parent!.location
                 : document.location
-              results.set(ref, [...results.get(ref) || [], result])
+              items.set(ref, [...items.get(ref) || [], result])
             }
-            return results
+            return items
           }, new Map<string, SearchResultItem>())
 
         /* Generate search suggestions, if desired */
@@ -307,12 +307,12 @@ export class Search {
 
         /* Return items and suggestions */
         return {
-          items: [...items.values()],
+          items: [...groups.values()],
           ...typeof suggestions !== "undefined" && { suggestions }
         }
 
       /* Log errors to console (for now) */
-      } catch (err) {
+      } catch {
         // tslint:disable-next-line no-console
         console.warn(`Invalid query: ${query} – see https://bit.ly/2s3ChXG`)
       }

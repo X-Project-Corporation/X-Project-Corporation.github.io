@@ -25,7 +25,6 @@ import {
   distinctUntilChanged,
   filter,
   map,
-  mapTo,
   switchMap
 } from "rxjs/operators"
 
@@ -33,7 +32,6 @@ import { WorkerHandler, watchElementOffset } from "browser"
 import {
   SearchMessage,
   SearchResult,
-  isSearchReadyMessage,
   isSearchResultMessage
 } from "integrations"
 
@@ -70,13 +68,6 @@ export function mountSearchResult(
     switchMap(el => {
       const container = el.parentElement!
 
-      /* Compute if search is ready */
-      const ready$ = rx$
-        .pipe(
-          filter(isSearchReadyMessage),
-          mapTo(true)
-        )
-
       /* Compute whether there are more search results to fetch */
       const fetch$ = watchElementOffset(container)
         .pipe(
@@ -92,7 +83,7 @@ export function mountSearchResult(
         .pipe(
           filter(isSearchResultMessage),
           map(({ data }) => data),
-          applySearchResult(el, { query$, ready$, fetch$ })
+          applySearchResult(el, { query$, fetch$ })
         )
     })
   )
