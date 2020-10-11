@@ -141,9 +141,11 @@ For other installation methods, configuration options, and a demo, visit
 
 * **Companies** — 
   [AWS](https://awssecworkshops.com/),
+  [Binance](https://docs.binance.org/),
   [Datadog](https://datadoghq.dev/integrations-core/),
   [ING](https://ing-bank.github.io/baker/),
   [Lyft](https://lyft.github.io/amundsen/),
+  [Microsoft](https://www.electionguard.vote/),
   [Netflix](https://netflix.github.io/titus/),
   [Salesforce](https://policy-sentry.readthedocs.io/en/latest/),
   [SAP](https://sap.github.io/ui5-tooling/),
