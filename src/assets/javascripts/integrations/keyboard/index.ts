@@ -109,10 +109,11 @@ export function setupKeyboard(): Observable<Keyboard> {
       filter(({ mode }) => mode === "search"),
       withLatestFrom(
         useComponent("search-query"),
-        useComponent("search-result")
+        useComponent("search-result"),
+        useComponent("search-suggest")
       )
     )
-      .subscribe(([key, query, result]) => {
+      .subscribe(([key, query, result, suggest]) => {
         const active = getActiveElement()
         switch (key.type) {
 
@@ -149,6 +150,16 @@ export function setupKeyboard(): Observable<Keyboard> {
 
             /* Prevent scrolling of page */
             key.claim()
+            break
+
+          /* Right arrow: accept current suggestion */
+          case "ArrowRight":
+            const suggestion = suggest.innerText
+            if (
+              suggestion.length &&
+              query.selectionStart === query.value.length
+            )
+              query.value = suggest.innerText
             break
 
           /* All other keys: hand to search query */

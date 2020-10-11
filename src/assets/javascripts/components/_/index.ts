@@ -49,6 +49,7 @@ export type Component =
   | "search-query"                     /* Search input */
   | "search-reset"                     /* Search reset */
   | "search-result"                    /* Search results */
+  | "search-suggest"                   /* Search suggestions */
   | "skip"                             /* Skip link */
   | "tabs"                             /* Tabs */
   | "toc"                              /* Table of contents */

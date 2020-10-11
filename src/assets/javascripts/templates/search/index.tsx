@@ -20,11 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import {
-  SearchDocument,
-  SearchMetadata,
-  SearchResult
-} from "integrations/search"
+import { SearchResultDocument, SearchResultItem } from "integrations/search"
 import { h, translate, truncate } from "utilities"
 
 /* ----------------------------------------------------------------------------
@@ -44,15 +40,15 @@ const enum Flag {
  * ------------------------------------------------------------------------- */
 
 /**
- * Render a search document
+ * Render a search result document
  *
- * @param section - Search document
+ * @param document - Search document
  * @param flag - Render flags
  *
  * @return Element
  */
-function renderSearchDocument(
-  document: SearchDocument & SearchMetadata, flag: Flag
+function renderSearchResultDocument(
+  document: SearchResultDocument, flag: Flag
 ) {
   const parent = flag & Flag.PARENT
   const teaser = flag & Flag.TEASER
@@ -70,10 +66,11 @@ function renderSearchDocument(
     .reduce((highlight, [value, match]) => (
       `${highlight} ${match ? value : ""}`
     ), "")
+    .replace(/%20/g, "+")
   )
 
   /* Render article or section, depending on flags */
-  const href = `${url}`.replace(/%20/g, "+")
+  const href = `${url}`
   return (
     <a href={href} class="md-search-result__link" tabIndex={-1}>
       <article
@@ -105,17 +102,17 @@ function renderSearchDocument(
  * ------------------------------------------------------------------------- */
 
 /**
- * Render a search result
+ * Render a search result item
  *
- * @param result - Search result
+ * @param item - Search result item
  * @param threshold - Score threshold
  *
  * @return Element
  */
-export function renderSearchResult(
-  result: SearchResult, threshold: number = Infinity
+export function renderSearchResultItem(
+  item: SearchResultItem, threshold: number = Infinity
 ) {
-  const docs = [...result]
+  const docs = [...item]
 
   /* Find and extract parent article */
   const parent = docs.findIndex(doc => !doc.location.includes("#"))
@@ -132,8 +129,8 @@ export function renderSearchResult(
 
   /* Render children */
   const children = [
-    renderSearchDocument(article, Flag.PARENT | +(!parent && index === 0)),
-    ...best.map(section => renderSearchDocument(section, Flag.TEASER)),
+    renderSearchResultDocument(article, Flag.PARENT | +(!parent && index === 0)),
+    ...best.map(section => renderSearchResultDocument(section, Flag.TEASER)),
     ...more.length ? [
       <details class="md-search-result__more">
         <summary tabIndex={-1}>
@@ -142,7 +139,9 @@ export function renderSearchResult(
             : translate("search.result.more.other", more.length)
           }
         </summary>
-        {...more.map(section => renderSearchDocument(section, Flag.TEASER))}
+        {...more.map(section => (
+          renderSearchResultDocument(section, Flag.TEASER)
+        ))}
       </details>
     ] : []
   ]

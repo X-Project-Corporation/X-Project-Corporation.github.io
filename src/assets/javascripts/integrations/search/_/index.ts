@@ -29,6 +29,7 @@ import {
   SearchHighlightFactoryFn,
   setupSearchHighlighter
 } from "../highlighter"
+import { SearchOptions } from "../options"
 import {
   SearchQueryTerms,
   getSearchQueryTerms,
@@ -56,34 +57,19 @@ export interface SearchIndexDocument {
   text: string                         /* Document text */
 }
 
-/* ------------------------------------------------------------------------- */
-
-/**
- * Search index pipeline function
- */
-export type SearchIndexPipelineFn =
-  | "trimmer"                          /* Trimmer */
-  | "stopWordFilter"                   /* Stop word filter */
-  | "stemmer"                          /* Stemmer */
-
-/**
- * Search index pipeline
- */
-export type SearchIndexPipeline = SearchIndexPipelineFn[]
-
-/* ------------------------------------------------------------------------- */
-
 /**
  * Search index
  *
  * This interfaces describes the format of the `search_index.json` file which
- * is automatically built by the MkDocs search plugin.
+ * is automatically built and provided by the MkDocs search plugin. However,
+ * note that Material for MkDocs adds some further configuration options for
+ * search, which are added as `options` by the theme.
  */
 export interface SearchIndex {
   config: SearchIndexConfig            /* Search index configuration */
   docs: SearchIndexDocument[]          /* Search index documents */
   index?: object                       /* Prebuilt index */
-  pipeline?: SearchIndexPipeline       /* Search index pipeline */
+  options: SearchOptions               /* Search options */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -99,11 +85,24 @@ export interface SearchMetadata {
 /* ------------------------------------------------------------------------- */
 
 /**
+ * Search result document
+ */
+export type SearchResultDocument = SearchDocument & SearchMetadata
+
+/**
+ * Search result item
+ */
+export type SearchResultItem = SearchResultDocument[]
+
+/* ------------------------------------------------------------------------- */
+
+/**
  * Search result
  */
-export type SearchResult = Array<
-  SearchDocument & SearchMetadata
-> // tslint:disable-line
+export interface SearchResult {
+  items: SearchResultItem[]            /* Search result items */
+  suggestions?: string[]               /* Search suggestions */
+}
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -157,11 +156,19 @@ export class Search {
   protected index: lunr.Index
 
   /**
+   * Search options
+   */
+  protected options: SearchOptions
+
+  /**
    * Create the search integration
    *
    * @param data - Search index
    */
-  public constructor({ config, docs, pipeline, index }: SearchIndex) {
+  public constructor({ config, docs, index, options }: SearchIndex) {
+    this.options = options
+
+    /* Set up document map and highlighter factory */
     this.documents = setupSearchDocumentMap(docs)
     this.highlight = setupSearchHighlighter(config)
 
@@ -182,7 +189,7 @@ export class Search {
         /* Compute functions to be removed from the pipeline */
         const fns = difference([
           "trimmer", "stopWordFilter", "stemmer"
-        ], pipeline!)
+        ], options.pipeline)
 
         /* Remove functions from the pipeline for registered languages */
         for (const lang of config.lang.map(language => (
@@ -226,7 +233,7 @@ export class Search {
    *
    * @return Search results
    */
-  public search(query: string): SearchResult[] {
+  public search(query: string): SearchResult {
     if (query) {
       try {
         const highlight = this.highlight(query)
@@ -238,10 +245,10 @@ export class Search {
           ))
 
         /* Perform search and post-process results */
-        const groups = this.index.search(`${query}*`)
+        const items = this.index.search(`${query}*`)
 
           /* Apply post-query boosts based on title and search query terms */
-          .reduce<SearchResult>((results, { ref, score, matchData }) => {
+          .reduce<SearchResultItem>((results, { ref, score, matchData }) => {
             const document = this.documents.get(ref)
             if (typeof document !== "undefined") {
               const { location, title, text, parent } = document
@@ -278,19 +285,40 @@ export class Search {
               results.set(ref, [...results.get(ref) || [], result])
             }
             return results
-          }, new Map<string, SearchResult>())
+          }, new Map<string, SearchResultItem>())
 
-        /* Expand grouped search results */
-        return [...groups.values()]
+        /* Generate search suggestions, if desired */
+        let suggestions: string[] | undefined
+        if (this.options.suggestions) {
+          const titles = this.index.query(builder => {
+            for (const clause of clauses)
+              builder.term(clause.term, {
+                fields: ["title"],
+                presence: lunr.Query.presence.REQUIRED,
+                wildcard: lunr.Query.wildcard.TRAILING
+              })
+          })
+
+          /* Retrieve suggestions for best match */
+          suggestions = titles.length
+            ? Object.keys(titles[0].matchData.metadata)
+            : []
+        }
+
+        /* Return items and suggestions */
+        return {
+          items: [...items.values()],
+          ...typeof suggestions !== "undefined" && { suggestions }
+        }
 
       /* Log errors to console (for now) */
-      } catch {
+      } catch (err) {
         // tslint:disable-next-line no-console
         console.warn(`Invalid query: ${query} – see https://bit.ly/2s3ChXG`)
       }
     }
 
     /* Return nothing in case of error or empty query */
-    return []
+    return { items: [] }
   }
 }

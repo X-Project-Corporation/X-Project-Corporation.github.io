@@ -31,7 +31,8 @@ import {
 import { WorkerHandler, watchWorker } from "browser"
 import { translate } from "utilities"
 
-import { SearchIndex, SearchIndexPipeline } from "../../_"
+import { SearchIndex } from "../../_"
+import { SearchPipeline } from "../../options"
 import {
   SearchMessage,
   SearchMessageType,
@@ -63,7 +64,7 @@ interface SetupOptions {
  * @return Search index
  */
 function setupSearchIndex(
-  { config, docs, index }: SearchIndex
+  { config, docs, index, options }: SearchIndex
 ): SearchIndex {
 
   /* Override default language with value from translation */
@@ -77,10 +78,14 @@ function setupSearchIndex(
   /* Set pipeline from translation */
   const pipeline = translate("search.config.pipeline")
     .split(/\s*,\s*/)
-    .filter(Boolean) as SearchIndexPipeline
+    .filter(Boolean) as SearchPipeline
 
   /* Return search index after defaulting */
-  return { config, docs, index, pipeline }
+  return { config, docs, index, options: {
+    ...options,
+    pipeline,
+    suggestions: true // TODO: make this configurable
+  } }
 }
 
 /* ----------------------------------------------------------------------------
@@ -111,7 +116,7 @@ export function setupSearchWorker(
       withLatestFrom(base$),
       map(([message, base]) => {
         if (isSearchResultMessage(message)) {
-          for (const result of message.data)
+          for (const result of message.data.items)
             for (const document of result)
               document.location = `${base}/${document.location}`
         }

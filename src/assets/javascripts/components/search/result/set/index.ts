@@ -67,15 +67,15 @@ export function resetSearchResultMeta(
 /* ------------------------------------------------------------------------- */
 
 /**
- * Add an element to the search result list
+ * Add an item to the search result list
  *
  * @param el - Search result list element
- * @param child - Search result element
+ * @param item - Search result item element
  */
 export function addToSearchResultList(
-  el: HTMLElement, child: Element
+  el: HTMLElement, item: Element
 ): void {
-  el.appendChild(child)
+  el.appendChild(item)
 }
 
 /**

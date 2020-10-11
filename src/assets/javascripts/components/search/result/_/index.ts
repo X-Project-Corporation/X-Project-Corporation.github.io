@@ -26,7 +26,6 @@ import {
   filter,
   map,
   mapTo,
-  startWith,
   switchMap
 } from "rxjs/operators"
 
@@ -66,7 +65,7 @@ interface MountOptions {
  */
 export function mountSearchResult(
   { rx$ }: WorkerHandler<SearchMessage>, { query$ }: MountOptions
-): OperatorFunction<HTMLElement, SearchResult[]> {
+): OperatorFunction<HTMLElement, SearchResult> {
   return pipe(
     switchMap(el => {
       const container = el.parentElement!
@@ -93,8 +92,7 @@ export function mountSearchResult(
         .pipe(
           filter(isSearchResultMessage),
           map(({ data }) => data),
-          applySearchResult(el, { query$, ready$, fetch$ }),
-          startWith([])
+          applySearchResult(el, { query$, ready$, fetch$ })
         )
     })
   )

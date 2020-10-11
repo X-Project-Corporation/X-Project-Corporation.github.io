@@ -220,10 +220,29 @@ $md-toggle__search--checked:
   // Search form
   &__form {
     position: relative;
+    z-index: 2;
+    height: px2rem(48px);
+    background-color: var(--md-default-bg-color);
+    transition:
+      color            250ms,
+      background-color 250ms;
 
     // [tablet landscape +]: Header-embedded search
     @include break-from-device(tablet landscape) {
+      height: px2rem(36px);
+      background-color: hsla(0, 0%, 0%, 0.26);
       border-radius: px2rem(2px);
+
+      // Hovered search field
+      &:hover {
+        background-color: hsla(0, 0%, 100%, 0.12);
+      }
+    }
+
+    // Set light background on active search field
+    #{$md-toggle__search--checked} & {
+      background-color: var(--md-default-bg-color);
+      border-radius: px2rem(2px) px2rem(2px) 0 0;
     }
   }
 
@@ -231,12 +250,12 @@ $md-toggle__search--checked:
   &__input {
     position: relative;
     z-index: 2;
+    width: 100%;
+    height: 100%;
     padding: 0 px2rem(44px) 0 px2rem(72px);
+    font-size: px2rem(18px);
     text-overflow: ellipsis;
-    background-color: var(--md-default-bg-color);
-    transition:
-      color            250ms,
-      background-color 250ms;
+    background: transparent;
 
     // Adjust for right-to-left languages
     [dir="rtl"] & {
@@ -259,22 +278,11 @@ $md-toggle__search--checked:
       display: none;
     }
 
-    // [tablet portrait -]: Full-screen search bar
-    @include break-to-device(tablet portrait) {
-      width: 100%;
-      height: px2rem(48px);
-      font-size: px2rem(18px);
-    }
-
     // [tablet landscape +]: Header-embedded search
     @include break-from-device(tablet landscape) {
-      width: 100%;
-      height: px2rem(36px);
       padding-left: px2rem(44px);
       color: inherit;
       font-size: px2rem(16px);
-      background-color: hsla(0, 0%, 0%, 0.26);
-      border-radius: px2rem(2px);
 
       // Adjust for right-to-left languages
       [dir="rtl"] & {
@@ -291,17 +299,10 @@ $md-toggle__search--checked:
         color: var(--md-primary-bg-color--light);
       }
 
-      // Hovered search field
-      &:hover {
-        background-color: hsla(0, 0%, 100%, 0.12);
-      }
-
       // Set light background on active search field
       #{$md-toggle__search--checked} & {
         color: var(--md-default-fg-color);
         text-overflow: clip;
-        background-color: var(--md-default-bg-color);
-        border-radius: px2rem(2px) px2rem(2px) 0 0;
 
         // Search icon and placeholder color in active state
         + .md-search__icon,
@@ -310,6 +311,39 @@ $md-toggle__search--checked:
         }
       }
     }
+  }
+
+  // Search suggestions
+  &__suggest {
+    position: absolute;
+    top: 0;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 0 px2rem(44px) 0 px2rem(72px);
+    color: var(--md-default-fg-color--lighter);
+
+    // Adjust for right-to-left languages
+    [dir="rtl"] & {
+      padding: 0 px2rem(72px) 0 px2rem(44px);
+    }
+
+    // [tablet landscape +]: Header-embedded search
+    @include break-from-device(tablet landscape) {
+      padding-left: px2rem(44px);
+      font-size: px2rem(16px);
+
+      // Adjust for right-to-left languages
+      [dir="rtl"] & {
+        padding-right: px2rem(44px);
+      }
+    }
+
+    // // Search suggestion items
+    // span {
+
+    // }
   }
 
   // Search icon
@@ -721,8 +755,8 @@ $md-toggle__search--checked:
 
     // Search term highlighting
     mark {
+      text-decoration: underline;
       background-color: transparent;
-      border-bottom: px2rem(1px) solid var(--md-accent-fg-color);
     }
   }
 

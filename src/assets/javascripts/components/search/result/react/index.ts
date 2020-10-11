@@ -28,7 +28,6 @@ import {
 } from "rxjs"
 import {
   finalize,
-  map,
   mapTo,
   observeOn,
   scan,
@@ -38,7 +37,7 @@ import {
 
 import { getElementOrThrow } from "browser"
 import { SearchResult } from "integrations/search"
-import { renderSearchResult } from "templates"
+import { renderSearchResultItem } from "templates"
 
 import { SearchQuery } from "../../query"
 import {
@@ -66,7 +65,7 @@ interface ApplyOptions {
  * ------------------------------------------------------------------------- */
 
 /**
- * Apply search results
+ * Apply search result
  *
  * This function will perform a lazy rendering of the search results, depending
  * on the vertical offset of the search result container. When the scroll offset
@@ -79,25 +78,23 @@ interface ApplyOptions {
  */
 export function applySearchResult(
   el: HTMLElement, { query$, ready$, fetch$ }: ApplyOptions
-): MonoTypeOperatorFunction<SearchResult[]> {
+): MonoTypeOperatorFunction<SearchResult> {
   const list = getElementOrThrow(".md-search-result__list", el)
   const meta = getElementOrThrow(".md-search-result__meta", el)
   return pipe(
-
-    /* Apply search result metadata */
     withLatestFrom(query$, ready$),
-    map(([result, query]) => {
+    switchMap(([result, query]) => {
+      const { items } = result
+
+      /* Render search result metadata */
       if (query.value) {
-        setSearchResultMeta(meta, result.length)
+        setSearchResultMeta(meta, items.length)
       } else {
         resetSearchResultMeta(meta)
       }
-      return result
-    }),
 
-    /* Apply search result list */
-    switchMap(result => {
-      const thresholds = [...result.map(([best]) => best.score), 0]
+      /* Render search result items */
+      const thresholds = [...items.map(([best]) => best.score), 0]
       return fetch$
         .pipe(
 
@@ -105,9 +102,9 @@ export function applySearchResult(
           observeOn(animationFrameScheduler),
           scan(index => {
             const container = el.parentElement!
-            while (index < result.length) {
-              addToSearchResultList(list, renderSearchResult(
-                result[index++], thresholds[index]
+            while (index < items.length) {
+              addToSearchResultList(list, renderSearchResultItem(
+                items[index++], thresholds[index]
               ))
               if (container.scrollHeight - container.offsetHeight > 16)
                 break
@@ -115,7 +112,7 @@ export function applySearchResult(
             return index
           }, 0),
 
-          /* Re-map to search result */
+          /* Re-map to search result items */
           mapTo(result),
 
           /* Reset on complete or error */
