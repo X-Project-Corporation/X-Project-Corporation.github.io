@@ -51,7 +51,8 @@ import {
   bufferCount,
   distinctUntilKeyChanged,
   mapTo,
-  distinctUntilChanged
+  distinctUntilChanged,
+  zipWith
 } from "rxjs/operators"
 
 import {
@@ -98,6 +99,7 @@ import {
   patchScripts
 } from "patches"
 import { isConfig, h } from "utilities"
+import { renderVersion } from "templates/version"
 
 /* ------------------------------------------------------------------------- */
 
@@ -602,6 +604,32 @@ export function initialize(config: unknown) {
         .subscribe(hide => {
           const header = getElement("[data-md-component=header]")
           header?.setAttribute("data-md-state", hide ? "hidden": "shadow")
+        })
+  }
+
+  // Render version selector and use mike as an engine
+  if (
+    typeof config.version !== "undefined" &&
+    config.version.method === "mike"
+  ) {
+    const version$ = base$
+      .pipe(
+        switchMap(base => fetch(`${base}/../versions.json`, {
+          credentials: "same-origin"
+        }).then(res => res.json())),
+        catchError(() => {
+          console.log("Couldn't load versions.json")
+          return NEVER
+        })
+      )
+
+    useComponent("header-title")
+      .pipe(
+        map(el => el.querySelector(".md-header-nav__topic")!),
+        zipWith(base$, version$)
+      )
+        .subscribe(([el, base, version]) => {
+          el.appendChild(renderVersion(base, version))
         })
   }
 

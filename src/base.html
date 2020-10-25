@@ -386,7 +386,8 @@
           features: {{ config.theme.features or [] | tojson }},
           search: Object.assign({
             worker: "{{ 'assets/javascripts/worker/search.js' | url }}"
-          }, typeof search !== "undefined" && search)
+          }, typeof search !== "undefined" && search),
+          version: {{ config.extra.version or {} | tojson }}
         })
       </script>
 

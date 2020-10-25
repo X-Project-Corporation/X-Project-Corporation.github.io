@@ -20,38 +20,16 @@
  * IN THE SOFTWARE.
  */
 
-import { SearchIndex, SearchTransformFn } from "integrations"
+import { h } from "utilities"
 
 /* ----------------------------------------------------------------------------
  * Types
  * ------------------------------------------------------------------------- */
 
-/**
- * Feature flags
- */
-export type Feature =
-  | "header.autohide"                  /* Hide header */
-  | "navigation.tabs"                  /* Tabs navigation */
-  | "navigation.instant"               /* Instant loading */
-  | "search.highlight"                 /* Search highlighting */
-  | "search.suggest"                   /* Search suggestions */
-
-/* ------------------------------------------------------------------------- */
-
-/**
- * Configuration
- */
-export interface Config {
-  base: string                         /* Base URL */
-  features: Feature[]                  /* Feature flags */
-  search: {
-    worker: string                     /* Worker URL */
-    index?: Promise<SearchIndex>       /* Promise resolving with index */
-    transform?: SearchTransformFn      /* Transformation function */
-  }
-  version?: {
-    method: string                     /* Versioning method */
-  }
+interface Version {
+  version: string
+  title: string,
+  alias: string[]
 }
 
 /* ----------------------------------------------------------------------------
@@ -59,18 +37,31 @@ export interface Config {
  * ------------------------------------------------------------------------- */
 
 /**
- * Ensure that the given value is a valid configuration
+ * Render a version dropdown
  *
- * We could use `jsonschema` or any other schema validation framework, but that
- * would just add more bloat to the bundle, so we'll keep it plain and simple.
+ * @param versions - Versions
  *
- * @param config - Configuration
- *
- * @return Test result
+ * @return Element
  */
-export function isConfig(config: any): config is Config {
-  return typeof config === "object"
-      && typeof config.base === "string"
-      && typeof config.features === "object"
-      && typeof config.search === "object"
+export function renderVersion(base: string, versions: Version[]) {
+  const [, current] = base.match(/([^\/]+)\/?$/)
+  const currentVersion =
+    versions.find(({ version }) => version === current) ||
+    versions[0]
+  return (
+    <div class="md-version">
+      <span class="md-version__current">
+        {currentVersion.version}
+      </span>
+      <ul class="md-version__list">
+        {versions.map(version => (
+          <li class="md-version__item">
+            <a class="md-version__link" href={`${base}/../${version.version}/`}>
+              {version.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
 }

@@ -130,7 +130,6 @@ hr {
 
 // Apply ellipsis in case of overflowing text
 .md-ellipsis {
-  display: block;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

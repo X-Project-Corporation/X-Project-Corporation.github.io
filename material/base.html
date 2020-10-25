@@ -34,7 +34,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.d54d664f.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.9447f978.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.ec60dfa4.min.css' | url }}">
@@ -181,7 +181,7 @@
     </div>
     {% block scripts %}
       <script src="{{ 'assets/javascripts/vendor.4d7724a9.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.9c1d3c04.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.0421a6ad.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",
@@ -210,7 +210,8 @@
           features: {{ config.theme.features or [] | tojson }},
           search: Object.assign({
             worker: "{{ 'assets/javascripts/worker/search.0f64ce30.min.js' | url }}"
-          }, typeof search !== "undefined" && search)
+          }, typeof search !== "undefined" && search),
+          version: {{ config.extra.version or {} | tojson }}
         })
       </script>
       {% for path in config["extra_javascript"] %}
