@@ -30,7 +30,7 @@
   overflow: auto;
   color: var(--md-primary-bg-color);
   background-color: var(--md-primary-fg-color);
-  transition: background 250ms;
+  transition: background-color 250ms;
 
   // Omit transitions, in case JavaScript is not available
   .no-js & {

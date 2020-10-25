@@ -76,44 +76,23 @@
     color: var(--md-accent-fg-color);
   }
 
-  // General scroll margin offset for anything that can be targeted. Browser
-  // support is pretty decent by now, and if we wait until Edge 79+ has more
-  // adoption, we can get rid of all anchor-correction hacks.
+  // Anchor offset
   :target {
     scroll-margin-top: px2rem(48px + 24px);
   }
 
-  // Correct anchor offset for link blurring
+  // Correct anchor offset for headlines
   @each $level, $delta in (
-    h1 h2 h3: 8px,
-    h4: 9px,
-    h5 h6: 12px,
+    h1 h2 h3: 4px,
+    h4: 3px
   ) {
-    %#{nth($level, 1)} {
-
-      // Reset, as we use the anchor-correction hack here.
-      &:target {
-        scroll-margin-top: initial;
-      }
-
-      // Un-targeted anchor
-      &::before {
-        display: block;
-        margin-top: -1 * px2rem($delta);
-        padding-top: px2rem($delta);
-        content: "";
-      }
-
-      // Targeted anchor (48px from header, 12px from sidebar offset)
-      &:target::before {
-        margin-top: -1 * px2rem(48px + 12px + $delta);
-        padding-top: px2rem(48px + 12px + $delta);
-      }
+    %#{nth($level, 1)}:target {
+      scroll-margin-top: px2rem(48px + 24px - $delta);
     }
 
     // Define levels
     @for $n from 1 through length($level) {
-      #{nth($level, $n)}[id] {
+      #{nth($level, $n)} {
         @extend %#{nth($level, 1)};
       }
     }

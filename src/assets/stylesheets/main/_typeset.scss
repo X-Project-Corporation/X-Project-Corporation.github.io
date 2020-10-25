@@ -308,7 +308,7 @@ kbd {
         padding: px2rem(4px) px2rem(6px);
         color: var(--md-default-bg-color);
         font-size: px2rem(14px);
-        background: var(--md-default-fg-color);
+        background-color: var(--md-default-fg-color);
         border-radius: px2rem(2px);
         content: attr(title);
       }
@@ -472,7 +472,7 @@ kbd {
     max-width: 100%;
     overflow: auto;
     font-size: px2rem(12.8px);
-    background: var(--md-default-bg-color);
+    background-color: var(--md-default-bg-color);
     border-radius: px2rem(2px);
     box-shadow:
       0 px2rem(4px) px2rem(10px) hsla(0, 0%, 0%, 0.05),

@@ -583,7 +583,7 @@ $md-toggle__search--checked:
   &__link {
     display: block;
     outline: none;
-    transition: background 250ms;
+    transition: background-color 250ms;
     scroll-snap-align: start;
 
     // Focused or hovered link
