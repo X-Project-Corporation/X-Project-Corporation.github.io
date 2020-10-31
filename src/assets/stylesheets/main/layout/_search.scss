@@ -324,6 +324,9 @@ $md-toggle__search--checked:
     padding: 0 px2rem(44px) 0 px2rem(72px);
     color: var(--md-default-fg-color--lighter);
     font-size: px2rem(18px);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 50ms;
 
     // Adjust for right-to-left languages
     [dir="rtl"] & {
@@ -339,6 +342,12 @@ $md-toggle__search--checked:
       [dir="rtl"] & {
         padding-right: px2rem(44px);
       }
+    }
+
+    // Show seach suggestions
+    #{$md-toggle__search--checked} & {
+      opacity: 1;
+      transition: opacity 300ms 100ms;
     }
   }
 
