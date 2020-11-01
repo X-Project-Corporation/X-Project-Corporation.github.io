@@ -24,7 +24,7 @@
 // Rules
 // ----------------------------------------------------------------------------
 
-// Tabs with outline
+// Navigation tabs
 .md-tabs {
   width: 100%;
   overflow: auto;
@@ -132,24 +132,16 @@
       // Adjust 1st level styles
       .md-nav--primary {
 
-        // Show title and remove spacing
-        .md-nav__title {
-          display: block;
-          padding: 0 px2rem(12px);
-          pointer-events: none;
-          scroll-snap-align: start;
-
-          // Hide site title
-          &[for="__drawer"] {
-            display: none;
-          }
+        // Hide site title
+        > .md-nav__title {
+          display: none;
         }
 
         // Hide 1st level items
         > .md-nav__list > .md-nav__item {
           display: none;
 
-          // Show 1st level active nested items
+          // Active parent item
           &--active {
             display: block;
             padding: 0;
@@ -158,34 +150,15 @@
             > .md-nav__link {
               display: none;
             }
-          }
-        }
-      }
 
-      // Always expand nested navigation on 2nd level
-      .md-nav[data-md-level="1"] {
-        // Hack: Always show active navigation tab on breakpoint screen, despite
-        // of checkbox being checked or not. Fixes #1655.
-        display: block;
-
-        // Remove spacing on 2nd level items
-        > .md-nav__list > .md-nav__item {
-          padding: 0 px2rem(12px);
-
-          // Add bottom spacing to last item
-          &:last-child {
-            padding-bottom: px2rem(12px);
-
-            // Remove bottom spacing for nested items
-            .md-nav__item {
-              padding-bottom: 0;
+            // Show title and remove spacing
+            > .md-nav > .md-nav__title {
+              display: block;
+              padding: 0 px2rem(12px);
+              pointer-events: none;
+              scroll-snap-align: start;
             }
           }
-        }
-
-        // Hide titles from 2nd level on
-        .md-nav .md-nav__title {
-          display: none;
         }
       }
     }

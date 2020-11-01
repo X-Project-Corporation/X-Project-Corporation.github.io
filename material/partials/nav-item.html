@@ -3,9 +3,14 @@
 -#}
 {% set class = "md-nav__item" %}
 {% if nav_item.active %}
-  {% set class = "md-nav__item md-nav__item--active" %}
+  {% set class = class ~ " md-nav__item--active" %}
 {% endif %}
 {% if nav_item.children %}
+  {% if "navigation.sections" in config.theme.features and level == 1 + (
+    "navigation.tabs" in config.theme.features
+  ) %}
+    {% set class = class ~ " md-nav__item--section" %}
+  {% endif %}
   <li class="{{ class }} md-nav__item--nested">
     {% if nav_item.active %}
       <input class="md-nav__toggle md-toggle" data-md-toggle="{{ path }}" type="checkbox" id="{{ path }}" checked>

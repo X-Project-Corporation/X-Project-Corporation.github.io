@@ -23,11 +23,20 @@
 <!-- Determine class according to level -->
 {% set class = "md-nav__item" %}
 {% if nav_item.active %}
-  {% set class = "md-nav__item md-nav__item--active" %}
+  {% set class = class ~ " md-nav__item--active" %}
 {% endif %}
 
 <!-- Main navigation item with nested items -->
 {% if nav_item.children %}
+
+  <!-- Determine whether to render item as a section -->
+  {% if "navigation.sections" in config.theme.features and level == 1 + (
+    "navigation.tabs" in config.theme.features
+  ) %}
+    {% set class = class ~ " md-nav__item--section" %}
+  {% endif %}
+
+  <!-- Render item with nested items -->
   <li class="{{ class }} md-nav__item--nested">
 
     <!-- Active checkbox expands items contained within nested section -->

@@ -86,11 +86,6 @@
   &__item {
     padding: 0 px2rem(12px);
 
-    // Add bottom spacing to last item
-    &:last-child {
-      padding-bottom: px2rem(12px);
-    }
-
     // 2nd+ level items
     & & {
       padding-right: 0;
@@ -99,11 +94,6 @@
       [dir="rtl"] & {
         padding-right: px2rem(12px);
         padding-left: 0;
-      }
-
-      // Remove bottom spacing for nested items
-      &:last-child {
-        padding-bottom: 0;
       }
     }
   }
@@ -241,7 +231,6 @@
 
         // Site title in main navigation
         &[for="__drawer"] {
-          position: relative;
           color: var(--md-primary-bg-color);
           background-color: var(--md-primary-fg-color);
 
@@ -253,7 +242,6 @@
             display: block;
             margin: px2rem(4px);
             padding: px2rem(8px);
-            font-size: px2rem(48px);
           }
         }
       }
@@ -535,8 +523,42 @@
     }
 
     // Hide titles for nested navigation
-    &__item--nested > .md-nav > &__title {
+    &__item--nested > .md-nav > .md-nav__title {
       display: none;
+    }
+
+    // Navigation section
+    &__item--section {
+      display: block;
+      margin: 1.25em 0;
+
+      // Remove margin on last element
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      // Hide link, as sections are always expanded
+      > .md-nav__link {
+        display: none;
+      }
+
+      // Show next level items
+      > .md-nav {
+        display: block;
+
+        // Show title and remove spacing
+        > .md-nav__title {
+          display: block;
+          padding: 0;
+          pointer-events: none;
+          scroll-snap-align: start;
+        }
+
+        // Remove spacing on next level items
+        > .md-nav__list > .md-nav__item {
+          padding: 0;
+        }
+      }
     }
 
     // Navigation icon
