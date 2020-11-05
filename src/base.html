@@ -38,6 +38,13 @@
         <meta name="description" content="{{ config.site_description }}" />
       {% endif %}
 
+      <!-- Page keywords -->
+      {% if page and page.meta and page.meta.keywords %}
+        <meta name="keywords" content="{{ page.meta.keywords }}" />
+      {% elif config.site_keywords %}
+        <meta name="keywords" content="{{ config.site_keywords }}" />
+      {% endif %}
+
       <!-- Canonical -->
       {% if page.canonical_url %}
         <link rel="canonical" href="{{ page.canonical_url }}" />
