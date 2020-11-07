@@ -22,12 +22,12 @@
 
 import { Observable, OperatorFunction, combineLatest, pipe } from "rxjs"
 import {
+  combineLatestWith,
   distinctUntilChanged,
   filter,
   map,
   startWith,
-  switchMap,
-  zipWith
+  switchMap
 } from "rxjs/operators"
 
 import {
@@ -99,7 +99,7 @@ export function mountHeader(
         .pipe(
           map(main => getElement("h1, h2, h3, h4, h5, h6", main)!),
           filter(hx => typeof hx !== "undefined"),
-          zipWith(useComponent("header-title")),
+          combineLatestWith(useComponent("header-title")),
           switchMap(([hx, title]) => watchViewportAt(hx, { header$, viewport$ })
             .pipe(
               map(({ offset: { y } }) => {
