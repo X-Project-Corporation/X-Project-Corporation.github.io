@@ -39,7 +39,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.5ade0c61.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.be3a09fe.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.c308bc62.min.css' | url }}">
@@ -136,21 +136,13 @@
               </div>
             {% endif %}
             {% if page.toc %}
-              {% set toc = page.toc %}
-              {% if toc | first is defined and "\x3ch1 id=" in page.content %}
-                {% set toc = (toc | first).children %}
-              {% endif %}
-              {% if toc or not (
-                "toc.autohide" in config.theme.features
-              ) %}
-                <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
-                  <div class="md-sidebar__scrollwrap">
-                    <div class="md-sidebar__inner">
-                      {% include "partials/toc.html" %}
-                    </div>
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    {% include "partials/toc.html" %}
                   </div>
                 </div>
-              {% endif %}
+              </div>
             {% endif %}
           {% endblock %}
           <div class="md-content">

@@ -36,8 +36,28 @@
 
     // [screen +]: Increase horizontal spacing
     @include break-from-device(screen) {
-      margin-right: px2rem(24px);
-      margin-left: px2rem(24px);
+
+      // Navigation is visible
+      .md-sidebar--primary:not([hidden]) ~ & {
+        margin-left: px2rem(24px);
+
+        // Adjust for right-to-left languages
+        [dir="rtl"] & {
+          margin-right: px2rem(24px);
+          margin-left: px2rem(16px);
+        }
+      }
+
+      // Table of contents is visible
+      .md-sidebar--secondary:not([hidden]) ~ & {
+        margin-right: px2rem(24px);
+
+        // Adjust for right-to-left languages
+        [dir="rtl"] & {
+          margin-right: px2rem(16px);
+          margin-left: px2rem(24px);
+        }
+      }
     }
 
     // Hack: add pseudo element for spacing, as the overflow of the content
