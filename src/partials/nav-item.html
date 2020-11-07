@@ -40,15 +40,8 @@
   <li class="{{ class }} md-nav__item--nested">
 
     <!-- Active checkbox expands items contained within nested section -->
-    {% if nav_item.active %}
-      <input
-        class="md-nav__toggle md-toggle"
-        data-md-toggle="{{ path }}"
-        type="checkbox"
-        id="{{ path }}"
-        checked
-      />
-    {% elif "navigation.expand" in config.theme.features %}
+    {% set checked = "checked" if nav_item.active %}
+    {% if "navigation.expand" in config.theme.features and not checked %}
       <input
         class="md-nav__toggle md-toggle md-toggle--indeterminate"
         data-md-toggle="{{ path }}"
@@ -62,6 +55,7 @@
         data-md-toggle="{{ path }}"
         type="checkbox"
         id="{{ path }}"
+        {{ checked }}
       />
     {% endif %}
 
