@@ -261,9 +261,13 @@
 
             <!-- Main navigation -->
             {% if nav %}
+              {% if page and page.meta and page.meta.hide %}
+                {% set hidden = "hidden" if "navigation" in page.meta.hide %}
+              {% endif %}
               <div
                 class="md-sidebar md-sidebar--primary"
                 data-md-component="navigation"
+                {{ hidden }}
               >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
@@ -275,9 +279,13 @@
 
             <!-- Table of contents -->
             {% if page.toc %}
+              {% if page and page.meta and page.meta.hide %}
+                {% set hidden = "hidden" if "toc" in page.meta.hide %}
+              {% endif %}
               <div
                 class="md-sidebar md-sidebar--secondary"
                 data-md-component="toc"
+                {{ hidden }}
               >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
