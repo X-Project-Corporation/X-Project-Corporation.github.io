@@ -43,6 +43,7 @@ export type Component =
   | "container"                        /* Container */
   | "header"                           /* Header */
   | "header-title"                     /* Header title */
+  | "header-topic"                     /* Header topic */
   | "main"                             /* Main area */
   | "navigation"                       /* Navigation */
   | "search"                           /* Search */
@@ -116,7 +117,7 @@ export function setupComponents(
 
             /* Top-level components: update */
             case "announce":
-            case "header-title":
+            case "header-topic":
             case "container":
             case "skip":
               if (name in prev && typeof prev[name] !== "undefined") {

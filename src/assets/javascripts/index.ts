@@ -171,6 +171,7 @@ export function initialize(config: unknown) {
     "container",                       /* Container */
     "header",                          /* Header */
     "header-title",                    /* Header title */
+    "header-topic",                    /* Header topic */
     "main",                            /* Main area */
     "navigation",                      /* Navigation */
     "search",                          /* Search */
