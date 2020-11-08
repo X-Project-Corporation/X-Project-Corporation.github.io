@@ -529,8 +529,9 @@ export function initialize(config: unknown) {
 
   // Make indeterminate toggles indeterminate to expand navigation on screen
   document$.subscribe(() => {
-    const toggles = getElements<HTMLInputElement>(".md-toggle--indeterminate")
+    const toggles = getElements<HTMLInputElement>("[data-md-state=indeterminate]")
     for (const toggle of toggles) {
+      toggle.dataset.mdState = ""
       toggle.indeterminate = true
       toggle.checked = false
     }
