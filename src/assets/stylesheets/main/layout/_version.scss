@@ -50,6 +50,12 @@
     margin-right: px2rem(8px);
     margin-left: px2rem(28px);
 
+    // Adjust for right-to-left languages
+    [dir="rtl"] & {
+      margin-right: px2rem(28px);
+      margin-left: px2rem(8px);
+    }
+
     // Selector icon
     &::after {
       display: inline-block;
@@ -60,6 +66,12 @@
       mask-image: var(--md-version-icon);
       mask-repeat: no-repeat;
       content: "";
+
+      // Adjust for right-to-left languages
+      [dir="rtl"] & {
+        margin-right: px2rem(8px);
+        margin-left: initial;
+      }
     }
   }
 
@@ -68,7 +80,7 @@
     position: absolute;
     top: px2rem(1px);
     max-height: px2rem(40px);
-    margin: px2rem(4px) px2rem(16px) px2rem(4px);
+    margin: px2rem(4px) px2rem(16px);
     padding: 0;
     overflow: scroll;
     color: var(--md-default-fg-color);
@@ -111,6 +123,12 @@
       background-color 250ms,
       color            250ms;
     scroll-snap-align: start;
+
+    // Adjust for right-to-left languages
+    [dir="rtl"] & {
+      padding-right: px2rem(12px);
+      padding-left: px2rem(24px);
+    }
 
     // Focused or hovered item
     &:focus,
