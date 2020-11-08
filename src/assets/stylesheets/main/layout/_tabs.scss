@@ -161,6 +161,12 @@
           }
         }
       }
+
+      // Hack: Always show active navigation tab on breakpoint screen, despite
+      // of checkbox being checked or not. Fixes #1655.
+      .md-nav[data-md-level="1"] {
+        display: block;
+      }
     }
   }
 }
