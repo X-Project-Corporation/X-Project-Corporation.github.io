@@ -6,6 +6,10 @@ template: overrides/main.html
 
 ## Material for MkDocs Insiders
 
+### 1.10.0 <small>_ November 15, 2020</small>
+
+* Added support for integrating table of contents into navigation
+
 ### 1.9.0 <small>_ November 7, 2020</small>
 
 * Added support for hiding navigation and table of contents on any page
@@ -62,6 +66,10 @@ template: overrides/main.html
 * Improved search result relevance and scoring
 
 ## Material for MkDocs
+
+### 6.1.5 <small>_ November 15, 2020</small>
+
+* Fixed search reset button not showing/hiding correctly
 
 ### 6.1.4 <small>_ November 7, 2020</small>
 
