@@ -633,7 +633,7 @@
     html &--integrated &__link[for="__toc"] ~ .md-nav {
       display: block;
       margin-bottom: 1.25em;
-      border-left: px2rem(1px) solid var(--md-default-fg-color--lighter);
+      border-left: px2rem(1px) solid var(--md-primary-fg-color);
 
       // Hide title
       > .md-nav__title {

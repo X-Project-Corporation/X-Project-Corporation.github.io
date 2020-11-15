@@ -57,6 +57,7 @@ theme:
     - navigation.tabs
     - search.highlight
     - search.suggest
+    #- toc.integrate
   palette:
     - scheme: default
       primary: indigo
