@@ -26,9 +26,15 @@
   {% set site_url = site_url ~ "/index.html" %}
 {% endif %}
 
+<!-- Determine class according to configuraiton -->
+{% set class = "md-nav md-nav--primary" %}
+{% if "toc.integrate" in features %}
+  {% set class = class ~ " md-nav--integrated" %}
+{% endif %}
+
 <!-- Main navigation -->
 <nav
-  class="md-nav md-nav--primary"
+  class="{{ class }}"
   aria-label="{{ lang.t('nav.title') }}"
   data-md-level="0"
 >

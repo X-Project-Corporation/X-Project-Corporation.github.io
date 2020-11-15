@@ -176,6 +176,9 @@
     <body dir="{{ direction }}">
   {% endif %}
 
+    <!-- Retrieve features from configuration -->
+    {% set features = config.theme.features or [] %}
+
     <!-- Load and set color palette from local storage -->
     {% if not config.theme.palette is mapping %}
       <script>
@@ -247,7 +250,7 @@
 
       <!-- Tabs navigation -->
       {% block tabs %}
-        {% if "navigation.tabs" in config.theme.features %}
+        {% if "navigation.tabs" in features %}
           {% include "partials/tabs.html" %}
         {% endif %}
       {% endblock %}
@@ -278,7 +281,7 @@
             {% endif %}
 
             <!-- Table of contents -->
-            {% if page.toc %}
+            {% if page.toc and not "toc.integrate" in features %}
               {% if page and page.meta and page.meta.hide %}
                 {% set hidden = "hidden" if "toc" in page.meta.hide %}
               {% endif %}
@@ -386,7 +389,7 @@
       <script>
         app = initialize({
           base: "{{ base_url }}",
-          features: {{ config.theme.features or [] | tojson }},
+          features: {{ features | tojson }},
           search: Object.assign({
             worker: "{{ 'assets/javascripts/worker/search.js' | url }}"
           }, typeof search !== "undefined" && search),

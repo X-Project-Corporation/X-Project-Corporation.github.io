@@ -20,6 +20,9 @@
   IN THE SOFTWARE.
 -->
 
+<!-- Retrieve features from configuration -->
+{% set features = config.theme.features or [] %}
+
 <!-- Determine class according to level -->
 {% set class = "md-nav__item" %}
 {% if nav_item.active %}
@@ -30,8 +33,8 @@
 {% if nav_item.children %}
 
   <!-- Determine whether to render item as a section -->
-  {% if "navigation.sections" in config.theme.features and level == 1 + (
-    "navigation.tabs" in config.theme.features
+  {% if "navigation.sections" in features and level == 1 + (
+    "navigation.tabs" in features
   ) %}
     {% set class = class ~ " md-nav__item--section" %}
   {% endif %}
@@ -41,7 +44,7 @@
 
     <!-- Active checkbox expands items contained within nested section -->
     {% set checked = "checked" if nav_item.active %}
-    {% if "navigation.expand" in config.theme.features and not checked %}
+    {% if "navigation.expand" in features and not checked %}
       <input
         class="md-nav__toggle md-toggle"
         data-md-toggle="{{ path }}"

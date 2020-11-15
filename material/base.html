@@ -39,7 +39,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.aabef550.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.db0de450.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.c308bc62.min.css' | url }}">
@@ -90,6 +90,7 @@
   {% else %}
     <body dir="{{ direction }}">
   {% endif %}
+    {% set features = config.theme.features or [] %}
     {% if not config.theme.palette is mapping %}
       <script>var palette=JSON.parse(localStorage.getItem("__palette")||"{}");if(void 0!==palette.color)for(var key in palette.color)document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     {% endif %}
@@ -119,7 +120,7 @@
     <div class="md-container" data-md-component="container">
       {% block hero %}{% endblock %}
       {% block tabs %}
-        {% if "navigation.tabs" in config.theme.features %}
+        {% if "navigation.tabs" in features %}
           {% include "partials/tabs.html" %}
         {% endif %}
       {% endblock %}
@@ -138,7 +139,7 @@
                 </div>
               </div>
             {% endif %}
-            {% if page.toc %}
+            {% if page.toc and not "toc.integrate" in features %}
               {% if page and page.meta and page.meta.hide %}
                 {% set hidden = "hidden" if "toc" in page.meta.hide %}
               {% endif %}
@@ -210,7 +211,7 @@
       <script>
         app = initialize({
           base: "{{ base_url }}",
-          features: {{ config.theme.features or [] | tojson }},
+          features: {{ features | tojson }},
           search: Object.assign({
             worker: "{{ 'assets/javascripts/worker/search.0f64ce30.min.js' | url }}"
           }, typeof search !== "undefined" && search),
