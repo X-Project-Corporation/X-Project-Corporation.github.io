@@ -88,7 +88,8 @@ import {
   setupKeyboard,
   setupInstantLoading,
   setupSearchWorker,
-  setupSearchHighlighter
+  setupSearchHighlighter,
+  isSearchReadyMessage
 } from "integrations"
 import {
   patchCodeBlocks,
@@ -320,6 +321,28 @@ export function initialize(config: unknown) {
   const search$ = worker$
     .pipe(
       switchMap(worker => {
+
+        // Experimental support for OpenSearch and deep linking
+        const params = new URLSearchParams(document.location.search)
+        if (params.get("q")) {
+          useComponent("search-suggest")
+            .subscribe(suggest => {
+              suggest.innerText = params.get("q")!
+              useComponent("search-query")
+                .subscribe(input => input.focus())
+            })
+
+          worker.rx$
+            .pipe(
+              filter(isSearchReadyMessage),
+              switchMap(() => useComponent("search-query"))
+            )
+              .subscribe(input => {
+                input.blur()
+                input.value = params.get("q")!
+                input.focus()
+              })
+        }
 
         const query$ = useComponent("search-query")
           .pipe(
