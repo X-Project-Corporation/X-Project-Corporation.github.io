@@ -7,7 +7,7 @@
   <Description>
     {{ config.site_name }} {{ lang.t('search.placeholder') }}
   </Description>
-  <Url type="text/html" template="{{ config.site_url }}?q={searchTerms}"/>
+  <Url type="text/html" method="get" template="{{ config.site_url }}?q={searchTerms}"/>
   <InputEncoding>UTF-8</InputEncoding>
   <Language>{{ lang.t('language') }}</Language>
 </OpenSearchDescription>
