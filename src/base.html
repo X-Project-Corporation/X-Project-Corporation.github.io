@@ -57,6 +57,14 @@
         <meta name="author" content="{{ config.site_author }}" />
       {% endif %}
 
+      <!-- OpenSearch -->
+      <link
+        rel="search"
+        type="application/opensearchdescription+xml"
+        title="{{ config.site_name }} {{ lang.t('search.placeholder') }}"
+        href="{{ config.site_url }}"
+      />
+
       <!-- Favicon -->
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}" />
 

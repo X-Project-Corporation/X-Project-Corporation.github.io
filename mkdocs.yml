@@ -40,9 +40,10 @@ theme:
   name: null
   custom_dir: material
 
-  # 404 page
+  # Static content
   static_templates:
     - 404.html
+    - search.xml
 
   # Don't include MkDocs' JavaScript
   include_search_page: false

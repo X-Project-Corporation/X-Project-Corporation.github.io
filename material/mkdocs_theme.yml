@@ -66,3 +66,4 @@ search_index_only: true
 # Static pages to build
 static_templates:
   - 404.html
+  - search.xml

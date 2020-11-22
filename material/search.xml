@@ -1,0 +1,11 @@
+{#-
+  This file was automatically generated - do not edit
+-#}
+{%- import "partials/language.html" as lang with context -%}
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+  <ShortName>{{ config.site_name }}</ShortName>
+  <Description>{{ config.site_description }}</Description>
+  <Language>{{ lang.t('language') }}</Language>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Url type="text/html" template="{{ config.site_url }}?q={searchTerms}"/>
+</OpenSearchDescription>
