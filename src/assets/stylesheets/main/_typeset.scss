@@ -84,12 +84,6 @@ kbd {
     margin: 1em 0;
   }
 
-  // Ensure that the following 1st-level elements induce a new block formatting
-  // context, which is necessary to allow for floating Admonitions.
-  div {
-    display: flow-root;
-  }
-
   // 1st level headline
   h1 {
     display: flow-root;
