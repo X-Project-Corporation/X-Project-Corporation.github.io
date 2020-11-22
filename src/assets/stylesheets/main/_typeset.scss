@@ -78,12 +78,21 @@ kbd {
   p,
   ul,
   ol,
+  dl,
   blockquote {
+    display: flow-root;
     margin: 1em 0;
+  }
+
+  // Ensure that the following 1st-level elements induce a new block formatting
+  // context, which is necessary to allow for floating Admonitions.
+  div {
+    display: flow-root;
   }
 
   // 1st level headline
   h1 {
+    display: flow-root;
     margin: 0 0 px2em(40px, 32px);
     color: var(--md-default-fg-color--light);
     font-weight: 300;
@@ -94,6 +103,7 @@ kbd {
 
   // 2nd level headline
   h2 {
+    display: flow-root;
     margin: px2em(40px, 25px) 0 px2em(16px, 25px);
     font-weight: 300;
     font-size: px2em(25px);
@@ -103,6 +113,7 @@ kbd {
 
   // 3rd level headline
   h3 {
+    display: flow-root;
     margin: px2em(32px, 20px) 0 px2em(16px, 20px);
     font-weight: 400;
     font-size: px2em(20px);
@@ -117,6 +128,7 @@ kbd {
 
   // 4th level headline
   h4 {
+    display: flow-root;
     margin: px2em(16px) 0;
     font-weight: 700;
     letter-spacing: -0.01em;
@@ -125,6 +137,7 @@ kbd {
   // 5th and 6th level headline
   h5,
   h6 {
+    display: flow-root;
     margin: px2em(16px, 12.8px) 0;
     color: var(--md-default-fg-color--light);
     font-weight: 700;
@@ -139,6 +152,7 @@ kbd {
 
   // Horizontal separators
   hr {
+    display: flow-root;
     margin: 1.5em 0;
     border-bottom: px2rem(1px) dotted var(--md-default-fg-color--lighter);
   }
@@ -211,6 +225,7 @@ kbd {
   // Unformatted code blocks
   pre {
     position: relative;
+    display: flow-root;
     margin: 1em 0;
     line-height: 1.4;
 
@@ -419,6 +434,7 @@ kbd {
 
   // Definition lists
   dd {
+    display: flow-root;
     margin: 1em 0 1.5em px2em(30px);
 
     // Adjust for right-to-left languages

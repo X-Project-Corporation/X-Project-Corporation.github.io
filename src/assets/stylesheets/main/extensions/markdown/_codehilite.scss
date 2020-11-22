@@ -26,6 +26,7 @@
 
 // Codehilite extension
 .codehilite {
+  display: flow-root;
 
   .o,   // Operator
   .ow { // Operator, word
@@ -157,7 +158,7 @@
 
 // Block with line numbers
 .codehilitetable {
-  display: block;
+  display: flow-root;
   overflow: hidden;
 
   // Set table elements to block layout, because otherwise the whole flexbox
