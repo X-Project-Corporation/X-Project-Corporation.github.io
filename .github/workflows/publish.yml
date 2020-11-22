@@ -28,7 +28,6 @@ env:
   PYTHON_VERSION: 3.x
 
 jobs:
-
   publish_docker:
     name: Build and push Docker image
     if: github.event.pull_request.head.repo.fork == false
