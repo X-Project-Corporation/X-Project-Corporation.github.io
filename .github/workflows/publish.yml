@@ -55,7 +55,7 @@ jobs:
 
       - name: Check Docker image
         run:
-          docker run --rm -i -v ${PWD}:/docs ${{ github.event.repository.full_name }} build
+          docker run --rm -i -v ${PWD}:/docs ghcr.io/${{ github.event.repository.full_name }} build
 
       - name: Publish Docker image
         run: |
