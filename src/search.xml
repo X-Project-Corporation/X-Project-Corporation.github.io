@@ -27,8 +27,10 @@
   xmlns:moz="http://www.mozilla.org/2006/browser/search/"
 >
   <ShortName>{{ config.site_name }}</ShortName>
-  <Description>{{ config.site_description }}</Description>
-  <Language>{{ lang.t('language') }}</Language>
-  <InputEncoding>UTF-8</InputEncoding>
+  <Description>
+    {{ config.site_name }} {{ lang.t('search.placeholder') }}
+  </Description>
   <Url type="text/html" template="{{ config.site_url }}?q={searchTerms}" />
+  <InputEncoding>UTF-8</InputEncoding>
+  <Language>{{ lang.t('language') }}</Language>
 </OpenSearchDescription>
