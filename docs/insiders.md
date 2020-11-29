@@ -38,6 +38,44 @@ for MkDocs Insiders.
   [4]: #roadmap
   [5]: https://squidfunk.github.io/mkdocs-material-insiders/
 
+<div class="tx-sponsor" hidden>
+  <h3>Join <span class="tx-sponsor__count"></span> awesome sponsors</h3>
+  <div class="tx-sponsor__list"></div>
+</div>
+<script>
+  fetch("https://gpiqp43wvb.execute-api.us-east-1.amazonaws.com/_/").then(function(e){return e.json()}).then(function(e){var t=document.querySelector(".tx-sponsor__list"),n=0;for(var o of e.sponsors)if("PUBLIC"===o.type){var s;(s=document.createElement("a")).href=o.url,s.title="@"+o.name,s.className="tx-sponsor__item",t.appendChild(s);var r=document.createElement("img");r.src=o.image,s.appendChild(r)}else n++;(s=document.createElement("a")).href="https://github.com/sponsors/squidfunk",s.title="[private]",s.innerText="+"+n,s.className="tx-sponsor__item tx-sponsor__item--private",t.appendChild(s),document.querySelector(".tx-sponsor__count").innerText=e.sponsors.length,document.querySelector(".tx-sponsor").removeAttribute("hidden")}).catch(console.log);
+</script>
+<style>
+  .tx-sponsor {
+    margin: 2em 0;
+  }
+  .tx-sponsor__list {
+    overflow: auto;
+  }
+  .tx-sponsor__item {
+    display: block;
+    float: left;
+    width: 3.2rem;
+    height: 3.2rem;
+    margin: 0.1rem;
+    border-radius: 100%;
+    overflow: hidden;
+  }
+  .tx-sponsor__item img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .md-typeset .tx-sponsor__item--private {
+    background: #CCC;
+    color: #666;
+    font-size: 1.2rem;
+    line-height: 3.2rem;
+    text-align: center;
+    font-weight: bold;
+  }
+</style>
+
 ## How to become a sponsor
 
 So you've decided to become a sponsor? Great! You're just __three easy steps__
