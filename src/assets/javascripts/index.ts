@@ -26,6 +26,7 @@
 
 import "focus-visible"
 
+import * as escapeHTML from "escape-html"
 import {
   merge,
   combineLatest,
@@ -291,11 +292,12 @@ export function initialize(config: unknown) {
                 }
 
                 /* Highlight */
-                for (const node of nodes)
+                for (const node of nodes) {
                   if (node.textContent!.trim())
                     node.replaceWith(
-                      h("span", null, fn(node.textContent!)) // TODO: remove the unnecessary span
+                      h("span", null, fn(escapeHTML(node.textContent!))) // TODO: remove the unnecessary span
                     )
+                }
 
                 if (el.tagName === "article") {
                   break
