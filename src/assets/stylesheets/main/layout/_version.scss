@@ -42,10 +42,10 @@
   // Current version
   &__current {
     position: relative;
-    // Hack: in general, we would use vertical-align to align the version at the
-    // bottom with the title, but since the list uses absolute positioning, this
-    // won't work consistently. Furthermore, we'd need to use display: inline
-    // to align the links, which looks jagged.
+    // Hack: in general, we would use `vertical-align` to align the version at
+    // the bottom with the title, but since the list uses absolute positioning,
+    // this won't work consistently. Furthermore, we would need to use inline
+    // positioning to align the links, which looks jagged.
     top: px2rem(1px);
     margin-right: px2rem(8px);
     margin-left: px2rem(28px);
@@ -56,7 +56,7 @@
       margin-left: px2rem(8px);
     }
 
-    // Selector icon
+    // Version selection icon
     &::after {
       display: inline-block;
       width: px2rem(8px);
@@ -75,7 +75,7 @@
     }
   }
 
-  // List of items
+  // Version selection list
   &__list {
     position: absolute;
     top: px2rem(1px);
@@ -96,7 +96,7 @@
       max-height 0ms 500ms;
     scroll-snap-type: y mandatory;
 
-    // Focused or hovered list
+    // List on focus/hover
     &:focus-within,
     &:hover {
       max-height: px2rem(200px);
@@ -107,12 +107,12 @@
     }
   }
 
-  // List item
+  // Version selection item
   &__item {
     line-height: px2rem(40px);
   }
 
-  // Version link
+  // Version selection link
   &__link {
     display: block;
     width: 100%;
@@ -130,7 +130,7 @@
       padding-left: px2rem(24px);
     }
 
-    // Focused or hovered item
+    // Link on focus/hover
     &:focus,
     &:hover {
       background-color: var(--md-default-fg-color--lightest);

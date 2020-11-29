@@ -30,7 +30,7 @@
   // [tablet +]: Allow for rendering content as sidebars
   @include break-from-device(tablet) {
 
-    // Render a block-level element as a column
+    // Modifier to float block elements
     .inline {
       float: left;
       width: px2rem(234px);
@@ -45,7 +45,7 @@
         margin-left: px2rem(16px);
       }
 
-      // Push to end (ltr: right, rtl: left)
+      // Modifier to move to end (ltr: right, rtl: left)
       &.end {
         float: right;
         margin-right: 0;
