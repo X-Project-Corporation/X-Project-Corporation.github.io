@@ -56,7 +56,7 @@
   // [tablet -]: Show navigation as drawer
   @include break-to-device(tablet) {
 
-    // Render primary sidebar as a slideout container
+    // Primary sidebar with navigation
     &--primary {
       position: fixed;
       top: 0;
