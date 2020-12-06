@@ -18,13 +18,18 @@
       {% elif config.site_keywords %}
         <meta name="keywords" content="{{ config.site_keywords }}">
       {% endif %}
-      {% if page.canonical_url %}
-        <link rel="canonical" href="{{ page.canonical_url }}">
-      {% endif %}
       {% if page and page.meta and page.meta.author %}
         <meta name="author" content="{{ page.meta.author }}">
       {% elif config.site_author %}
         <meta name="author" content="{{ config.site_author }}">
+      {% endif %}
+      {% if page.canonical_url %}
+        <link rel="canonical" href="{{ page.canonical_url }}">
+      {% endif %}
+      {% if config.extra.alternate is iterable %}
+        {% for alt in config.extra.alternate %}
+          <link rel="alternate" href="{{ alt.link | url }}" hreflang="{{ alt.lang | d(lang.t('language')) }}">
+        {% endfor %}
       {% endif %}
       {% if "search.xml" in config.theme.static_templates %}
         <link rel="search" type="application/opensearchdescription+xml" href="{{ 'search.xml' | url }}" title="{{ config.site_name }} {{ lang.t('search.placeholder') }}">
@@ -164,7 +169,7 @@
                   </a>
                 {% endif %}
                 {% if not "\x3ch1" in page.content %}
-                  <h1>{{ page.title | default(config.site_name, true)}}</h1>
+                  <h1>{{ page.title | d(config.site_name, true)}}</h1>
                 {% endif %}
                 {{ page.content }}
                 {% if page and page.meta %}

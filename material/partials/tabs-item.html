@@ -12,7 +12,7 @@
     </a>
   </li>
 {% elif nav_item.children and nav_item.children | length > 0 %}
-  {% set title = title | default(nav_item.title) %}
+  {% set title = title | d(nav_item.title) %}
   {% if (nav_item.children | first).children %}
     {% set nav_item = nav_item.children | first %}
     {% include "partials/tabs-item.html" %}

@@ -34,7 +34,7 @@
 
 <!-- Main navigation item with nested items -->
 {% elif nav_item.children and nav_item.children | length > 0 %}
-  {% set title = title | default(nav_item.title) %}
+  {% set title = title | d(nav_item.title) %}
 
   <!-- Recurse, if the first item has nested items -->
   {% if (nav_item.children | first).children %}
