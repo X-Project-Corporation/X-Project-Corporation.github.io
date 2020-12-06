@@ -58,12 +58,14 @@
       {% endif %}
 
       <!-- OpenSearch -->
-      <link
-        rel="search"
-        type="application/opensearchdescription+xml"
-        href="{{ 'search.xml' | url }}"
-        title="{{ config.site_name }} {{ lang.t('search.placeholder') }}"
-      />
+      {% if "search.xml" in config.theme.static_templates %}
+        <link
+          rel="search"
+          type="application/opensearchdescription+xml"
+          href="{{ 'search.xml' | url }}"
+          title="{{ config.site_name }} {{ lang.t('search.placeholder') }}"
+        />
+      {% endif %}
 
       <!-- Favicon -->
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}" />
