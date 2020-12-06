@@ -50,7 +50,7 @@
     display: none;
   }
 
-  // Darken color on parent code block hover
+  // Darken color on code block hover
   :hover > & {
     color: var(--md-default-fg-color--light);
   }

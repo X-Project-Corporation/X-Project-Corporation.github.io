@@ -24,95 +24,75 @@
 // Rules
 // ----------------------------------------------------------------------------
 
-// Icon definitions
-:root {
-  --md-version-icon: svg-load(
-    "@fortawesome/fontawesome-free/svgs/solid/caret-down.svg"
-  );
-}
+// Selection
+.md-select {
+  position: relative;
 
-// ----------------------------------------------------------------------------
-
-// Version selection
-.md-version {
-  flex-shrink: 0;
-  height: px2rem(48px);
-  font-size: px2rem(16px);
-
-  // Current selection
-  &__current {
-    position: relative;
-    // Hack: in general, we would use `vertical-align` to align the version at
-    // the bottom with the title, but since the list uses absolute positioning,
-    // this won't work consistently. Furthermore, we would need to use inline
-    // positioning to align the links, which looks jagged.
-    top: px2rem(1px);
-    margin-right: px2rem(8px);
-    margin-left: px2rem(28px);
-
-    // Adjust for right-to-left languages
-    [dir="rtl"] & {
-      margin-right: px2rem(28px);
-      margin-left: px2rem(8px);
-    }
-
-    // Version selection icon
-    &::after {
-      display: inline-block;
-      width: px2rem(8px);
-      height: px2rem(12px);
-      margin-left: px2rem(8px);
-      background-color: currentColor;
-      mask-image: var(--md-version-icon);
-      mask-repeat: no-repeat;
-      content: "";
-
-      // Adjust for right-to-left languages
-      [dir="rtl"] & {
-        margin-right: px2rem(8px);
-        margin-left: initial;
-      }
-    }
-  }
-
-  // Version selection list
-  &__list {
+  // Selection bubble
+  &__inner {
     position: absolute;
-    top: px2rem(3px);
-    max-height: px2rem(36px);
-    margin: px2rem(4px) px2rem(16px);
-    padding: 0;
-    overflow: scroll;
+    top: calc(100% - #{px2rem(4px)});
+    left: 50%;
+    max-height: 0;
+    margin-top: px2rem(4px);
     color: var(--md-default-fg-color);
-    list-style-type: none;
     background-color: var(--md-default-bg-color);
     border-radius: px2rem(2px);
     box-shadow:
       0 px2rem(4px) px2rem(10px) hsla(0, 0%, 0%, 0.1),
       0 0           px2rem(1px)  hsla(0, 0%, 0%, 0.25);
+    transform: translate3d(-50%, px2rem(6px), 0);
     opacity: 0;
     transition:
-      max-height 0ms 500ms,
-      opacity  250ms 250ms;
-    scroll-snap-type: y mandatory;
+      transform  250ms 375ms,
+      opacity    250ms 250ms,
+      max-height   0ms 500ms;
 
-    // List on focus/hover
-    &:focus-within,
-    &:hover {
+    // Selection bubble on parent focus/hover
+    .md-select:focus-within &,
+    .md-select:hover & {
       max-height: px2rem(200px);
+      transform: translate3d(-50%, 0, 0);
       opacity: 1;
       transition:
-        max-height 250ms,
-        opacity    250ms;
+        transform  250ms cubic-bezier(0.1, 0.7, 0.1, 1),
+        opacity    250ms,
+        max-height 250ms;
+    }
+
+    // Selection bubble handle
+    &::after {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 0;
+      height: 0;
+      margin-top: px2rem(-4px);
+      margin-left: px2rem(-4px);
+      border: px2rem(4px) solid transparent;
+      border-top: 0;
+      border-bottom-color: var(--md-default-bg-color);
+      content: "";
     }
   }
 
-  // Version selection item
+  // Selection list
+  &__list {
+    max-height: inherit;
+    margin: 0;
+    padding: 0;
+    overflow: scroll;
+    font-size: px2rem(16px);
+    list-style-type: none;
+    border-radius: px2rem(2px);
+  }
+
+  // Selection item
   &__item {
     line-height: px2rem(36px);
   }
 
-  // Version selection link
+  // Selection link
   &__link {
     display: block;
     width: 100%;
@@ -120,8 +100,8 @@
     padding-left: px2rem(12px);
     cursor: pointer;
     transition:
-      color            250ms,
-      background-color 250ms;
+      background-color 250ms,
+      color            250ms;
     scroll-snap-align: start;
 
     // Adjust for right-to-left languages

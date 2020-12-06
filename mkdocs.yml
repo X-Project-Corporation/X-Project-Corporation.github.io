@@ -67,8 +67,8 @@ theme:
         icon: material/toggle-switch
         name: Switch to light mode
     - scheme: slate
-      primary: blue
-      accent: blue
+      primary: red
+      accent: red
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
@@ -78,6 +78,7 @@ theme:
   favicon: assets/favicon.png
   icon:
     logo: logo
+    translate: material/translate
 
 # Plugins
 plugins:

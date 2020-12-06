@@ -49,7 +49,7 @@
     }
   }
 
-  // Show headerlinks on parent headline hover
+  // Show headerlinks on parent hover
   :hover  > .headerlink,
   :target > .headerlink,
   .headerlink:focus {
@@ -59,7 +59,7 @@
       opacity    125ms;
   }
 
-  // Adjust color on parent headline target or focus/hover
+  // Adjust color on parent target or focus/hover
   :target > .headerlink,
   .headerlink:focus,
   .headerlink:hover {

@@ -82,10 +82,11 @@
   &__button {
     position: relative;
     z-index: 1;
-    display: block;
+    display: inline-block;
     margin: px2rem(4px);
     padding: px2rem(8px);
     color: currentColor;
+    vertical-align: middle;
     cursor: pointer;
     transition: opacity 250ms;
 
@@ -225,7 +226,10 @@
 
   // User preferences and options
   &__options {
+    display: flex;
+    flex-shrink: 0;
     max-width: 100%;
+    white-space: nowrap;
     transition:
       max-width  0ms 250ms,
       opacity  250ms 250ms;
