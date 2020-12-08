@@ -92,7 +92,7 @@
       {% endif %}
 
       <!-- Switch to toggle language -->
-      {% if config.extra.alternate is iterable %}
+      {% if config.extra.alternate %}
         <div class="md-select">
           {% set icon = config.theme.icon.translate or "material/translate" %}
           <span class="md-header-nav__button md-icon">
