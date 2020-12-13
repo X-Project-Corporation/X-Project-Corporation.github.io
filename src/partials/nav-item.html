@@ -23,7 +23,7 @@
 <!-- Retrieve features from configuration -->
 {% set features = config.theme.features or [] %}
 
-<!-- Determine class according to level -->
+<!-- Determine class according to state -->
 {% set class = "md-nav__item" %}
 {% if nav_item.active %}
   {% set class = class ~ " md-nav__item--active" %}
