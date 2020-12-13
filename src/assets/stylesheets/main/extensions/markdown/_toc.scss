@@ -70,9 +70,13 @@
   :target {
     scroll-margin-top: px2rem(48px + 24px);
 
-    // Adjust scroll offset for fixed navigation tabs
-    .md-header--lifted ~ .md-container & {
-      scroll-margin-top: px2rem(96px + 24px);
+    // [screen +]: Fixed navigation tabs
+    @include break-from-device(screen) {
+
+      // Adjust scroll offset for fixed navigation tabs
+      .md-header--lifted ~ .md-container & {
+        scroll-margin-top: px2rem(96px + 24px);
+      }
     }
   }
 
@@ -82,9 +86,13 @@
   h3:target {
     scroll-margin-top: px2rem(48px + 24px - 4px);
 
-    // Adjust scroll offset for fixed navigation tabs
-    .md-header--lifted ~ .md-container & {
-      scroll-margin-top: px2rem(96 + 24px - 4px);
+    // [screen +]: Fixed navigation tabs
+    @include break-from-device(screen) {
+
+      // Adjust scroll offset for fixed navigation tabs
+      .md-header--lifted ~ .md-container & {
+        scroll-margin-top: px2rem(96px + 24px - 4px);
+      }
     }
   }
 
@@ -92,9 +100,13 @@
   h4:target {
     scroll-margin-top: px2rem(48px + 24px - 3px);
 
-    // Adjust scroll offset for fixed navigation tabs
-    .md-header--lifted ~ .md-container & {
-      scroll-margin-top: px2rem(96 + 24px - 3px);
+    // [screen +]: Fixed navigation tabs
+    @include break-from-device(screen) {
+
+      // Adjust scroll offset for fixed navigation tabs
+      .md-header--lifted ~ .md-container & {
+        scroll-margin-top: px2rem(96px + 24px - 3px);
+      }
     }
   }
 }
