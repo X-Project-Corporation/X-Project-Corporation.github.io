@@ -69,6 +69,11 @@
   // Adjust scroll offset for all elements with `id` attributes
   :target {
     scroll-margin-top: px2rem(48px + 24px);
+
+    // Adjust scroll offset for fixed navigation tabs
+    .md-header--lifted ~ .md-container & {
+      scroll-margin-top: px2rem(96px + 24px);
+    }
   }
 
   // Adjust scroll offset for headlines of level 1-3
@@ -76,10 +81,20 @@
   h2:target,
   h3:target {
     scroll-margin-top: px2rem(48px + 24px - 4px);
+
+    // Adjust scroll offset for fixed navigation tabs
+    .md-header--lifted ~ .md-container & {
+      scroll-margin-top: px2rem(96 + 24px - 4px);
+    }
   }
 
   // Adjust scroll offset for headlines of level 4
   h4:target {
     scroll-margin-top: px2rem(48px + 24px - 3px);
+
+    // Adjust scroll offset for fixed navigation tabs
+    .md-header--lifted ~ .md-container & {
+      scroll-margin-top: px2rem(96 + 24px - 3px);
+    }
   }
 }

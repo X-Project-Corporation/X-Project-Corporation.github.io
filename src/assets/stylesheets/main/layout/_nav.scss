@@ -474,7 +474,7 @@
   @include break-at-device(tablet landscape) {
 
     // Show link to integrated table of contents
-    &--primary-with-secondary &__link[for="__toc"] {
+    &--integrated &__link[for="__toc"] {
       display: block;
       padding-right: px2rem(48px);
       scroll-snap-align: initial;
@@ -622,7 +622,7 @@
     }
 
     // Modifier for when navigation tabs are rendered
-    &--primary-with-tabs {
+    &--lifted {
 
       // Hide nested items on level 1 and site title
       > .md-nav__list > .md-nav__item--nested,
@@ -667,7 +667,7 @@
     }
 
     // Modifier for when table of contents is rendered in primary navigation
-    &--primary-with-secondary &__link[for="__toc"] ~ .md-nav {
+    &--integrated &__link[for="__toc"] ~ .md-nav {
       display: block;
       margin-bottom: 1.25em;
       border-left: px2rem(1px) solid var(--md-primary-fg-color);
