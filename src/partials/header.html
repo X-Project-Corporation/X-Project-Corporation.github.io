@@ -130,4 +130,11 @@
       </div>
     {% endif %}
   </nav>
+
+  <!-- Navigation tabs (if fixed) -->
+  {% if "navigation.tabs.fixed" in features %}
+    {% if "navigation.tabs" in features %}
+      {% include "partials/tabs.html" %}
+    {% endif %}
+  {% endif %}
 </header>

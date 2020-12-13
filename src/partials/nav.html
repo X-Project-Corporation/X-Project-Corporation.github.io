@@ -26,10 +26,13 @@
   {% set site_url = site_url ~ "/index.html" %}
 {% endif %}
 
-<!-- Determine class according to configuraiton -->
+<!-- Determine class according to configuration -->
 {% set class = "md-nav md-nav--primary" %}
+{% if "navigation.tabs" in features %}
+  {% set class = class ~ " md-nav--primary-with-tabs" %}
+{% endif %}
 {% if "toc.integrate" in features %}
-  {% set class = class ~ " md-nav--integrated" %}
+  {% set class = class ~ " md-nav--primary-with-secondary" %}
 {% endif %}
 
 <!-- Main navigation -->

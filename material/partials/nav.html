@@ -6,8 +6,11 @@
   {% set site_url = site_url ~ "/index.html" %}
 {% endif %}
 {% set class = "md-nav md-nav--primary" %}
+{% if "navigation.tabs" in features %}
+  {% set class = class ~ " md-nav--primary-with-tabs" %}
+{% endif %}
 {% if "toc.integrate" in features %}
-  {% set class = class ~ " md-nav--integrated" %}
+  {% set class = class ~ " md-nav--primary-with-secondary" %}
 {% endif %}
 <nav class="{{ class }}" aria-label="{{ lang.t('nav.title') }}" data-md-level="0">
   <label class="md-nav__title" for="__drawer">

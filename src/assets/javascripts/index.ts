@@ -232,11 +232,13 @@ export function initialize(config: unknown) {
       shareReplay({ bufferSize: 1, refCount: true })
     )
 
-  const tabs$ = useComponent("tabs")
-    .pipe(
-      mountTabs({ header$, viewport$, screen$ }),
-      shareReplay({ bufferSize: 1, refCount: true })
-    )
+  const tabs$ = !config.features.includes("navigation.tabs.fixed")
+    ? useComponent("tabs")
+      .pipe(
+        mountTabs({ header$, viewport$, screen$ }),
+        shareReplay({ bufferSize: 1, refCount: true })
+      )
+    : NEVER
 
   /* ----------------------------------------------------------------------- */
 
