@@ -27,6 +27,7 @@
 // Selection
 .md-select {
   position: relative;
+  z-index: 1;
 
   // Selection bubble
   &__inner {
