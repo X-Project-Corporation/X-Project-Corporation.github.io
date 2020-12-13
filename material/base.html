@@ -35,7 +35,7 @@
         <link rel="search" type="application/opensearchdescription+xml" href="{{ 'search.xml' | url }}" title="{{ config.site_name }} {{ lang.t('search.placeholder') }}">
       {% endif %}
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-6.1.7+insiders-1.12.1">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-6.1.7+insiders-1.13.0">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -128,7 +128,7 @@
     <div class="md-container" data-md-component="container">
       {% block hero %}{% endblock %}
       {% block tabs %}
-        {% if not "navigation.tabs.fixed" in features %}
+        {% if not "navigation.tabs.sticky" in features %}
           {% if "navigation.tabs" in features %}
             {% include "partials/tabs.html" %}
           {% endif %}
@@ -195,7 +195,7 @@
     </div>
     {% block scripts %}
       <script src="{{ 'assets/javascripts/vendor.49293c47.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.7a5d8267.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.f4f0c901.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",

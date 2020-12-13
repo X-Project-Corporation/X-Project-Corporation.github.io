@@ -6,7 +6,7 @@
   {% set site_url = site_url ~ "/index.html" %}
 {% endif %}
 {% set class = "md-header" %}
-{% if "navigation.tabs.fixed" in features %}
+{% if "navigation.tabs.sticky" in features %}
   {% set class = class ~ " md-header--lifted" %}
 {% endif %}
 <header class="{{ class }}" data-md-component="header">
@@ -78,7 +78,7 @@
       </div>
     {% endif %}
   </nav>
-  {% if "navigation.tabs.fixed" in features %}
+  {% if "navigation.tabs.sticky" in features %}
     {% if "navigation.tabs" in features %}
       {% include "partials/tabs.html" %}
     {% endif %}

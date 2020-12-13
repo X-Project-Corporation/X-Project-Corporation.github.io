@@ -32,7 +32,7 @@ import { SearchIndex, SearchTransformFn } from "integrations"
 export type Feature =
   | "header.autohide"                  /* Hide header */
   | "navigation.tabs"                  /* Tabs navigation */
-  | "navigation.tabs.fixed"            /* Tabs navigation (fixed) */
+  | "navigation.tabs.sticky"           /* Tabs navigation (sticky) */
   | "navigation.instant"               /* Instant loading */
   | "search.highlight"                 /* Search highlighting */
   | "search.suggest"                   /* Search suggestions */

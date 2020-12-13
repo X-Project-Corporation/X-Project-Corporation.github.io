@@ -28,7 +28,7 @@
 
 <!-- Determine class according to configuration -->
 {% set class = "md-header" %}
-{% if "navigation.tabs.fixed" in features %}
+{% if "navigation.tabs.sticky" in features %}
   {% set class = class ~ " md-header--lifted" %}
 {% endif %}
 
@@ -137,8 +137,8 @@
     {% endif %}
   </nav>
 
-  <!-- Navigation tabs (fixed) -->
-  {% if "navigation.tabs.fixed" in features %}
+  <!-- Navigation tabs (sticky) -->
+  {% if "navigation.tabs.sticky" in features %}
     {% if "navigation.tabs" in features %}
       {% include "partials/tabs.html" %}
     {% endif %}

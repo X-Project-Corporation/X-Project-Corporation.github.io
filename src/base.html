@@ -271,7 +271,7 @@
 
       <!-- Navigation tabs (collapsing) -->
       {% block tabs %}
-        {% if not "navigation.tabs.fixed" in features %}
+        {% if not "navigation.tabs.sticky" in features %}
           {% if "navigation.tabs" in features %}
             {% include "partials/tabs.html" %}
           {% endif %}

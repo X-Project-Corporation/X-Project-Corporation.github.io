@@ -232,7 +232,7 @@ export function initialize(config: unknown) {
       shareReplay({ bufferSize: 1, refCount: true })
     )
 
-  const tabs$ = !config.features.includes("navigation.tabs.fixed")
+  const tabs$ = !config.features.includes("navigation.tabs.sticky")
     ? useComponent("tabs")
       .pipe(
         mountTabs({ header$, viewport$, screen$ }),
