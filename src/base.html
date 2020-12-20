@@ -416,7 +416,7 @@
           search: Object.assign({
             worker: "{{ 'assets/javascripts/worker/search.js' | url }}"
           }, typeof search !== "undefined" && search),
-          version: {{ config.extra.version or {} | tojson }}
+          version: {{ (config.extra.version or {}) | tojson }}
         })
       </script>
 
