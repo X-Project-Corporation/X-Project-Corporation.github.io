@@ -225,7 +225,7 @@
           search: Object.assign({
             worker: "{{ 'assets/javascripts/worker/search.0f64ce30.min.js' | url }}"
           }, typeof search !== "undefined" && search),
-          version: {{ config.extra.version or {} | tojson }}
+          version: {{ (config.extra.version or {}) | tojson }}
         })
       </script>
       {% for path in config["extra_javascript"] %}
