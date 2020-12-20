@@ -46,6 +46,9 @@
 .md-typeset details:not([open]) {
   transition-duration: 0s;
   box-shadow: none;
+  background-color: var(
+    --md-default-bg-color
+  ); /* <- fix background-color when admonitions are closed */
 }
 
 /* Details title in closed state */
