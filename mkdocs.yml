@@ -52,10 +52,12 @@ theme:
   # Default values, taken from mkdocs_theme.yml
   language: en
   features:
+    # - header.autohide
     # - navigation.expand
     # - navigation.instant
     # - navigation.sections
     - navigation.tabs
+    # - navigation.tabs.sticky
     - search.highlight
     - search.suggest
     # - toc.integrate
