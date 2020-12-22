@@ -55,7 +55,7 @@ theme:
     # - header.autohide
     # - navigation.expand
     # - navigation.instant
-    # - navigation.sections
+    - navigation.sections
     - navigation.tabs
     # - navigation.tabs.sticky
     - search.highlight
@@ -127,6 +127,7 @@ markdown_extensions:
   - def_list
   - footnotes
   - meta
+  - md_in_html
   - toc:
       permalink: true
   - pymdownx.arithmatex:
@@ -201,9 +202,11 @@ nav:
     - Meta tags: reference/meta-tags.md
     - Variables: reference/variables.md
   - Changelog:
-    - Release notes: changelog.md
-    - Upgrading: upgrading.md
-    - Deprecations: deprecations.md
+    - Material for MkDocs: changelog.md
+    - Material for MkDocs Insiders: changelog/insiders.md
+    - Guides:
+      - Upgrading: upgrading.md
+      - Deprecations: deprecations.md
 
 # Google Analytics
 google_analytics:

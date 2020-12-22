@@ -45,16 +45,6 @@
   // Tabs in hidden state, i.e. when scrolling down
   &[data-md-state="hidden"] {
     pointer-events: none;
-
-    // Hide tabs upon scrolling - disable transition to minimizes repaints
-    // while scrolling down, while scrolling up seems to be okay
-    .md-tabs__link {
-      transform: translateY(50%);
-      opacity: 0;
-      transition:
-        transform 0ms 100ms,
-        opacity 100ms;
-    }
   }
 
   // Navigation tabs list
@@ -107,6 +97,16 @@
       .md-tabs__item:nth-child(#{$i}) & {
         transition-delay: 20ms * ($i - 1);
       }
+    }
+
+    // Hide tabs upon scrolling - disable transition to minimizes repaints
+    // while scrolling down, while scrolling up seems to be okay
+    .md-tabs[data-md-state="hidden"] & {
+      transform: translateY(50%);
+      opacity: 0;
+      transition:
+        transform 0ms 100ms,
+        opacity 100ms;
     }
   }
 }

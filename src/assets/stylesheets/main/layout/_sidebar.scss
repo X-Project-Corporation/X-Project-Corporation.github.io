@@ -21,20 +21,6 @@
 ////
 
 // ----------------------------------------------------------------------------
-// Keyframes
-// ----------------------------------------------------------------------------
-
-// Activate scroll snapping with delay
-@keyframes md-sidebar__scrollwrap--hack {
-  0%, 99% {
-    scroll-snap-type: none;
-  }
-  100% {
-    scroll-snap-type: y mandatory;
-  }
-}
-
-// ----------------------------------------------------------------------------
 // Rules
 // ----------------------------------------------------------------------------
 
@@ -145,16 +131,12 @@
     overflow-y: auto;
     // Hack: promote to own layer to reduce jitter
     backface-visibility: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: var(--md-default-fg-color--lighter) transparent;
-
     // Hack: Chrome 81+ exhibits a strange bug, where it scrolls the container
     // to the bottom if `scroll-snap-type` is set on the initial render. For
-    // this reason, we use an animation to set scroll snaping with a slight
-    // delay, which seems to fix the issue (#1667).
-    .js & {
-      animation: md-sidebar__scrollwrap--hack 1000ms forwards;
-    }
+    // this reason, we disable scroll snapping until this is resolved (#1667).
+    // scroll-snap-type: y mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--md-default-fg-color--lighter) transparent;
 
     // Sidebar scroll wrapper on hover
     &:hover {

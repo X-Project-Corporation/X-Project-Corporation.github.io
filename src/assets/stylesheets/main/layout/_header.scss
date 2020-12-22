@@ -253,7 +253,7 @@
   &__source {
     display: none;
 
-    // [tablet landscape +]: Show reposistory information
+    // [tablet landscape +]: Show repository information
     @include break-from-device(tablet landscape) {
       display: block;
       width: px2rem(234px);
