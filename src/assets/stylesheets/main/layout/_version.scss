@@ -79,6 +79,7 @@
   &__list {
     position: absolute;
     top: px2rem(3px);
+    z-index: 1;
     max-height: px2rem(36px);
     margin: px2rem(4px) px2rem(16px);
     padding: 0;
@@ -118,6 +119,7 @@
     width: 100%;
     padding-right: px2rem(24px);
     padding-left: px2rem(12px);
+    white-space: nowrap;
     cursor: pointer;
     transition:
       color            250ms,
