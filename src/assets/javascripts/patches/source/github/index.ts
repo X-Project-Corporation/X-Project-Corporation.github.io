@@ -62,8 +62,9 @@ export function fetchSourceFactsFromGitHub(
         if (typeof repo !== "undefined") {
           const { stargazers_count, forks_count }: Repo = data
           return [
-            `${round(stargazers_count!)} Stars`,
-            `${round(forks_count!)} Forks`
+            "6.2.2",
+            round(stargazers_count!),
+            round(forks_count!)
           ]
 
         /* GitHub user/organization */
