@@ -33,11 +33,11 @@
       {% endif %}
       {% if "search.xml" in config.theme.static_templates %}
         {% if config.site_url %}
-          <link rel="search" type="application/opensearchdescription+xml" href="{{ config.site_url  }}/search.xml" title="{{ config.site_name }} {{ lang.t('search.placeholder') }}">
+          <link rel="search" type="application/opensearchdescription+xml" href="{{ config.site_url }}search.xml" title="{{ config.site_name }} {{ lang.t('search.placeholder') }}">
         {% endif %}
       {% endif %}
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-6.2.2+insiders-1.13.2">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-6.2.3+insiders-1.13.2">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -49,7 +49,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.9336a370.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.cc7a257f.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.fed55ee1.min.css' | url }}">
