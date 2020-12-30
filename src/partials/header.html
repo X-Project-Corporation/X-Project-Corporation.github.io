@@ -32,36 +32,37 @@
   {% set class = class ~ " md-header--lifted" %}
 {% endif %}
 
-<!-- Application header -->
+<!-- Header -->
 <header class="{{ class }}" data-md-component="header">
-
-  <!-- Top-level navigation -->
-  <nav class="md-header-nav md-grid" aria-label="{{ lang.t('header.title') }}">
+  <nav
+    class="md-header__inner md-grid"
+    aria-label="{{ lang.t('header.title') }}"
+  >
 
     <!-- Link to home -->
     <a
       href="{{ site_url }}"
       title="{{ config.site_name | e }}"
-      class="md-header-nav__button md-logo"
+      class="md-header__button md-logo"
       aria-label="{{ config.site_name }}"
     >
       {% include "partials/logo.html" %}
     </a>
 
     <!-- Button to open drawer -->
-    <label class="md-header-nav__button md-icon" for="__drawer">
+    <label class="md-header__button md-icon" for="__drawer">
       {% include ".icons/material/menu" ~ ".svg" %}
     </label>
 
     <!-- Header title -->
-    <div class="md-header-nav__title" data-md-component="header-title">
-      <div class="md-header-nav__ellipsis">
-        <div class="md-header-nav__topic">
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
           <span class="md-ellipsis">
             {{ config.site_name }}
           </span>
         </div>
-        <div class="md-header-nav__topic" data-md-component="header-topic">
+        <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             {% if page and page.meta and page.meta.title %}
               {{ page.meta.title }}
@@ -73,8 +74,8 @@
       </div>
     </div>
 
-    <!-- User preferences and options -->
-    <div class="md-header-nav__options">
+    <!-- Header options -->
+    <div class="md-header__options">
 
       <!-- Switch to toggle palette -->
       {% if not config.theme.palette is mapping %}
@@ -83,7 +84,7 @@
           {% set primary = option.primary | replace(" ", "-") | lower %}
           {% set accent  = option.accent  | replace(" ", "-") | lower %}
           <button
-            class="md-header-nav__button md-icon"
+            class="md-header__button md-icon"
             title="{{ option.toggle.name }}"
             aria-label="{{ option.toggle.name }}"
             data-md-option="palette"
@@ -101,7 +102,7 @@
       {% if config.extra.alternate %}
         <div class="md-select">
           {% set icon = config.theme.icon.translate or "material/translate" %}
-          <span class="md-header-nav__button md-icon">
+          <span class="md-header__button md-icon">
             {% include ".icons/" ~ icon ~ ".svg" %}
           </span>
           <div class="md-select__inner">
@@ -121,7 +122,7 @@
 
     <!-- Button to open search dialogue -->
     {% if "search" in config["plugins"] %}
-      <label class="md-header-nav__button md-icon" for="__search">
+      <label class="md-header__button md-icon" for="__search">
         {% include ".icons/material/magnify.svg" %}
       </label>
 
@@ -131,7 +132,7 @@
 
     <!-- Repository information -->
     {% if config.repo_url %}
-      <div class="md-header-nav__source">
+      <div class="md-header__source">
         {% include "partials/source.html" %}
       </div>
     {% endif %}

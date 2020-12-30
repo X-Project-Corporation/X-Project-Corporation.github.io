@@ -53,7 +53,8 @@ import {
   distinctUntilKeyChanged,
   mapTo,
   distinctUntilChanged,
-  zipWith
+  zipWith,
+  combineLatestWith
 } from "rxjs/operators"
 
 import {
@@ -182,6 +183,7 @@ export function initialize(config: unknown) {
     "search-query",                    /* Search input */
     "search-reset",                    /* Search reset */
     "search-result",                   /* Search results */
+    "search-share",                    /* Search share */
     "search-suggest",                  /* Search suggestions */
     "skip",                            /* Skip link */
     "tabs",                            /* Tabs */
@@ -682,13 +684,25 @@ export function initialize(config: unknown) {
 
     useComponent("header-title")
       .pipe(
-        map(el => el.querySelector(".md-header-nav__topic")!),
+        map(el => el.querySelector(".md-header__topic")!),
         zipWith(base$, version$)
       )
         .subscribe(([el, base, version]) => {
           el.appendChild(renderVersion(base, version))
         })
   }
+
+  // Experimental support for sharing (deep-linking) search (results)
+  search$
+    .pipe(
+      map(({ query }) => query.value),
+      combineLatestWith(useComponent("search-share"))
+    )
+      .subscribe(([text, el]) => {
+        const base = new URL(document.location.href)
+        base.searchParams.set("q", text.replace(/\s+/g, " "))
+        el.setAttribute("data-clipboard-text", base.toString())
+      })
 
   /* ----------------------------------------------------------------------- */
 

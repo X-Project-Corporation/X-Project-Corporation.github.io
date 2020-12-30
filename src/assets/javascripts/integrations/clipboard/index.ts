@@ -75,7 +75,7 @@ export function setupClipboard(
 
   /* Initialize clipboard */
   const clipboard$ = new Observable<ClipboardJS.Event>(subscriber => {
-    new ClipboardJS(".md-clipboard").on("success", ev => subscriber.next(ev))
+    new ClipboardJS("[data-clipboard]").on("success", ev => subscriber.next(ev))
   })
     .pipe(
       share()
