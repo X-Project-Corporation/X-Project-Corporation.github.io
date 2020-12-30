@@ -307,6 +307,7 @@
 
   // Search icon
   &__icon {
+    display: inline-block;
     width: px2rem(24px);
     height: px2rem(24px);
     cursor: pointer;

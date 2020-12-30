@@ -58,8 +58,8 @@
 
         <!-- Button to share search -->
         {% if "search.share" in features %}
-          <button
-            type="button"
+          <a
+            href="javascript:void(0)"
             class="md-search__icon md-icon"
             aria-label="{{ lang.t('search.share') }}"
             data-clipboard
@@ -68,7 +68,7 @@
             tabindex="-1"
           >
             {% include ".icons/material/share-variant.svg" %}
-          </button>
+          </a>
         {% endif %}
 
         <!-- Button to reset search -->

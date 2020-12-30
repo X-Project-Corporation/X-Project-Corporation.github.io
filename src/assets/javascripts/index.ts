@@ -696,13 +696,24 @@ export function initialize(config: unknown) {
   search$
     .pipe(
       map(({ query }) => query.value),
-      combineLatestWith(useComponent("search-share"))
+      combineLatestWith(useComponent<HTMLLinkElement>("search-share"))
     )
       .subscribe(([text, el]) => {
-        const base = new URL(document.location.href)
-        base.searchParams.set("q", text.replace(/\s+/g, " "))
-        el.setAttribute("data-clipboard-text", base.toString())
+        el.href = "?q=" + text.replace(/\s+/g, "+")
       })
+
+  useComponent<HTMLLinkElement>("search-share")
+    .pipe(
+      switchMap(el => fromEvent(el, "click")
+        .pipe(
+          tap(ev => {
+            ev.preventDefault()
+            el.setAttribute("data-clipboard-text", new URL(el.href).toString())
+          })
+        )
+      )
+    )
+      .subscribe(() => {})
 
   /* ----------------------------------------------------------------------- */
 
