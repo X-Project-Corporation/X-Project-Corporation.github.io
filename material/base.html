@@ -31,11 +31,6 @@
           <link rel="alternate" href="{{ alt.link | url }}" hreflang="{{ alt.lang | d(lang.t('language')) }}">
         {% endfor %}
       {% endif %}
-      {% if "search.xml" in config.theme.static_templates %}
-        {% if config.site_url %}
-          <link rel="search" type="application/opensearchdescription+xml" href="{{ config.site_url }}search.xml" title="{{ config.site_name }} {{ lang.t('search.placeholder') }}">
-        {% endif %}
-      {% endif %}
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}">
       <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-6.2.3+insiders-1.13.2">
     {% endblock %}
