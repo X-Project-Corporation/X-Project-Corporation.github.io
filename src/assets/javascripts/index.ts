@@ -298,10 +298,12 @@ export function initialize(config: unknown) {
                 const nodes: ChildNode[] = []
                 while (true) {
                   const node = it.nextNode() as ChildNode
-                  if (node)
-                    nodes.push(node)
-                  else
+                  if (node) {
+                    if (!["style", "script"].includes(node.parentElement!.tagName))
+                      nodes.push(node)
+                  } else {
                     break
+                  }
                 }
 
                 /* Highlight */
@@ -748,7 +750,7 @@ export function initialize(config: unknown) {
   loaded$
     .pipe(
       switchMap(() => diagrams$),
-      debounceTime(1) // TODO: hack, sometimes doubled-triggered on second load
+      debounceTime(10) // TODO: hack, sometimes doubled-triggered on second load
     )
     .subscribe(blocks => {
       blocks.forEach((block, index) => {
