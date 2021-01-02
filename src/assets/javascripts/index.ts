@@ -343,14 +343,14 @@ export function initialize(config: unknown) {
           useComponent("search-suggest")
             .subscribe(suggest => {
               suggest.innerText = params.get("q")!
-              useComponent("search-query")
+              useComponent<HTMLInputElement>("search-query")
                 .subscribe(input => input.focus())
             })
 
           worker.rx$
             .pipe(
               filter(isSearchReadyMessage),
-              switchMap(() => useComponent("search-query"))
+              switchMap(() => useComponent<HTMLInputElement>("search-query"))
             )
               .subscribe(input => {
                 input.blur()
@@ -359,7 +359,7 @@ export function initialize(config: unknown) {
               })
         }
 
-        const query$ = useComponent("search-query")
+        const query$ = useComponent<HTMLInputElement>("search-query")
           .pipe(
             mountSearchQuery(worker, { transform: config.search.transform }),
             shareReplay({ bufferSize: 1, refCount: true })
@@ -414,7 +414,7 @@ export function initialize(config: unknown) {
                 }
               })
 
-          useComponent("search-query")
+          useComponent<HTMLInputElement>("search-query")
             .pipe(
               switchMap(el => fromEvent(el, "keydown")
                 .pipe(
