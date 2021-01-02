@@ -58,7 +58,8 @@ import {
   skipUntil,
   share,
   debounce,
-  startWith
+  startWith,
+  debounceTime
 } from "rxjs/operators"
 
 import {
@@ -746,10 +747,12 @@ export function initialize(config: unknown) {
 
   loaded$
     .pipe(
-      switchMap(() => diagrams$)
+      switchMap(() => diagrams$),
+      debounceTime(1) // TODO: hack, sometimes doubled-triggered on second load
     )
     .subscribe(blocks => {
       blocks.forEach((block, index) => {
+        // console.log(block, index)
         const code = block.innerText
         mermaid.mermaidAPI.render(`__mermaid_${index}`, code, (svg: string) => {
           block.innerHTML = svg
