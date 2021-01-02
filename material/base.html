@@ -44,10 +44,10 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.93fbc7be.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.6a6ed638.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
-        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.fed55ee1.min.css' | url }}">
+        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.eb583a2e.min.css' | url }}">
         {% if palette.primary %}
           {% import "partials/palette.html" as map %}
           {% set primary = map.primary(
@@ -66,7 +66,7 @@
             font.text | replace(' ', '+') + ':300,400,400i,700%7C' +
             font.code | replace(' ', '+')
           }}&display=fallback">
-        <style>body,input{font-family:"{{ font.text }}",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"{{ font.code }}",SFMono-Regular,Consolas,Menlo,monospace}</style>
+        <style>:root{--md-text-font-family:"{{ font.text }}",;--md-code-font-family:"{{ font.code }}",}</style>
       {% endif %}
     {% endblock %}
     {% if config.extra.manifest %}
@@ -191,8 +191,8 @@
       {% endblock %}
     </div>
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/vendor.49293c47.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.59dfdd61.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/vendor.3da4960b.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.039ddc91.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",
@@ -220,7 +220,7 @@
           base: "{{ base_url }}",
           features: {{ (features or []) | tojson }},
           search: Object.assign({
-            worker: "{{ 'assets/javascripts/worker/search.0f64ce30.min.js' | url }}"
+            worker: "{{ 'assets/javascripts/worker/search.e77c40e2.min.js' | url }}"
           }, typeof search !== "undefined" && search),
           version: {{ (config.extra.version or {}) | tojson }}
         })
