@@ -29,7 +29,7 @@ markdown_extensions:
       custom_fences:
         - name: mermaid
           class: mermaid-experimental
-          format: !!pymdownx.superfences.fence_code_format
+          format: !!python/name:pymdownx.superfences.fence_code_format
 ```
 
 No further configuration is necessary. Material for MkDocs will automatically
@@ -103,4 +103,3 @@ types._
 
   [10]: code-blocks.md
   [11]: #superfences
-  [12]: ../assets/screenshots/diagram.png
