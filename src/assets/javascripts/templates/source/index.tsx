@@ -21,7 +21,7 @@
  */
 
 import { SourceFacts } from "patches/source"
-import { h } from "utilities"
+import { h, round } from "utilities"
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -39,8 +39,13 @@ export function renderSource(
 ) {
   return (
     <ul class="md-source__facts">
-      {facts.map(fact => (
-        <li class="md-source__fact">{fact}</li>
+      {Object.keys(facts).map(key => (
+        <li class={`md-source__fact md-source__fact--${key}`}>
+          {typeof facts[key as keyof SourceFacts] === "number"
+            ? round(facts[key as keyof SourceFacts])
+            : facts[key as keyof SourceFacts]
+          }
+        </li>
       ))}
     </ul>
   )

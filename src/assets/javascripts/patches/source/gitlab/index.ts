@@ -30,8 +30,6 @@ import {
   switchMap
 } from "rxjs/operators"
 
-import { round } from "utilities"
-
 import { SourceFacts } from ".."
 
 /* ----------------------------------------------------------------------------
@@ -54,11 +52,11 @@ export function fetchSourceFactsFromGitLab(
     .pipe(
       filter(res => res.status === 200),
       switchMap(res => res.json()),
-      map(({ star_count, forks_count }: ProjectSchema) => ([
-        `${round(star_count)} Stars`,
-        `${round(forks_count)} Forks`
-      ])),
-      defaultIfEmpty([]),
+      map(({ star_count, forks_count }: ProjectSchema) => ({
+        stars: star_count,
+        forks: forks_count
+      })),
+      defaultIfEmpty({}),
       share()
     )
 }

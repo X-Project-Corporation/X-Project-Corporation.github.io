@@ -35,9 +35,29 @@ import { fetchSourceFactsFromGitLab } from "./gitlab"
  * ------------------------------------------------------------------------- */
 
 /**
+ * Source facts for repositories
+ */
+export interface RepositorySourceFacts {
+  stars?: number                       /* Number of stars */
+  forks?: number                       /* Number of forks */
+  version?: string                     /* Latest version */
+}
+
+/**
+ * Source facts for organizations
+ */
+export interface OrganizationSourceFacts {
+  repositories?: number                /* Number of repositories */
+}
+
+/* ------------------------------------------------------------------------- */
+
+/**
  * Source facts
  */
-export type SourceFacts = string[]
+export type SourceFacts =
+  | RepositorySourceFacts
+  | OrganizationSourceFacts
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -104,7 +124,7 @@ export function patchSource(
       switchMap(({ href }) => (
         cache(`${hash(href)}`, () => fetchSourceFacts(href))
       )),
-      filter(facts => facts.length > 0),
+      filter(facts => Object.keys(facts).length > 0),
       catchError(() => NEVER)
     )
       .subscribe(facts => {

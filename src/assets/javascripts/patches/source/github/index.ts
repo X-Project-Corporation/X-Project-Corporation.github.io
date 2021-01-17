@@ -21,7 +21,7 @@
  */
 
 import { Repo, User } from "github-types"
-import { Observable, from } from "rxjs"
+import { Observable, from, of } from "rxjs"
 import {
   defaultIfEmpty,
   filter,
@@ -29,8 +29,6 @@ import {
   share,
   switchMap
 } from "rxjs/operators"
-
-import { round } from "utilities"
 
 import { SourceFacts } from ".."
 
@@ -61,21 +59,34 @@ export function fetchSourceFactsFromGitHub(
         /* GitHub repository */
         if (typeof repo !== "undefined") {
           const { stargazers_count, forks_count }: Repo = data
-          return [
-            "6.2.2",
-            round(stargazers_count!),
-            round(forks_count!)
-          ]
+          return {
+            stars: stargazers_count!,
+            forks: forks_count!
+          }
 
         /* GitHub user/organization */
         } else {
           const { public_repos }: User = data
-          return [
-            `${round(public_repos!)} Repositories`
-          ]
+          return {
+            repositories: public_repos!
+          }
         }
       }),
-      defaultIfEmpty([]),
+      // TODO: refactor this pipeline, if it proves feasible
+      switchMap(facts => {
+        if (typeof repo !== "undefined") {
+          return from(fetch(`${url}/releases/latest`,))
+            .pipe(
+              filter(res => res.status === 200),
+              switchMap(res => res.json()),
+              map(data => ({ version: data.tag_name, ...facts })),
+              defaultIfEmpty(facts)
+            )
+        } else {
+          return of(facts)
+        }
+      }),
+      defaultIfEmpty({}),
       share()
     )
 }
