@@ -20,21 +20,13 @@
   IN THE SOFTWARE.
 -->
 
-{%- import "partials/language.html" as lang with context -%}
-
-<OpenSearchDescription
-  xmlns="http://a9.com/-/spec/opensearch/1.1/"
-  xmlns:moz="http://www.mozilla.org/2006/browser/search/"
->
-  <ShortName>{{ config.site_name }}</ShortName>
-  <Description>
-    {{ config.site_name }} {{ lang.t('search.placeholder') }}
-  </Description>
-  <Url
-    type="text/html"
-    method="get"
-    template="{{ config.site_url }}?q={searchTerms}"
-  />
-  <InputEncoding>UTF-8</InputEncoding>
-  <Language>{{ lang.t('language') }}</Language>
-</OpenSearchDescription>
+<!--
+  User preference: color palette - must be included exactly after the body to
+  omit a flash of white upon load when using a dark color scheme.
+-->
+<script>
+  var palette = JSON.parse(localStorage.getItem("__palette"))
+  if (palette !== null && typeof palette.color === "object")
+    for (var key in palette.color)
+      document.body.setAttribute("data-md-color-" + key, palette.color[key])
+</script>

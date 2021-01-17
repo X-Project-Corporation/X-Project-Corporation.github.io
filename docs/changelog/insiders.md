@@ -6,6 +6,14 @@ template: overrides/main.html
 
 ## Material for MkDocs Insiders
 
+### 1.15.0 <small>_ January 2, 2021</small>
+
+- Added support for native Mermaid.js integration
+
+### 1.14.0 <small>_ December 30, 2020</small>
+
+- Added support for sharing searches
+
 ### 1.13.2 <small>_ December 22, 2020</small>
 
 - Fixed version selector + sticky tabs navigation rendering issues

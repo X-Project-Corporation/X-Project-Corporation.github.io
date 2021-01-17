@@ -35,16 +35,19 @@ body,
 input {
   color: var(--md-typeset-color);
   font-feature-settings: "kern", "liga";
-  font-family: -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+  font-family:
+    var(--md-text-font-family,)
+    -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
 }
 
 // Define proportionally spaced fonts
 code,
 pre,
 kbd {
-  color: var(--md-typeset-color);
   font-feature-settings: "kern";
-  font-family: SFMono-Regular, Consolas, Menlo, monospace;
+  font-family:
+    var(--md-code-font-family,)
+    SFMono-Regular, Consolas, Menlo, monospace;
 }
 
 // ----------------------------------------------------------------------------
@@ -84,7 +87,6 @@ kbd {
 
   // Headline on level 1
   h1 {
-    display: flow-root;
     margin: 0 0 px2em(40px, 32px);
     color: var(--md-default-fg-color--light);
     font-weight: 300;
@@ -95,7 +97,6 @@ kbd {
 
   // Headline on level 2
   h2 {
-    display: flow-root;
     margin: px2em(40px, 25px) 0 px2em(16px, 25px);
     font-weight: 300;
     font-size: px2em(25px);
@@ -105,7 +106,6 @@ kbd {
 
   // Headline on level 3
   h3 {
-    display: flow-root;
     margin: px2em(32px, 20px) 0 px2em(16px, 20px);
     font-weight: 400;
     font-size: px2em(20px);
@@ -120,7 +120,6 @@ kbd {
 
   // Headline on level 4
   h4 {
-    display: flow-root;
     margin: px2em(16px) 0;
     font-weight: 700;
     letter-spacing: -0.01em;
@@ -129,7 +128,6 @@ kbd {
   // Headline on level 5-6
   h5,
   h6 {
-    display: flow-root;
     margin: px2em(16px, 12.8px) 0;
     color: var(--md-default-fg-color--light);
     font-weight: 700;

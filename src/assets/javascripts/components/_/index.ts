@@ -50,6 +50,7 @@ export type Component =
   | "search-query"                     /* Search input */
   | "search-reset"                     /* Search reset */
   | "search-result"                    /* Search results */
+  | "search-share"                     /* Search share */
   | "search-suggest"                   /* Search suggestions */
   | "skip"                             /* Skip link */
   | "tabs"                             /* Tabs */
@@ -154,12 +155,6 @@ export function setupComponents(
  *
  * @return Component observable
  */
-export function useComponent<T extends HTMLInputElement>(
-  name: "search-query"
-): Observable<T>
-export function useComponent<T extends HTMLElement>(
-  name: Component
-): Observable<T>
 export function useComponent<T extends HTMLElement>(
   name: Component
 ): Observable<T> {

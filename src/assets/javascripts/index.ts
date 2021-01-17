@@ -53,7 +53,13 @@ import {
   distinctUntilKeyChanged,
   mapTo,
   distinctUntilChanged,
-  zipWith
+  zipWith,
+  combineLatestWith,
+  skipUntil,
+  share,
+  debounce,
+  startWith,
+  debounceTime
 } from "rxjs/operators"
 
 import {
@@ -68,7 +74,9 @@ import {
   isLocalLocation,
   setLocationHash,
   watchLocationBase,
-  getElement
+  getElement,
+  createElement,
+  watchScript
 } from "browser"
 import {
   mountHeader,
@@ -141,6 +149,8 @@ export function resetScrollLock(
     window.scrollTo(0, value)
 }
 
+// TEST
+
 /* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
@@ -180,6 +190,7 @@ export function initialize(config: unknown) {
     "search-query",                    /* Search input */
     "search-reset",                    /* Search reset */
     "search-result",                   /* Search results */
+    "search-share",                    /* Search share */
     "search-suggest",                  /* Search suggestions */
     "skip",                            /* Skip link */
     "tabs",                            /* Tabs */
@@ -287,10 +298,12 @@ export function initialize(config: unknown) {
                 const nodes: ChildNode[] = []
                 while (true) {
                   const node = it.nextNode() as ChildNode
-                  if (node)
-                    nodes.push(node)
-                  else
+                  if (node) {
+                    if (!["style", "script"].includes(node.parentElement!.tagName))
+                      nodes.push(node)
+                  } else {
                     break
+                  }
                 }
 
                 /* Highlight */
@@ -332,14 +345,14 @@ export function initialize(config: unknown) {
           useComponent("search-suggest")
             .subscribe(suggest => {
               suggest.innerText = params.get("q")!
-              useComponent("search-query")
+              useComponent<HTMLInputElement>("search-query")
                 .subscribe(input => input.focus())
             })
 
           worker.rx$
             .pipe(
               filter(isSearchReadyMessage),
-              switchMap(() => useComponent("search-query"))
+              switchMap(() => useComponent<HTMLInputElement>("search-query"))
             )
               .subscribe(input => {
                 input.blur()
@@ -348,7 +361,7 @@ export function initialize(config: unknown) {
               })
         }
 
-        const query$ = useComponent("search-query")
+        const query$ = useComponent<HTMLInputElement>("search-query")
           .pipe(
             mountSearchQuery(worker, { transform: config.search.transform }),
             shareReplay({ bufferSize: 1, refCount: true })
@@ -403,7 +416,7 @@ export function initialize(config: unknown) {
                 }
               })
 
-          useComponent("search-query")
+          useComponent<HTMLInputElement>("search-query")
             .pipe(
               switchMap(el => fromEvent(el, "keydown")
                 .pipe(
@@ -680,13 +693,74 @@ export function initialize(config: unknown) {
 
     useComponent("header-title")
       .pipe(
-        map(el => el.querySelector(".md-header-nav__topic")!),
+        map(el => el.querySelector(".md-header__topic")!),
         zipWith(base$, version$)
       )
         .subscribe(([el, base, version]) => {
           el.appendChild(renderVersion(base, version))
         })
   }
+
+  // Experimental support for sharing (deep-linking) search (results)
+  search$
+    .pipe(
+      map(({ query }) => query.value),
+      combineLatestWith(useComponent<HTMLLinkElement>("search-share"))
+    )
+      .subscribe(([text, el]) => {
+        el.href = "?q=" + text.replace(/\s+/g, "+")
+      })
+
+  useComponent<HTMLLinkElement>("search-share")
+    .pipe(
+      switchMap(el => fromEvent(el, "click")
+        .pipe(
+          tap(ev => {
+            ev.preventDefault()
+            el.setAttribute("data-clipboard-text", new URL(el.href).toString())
+          })
+        )
+      )
+    )
+      .subscribe(() => {})
+
+  // Experimental mermaid integration - extract all Mermaid diagrams
+  const diagrams$ = document$
+    .pipe(
+      map(() => getElements('.mermaid-experimental')),
+      filter(blocks => blocks.length > 0)
+    )
+
+  // Load Mermaid
+  const loaded$ = diagrams$
+    .pipe(
+      take(1),
+      switchMap(() => (
+        watchScript("https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js")
+      )),
+      tap(() => {
+        const startOnLoad = false
+        mermaid.initialize({
+          startOnLoad,
+          themeCSS
+        })
+      })
+    )
+
+  loaded$
+    .pipe(
+      switchMap(() => diagrams$),
+      debounceTime(10) // TODO: hack, sometimes doubled-triggered on second load
+    )
+    .subscribe(blocks => {
+      blocks.forEach((block, index) => {
+        // console.log(block, index)
+        const code = block.innerText
+        mermaid.mermaidAPI.render(`__mermaid_${index}`, code, (svg: string) => {
+          block.innerHTML = svg
+        })
+      })
+    })
 
   /* ----------------------------------------------------------------------- */
 
@@ -716,3 +790,85 @@ export function initialize(config: unknown) {
     .subscribe()
   return state
 }
+
+declare const mermaid: any // TODO: fix types
+
+const themeCSS = `
+  rect.actor {
+    fill: white;
+  }
+  .classLabel .box {
+    background-color: var(--md-mermaid-label-bg-color);
+    fill: var(--md-mermaid-label-bg-color);
+    opacity: 1;
+  }
+  .classLabel .label {
+    font-family: var(--md-mermaid-font-family);
+    fill: var(--md-mermaid-label-fg-color)
+  }
+  .statediagram-cluster.statediagram-cluster .inner {
+    fill: var(--md-default-bg-color);
+  }
+  .statediagram-state rect.divider {
+    stroke: var(--md-default-fg-color--lighter);
+    fill: var(--md-default-fg-color--lightest);
+  }
+  .cluster rect {
+    stroke: var(--md-default-fg-color--lighter);
+    fill: var(--md-default-fg-color--lightest);
+  }
+  .edgeLabel,
+  .edgeLabel rect {
+    background-color: var(--md-mermaid-label-bg-color);
+    fill: var(--md-mermaid-label-bg-color);
+  }
+  .cardinality text {
+    fill: inherit !important;
+  }
+  .cardinality,
+  g.classGroup text {
+    font-family: var(--md-mermaid-font-family);
+    fill: var(--md-mermaid-label-fg-color);
+  }
+  .edgeLabel .label rect {
+    fill: transparent;
+  }
+  .nodeLabel,
+  .label,
+  .label div .edgeLabel {
+    font-family: var(--md-mermaid-font-family);
+    color: var(--md-mermaid-label-fg-color);
+  }
+  .label foreignObject {
+    overflow: visible;
+  }
+  .arrowheadPath,
+  marker {
+    fill: var(--md-mermaid-edge-color) !important;
+  }
+  .edgePath .path,
+  .flowchart-link,
+  .relation,
+  .transition {
+    stroke: var(--md-mermaid-edge-color);
+  }
+  .statediagram-cluster rect,
+  g.classGroup line,
+  g.classGroup rect,
+  .node circle,
+  .node ellipse,
+  .node path,
+  .node polygon,
+  .node rect {
+    fill: var(--md-mermaid-node-bg-color);
+    stroke: var(--md-mermaid-node-fg-color);
+  }
+  .node circle.state-end {
+    fill: var(--md-mermaid-label-bg-color);
+    stroke: none;
+  }
+  .node circle.state-start {
+    fill: var(--md-mermaid-label-fg-color);
+    stroke: var(--md-mermaid-label-fg-color);
+  }
+`

@@ -1,3 +1,21 @@
+mkdocs-material-6.2.4 (2021-01-09)
+
+  * Fixed #2156: Missing syntax highlighting for binary numbers
+  * Fixed #2186: Disqus showing on 404 page
+
+mkdocs-material-6.2.3+insiders-1.15.0 (2021-01-02)
+
+  * Added support for native Mermaid.js integration
+
+mkdocs-material-6.2.3+insiders-1.14.0 (2020-12-30)
+
+  * Added support for sharing searches
+
+mkdocs-material-6.2.3 (2020-12-27)
+
+  * Added back hidden overflow on root container
+  * Fixed #2142: MathJax formulas sometimes have vertical scrollbars
+
 mkdocs-material-6.2.2+insiders-1.13.2 (2020-12-22)
 
   * Fixed version selector + sticky tabs navigation rendering issues

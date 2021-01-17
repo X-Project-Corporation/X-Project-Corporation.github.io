@@ -31,11 +31,8 @@
           <link rel="alternate" href="{{ alt.link | url }}" hreflang="{{ alt.lang | d(lang.t('language')) }}">
         {% endfor %}
       {% endif %}
-      {% if "search.xml" in config.theme.static_templates %}
-        <link rel="search" type="application/opensearchdescription+xml" href="{{ 'search.xml' | url }}" title="{{ config.site_name }} {{ lang.t('search.placeholder') }}">
-      {% endif %}
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-6.2.2+insiders-1.13.2">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-6.2.4+insiders-1.15.0">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -47,10 +44,10 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.23cd666a.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.6d020880.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
-        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.47d7edde.min.css' | url }}">
+        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.697e47cb.min.css' | url }}">
         {% if palette.primary %}
           {% import "partials/palette.html" as map %}
           {% set primary = map.primary(
@@ -69,7 +66,7 @@
             font.text | replace(' ', '+') + ':300,400,400i,700%7C' +
             font.code | replace(' ', '+')
           }}&display=fallback">
-        <style>body,input{font-family:"{{ font.text }}",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"{{ font.code }}",SFMono-Regular,Consolas,Menlo,monospace}</style>
+        <style>:root{--md-text-font-family:"{{ font.text }}",;--md-code-font-family:"{{ font.code }}",}</style>
       {% endif %}
     {% endblock %}
     {% if config.extra.manifest %}
@@ -100,7 +97,7 @@
   {% endif %}
     {% set features = config.theme.features or [] %}
     {% if not config.theme.palette is mapping %}
-      <script>var palette=JSON.parse(localStorage.getItem("__palette")||"{}");if(void 0!==palette.color)for(var key in palette.color)document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+      {% include "partials/preferences/palette.html" %}
     {% endif %}
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -194,8 +191,8 @@
       {% endblock %}
     </div>
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/vendor.49293c47.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.72f7aaf5.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/vendor.2d9b50f1.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.641c2a35.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",
@@ -223,7 +220,7 @@
           base: "{{ base_url }}",
           features: {{ (features or []) | tojson }},
           search: Object.assign({
-            worker: "{{ 'assets/javascripts/worker/search.0f64ce30.min.js' | url }}"
+            worker: "{{ 'assets/javascripts/worker/search.e77c40e2.min.js' | url }}"
           }, typeof search !== "undefined" && search),
           version: {{ (config.extra.version or {}) | tojson }}
         })

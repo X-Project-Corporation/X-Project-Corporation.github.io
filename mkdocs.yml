@@ -33,7 +33,7 @@ repo_url: https://github.com/squidfunk/mkdocs-material
 edit_uri: ""
 
 # Copyright
-copyright: Copyright &copy; 2016 - 2020 Martin Donath
+copyright: Copyright &copy; 2016 - 2021 Martin Donath
 
 # Configuration
 theme:
@@ -43,7 +43,6 @@ theme:
   # Static content
   static_templates:
     - 404.html
-    - search.xml
 
   # Don't include MkDocs' JavaScript
   include_search_page: false
@@ -59,6 +58,7 @@ theme:
     - navigation.tabs
     # - navigation.tabs.sticky
     - search.highlight
+    - search.share
     - search.suggest
     # - toc.integrate
   palette:
@@ -149,12 +149,10 @@ markdown_extensions:
       repo: mkdocs-material
   - pymdownx.mark
   - pymdownx.smartsymbols
-  - pymdownx.snippets:
-      check_paths: true
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
-          class: mermaid
+          class: mermaid-experimental
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed
   - pymdownx.tasklist:
@@ -193,6 +191,7 @@ nav:
     - Code blocks: reference/code-blocks.md
     - Content tabs: reference/content-tabs.md
     - Data tables: reference/data-tables.md
+    - Diagrams: reference/diagrams.md
     - Footnotes: reference/footnotes.md
     - Formatting: reference/formatting.md
     - Icons + Emojis: reference/icons-emojis.md

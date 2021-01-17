@@ -38,6 +38,7 @@ export function renderClipboardButton(id: string) {
     <button
       class="md-clipboard md-icon"
       title={translate("clipboard.copy")}
+      data-clipboard
       data-clipboard-target={`#${id} > code`}
     ></button>
   )

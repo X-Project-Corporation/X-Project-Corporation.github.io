@@ -62,7 +62,7 @@ export function setupClipboard(
 
   /* Inject 'copy-to-clipboard' buttons */
   document$.subscribe(() => {
-    const blocks = getElements("pre > code")
+    const blocks = getElements("pre:not(.mermaid-experimental) > code")
     blocks.forEach((block, index) => {
       const parent = block.parentElement!
       parent.id = `__code_${index}`
@@ -75,7 +75,8 @@ export function setupClipboard(
 
   /* Initialize clipboard */
   const clipboard$ = new Observable<ClipboardJS.Event>(subscriber => {
-    new ClipboardJS(".md-clipboard").on("success", ev => subscriber.next(ev))
+    new ClipboardJS("[data-clipboard]")
+      .on("success", ev => subscriber.next(ev))
   })
     .pipe(
       share()
