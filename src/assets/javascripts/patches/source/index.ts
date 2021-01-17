@@ -122,7 +122,8 @@ export function patchSource(
     .pipe(
       map(() => getElementOrThrow<HTMLAnchorElement>(".md-source[href]")),
       switchMap(({ href }) => (
-        cache(`${hash(href)}`, () => fetchSourceFacts(href))
+        // TODO: the "-x" can be removed as soon as we invalidated all caches
+        cache(`${hash(href)}-x`, () => fetchSourceFacts(href))
       )),
       filter(facts => Object.keys(facts).length > 0),
       catchError(() => NEVER)

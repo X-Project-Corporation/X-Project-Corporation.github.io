@@ -75,7 +75,7 @@ export function fetchSourceFactsFromGitHub(
       // TODO: refactor this pipeline, if it proves feasible
       switchMap(facts => {
         if (typeof repo !== "undefined") {
-          return from(fetch(`${url}/releases/latest`,))
+          return from(fetch(`${url}/releases/latest`))
             .pipe(
               filter(res => res.status === 200),
               switchMap(res => res.json()),
