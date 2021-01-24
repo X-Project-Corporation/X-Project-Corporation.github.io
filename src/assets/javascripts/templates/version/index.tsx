@@ -29,7 +29,7 @@ import { h } from "utilities"
 interface Version {
   version: string
   title: string,
-  alias: string[]
+  aliases: string[]
 }
 
 /* ----------------------------------------------------------------------------
@@ -44,10 +44,11 @@ interface Version {
  * @return Element
  */
 export function renderVersion(base: string, versions: Version[]) {
-  const [, current] = base.match(/([^\/]+)\/?$/)
+  const [, current] = base.match(/([^\/]+)\/?$/)!
   const currentVersion =
-    versions.find(({ version }) => version === current) ||
-    versions[0]
+    versions.find(({ version, aliases }) => (
+      version === current || aliases.includes(current)
+    )) || versions[0]
   return (
     <div class="md-version">
       <span class="md-version__current">
