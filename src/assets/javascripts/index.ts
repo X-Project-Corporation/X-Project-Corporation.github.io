@@ -158,6 +158,9 @@ export function initialize(config: unknown) {
   if (!isConfig(config))
     throw new SyntaxError(`Invalid configuration: ${JSON.stringify(config)}`)
 
+  // @ts-ignore - Hack: this is a quick fix that won't be necessary after refactoring
+  window.config = config
+
   /* Set up subjects */
   const document$ = watchDocument()
   const location$ = watchLocation()

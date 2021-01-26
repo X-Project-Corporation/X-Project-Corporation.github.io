@@ -60,14 +60,18 @@ function renderSearchResultDocument(
     .flat()
     .slice(0, -1)
 
+  // @ts-ignore - Hack: this is a quick fix that won't be necessary after refactoring
+  const highlight = window.config.features.includes("search.highlight")
+
   /* Assemble query string for highlighting */
   const url = new URL(document.location)
-  url.searchParams.append("h", Object.entries(document.terms)
-    .reduce((highlight, [value, match]) => (
-      `${highlight} ${match ? value : ""}`
-    ), "")
-    .replace(/%20/g, "+")
-  )
+  if (highlight)
+    url.searchParams.append("h", Object.entries(document.terms)
+      .reduce((highlight, [value, match]) => (
+        `${highlight} ${match ? value : ""}`.trim()
+      ), "")
+      .replace(/%20/g, "+")
+    )
 
   /* Render article or section, depending on flags */
   const href = `${url}`
