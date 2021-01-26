@@ -30,6 +30,7 @@ import {
 } from "rxjs/operators"
 
 import { getElement, replaceElement } from "browser"
+import { Config } from "utilities"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -97,8 +98,12 @@ let components$: Observable<ComponentMap>
  * @param options - Options
  */
 export function setupComponents(
-  names: Component[], { document$ }: WatchOptions
+  names: Component[], { document$ }: WatchOptions, config: Config
 ): void {
+  const tabs = config.features.includes("navigation.tabs.sticky")
+    ? "tabs"
+    : ""
+
   components$ = document$
     .pipe(
 
@@ -121,6 +126,7 @@ export function setupComponents(
             case "header-topic":
             case "container":
             case "skip":
+            case tabs: // Hack: fix this after refactoring
               if (name in prev && typeof prev[name] !== "undefined") {
                 replaceElement(prev[name]!, next[name]!)
                 prev[name] = next[name]

@@ -189,7 +189,7 @@ export function initialize(config: unknown) {
     "skip",                            /* Skip link */
     "tabs",                            /* Tabs */
     "toc"                              /* Table of contents */
-  ], { document$ })
+  ], { document$ }, config)
 
   const keyboard$ = setupKeyboard()
 
