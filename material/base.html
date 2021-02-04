@@ -32,7 +32,7 @@
         {% endfor %}
       {% endif %}
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-6.2.7+insiders-1.17.0">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-6.2.8+insiders-1.17.0">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -191,8 +191,8 @@
       {% endblock %}
     </div>
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/vendor.2d9b50f1.min.js' | url }}"></script>
-      <script src="{{ 'assets/javascripts/bundle.b7273581.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/vendor.191088e8.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.d4cf0930.min.js' | url }}"></script>
       {%- set translations = {} -%}
       {%- for key in [
         "clipboard.copy",
