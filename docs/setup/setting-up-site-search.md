@@ -294,7 +294,7 @@ following transformations, which can be customized by [extending the theme][20]:
  *
  * @param query - Query value
  *
- * @return Transformed query value
+ * @returns Transformed query value
  */
 export function defaultTransform(query: string): string {
   return query
@@ -316,8 +316,9 @@ customize the `transform` function, you can do this by [overriding the
 
 ``` html
 {% block config %}
+  {{ super() }}
   <script>
-    var search = {
+    var __search = {
       transform: function(query) {
         return query
       }
@@ -345,8 +346,9 @@ directory and [override the `config` block][21]:
 
 ``` html
 {% block config %}
+  {{ super() }}
   <script>
-    var search = {
+    var __search = {
       worker: "<url>"
     }
   </script>

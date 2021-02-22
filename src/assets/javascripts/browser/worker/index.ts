@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -73,7 +73,7 @@ interface WatchOptions<T extends WorkerMessage> {
 /**
  * Watch a web worker
  *
- * This function returns an observable that will send all values emitted by the
+ * This function returns an observable that sends all values emitted by the
  * message observable to the web worker. Web worker communication is expected
  * to be bidirectional (request-response) and synchronous. Messages that are
  * emitted during a pending request are throttled, the last one is emitted.
@@ -81,7 +81,7 @@ interface WatchOptions<T extends WorkerMessage> {
  * @param worker - Web worker
  * @param options - Options
  *
- * @return Worker message observable
+ * @returns Worker message observable
  */
 export function watchWorker<T extends WorkerMessage>(
   worker: Worker, { tx$ }: WatchOptions<T>
@@ -89,8 +89,8 @@ export function watchWorker<T extends WorkerMessage>(
 
   /* Intercept messages from worker-like objects */
   const rx$ = fromEvent<MessageEvent>(worker, "message")
-    .pipe<T>(
-      map(({ data }) => data)
+    .pipe(
+      map(({ data }) => data as T)
     )
 
   /* Send and receive messages, return hot observable */

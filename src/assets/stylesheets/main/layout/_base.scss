@@ -1,5 +1,5 @@
 ////
-/// Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+/// Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a
 /// copy of this software and associated documentation files (the "Software"),
@@ -38,7 +38,7 @@ html {
 
   // [screen medium +]: Set base `font-size` to `11px`
   @include break-from-device(screen medium) {
-    font-size: 137.50%;
+    font-size: 137.5%;
   }
 
   // [screen large +]: Set base `font-size` to `12px`

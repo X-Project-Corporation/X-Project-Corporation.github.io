@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,10 +20,10 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, fromEvent } from "rxjs"
-import { filter, map, share, startWith } from "rxjs/operators"
+import { Observable, fromEvent, of } from "rxjs"
+import { filter, map, share, startWith, switchMap } from "rxjs/operators"
 
-import { createElement } from "browser"
+import { createElement, getElement } from "~/browser"
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -32,7 +32,7 @@ import { createElement } from "browser"
 /**
  * Retrieve location hash
  *
- * @return Location hash
+ * @returns Location hash
  */
 export function getLocationHash(): string {
   return location.hash.substring(1)
@@ -60,7 +60,7 @@ export function setLocationHash(hash: string): void {
 /**
  * Watch location hash
  *
- * @return Location hash observable
+ * @returns Location hash observable
  */
 export function watchLocationHash(): Observable<string> {
   return fromEvent<HashChangeEvent>(window, "hashchange")
@@ -69,5 +69,17 @@ export function watchLocationHash(): Observable<string> {
       startWith(getLocationHash()),
       filter(hash => hash.length > 0),
       share()
+    )
+}
+
+/**
+ * Watch location target
+ *
+ * @returns Location target observable
+ */
+export function watchLocationTarget(): Observable<HTMLElement> {
+  return watchLocationHash()
+    .pipe(
+      switchMap(id => of(getElement(`[id="${id}"]`)!))
     )
 }

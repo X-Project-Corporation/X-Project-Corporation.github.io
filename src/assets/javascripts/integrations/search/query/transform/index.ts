@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -29,7 +29,7 @@
  *
  * @param value - Query value
  *
- * @return Transformed query value
+ * @returns Transformed query value
  */
 export type SearchTransformFn = (value: string) => string
 
@@ -44,7 +44,7 @@ export type SearchTransformFn = (value: string) => string
  *    that the resulting document must contain all terms, converting the query
  *    to an `AND` query (as opposed to the default `OR` behavior). While users
  *    may expect terms enclosed in quotation marks to map to span queries, i.e.
- *    for which order is important, `lunr` doesn't support them, so the best
+ *    for which order is important, Lunr.js doesn't support them, so the best
  *    we can do is to convert the terms to an `AND` query.
  *
  * 2. Replace control characters which are not located at the beginning of the
@@ -56,7 +56,7 @@ export type SearchTransformFn = (value: string) => string
  *
  * @param query - Query value
  *
- * @return Transformed query value
+ * @returns Transformed query value
  */
 export function defaultTransform(query: string): string {
   return query

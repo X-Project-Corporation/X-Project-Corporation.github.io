@@ -1,5 +1,5 @@
 ////
-/// Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+/// Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a
 /// copy of this software and associated documentation files (the "Software"),
@@ -24,25 +24,28 @@
 // Keyframes
 // ----------------------------------------------------------------------------
 
-// Show source facts
+// Show repository facts
 @keyframes md-source__facts--done {
   0% {
     height: 0;
   }
+
   100% {
     height: px2rem(13px);
   }
 }
 
-// Show source fact
+// Show repository fact
 @keyframes md-source__fact--done {
   0% {
     transform: translateY(100%);
     opacity: 0;
   }
+
   50% {
     opacity: 0;
   }
+
   100% {
     transform: translateY(0%);
     opacity: 1;
@@ -55,18 +58,10 @@
 
 // Icon definitions
 :root {
-  --md-source-forks-icon: svg-load(
-    "@primer/octicons/build/svg/repo-forked-16.svg"
-  );
-  --md-source-repositories-icon: svg-load(
-    "@primer/octicons/build/svg/repo-16.svg"
-  );
-  --md-source-stars-icon: svg-load(
-    "@primer/octicons/build/svg/star-16.svg"
-  );
-  --md-source-version-icon: svg-load(
-    "@primer/octicons/build/svg/tag-16.svg"
-  );
+  --md-source-forks-icon: svg-load("octicons/repo-forked-16.svg");
+  --md-source-repositories-icon: svg-load("octicons/repo-16.svg");
+  --md-source-stars-icon: svg-load("octicons/star-16.svg");
+  --md-source-version-icon: svg-load("octicons/tag-16.svg");
 }
 
 // ----------------------------------------------------------------------------

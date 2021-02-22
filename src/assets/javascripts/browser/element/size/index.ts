@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -80,7 +80,7 @@ const observer$ = defer(() => of(
         finalize(() => resize.disconnect())
       )
     ),
-    shareReplay({ bufferSize: 1, refCount: true })
+    shareReplay(1)
   )
 
 /* ----------------------------------------------------------------------------
@@ -92,7 +92,7 @@ const observer$ = defer(() => of(
  *
  * @param el - Element
  *
- * @return Element size
+ * @returns Element size
  */
 export function getElementSize(el: HTMLElement): ElementSize {
   return {
@@ -101,19 +101,33 @@ export function getElementSize(el: HTMLElement): ElementSize {
   }
 }
 
+/**
+ * Retrieve element content size, i.e. including overflowing content
+ *
+ * @param el - Element
+ *
+ * @returns Element size
+ */
+export function getElementContentSize(el: HTMLElement): ElementSize {
+  return {
+    width:  el.scrollWidth,
+    height: el.scrollHeight
+  }
+}
+
 /* ------------------------------------------------------------------------- */
 
 /**
  * Watch element size
  *
- * This function returns an observable that will subscribe to a single internal
+ * This function returns an observable that subscribes to a single internal
  * instance of `ResizeObserver` upon subscription, and emit resize events until
  * termination. Note that this function should not be called with the same
  * element twice, as the first unsubscription will terminate observation.
  *
  * @param el - Element
  *
- * @return Element size observable
+ * @returns Element size observable
  */
 export function watchElementSize(
   el: HTMLElement

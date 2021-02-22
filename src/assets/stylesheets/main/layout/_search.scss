@@ -1,5 +1,5 @@
 ////
-/// Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+/// Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a
 /// copy of this software and associated documentation files (the "Software"),
@@ -26,7 +26,7 @@
 
 // Icon definitions
 :root {
-  --md-search-result-icon: svg-load("@mdi/svg/svg/file-search-outline.svg");
+  --md-search-result-icon: svg-load("material/file-search-outline.svg");
 }
 
 // ----------------------------------------------------------------------------
@@ -274,6 +274,13 @@
       display: none;
     }
 
+    // [tablet portrait -]: Search modal
+    @include break-to-device(tablet portrait) {
+      width: 100%;
+      height: px2rem(48px);
+      font-size: px2rem(18px);
+    }
+
     // [tablet landscape +]: Header-embedded search
     @include break-from-device(tablet landscape) {
       padding-left: px2rem(44px);
@@ -502,7 +509,9 @@
     background-color: var(--md-default-bg-color);
     // Hack: promote to own layer to reduce jitter
     backface-visibility: hidden;
-    scroll-snap-type: y mandatory;
+    // Hack: Chrome 88+ has weird overscroll behavior. Overall, scroll snapping
+    // seems to be something that is not ready for prime time on some browsers.
+    // scroll-snap-type: y mandatory;
     touch-action: pan-y;
 
     // Mitigiate excessive repaints on non-retina devices
@@ -649,12 +658,13 @@
     }
 
     // Hide native details marker
+    &::marker,
     &::-webkit-details-marker {
       display: none;
     }
 
     // Adjust transparency of less relevant results
-    & ~ * > * {
+    ~ * > * {
       opacity: 0.65;
     }
   }

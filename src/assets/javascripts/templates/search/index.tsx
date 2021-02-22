@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,8 +20,13 @@
  * IN THE SOFTWARE.
  */
 
-import { SearchResultDocument, SearchResultItem } from "integrations/search"
-import { h, translate, truncate } from "utilities"
+import { translation } from "~/_"
+import {
+  SearchDocument,
+  SearchMetadata,
+  SearchResult
+} from "~/integrations/search"
+import { h, truncate } from "~/utilities"
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -40,16 +45,16 @@ const enum Flag {
  * ------------------------------------------------------------------------- */
 
 /**
- * Render a search result document
+ * Render a search document
  *
  * @param document - Search document
  * @param flag - Render flags
  *
- * @return Element
+ * @returns Element
  */
-function renderSearchResultDocument(
-  document: SearchResultDocument, flag: Flag
-) {
+function renderSearchDocument(
+  document: SearchDocument & SearchMetadata, flag: Flag
+): HTMLElement {
   const parent = flag & Flag.PARENT
   const teaser = flag & Flag.TEASER
 
@@ -60,23 +65,10 @@ function renderSearchResultDocument(
     .flat()
     .slice(0, -1)
 
-  // @ts-ignore - Hack: this is a quick fix that won't be necessary after refactoring
-  const highlight = window.config.features.includes("search.highlight")
-
-  /* Assemble query string for highlighting */
-  const url = new URL(document.location)
-  if (highlight)
-    url.searchParams.append("h", Object.entries(document.terms)
-      .reduce((highlight, [value, match]) => (
-        `${highlight} ${match ? value : ""}`.trim()
-      ), "")
-      .replace(/%20/g, "+")
-    )
-
   /* Render article or section, depending on flags */
-  const href = `${url}`
+  const url = document.location
   return (
-    <a href={href} class="md-search-result__link" tabIndex={-1}>
+    <a href={url} class="md-search-result__link" tabIndex={-1}>
       <article
         class={["md-search-result__article", ...parent
           ? ["md-search-result__article--document"]
@@ -93,7 +85,7 @@ function renderSearchResultDocument(
         }
         {teaser > 0 && missing.length > 0 &&
           <p class="md-search-result__terms">
-            {translate("search.result.term.missing")}: {...missing}
+            {translation("search.result.term.missing")}: {...missing}
           </p>
         }
       </article>
@@ -106,17 +98,17 @@ function renderSearchResultDocument(
  * ------------------------------------------------------------------------- */
 
 /**
- * Render a search result item
+ * Render a search result
  *
- * @param item - Search result item
- * @param threshold - Score threshold
+ * @param result - Search result
  *
- * @return Element
+ * @returns Element
  */
-export function renderSearchResultItem(
-  item: SearchResultItem, threshold: number = Infinity
-) {
-  const docs = [...item]
+export function renderSearchResult(
+  result: SearchResult
+): HTMLElement {
+  const threshold = result[0].score
+  const docs = [...result]
 
   /* Find and extract parent article */
   const parent = docs.findIndex(doc => !doc.location.includes("#"))
@@ -133,19 +125,17 @@ export function renderSearchResultItem(
 
   /* Render children */
   const children = [
-    renderSearchResultDocument(article, Flag.PARENT | +(!parent && index === 0)),
-    ...best.map(section => renderSearchResultDocument(section, Flag.TEASER)),
+    renderSearchDocument(article, Flag.PARENT | +(!parent && index === 0)),
+    ...best.map(section => renderSearchDocument(section, Flag.TEASER)),
     ...more.length ? [
       <details class="md-search-result__more">
         <summary tabIndex={-1}>
           {more.length > 0 && more.length === 1
-            ? translate("search.result.more.one")
-            : translate("search.result.more.other", more.length)
+            ? translation("search.result.more.one")
+            : translation("search.result.more.other", more.length)
           }
         </summary>
-        {...more.map(section => (
-          renderSearchResultDocument(section, Flag.TEASER)
-        ))}
+        {...more.map(section => renderSearchDocument(section, Flag.TEASER))}
       </details>
     ] : []
   ]

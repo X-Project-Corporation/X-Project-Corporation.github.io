@@ -1,5 +1,5 @@
 ////
-/// Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+/// Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a
 /// copy of this software and associated documentation files (the "Software"),
@@ -36,17 +36,17 @@ input {
   color: var(--md-typeset-color);
   font-feature-settings: "kern", "liga";
   font-family:
-    var(--md-text-font-family,)
+    var(--md-text-font-family, _),
     -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
 }
 
-// Define proportionally spaced fonts
+// Define monospaced fonts
 code,
 pre,
 kbd {
   font-feature-settings: "kern";
   font-family:
-    var(--md-code-font-family,)
+    var(--md-code-font-family, _),
     SFMono-Regular, Consolas, Menlo, monospace;
 }
 
@@ -56,8 +56,8 @@ kbd {
 
 // Icon definitions
 :root {
-  --md-typeset-table--ascending: svg-load("@mdi/svg/svg/arrow-down.svg");
-  --md-typeset-table--descending: svg-load("@mdi/svg/svg/arrow-up.svg");
+  --md-typeset-table--ascending: svg-load("material/arrow-down.svg");
+  --md-typeset-table--descending: svg-load("material/arrow-up.svg");
 }
 
 // ----------------------------------------------------------------------------
@@ -165,7 +165,7 @@ kbd {
     }
   }
 
-  // Code blocks
+  // Code block
   code,
   pre,
   kbd {
@@ -178,7 +178,7 @@ kbd {
     }
   }
 
-  // Inline code blocks
+  // Inline code block
   code {
     padding: 0 px2em(4px, 13.6px);
     font-size: px2em(13.6px);
@@ -323,7 +323,6 @@ kbd {
         content: attr(title);
       }
     }
-
   }
 
   // Small text
@@ -502,7 +501,7 @@ kbd {
     // Due to margin collapse because of the necessary inline-block hack, we
     // cannot increase the bottom margin on the table, so we just increase the
     // top margin on the following element
-    & + * {
+    + * {
       margin-top: 1.5em;
     }
 

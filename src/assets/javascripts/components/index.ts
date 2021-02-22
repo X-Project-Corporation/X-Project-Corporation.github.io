@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -21,10 +21,12 @@
  */
 
 export * from "./_"
+export * from "./content"
+export * from "./dialog"
 export * from "./header"
 export * from "./main"
-export * from "./navigation"
 export * from "./search"
-export * from "./shared"
+export * from "./sidebar"
+export * from "./source"
 export * from "./tabs"
 export * from "./toc"

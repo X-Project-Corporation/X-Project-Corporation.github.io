@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -42,7 +42,7 @@ export interface ViewportSize {
 /**
  * Retrieve viewport size
  *
- * @return Viewport size
+ * @returns Viewport size
  */
 export function getViewportSize(): ViewportSize {
   return {
@@ -56,7 +56,7 @@ export function getViewportSize(): ViewportSize {
 /**
  * Watch viewport size
  *
- * @return Viewport size observable
+ * @returns Viewport size observable
  */
 export function watchViewportSize(): Observable<ViewportSize> {
   return fromEvent(window, "resize", { passive: true })

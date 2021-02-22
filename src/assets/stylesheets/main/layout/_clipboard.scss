@@ -1,5 +1,5 @@
 ////
-/// Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+/// Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a
 /// copy of this software and associated documentation files (the "Software"),
@@ -26,7 +26,7 @@
 
 // Icon definitions
 :root {
-  --md-clipboard-icon: svg-load("@mdi/svg/svg/content-copy.svg");
+  --md-clipboard-icon: svg-load("material/content-copy.svg");
 }
 
 // ----------------------------------------------------------------------------
@@ -47,6 +47,12 @@
   // [print]: Hide button
   @media print {
     display: none;
+  }
+
+  // Hide outline for pointer devices
+  &:not(.focus-visible) {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   // Darken color on code block hover
@@ -72,5 +78,24 @@
     mask-repeat: no-repeat;
     mask-size: contain;
     content: "";
+  }
+
+  // Inline button
+  &--inline {
+    cursor: pointer;
+
+    // Code block
+    code {
+      transition:
+        color            250ms,
+        background-color 250ms;
+    }
+
+    // Code block on focus/hover
+    &:focus code,
+    &:hover code {
+      color: var(--md-accent-fg-color);
+      background-color: var(--md-accent-fg-color--transparent);
+    }
   }
 }

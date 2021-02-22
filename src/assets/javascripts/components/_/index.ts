@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,17 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import { EMPTY, Observable, of } from "rxjs"
-import {
-  distinctUntilChanged,
-  map,
-  scan,
-  shareReplay,
-  switchMap
-} from "rxjs/operators"
-
-import { getElement, replaceElement } from "browser"
-import { Config } from "utilities"
+import { getElementOrThrow, getElements } from "~/browser"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -39,138 +29,70 @@ import { Config } from "utilities"
 /**
  * Component
  */
-export type Component =
+export type ComponentType =
   | "announce"                         /* Announcement bar */
   | "container"                        /* Container */
+  | "content"                          /* Content */
+  | "dialog"                           /* Dialog */
   | "header"                           /* Header */
   | "header-title"                     /* Header title */
   | "header-topic"                     /* Header topic */
   | "main"                             /* Main area */
-  | "navigation"                       /* Navigation */
   | "search"                           /* Search */
   | "search-query"                     /* Search input */
-  | "search-reset"                     /* Search reset */
   | "search-result"                    /* Search results */
-  | "search-share"                     /* Search share */
-  | "search-suggest"                   /* Search suggestions */
+  | "sidebar"                          /* Sidebar */
   | "skip"                             /* Skip link */
-  | "tabs"                             /* Tabs */
+  | "source"                           /* Repository information */
+  | "tabs"                             /* Navigation tabs */
   | "toc"                              /* Table of contents */
 
 /**
- * Component map
+ * A component
+ *
+ * @template T - Component type
+ * @template U - Reference type
  */
-export type ComponentMap = {
-  [P in Component]?: HTMLElement
-}
-
-/* ----------------------------------------------------------------------------
- * Helper types
- * ------------------------------------------------------------------------- */
-
-/**
- * Watch options
- */
-interface WatchOptions {
-  document$: Observable<Document>      /* Document observable */
-}
-
-/* ----------------------------------------------------------------------------
- * Data
- * ------------------------------------------------------------------------- */
-
-/**
- * Component map observable
- */
-let components$: Observable<ComponentMap>
+export type Component<
+  T extends {} = {},
+  U extends HTMLElement = HTMLElement
+> =
+  T & {
+    ref: U                             /* Component reference */
+  }
 
 /* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
 
 /**
- * Set up bindings to components with given names
- *
- * This function will maintain bindings to the elements identified by the given
- * names in-between document switches and update the elements in-place.
- *
- * @param names - Component names
- * @param options - Options
- */
-export function setupComponents(
-  names: Component[], { document$ }: WatchOptions, config: Config
-): void {
-  const tabs = config.features.includes("navigation.tabs.sticky")
-    ? "tabs"
-    : ""
-
-  components$ = document$
-    .pipe(
-
-      /* Build component map */
-      map(document => names.reduce<ComponentMap>((components, name) => {
-        const el = getElement(`[data-md-component=${name}]`, document)
-        return {
-          ...components,
-          ...typeof el !== "undefined" ? { [name]: el } : {}
-        }
-      }, {})),
-
-      /* Re-compute component map on document switch */
-      scan((prev, next) => {
-        for (const name of names) {
-          switch (name) {
-
-            /* Top-level components: update */
-            case "announce":
-            case "header-topic":
-            case "container":
-            case "skip":
-            case tabs: // Hack: fix this after refactoring
-              if (name in prev && typeof prev[name] !== "undefined") {
-                replaceElement(prev[name]!, next[name]!)
-                prev[name] = next[name]
-              }
-              break
-
-            /* All other components: rebind */
-            default:
-              if (typeof next[name] !== "undefined")
-                prev[name] = getElement(`[data-md-component=${name}]`)
-              else
-                delete prev[name]
-          }
-        }
-        return prev
-      }),
-
-      /* Convert to hot observable */
-      shareReplay({ bufferSize: 1, refCount: true })
-    )
-}
-
-/**
- * Retrieve a component
- *
- * The returned observable will only re-emit if the element changed, i.e. if
- * it was replaced from a document which was switched to.
+ * Retrieve the element for a given component or throw a reference error
  *
  * @template T - Element type
  *
- * @param name - Component name
+ * @param type - Component type
+ * @param node - Node of reference
  *
- * @return Component observable
+ * @returns Element
  */
-export function useComponent<T extends HTMLElement>(
-  name: Component
-): Observable<T> {
-  return components$
-    .pipe(
-      switchMap(components => (
-        typeof components[name] !== "undefined"
-          ? of(components[name] as T)
-          : EMPTY
-      )),
-      distinctUntilChanged()
-    )
+export function getComponentElement<T extends HTMLElement>(
+  type: ComponentType, node: ParentNode = document
+): T {
+  return getElementOrThrow(`[data-md-component=${type}]`, node)
+}
+
+/**
+ * Retrieve all elements for a given component
+ *
+ * @template T - Element type
+ *
+ * @param type - Component type
+ * @param node - Node of reference
+ *
+ * @returns Elements
+ */
+export function getComponentElements<T extends HTMLElement>(
+  type: ComponentType, node: ParentNode = document
+): T[] {
+  return getElements(`[data-md-component=${type}]`, node)
 }
