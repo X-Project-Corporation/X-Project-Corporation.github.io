@@ -20,7 +20,12 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, Subject, animationFrameScheduler } from "rxjs"
+import {
+  Observable,
+  Subject,
+  animationFrameScheduler,
+  of
+} from "rxjs"
 import {
   distinctUntilKeyChanged,
   finalize,
@@ -29,6 +34,7 @@ import {
   tap
 } from "rxjs/operators"
 
+import { feature } from "~/_"
 import { resetTabsState, setTabsState } from "~/actions"
 import { Viewport, watchViewportAt } from "~/browser"
 
@@ -81,15 +87,17 @@ interface MountOptions {
 export function watchTabs(
   el: HTMLElement, { viewport$, header$ }: WatchOptions
 ): Observable<Tabs> {
-  return watchViewportAt(el, { header$, viewport$ })
-    .pipe(
-      map(({ offset: { y } }) => {
-        return {
-          hidden: y >= 10
-        }
-      }),
-      distinctUntilKeyChanged("hidden")
-    )
+  return feature("navigation.tabs.sticky")
+    ? of({ hidden: false })
+    : watchViewportAt(el, { header$, viewport$ })
+        .pipe(
+          map(({ offset: { y } }) => {
+            return {
+              hidden: y >= 10
+            }
+          }),
+          distinctUntilKeyChanged("hidden")
+        )
 }
 
 /**
