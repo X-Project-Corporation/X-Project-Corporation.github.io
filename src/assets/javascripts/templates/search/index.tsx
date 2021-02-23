@@ -24,7 +24,7 @@ import { translation } from "~/_"
 import {
   SearchDocument,
   SearchMetadata,
-  SearchResult
+  SearchResultItem
 } from "~/integrations/search"
 import { h, truncate } from "~/utilities"
 
@@ -104,8 +104,8 @@ function renderSearchDocument(
  *
  * @returns Element
  */
-export function renderSearchResult(
-  result: SearchResult
+export function renderSearchResultItem(
+  result: SearchResultItem
 ): HTMLElement {
   const threshold = result[0].score
   const docs = [...result]

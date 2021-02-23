@@ -33,7 +33,6 @@ import {
   finalize,
   map,
   observeOn,
-  startWith,
   switchMap,
   tap,
   withLatestFrom,
@@ -51,25 +50,14 @@ import {
   watchElementThreshold
 } from "~/browser"
 import {
-  SearchResult as SearchResultData,
+  SearchResult,
   SearchWorker,
   isSearchResultMessage
 } from "~/integrations"
-import { renderSearchResult } from "~/templates"
+import { renderSearchResultItem } from "~/templates"
 
 import { Component } from "../../_"
 import { SearchQuery } from "../query"
-
-/* ----------------------------------------------------------------------------
- * Types
- * ------------------------------------------------------------------------- */
-
-/**
- * Search result
- */
-export interface SearchResult {
-  data: SearchResultData[]             /* Search result data */
-}
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -114,9 +102,9 @@ export function mountSearchResult(
       observeOn(animationFrameScheduler),
       withLatestFrom(query$)
     )
-      .subscribe(([{ data }, { value }]) => {
+      .subscribe(([{ items }, { value }]) => {
         if (value)
-          setSearchResultMeta(meta, data.length)
+          setSearchResultMeta(meta, items.length)
         else
           resetSearchResultMeta(meta)
       })
@@ -127,9 +115,9 @@ export function mountSearchResult(
     .pipe(
       observeOn(animationFrameScheduler),
       tap(() => resetSearchResultList(list)),
-      switchMap(({ data }) => merge(
-        of(...data.slice(0, 10)),
-        of(...data.slice(10))
+      switchMap(({ items }) => merge(
+        of(...items.slice(0, 10)),
+        of(...items.slice(10))
           .pipe(
             bufferCount(4),
             zipWith(boundary$),
@@ -138,15 +126,14 @@ export function mountSearchResult(
       ))
     )
       .subscribe(result => {
-        addToSearchResultList(list, renderSearchResult(result))
+        addToSearchResultList(list, renderSearchResultItem(result))
       })
 
   /* Filter search result list */
   const result$ = rx$
     .pipe(
       filter(isSearchResultMessage),
-      map(({ data }) => ({ data })),
-      startWith({ data: [] })
+      map(({ data }) => data)
     )
 
   /* Create and return component */
