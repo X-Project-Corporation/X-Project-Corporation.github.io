@@ -87,17 +87,15 @@ interface MountOptions {
 export function watchTabs(
   el: HTMLElement, { viewport$, header$ }: WatchOptions
 ): Observable<Tabs> {
-  return feature("navigation.tabs.sticky")
-    ? of({ hidden: false })
-    : watchViewportAt(el, { header$, viewport$ })
-        .pipe(
-          map(({ offset: { y } }) => {
-            return {
-              hidden: y >= 10
-            }
-          }),
-          distinctUntilKeyChanged("hidden")
-        )
+  return watchViewportAt(el, { header$, viewport$ })
+    .pipe(
+      map(({ offset: { y } }) => {
+        return {
+          hidden: y >= 10
+        }
+      }),
+      distinctUntilKeyChanged("hidden")
+    )
 }
 
 /**
@@ -136,7 +134,11 @@ export function mountTabs(
       })
 
   /* Create and return component */
-  return watchTabs(el, options)
+  return (
+    feature("navigation.tabs.sticky")
+      ? of({ hidden: false })
+      : watchTabs(el, options)
+  )
     .pipe(
       tap(internal$),
       finalize(() => internal$.complete()),

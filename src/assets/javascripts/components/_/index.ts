@@ -38,9 +38,12 @@ export type ComponentType =
   | "header-title"                     /* Header title */
   | "header-topic"                     /* Header topic */
   | "main"                             /* Main area */
+  | "palette"                          /* Color palette */
   | "search"                           /* Search */
   | "search-query"                     /* Search input */
   | "search-result"                    /* Search results */
+  | "search-share"                     /* Search share */
+  | "search-suggest"                   /* Search suggestions */
   | "sidebar"                          /* Sidebar */
   | "skip"                             /* Skip link */
   | "source"                           /* Repository information */

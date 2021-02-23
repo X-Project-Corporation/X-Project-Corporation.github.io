@@ -51,6 +51,7 @@ import {
   mountDialog,
   mountHeader,
   mountHeaderTitle,
+  mountPalette,
   mountSearch,
   mountSidebar,
   mountSource,
@@ -157,6 +158,10 @@ const control$ = merge(
   /* Header */
   ...getComponentElements("header")
     .map(el => mountHeader(el, { viewport$, header$, main$ })),
+
+  /* Color palette */
+  ...getComponentElements("palette")
+    .map(el => mountPalette(el)),
 
   /* Search */
   ...getComponentElements("search")

@@ -74,32 +74,37 @@
       </div>
     </div>
 
-    <!-- Header options -->
-    <div class="md-header__options">
-
-      <!-- Switch to toggle palette -->
-      {% if not config.theme.palette is mapping %}
+    <!-- Color palette -->
+    {% if not config.theme.palette is mapping %}
+      <form class="md-header__option" data-md-component="palette">
         {% for option in config.theme.palette %}
           {% set scheme  = option.scheme  | replace(" ", "-") | lower %}
           {% set primary = option.primary | replace(" ", "-") | lower %}
           {% set accent  = option.accent  | replace(" ", "-") | lower %}
-          <button
-            class="md-header__button md-icon"
-            title="{{ option.toggle.name }}"
-            aria-label="{{ option.toggle.name }}"
-            data-md-option="palette"
+          <input
+            class="md-option"
             data-md-color-scheme="{{ scheme }}"
             data-md-color-primary="{{ primary }}"
             data-md-color-accent="{{ accent }}"
-            data-md-state="hidden"
+            type="radio"
+            name="__palette"
+            id="__palette_{{ loop.index }}"
+          />
+          <label
+            class="md-header__button md-icon"
+            title="{{ option.toggle.name }}"
+            for="__palette_{{ loop.index0 or loop.length }}"
+            hidden
           >
             {% include ".icons/" ~ option.toggle.icon ~ ".svg" %}
-          </button>
+          </label>
         {% endfor %}
-      {% endif %}
+      </form>
+    {% endif %}
 
-      <!-- Switch to toggle language -->
-      {% if config.extra.alternate %}
+    <!-- Site language selector -->
+    {% if config.extra.alternate %}
+      <div class="md-header__option"></form>
         <div class="md-select">
           {% set icon = config.theme.icon.translate or "material/translate" %}
           <span class="md-header__button md-icon">
@@ -117,8 +122,8 @@
             </ul>
           </div>
         </div>
-      {% endif %}
-    </div>
+      </div>
+    {% endif %}
 
     <!-- Button to open search modal -->
     {% if "search" in config["plugins"] %}

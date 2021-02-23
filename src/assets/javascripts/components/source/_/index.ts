@@ -32,7 +32,7 @@ import {
 
 import { setSourceFacts, setSourceState } from "~/actions"
 import { renderSourceFacts } from "~/templates"
-import { hash } from "~/utilities"
+import { digest } from "~/utilities"
 
 import { Component } from "../../_"
 import { SourceFacts, fetchSourceFacts } from "../facts"
@@ -74,18 +74,15 @@ let fetch$: Observable<Source>
 export function watchSource(
   el: HTMLAnchorElement
 ): Observable<Source> {
-  const digest = hash(el.href).toString()
-
-  /* Fetch repository facts once */
   return fetch$ ||= defer(() => {
-    const data = sessionStorage.getItem(digest)
+    const data = sessionStorage.getItem(digest("__source"))
     if (data) {
       return of(JSON.parse(data))
     } else {
       const value$ = fetchSourceFacts(el.href)
       value$.subscribe(value => {
         try {
-          sessionStorage.setItem(digest, JSON.stringify(value))
+          sessionStorage.setItem(digest("__source"), JSON.stringify(value))
         } catch (err) {
           /* Uncritical, just swallow */
         }
