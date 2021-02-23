@@ -30,9 +30,29 @@ import { fetchSourceFactsFromGitLab } from "../gitlab"
  * ------------------------------------------------------------------------- */
 
 /**
+ * Repository facts for repositories
+ */
+export interface RepositorySourceFacts {
+  stars?: number                       /* Number of stars */
+  forks?: number                       /* Number of forks */
+  version?: string                     /* Latest version */
+}
+
+/**
+ * Repository facts for organizations
+ */
+export interface OrganizationSourceFacts {
+  repositories?: number                /* Number of repositories */
+}
+
+/* ------------------------------------------------------------------------- */
+
+/**
  * Repository facts
  */
-export type SourceFacts = string[]
+export type SourceFacts =
+  | RepositorySourceFacts
+  | OrganizationSourceFacts
 
 /* ----------------------------------------------------------------------------
  * Functions

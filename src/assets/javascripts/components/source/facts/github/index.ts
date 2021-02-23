@@ -21,13 +21,23 @@
  */
 
 import { Repo, User } from "github-types"
-import { Observable } from "rxjs"
+import { Observable, zip } from "rxjs"
 import { defaultIfEmpty, map } from "rxjs/operators"
 
 import { requestJSON } from "~/browser"
-import { round } from "~/utilities"
 
 import { SourceFacts } from "../_"
+
+/* ----------------------------------------------------------------------------
+ * Helper types
+ * ------------------------------------------------------------------------- */
+
+/**
+ * GitHub release (partial)
+ */
+interface Release {
+  tag_name: string                     /* Tag name */
+}
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -44,29 +54,30 @@ import { SourceFacts } from "../_"
 export function fetchSourceFactsFromGitHub(
   user: string, repo?: string
 ): Observable<SourceFacts> {
-  const url = typeof repo !== "undefined"
-    ? `https://api.github.com/repos/${user}/${repo}`
-    : `https://api.github.com/users/${user}`
-  return requestJSON<Repo & User>(url)
-    .pipe(
-      map(data => {
-
-        /* GitHub repository */
-        if (typeof repo !== "undefined") {
-          const { stargazers_count, forks_count }: Repo = data
-          return [
-            `${round(stargazers_count!)} Stars`,
-            `${round(forks_count!)} Forks`
-          ]
-
-        /* GitHub user/organization */
-        } else {
-          const { public_repos }: User = data
-          return [
-            `${round(public_repos!)} Repositories`
-          ]
-        }
-      }),
-      defaultIfEmpty([])
+  if (typeof repo !== "undefined") {
+    const url = `https://api.github.com/repos/${user}/${repo}`
+    return zip(
+      requestJSON<Repo>(url),
+      requestJSON<Release>(`${url}/releases/latest`)
     )
+      .pipe(
+        map(([info, release]) => ({
+          version: release.tag_name,
+          stars:   info.stargazers_count,
+          forks:   info.forks_count
+        })),
+        defaultIfEmpty({})
+      )
+
+  /* User or organization */
+  } else {
+    const url = `https://api.github.com/repos/${user}`
+    return requestJSON<User>(url)
+      .pipe(
+        map(info => ({
+          repositories: info.public_repos
+        })),
+        defaultIfEmpty({})
+      )
+  }
 }

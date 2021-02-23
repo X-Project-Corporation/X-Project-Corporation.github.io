@@ -77,7 +77,7 @@ export function watchSource(
   return fetch$ ||= defer(() => {
     const data = sessionStorage.getItem(digest("__source"))
     if (data) {
-      return of(JSON.parse(data))
+      return of<SourceFacts>(JSON.parse(data))
     } else {
       const value$ = fetchSourceFacts(el.href)
       value$.subscribe(value => {
@@ -94,7 +94,7 @@ export function watchSource(
   })
     .pipe(
       catchError(() => NEVER),
-      filter(facts => facts.length > 0),
+      filter(facts => Object.keys(facts).length > 0),
       map(facts => ({ facts })),
       shareReplay(1)
     )

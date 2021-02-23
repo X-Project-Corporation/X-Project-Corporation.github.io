@@ -25,7 +25,6 @@ import { Observable } from "rxjs"
 import { defaultIfEmpty, map } from "rxjs/operators"
 
 import { requestJSON } from "~/browser"
-import { round } from "~/utilities"
 
 import { SourceFacts } from "../_"
 
@@ -47,10 +46,10 @@ export function fetchSourceFactsFromGitLab(
   const url = `https://${base}/api/v4/projects/${encodeURIComponent(project)}`
   return requestJSON<ProjectSchema>(url)
     .pipe(
-      map(({ star_count, forks_count }) => ([
-        `${round(star_count)} Stars`,
-        `${round(forks_count)} Forks`
-      ])),
-      defaultIfEmpty([])
+      map(({ star_count, forks_count }) => ({
+        stars: star_count,
+        forks: forks_count
+      })),
+      defaultIfEmpty({})
     )
 }
