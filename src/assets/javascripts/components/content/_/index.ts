@@ -27,6 +27,7 @@ import { Viewport, getElements } from "~/browser"
 import { Component } from "../../_"
 import { CodeBlock, mountCodeBlock } from "../code"
 import { Details, mountDetails } from "../details"
+import { Mermaid, mountMermaid } from "../mermaid"
 import { DataTable, mountDataTable } from "../table"
 
 /* ----------------------------------------------------------------------------
@@ -40,6 +41,7 @@ export type Content =
   | CodeBlock
   | DataTable
   | Details
+  | Mermaid
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -75,7 +77,7 @@ export function mountContent(
   return merge(
 
     /* Code blocks */
-    ...getElements("pre > code", el)
+    ...getElements("pre:not([class^=mermaid]) > code", el)
       .map(child => mountCodeBlock(child, { viewport$ })),
 
     /* Data tables */
@@ -84,6 +86,10 @@ export function mountContent(
 
     /* Details */
     ...getElements("details", el)
-      .map(child => mountDetails(child, { target$, print$ }))
+      .map(child => mountDetails(child, { target$, print$ })),
+
+    /* Mermaid diagrams */
+    ...getElements(".mermaid-experimental", el)
+      .map(child => mountMermaid(child))
   )
 }
