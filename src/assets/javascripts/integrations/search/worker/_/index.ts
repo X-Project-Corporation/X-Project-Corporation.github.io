@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,19 +20,17 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, Subject, asyncScheduler } from "rxjs"
-import {
-  map,
-  observeOn,
-  share,
-  withLatestFrom
-} from "rxjs/operators"
+import { ObservableInput, Subject, from } from "rxjs"
+import { map, share } from "rxjs/operators"
 
-import { WorkerHandler, watchWorker } from "browser"
-import { translate } from "utilities"
+import { configuration, feature, translation } from "~/_"
+import { WorkerHandler, watchWorker } from "~/browser"
 
 import { SearchIndex } from "../../_"
-import { SearchPipeline } from "../../options"
+import {
+  SearchOptions,
+  SearchPipeline
+} from "../../options"
 import {
   SearchMessage,
   SearchMessageType,
@@ -41,19 +39,16 @@ import {
 } from "../message"
 
 /* ----------------------------------------------------------------------------
- * Helper types
+ * Types
  * ------------------------------------------------------------------------- */
 
 /**
- * Setup options
+ * Search worker
  */
-interface SetupOptions {
-  index$: Observable<SearchIndex>      /* Search index observable */
-  base$: Observable<string>            /* Location base observable */
-}
+export type SearchWorker = WorkerHandler<SearchMessage>
 
 /* ----------------------------------------------------------------------------
- * Functions
+ * Helper functions
  * ------------------------------------------------------------------------- */
 
 /**
@@ -61,64 +56,68 @@ interface SetupOptions {
  *
  * @param data - Search index
  *
- * @return Search index
+ * @returns Search index
  */
 function setupSearchIndex(
-  { config, docs, index, options }: SearchIndex
+  { config, docs, index }: SearchIndex
 ): SearchIndex {
 
   /* Override default language with value from translation */
   if (config.lang.length === 1 && config.lang[0] === "en")
-    config.lang = [translate("search.config.lang")]
+    config.lang = [
+      translation("search.config.lang")
+    ]
 
   /* Override default separator with value from translation */
   if (config.separator === "[\\s\\-]+")
-    config.separator = translate("search.config.separator")
+    config.separator = translation("search.config.separator")
 
   /* Set pipeline from translation */
-  const pipeline = translate("search.config.pipeline")
+  const pipeline = translation("search.config.pipeline")
     .split(/\s*,\s*/)
     .filter(Boolean) as SearchPipeline
 
-  /* Return search index after defaulting */
-  return { config, docs, index, options: {
-    ...options,
+  /* Determine search options */
+  const options: SearchOptions = {
     pipeline,
-    suggestions: true // TODO: make this configurable
-  } }
+    suggestions: feature("search.suggest")
+  }
+
+  /* Return search index after defaulting */
+  return { config, docs, index, options }
 }
 
 /* ----------------------------------------------------------------------------
- * Helper functions
+ * Functions
  * ------------------------------------------------------------------------- */
 
 /**
- * Set up search web worker
+ * Set up search worker
  *
- * This function will create a web worker to set up and query the search index
- * which is done using `lunr`. The index must be passed as an observable to
+ * This function creates a web worker to set up and query the search index,
+ * which is done using Lunr.js. The index must be passed as an observable to
  * enable hacks like _localsearch_ via search index embedding as JSON.
  *
  * @param url - Worker URL
- * @param options - Options
+ * @param index - Search index observable input
  *
- * @return Worker handler
+ * @returns Search worker
  */
 export function setupSearchWorker(
-  url: string, { index$, base$ }: SetupOptions
-): WorkerHandler<SearchMessage> {
+  url: string, index: ObservableInput<SearchIndex>
+): SearchWorker {
+  const config = configuration()
   const worker = new Worker(url)
 
   /* Create communication channels and resolve relative links */
   const tx$ = new Subject<SearchMessage>()
   const rx$ = watchWorker(worker, { tx$ })
     .pipe(
-      withLatestFrom(base$),
-      map(([message, base]) => {
+      map(message => {
         if (isSearchResultMessage(message)) {
           for (const result of message.data.items)
             for (const document of result)
-              document.location = `${base}/${document.location}`
+              document.location = `${config.base}/${document.location}`
         }
         return message
       }),
@@ -126,16 +125,15 @@ export function setupSearchWorker(
     )
 
   /* Set up search index */
-  index$
+  from(index)
     .pipe(
       map<SearchIndex, SearchSetupMessage>(data => ({
         type: SearchMessageType.SETUP,
         data: setupSearchIndex(data)
       })),
-      observeOn(asyncScheduler)
     )
       .subscribe(tx$.next.bind(tx$))
 
-  /* Return worker handler */
+  /* Return search worker */
   return { tx$, rx$ }
 }

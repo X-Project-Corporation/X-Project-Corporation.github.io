@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -31,7 +31,7 @@ import { SearchIndexConfig } from "../_"
  *
  * @param value - Value
  *
- * @return Highlighted value
+ * @returns Highlighted value
  */
 export type SearchHighlightFn = (value: string) => string
 
@@ -40,7 +40,7 @@ export type SearchHighlightFn = (value: string) => string
  *
  * @param query - Query value
  *
- * @return Search highlight function
+ * @returns Search highlight function
  */
 export type SearchHighlightFactoryFn = (query: string) => SearchHighlightFn
 
@@ -53,7 +53,7 @@ export type SearchHighlightFactoryFn = (query: string) => SearchHighlightFn
  *
  * @param config - Search index configuration
  *
- * @return Search highlight factory function
+ * @returns Search highlight factory function
  */
 export function setupSearchHighlighter(
   config: SearchIndexConfig
@@ -79,6 +79,6 @@ export function setupSearchHighlighter(
     /* Highlight string value */
     return value => value
       .replace(match, highlight)
-      .replace(/<\/mark>(\s+)<mark[^>]*>/img, "\$1")
+      .replace(/<\/mark>(\s+)<mark[^>]*>/img, "$1")
   }
 }

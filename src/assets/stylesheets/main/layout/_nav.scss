@@ -1,5 +1,5 @@
 ////
-/// Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+/// Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a
 /// copy of this software and associated documentation files (the "Software"),
@@ -26,9 +26,9 @@
 
 // Icon definitions
 :root {
-  --md-nav-icon--prev: svg-load("@mdi/svg/svg/arrow-left.svg");
-  --md-nav-icon--next: svg-load("@mdi/svg/svg/chevron-right.svg");
-  --md-toc-icon: svg-load("@mdi/svg/svg/table-of-contents.svg");
+  --md-nav-icon--prev: svg-load("material/arrow-left.svg");
+  --md-nav-icon--next: svg-load("material/chevron-right.svg");
+  --md-toc-icon: svg-load("material/table-of-contents.svg");
 }
 
 // ----------------------------------------------------------------------------
@@ -149,7 +149,7 @@
       }
 
       // Hide table of contents
-      & ~ .md-nav {
+      ~ .md-nav {
         display: none;
       }
     }
@@ -466,7 +466,7 @@
       }
 
       // Show table of contents
-      & ~ .md-nav {
+      ~ .md-nav {
         display: flex;
       }
     }
@@ -506,7 +506,7 @@
       }
 
       // Show table of contents
-      & ~ .md-nav {
+      ~ .md-nav {
         display: flex;
       }
     }

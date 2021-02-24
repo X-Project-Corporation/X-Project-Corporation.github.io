@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -57,13 +57,13 @@ export interface SearchIndexDocument {
   text: string                         /* Document text */
 }
 
+/* ------------------------------------------------------------------------- */
+
 /**
  * Search index
  *
  * This interfaces describes the format of the `search_index.json` file which
- * is automatically built and provided by the MkDocs search plugin. However,
- * note that Material for MkDocs adds some further configuration options for
- * search, which are added as `options` by the theme.
+ * is automatically built by the MkDocs search plugin.
  */
 export interface SearchIndex {
   config: SearchIndexConfig            /* Search index configuration */
@@ -114,7 +114,7 @@ export interface SearchResult {
  * @param a - 1st list of strings
  * @param b - 2nd list of strings
  *
- * @return Difference
+ * @returns Difference
  */
 function difference(a: string[], b: string[]): string[] {
   const [x, y] = [new Set(a), new Set(b)]
@@ -129,9 +129,6 @@ function difference(a: string[], b: string[]): string[] {
 
 /**
  * Search index
- *
- * Note that `lunr` is injected via Webpack, as it will otherwise also be
- * bundled in the application bundle.
  */
 export class Search {
 
@@ -140,8 +137,8 @@ export class Search {
    *
    * A mapping of URLs (including hash fragments) to the actual articles and
    * sections of the documentation. The search document mapping must be created
-   * regardless of whether the index was prebuilt or not, as `lunr` itself will
-   * only store the actual index.
+   * regardless of whether the index was prebuilt or not, as Lunr.js itself
+   * only stores the actual index.
    */
   protected documents: SearchDocumentMap
 
@@ -151,7 +148,7 @@ export class Search {
   protected highlight: SearchHighlightFactoryFn
 
   /**
-   * The underlying `lunr` search index
+   * The underlying Lunr.js search index
    */
   protected index: lunr.Index
 
@@ -177,7 +174,7 @@ export class Search {
 
     /* If no index was given, create it */
     if (typeof index === "undefined") {
-      this.index = lunr(function() {
+      this.index = lunr(function () {
 
         /* Set up multi-language support */
         if (config.lang.length === 1 && config.lang[0] !== "en") {
@@ -231,7 +228,7 @@ export class Search {
    *
    * @param query - Query value
    *
-   * @return Search results
+   * @returns Search results
    */
   public search(query: string): SearchResult {
     if (query) {
@@ -248,7 +245,7 @@ export class Search {
         const groups = this.index.search(`${query}*`)
 
           /* Apply post-query boosts based on title and search query terms */
-          .reduce<SearchResultItem>((items, { ref, score, matchData }) => {
+          .reduce<SearchResultItem>((item, { ref, score, matchData }) => {
             const document = this.documents.get(ref)
             if (typeof document !== "undefined") {
               const { location, title, text, parent } = document
@@ -261,15 +258,15 @@ export class Search {
 
               /* Highlight title and text and apply post-query boosts */
               const boost = +!parent + +Object.values(terms).every(t => t)
-              items.push({
+              item.push({
                 location,
                 title: highlight(title),
-                text: highlight(text),
+                text:  highlight(text),
                 score: score * (1 + boost),
                 terms
               })
             }
-            return items
+            return item
           }, [])
 
           /* Sort search results again after applying boosts */
@@ -313,7 +310,6 @@ export class Search {
 
       /* Log errors to console (for now) */
       } catch {
-        // tslint:disable-next-line no-console
         console.warn(`Invalid query: ${query} – see https://bit.ly/2s3ChXG`)
       }
     }

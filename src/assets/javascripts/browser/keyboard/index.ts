@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -23,20 +23,33 @@
 import { Observable, fromEvent } from "rxjs"
 import { filter, map, share } from "rxjs/operators"
 
+import { getActiveElement } from "../element"
+import { getToggle } from "../toggle"
+
 /* ----------------------------------------------------------------------------
  * Types
  * ------------------------------------------------------------------------- */
 
 /**
- * Key
+ * Keyboard mode
  */
-export interface Key {
+export type KeyboardMode =
+  | "global"                           /* Global */
+  | "search"                           /* Search is open */
+
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Keyboard
+ */
+export interface Keyboard {
+  mode: KeyboardMode                   /* Keyboard mode */
   type: string                         /* Key type */
   claim(): void                        /* Key claim */
 }
 
 /* ----------------------------------------------------------------------------
- * Functions
+ * Helper functions
  * ------------------------------------------------------------------------- */
 
 /**
@@ -44,9 +57,9 @@ export interface Key {
  *
  * @param el - Element
  *
- * @return Test result
+ * @returns Test result
  */
-export function isSusceptibleToKeyboard(el: HTMLElement): boolean {
+function isSusceptibleToKeyboard(el: HTMLElement): boolean {
   switch (el.tagName) {
 
     /* Form elements */
@@ -61,24 +74,35 @@ export function isSusceptibleToKeyboard(el: HTMLElement): boolean {
   }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------------
+ * Functions
+ * ------------------------------------------------------------------------- */
 
 /**
  * Watch keyboard
  *
- * @return Keyboard observable
+ * @returns Keyboard observable
  */
-export function watchKeyboard(): Observable<Key> {
+export function watchKeyboard(): Observable<Keyboard> {
   return fromEvent<KeyboardEvent>(window, "keydown")
     .pipe(
       filter(ev => !(ev.metaKey || ev.ctrlKey)),
       map(ev => ({
+        mode: getToggle("search") ? "search" : "global",
         type: ev.key,
         claim() {
           ev.preventDefault()
           ev.stopPropagation()
         }
-      })),
+      } as Keyboard)),
+      filter(({ mode }) => {
+        if (mode === "global") {
+          const active = getActiveElement()
+          if (typeof active !== "undefined")
+            return !isSusceptibleToKeyboard(active)
+        }
+        return true
+      }),
       share()
     )
 }

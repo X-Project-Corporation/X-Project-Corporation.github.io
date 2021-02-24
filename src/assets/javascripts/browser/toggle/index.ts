@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -44,8 +44,8 @@ export type Toggle =
  * Toggle map
  */
 const toggles: Record<Toggle, HTMLInputElement> = {
-  drawer: getElementOrThrow(`[data-md-toggle=drawer]`),
-  search: getElementOrThrow(`[data-md-toggle=search]`)
+  drawer: getElementOrThrow("[data-md-toggle=drawer]"),
+  search: getElementOrThrow("[data-md-toggle=search]")
 }
 
 /* ----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ const toggles: Record<Toggle, HTMLInputElement> = {
  *
  * @param name - Toggle
  *
- * @return Toggle value
+ * @returns Toggle value
  */
 export function getToggle(name: Toggle): boolean {
   return toggles[name].checked
@@ -86,7 +86,7 @@ export function setToggle(name: Toggle, value: boolean): void {
  *
  * @param name - Toggle
  *
- * @return Toggle value observable
+ * @returns Toggle value observable
  */
 export function watchToggle(name: Toggle): Observable<boolean> {
   const el = toggles[name]

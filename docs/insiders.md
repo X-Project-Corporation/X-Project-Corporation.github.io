@@ -2,15 +2,15 @@
 template: overrides/main.html
 ---
 
-# <span hidden>Insiders</span> :logo: :material-plus: :octicons-heart-fill-24:{: .tx-heart }
+# <span hidden>Insiders</span> :logo: :material-plus: :octicons-heart-fill-24:{: .mdx-heart }
 
 Material for MkDocs uses the _sponsorware_ release strategy, which means
 that _new features are first exclusively released to sponsors_ as part of
 __Insiders__. Read on to learn [how sponsorship works][1], and how easy it is
 to [get access to Insiders][2].
 
-<figure class="tx-video" markdown="1">
-  <div class="tx-video__inner">
+<figure class="mdx-video" markdown="1">
+  <div class="mdx-video__inner">
     <iframe src="https://streamable.com/e/zmtb00" allowfullscreen></iframe>
   </div>
   <figcaption markdown="1">
@@ -89,10 +89,10 @@ You can cancel your sponsorship anytime.[^3]
     through Stripe. As we don't receive any information regarding your payment,
     and GitHub doesn't offer refunds, sponsorships are non-refundable.
 
-[:octicons-heart-fill-24:{: .tx-heart } &nbsp; Join our <span class="tx-insiders-count"></span> awesome sponsors][5]{: .md-button .md-button--primary .tx-insiders-button }
+[:octicons-heart-fill-24:{: .mdx-heart } &nbsp; Join our <span class="mdx-insiders-count"></span> awesome sponsors][5]{: .md-button .md-button--primary .mdx-insiders-button }
 
-<div class="tx-insiders-container" markdown="1" hidden>
-  <div class="tx-insiders-list"></div>
+<div class="mdx-insiders-container" markdown="1" hidden>
+  <div class="mdx-insiders-list"></div>
   _If you sponsor publicly, you're automatically added here with a link to
   your profile and avatar to show your support for Material for MkDocs.
   Alternatively, if you wish to keep your sponsorship private, you'll be a 
@@ -101,7 +101,7 @@ You can cancel your sponsorship anytime.[^3]
 </div>
 
 <script>
-  fetch("https://gpiqp43wvb.execute-api.us-east-1.amazonaws.com/_/").then(function(e){return e.json()}).then(function(e){var t=document.querySelector(".tx-insiders-list"),n=0;for(var o of e.sponsors)if("PUBLIC"===o.type){var s;(s=document.createElement("a")).href=o.url,s.title="@"+o.name,s.className="tx-insiders-list__item",t.appendChild(s);var r=document.createElement("img");r.src=o.image,s.appendChild(r)}else n++;(s=document.createElement("a")).href="https://github.com/sponsors/squidfunk",s.title="[private]",s.innerText="+"+n,s.className="tx-insiders-list__item tx-insiders-list__item--private",t.appendChild(s),document.querySelector(".tx-insiders-count").innerText=e.sponsors.length,document.querySelector(".tx-insiders-container").removeAttribute("hidden"),document.querySelector('.tx-insiders-total').innerText=" $ "+e.total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}).catch(console.log);
+  fetch("https://gpiqp43wvb.execute-api.us-east-1.amazonaws.com/_/").then(function(e){return e.json()}).then(function(e){var t=document.querySelector(".mdx-insiders-list"),n=0;for(var o of e.sponsors)if("PUBLIC"===o.type){var s;(s=document.createElement("a")).href=o.url,s.title="@"+o.name,s.className="mdx-insiders-list__item",t.appendChild(s);var r=document.createElement("img");r.src=o.image,s.appendChild(r)}else n++;(s=document.createElement("a")).href="https://github.com/sponsors/squidfunk",s.title="[private]",s.innerText="+"+n,s.className="mdx-insiders-list__item mdx-insiders-list__item--private",t.appendChild(s),document.querySelector(".mdx-insiders-count").innerText=e.sponsors.length,document.querySelector(".mdx-insiders-container").removeAttribute("hidden"),document.querySelector('.mdx-insiders-total').innerText=" $ "+e.total.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")}).catch(console.log);
 </script>
 
   [5]: https://github.com/sponsors/squidfunk
@@ -110,16 +110,13 @@ You can cancel your sponsorship anytime.[^3]
 
 The following features are currently exclusively available to sponsors:
 
-<div class="tx-columns" markdown="1">
+<div class="mdx-columns" markdown="1">
 
 - [x] [Section index pages :material-new-box:][21]
 - [x] [Latest release tag][15]
 - [x] [Color palette toggle][16]
-- [x] [Versioning][14]
-- [x] [Site language selection][13]
 - [x] [Sticky navigation tabs][20]
 - [x] [Native Mermaid.js integration][23]
-- [x] [Admonition inline blocks][12]
 - [x] [Search suggestions][17]
 - [x] [Search highlighting][18]
 - [x] [Search sharing][19]
@@ -133,23 +130,13 @@ from time to time to learn about what's new, or follow [@squidfunk on
 
   [6]: https://twitter.com/squidfunk
 
-## Funding<span class="tx-insiders-total tx-insiders-count"></span>
+## Funding<span class="mdx-insiders-total mdx-insiders-count"></span>
 
 ### Goals
 
 Following is a list of funding goals. When a funding goal is hit, the features
 that are tied to it are merged back into Material for MkDocs and released to
 the public for general availability.
-
-#### $ 1,500 – Bhut Jolokia
-
-- [x] [Admonition inline blocks][12]
-- [x] [Site language selection][13]
-- [x] [Versioning][14]
-
-  [12]: reference/admonitions.md#inline-blocks
-  [13]: setup/changing-the-language.md#site-language-selector
-  [14]: setup/setting-up-versioning.md#versioning
 
 #### $ 2,000 – Black Pearl
 
@@ -222,6 +209,16 @@ the public for general availability.
   [9]: setup/setting-up-navigation.md#hide-the-sidebars
   [10]: setup/setting-up-navigation.md#navigation-integration
   [11]: setup/setting-up-the-header.md#automatic-hiding
+
+#### $ 1,500 – Bhut Jolokia
+
+- [x] [Admonition inline blocks][12]
+- [x] [Site language selection][13]
+- [x] [Versioning][14]
+
+  [12]: reference/admonitions.md#inline-blocks
+  [13]: setup/changing-the-language.md#site-language-selector
+  [14]: setup/setting-up-versioning.md#versioning
 
 ## Frequently asked questions
 

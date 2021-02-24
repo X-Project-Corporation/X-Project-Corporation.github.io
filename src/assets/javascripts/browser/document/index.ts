@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -30,11 +30,10 @@ import { mapTo } from "rxjs/operators"
 /**
  * Watch document
  *
- * Documents must be implemented as subjects, so all downstream observables are
- * automatically updated when a new document is emitted. This enabled features
- * like instant loading.
+ * Documents are implemented as subjects, so all downstream observables are
+ * automatically updated when a new document is emitted.
  *
- * @return Document subject
+ * @returns Document subject
  */
 export function watchDocument(): Subject<Document> {
   const document$ = new ReplaySubject<Document>()

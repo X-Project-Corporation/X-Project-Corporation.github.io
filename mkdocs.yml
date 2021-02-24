@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+# Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to
@@ -55,6 +55,7 @@ theme:
     # - navigation.expand
     # - navigation.instant
     - navigation.sections
+    # - navigation.indexes
     - navigation.tabs
     # - navigation.tabs.sticky
     - search.highlight
@@ -66,14 +67,14 @@ theme:
       primary: indigo
       accent: indigo
       toggle:
-        icon: material/toggle-switch
-        name: Switch to light mode
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
     - scheme: slate
       primary: red
       accent: red
       toggle:
-        icon: material/toggle-switch-off-outline
-        name: Switch to dark mode
+        icon: material/toggle-switch
+        name: Switch to light mode
   font:
     text: Roboto
     code: Roboto Mono

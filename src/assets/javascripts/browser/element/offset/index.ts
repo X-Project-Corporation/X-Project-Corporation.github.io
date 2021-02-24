@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -21,7 +21,16 @@
  */
 
 import { Observable, fromEvent, merge } from "rxjs"
-import { map, startWith } from "rxjs/operators"
+import {
+  distinctUntilChanged,
+  map,
+  startWith
+} from "rxjs/operators"
+
+import {
+  getElementContentSize,
+  getElementSize
+} from "../size"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -44,7 +53,7 @@ export interface ElementOffset {
  *
  * @param el - Element
  *
- * @return Element offset
+ * @returns Element offset
  */
 export function getElementOffset(el: HTMLElement): ElementOffset {
   return {
@@ -60,7 +69,7 @@ export function getElementOffset(el: HTMLElement): ElementOffset {
  *
  * @param el - Element
  *
- * @return Element offset observable
+ * @returns Element offset observable
  */
 export function watchElementOffset(
   el: HTMLElement
@@ -72,5 +81,32 @@ export function watchElementOffset(
     .pipe(
       map(() => getElementOffset(el)),
       startWith(getElementOffset(el))
+    )
+}
+
+/**
+ * Watch element threshold
+ *
+ * This function returns an observable which emits whether the bottom scroll
+ * offset of an elements is within a certain threshold.
+ *
+ * @param el - Element
+ * @param threshold - Threshold
+ *
+ * @returns Element threshold observable
+ */
+export function watchElementThreshold(
+  el: HTMLElement, threshold = 16
+): Observable<boolean> {
+  return watchElementOffset(el)
+    .pipe(
+      map(({ y }) => {
+        const visible = getElementSize(el)
+        const content = getElementContentSize(el)
+        return y >= (
+          content.height - visible.height - threshold
+        )
+      }),
+      distinctUntilChanged()
     )
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,6 +20,127 @@
  * IN THE SOFTWARE.
  */
 
-export * from "./_"
-export * from "./react"
-export * from "./set"
+import {
+  Observable,
+  Subject,
+  animationFrameScheduler,
+  merge,
+  of
+} from "rxjs"
+import {
+  bufferCount,
+  filter,
+  finalize,
+  map,
+  observeOn,
+  switchMap,
+  tap,
+  withLatestFrom,
+  zipWith
+} from "rxjs/operators"
+
+import {
+  addToSearchResultList,
+  resetSearchResultList,
+  resetSearchResultMeta,
+  setSearchResultMeta
+} from "~/actions"
+import {
+  getElementOrThrow,
+  watchElementThreshold
+} from "~/browser"
+import {
+  SearchResult,
+  SearchWorker,
+  isSearchResultMessage
+} from "~/integrations"
+import { renderSearchResultItem } from "~/templates"
+
+import { Component } from "../../_"
+import { SearchQuery } from "../query"
+
+/* ----------------------------------------------------------------------------
+ * Helper types
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Mount options
+ */
+interface MountOptions {
+  query$: Observable<SearchQuery>      /* Search query observable */
+}
+
+/* ----------------------------------------------------------------------------
+ * Functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Mount search result list
+ *
+ * This function performs a lazy rendering of the search results, depending on
+ * the vertical offset of the search result container.
+ *
+ * @param el - Search result list element
+ * @param worker - Search worker
+ * @param options - Options
+ *
+ * @returns Search result list component observable
+ */
+export function mountSearchResult(
+  el: HTMLElement, { rx$ }: SearchWorker, { query$ }: MountOptions
+): Observable<Component<SearchResult>> {
+  const internal$ = new Subject<SearchResult>()
+  const boundary$ = watchElementThreshold(el.parentElement!)
+    .pipe(
+      filter(Boolean)
+    )
+
+  /* Update search result metadata */
+  const meta = getElementOrThrow(":scope > :first-child", el)
+  internal$
+    .pipe(
+      observeOn(animationFrameScheduler),
+      withLatestFrom(query$)
+    )
+      .subscribe(([{ items }, { value }]) => {
+        if (value)
+          setSearchResultMeta(meta, items.length)
+        else
+          resetSearchResultMeta(meta)
+      })
+
+  /* Update search result list */
+  const list = getElementOrThrow(":scope > :last-child", el)
+  internal$
+    .pipe(
+      observeOn(animationFrameScheduler),
+      tap(() => resetSearchResultList(list)),
+      switchMap(({ items }) => merge(
+        of(...items.slice(0, 10)),
+        of(...items.slice(10))
+          .pipe(
+            bufferCount(4),
+            zipWith(boundary$),
+            switchMap(([chunk]) => of(...chunk))
+          )
+      ))
+    )
+      .subscribe(result => {
+        addToSearchResultList(list, renderSearchResultItem(result))
+      })
+
+  /* Filter search result list */
+  const result$ = rx$
+    .pipe(
+      filter(isSearchResultMessage),
+      map(({ data }) => data)
+    )
+
+  /* Create and return component */
+  return result$
+    .pipe(
+      tap(internal$),
+      finalize(() => internal$.complete()),
+      map(state => ({ ref: el, ...state }))
+    )
+}

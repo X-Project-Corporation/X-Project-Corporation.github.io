@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,7 +20,8 @@
  * IN THE SOFTWARE.
  */
 
-import { h, translate } from "utilities"
+import { translation } from "~/_"
+import { h } from "~/utilities"
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -31,14 +32,13 @@ import { h, translate } from "utilities"
  *
  * @param id - Unique identifier
  *
- * @return Element
+ * @returns Element
  */
-export function renderClipboardButton(id: string) {
+export function renderClipboardButton(id: string): HTMLElement {
   return (
     <button
       class="md-clipboard md-icon"
-      title={translate("clipboard.copy")}
-      data-clipboard
+      title={translation("clipboard.copy")}
       data-clipboard-target={`#${id} > code`}
     ></button>
   )

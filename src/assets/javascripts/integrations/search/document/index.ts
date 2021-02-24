@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,8 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-// @ts-ignore
-import * as escapeHTML from "escape-html"
+import escapeHTML from "escape-html"
 
 import { SearchIndexDocument } from "../_"
 
@@ -52,7 +51,7 @@ export type SearchDocumentMap = Map<string, SearchDocument>
  *
  * @param docs - Search index documents
  *
- * @return Search document map
+ * @returns Search document map
  */
 export function setupSearchDocumentMap(
   docs: SearchIndexDocument[]

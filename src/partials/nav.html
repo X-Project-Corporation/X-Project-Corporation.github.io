@@ -1,5 +1,5 @@
 <!--
-  Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+  Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to
@@ -65,7 +65,7 @@
   <!-- Render item list -->
   <ul class="md-nav__list" data-md-scrollfix>
     {% for nav_item in nav %}
-      {% set path = "nav-" ~ loop.index %}
+      {% set path = "__nav_" ~ loop.index %}
       {% set level = 1 %}
       {% include "partials/nav-item.html" %}
     {% endfor %}

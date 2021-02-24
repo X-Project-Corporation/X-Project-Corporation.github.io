@@ -1,5 +1,5 @@
 <!--
-  Copyright (c) 2016-2020 Martin Donath <martin.donath@squidfunk.com>
+  Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to
@@ -58,7 +58,7 @@
   <!-- Extra stylesheets -->
   <link
     rel="stylesheet"
-    href="{{ 'assets/stylesheets/overrides.css' | url }}"
+    href="{{ 'overrides/assets/stylesheets/main.css' | url }}"
   />
 {% endblock %}
 
@@ -78,7 +78,7 @@
   {{ super() }}
 
   <!-- Content footer -->
-  <footer class="tx-content__footer md-typeset">
+  <footer class="mdx-content__footer md-typeset">
     <a href="{{ 'insiders/' | url }}" title="Material for MkDocs Insiders">
       <hr />
       <span class="twemoji">
@@ -87,7 +87,7 @@
       <span class="twemoji">
         {% include ".icons/material/plus.svg" %}
       </span>
-      <span class="twemoji tx-heart">
+      <span class="twemoji mdx-heart">
         {% include ".icons/octicons/heart-fill-24.svg" %}
       </span>
       <hr />
@@ -95,20 +95,11 @@
   </footer>
 {% endblock %}
 
-<!-- Analytics -->
-{% block analytics %}
+<!-- Theme-related JavaScript -->
+{% block scripts %}
   {{ super() }}
 
-  <!-- Track external links -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      document.body.addEventListener("click", function(ev) {
-        if (ev.target instanceof HTMLElement) {
-          var el = ev.target.closest("a[href^=http]")
-          if (el)
-            ga("send", "event", "outbound", "click", el.href)
-        }
-      })
-    })
-  </script>
+  <!-- Extra JavaScript -->
+  <script src="{{ 'overrides/assets/javascripts/bundle.js' | url }}"></script>
 {% endblock %}
+

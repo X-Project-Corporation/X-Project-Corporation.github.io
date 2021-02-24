@@ -1,10 +1,8 @@
 {
   "compilerOptions": {
     "alwaysStrict": true,
-    "baseUrl": "src/assets/javascripts",
-    "declaration": false,
-    "declarationMap": false,
-    "downlevelIteration": true,
+    "baseUrl": "src",
+    "esModuleInterop": true,
     "jsx": "react",
     "jsxFactory": "h",
     "lib": [
@@ -22,13 +20,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "browser": ["browser"],
-      "components": ["components"],
-      "integrations/*": ["integrations/*"],
-      "patches": ["patches"],
-      "templates": ["templates"],
-      "utilities": ["utilities"],
-      "workers": ["workers"]
+      "~/*": ["./assets/javascripts/*"],
+      "_/*": ["./overrides/assets/javascripts/*"]
     },
     "removeComments": false,
     "sourceMap": true,
@@ -37,14 +30,13 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "stripInternal": true,
-    "target": "es5"
+    "target": "es2015"
   },
   "include": [
+    "tools",
     "src/assets/javascripts",
+    "src/overrides/assets/javascripts",
     "typings",
     "webpack.config.ts"
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }
