@@ -101,8 +101,8 @@ export function mountSearch(
   const worker = setupSearchWorker(config.search, index$)
 
   /* Retrieve nested components */
-  const query   = getComponentElement("search-query", el)
-  const result  = getComponentElement("search-result", el)
+  const query  = getComponentElement("search-query", el)
+  const result = getComponentElement("search-result", el)
 
   /* Re-emit query when search is ready */
   const { tx$, rx$ } = worker

@@ -103,7 +103,7 @@ export function watchSearchQuery(
       distinctUntilChanged()
     )
 
-  /* Intercept deep link of search query */
+  /* Intercept deep links */
   const location = getLocation()
   if (location.searchParams.has("q")) {
     setToggle("search", true)
