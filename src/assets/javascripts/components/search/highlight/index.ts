@@ -25,7 +25,7 @@ import {
   ObservableInput,
   combineLatest
 } from "rxjs"
-import { map, startWith } from "rxjs/operators"
+import { filter, map, startWith } from "rxjs/operators"
 
 import { getLocation } from "~/browser"
 import {
@@ -84,7 +84,11 @@ export function mountSearchHiglight(
 ): Observable<Component<SearchHighlight>> {
   return combineLatest([
     index$,
-    location$.pipe(startWith(getLocation()))
+    location$
+      .pipe(
+        startWith(getLocation()),
+        filter(url => url.searchParams.has("h"))
+      )
   ])
     .pipe(
       map(([index, url]) => {

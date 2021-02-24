@@ -55,6 +55,7 @@ theme:
     # - navigation.expand
     # - navigation.instant
     - navigation.sections
+    # - navigation.indexes
     - navigation.tabs
     # - navigation.tabs.sticky
     - search.highlight

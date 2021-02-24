@@ -83,10 +83,12 @@
       </nav>
 
       <!-- Search suggestions -->
-      <div
-        class="md-search__suggest"
-        data-md-component="search-suggest"
-      ></div>
+      {% if "search.suggest" in features %}
+        <div
+          class="md-search__suggest"
+          data-md-component="search-suggest"
+        ></div>
+      {% endif %}
     </form>
     <div class="md-search__output">
       <div class="md-search__scrollwrap" data-md-scrollfix>

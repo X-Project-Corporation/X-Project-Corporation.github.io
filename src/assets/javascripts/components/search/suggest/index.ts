@@ -23,52 +23,35 @@
 import {
   Observable,
   Subject,
-  animationFrameScheduler,
-  merge,
-  of
+  asyncScheduler,
+  fromEvent
 } from "rxjs"
 import {
-  bufferCount,
+  combineLatestWith,
+  distinctUntilChanged,
   filter,
   finalize,
   map,
   observeOn,
-  switchMap,
-  tap,
-  withLatestFrom,
-  zipWith
+  tap
 } from "rxjs/operators"
 
-import {
-  addToSearchResultList,
-  resetSearchResultList,
-  resetSearchResultMeta,
-  setSearchResultMeta
-} from "~/actions"
-import {
-  getElementOrThrow,
-  watchElementThreshold
-} from "~/browser"
 import {
   SearchResult,
   SearchWorker,
   isSearchResultMessage
 } from "~/integrations"
-import { renderSearchResultItem } from "~/templates"
 
-import { Component } from "../../_"
-import { SearchQuery } from "../query"
+import { Component, getComponentElement } from "../../_"
 
 /* ----------------------------------------------------------------------------
- * Helper types
+ * Types
  * ------------------------------------------------------------------------- */
 
 /**
- * Mount options
+ * Search suggestions
  */
-interface MountOptions {
-  query$: Observable<SearchQuery>      /* Search query observable */
-}
+export interface SearchSuggest {}
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -82,52 +65,43 @@ interface MountOptions {
  *
  * @param el - Search result list element
  * @param worker - Search worker
- * @param options - Options
  *
  * @returns Search result list component observable
  */
 export function mountSearchSuggest(
-  el: HTMLElement, { rx$ }: SearchWorker, { query$ }: MountOptions
-): Observable<Component<SearchResult>> {
+  el: HTMLElement, { rx$ }: SearchWorker
+): Observable<Component<SearchSuggest>> {
   const internal$ = new Subject<SearchResult>()
-  const boundary$ = watchElementThreshold(el.parentElement!)
+
+  // TODO: refactor this
+  const query = getComponentElement<HTMLInputElement>("search-query")
+  const query$ = fromEvent(query, "keydown")
     .pipe(
-      filter(Boolean)
+      observeOn(asyncScheduler),
+      map(() => query.value),
+      distinctUntilChanged(),
     )
 
-  /* Update search result metadata */
-  const meta = getElementOrThrow(":scope > :first-child", el)
+  // TODO: grab suggestion from "q" parameter?
   internal$
     .pipe(
-      observeOn(animationFrameScheduler),
-      withLatestFrom(query$)
-    )
-      .subscribe(([{ items }, { value }]) => {
-        if (value)
-          setSearchResultMeta(meta, items.length)
-        else
-          resetSearchResultMeta(meta)
+      combineLatestWith(query$),
+      map(([{ suggestions }, value]) => {
+        const words = value.split(/([\s-]+)/)
+        if (suggestions?.length && words[words.length - 1]) {
+          const last = suggestions[suggestions.length - 1]
+          if (last.startsWith(words[words.length - 1]))
+            words[words.length - 1] = last
+        } else {
+          words.length = 0
+        }
+        return words
       })
-
-  /* Update search result list */
-  const list = getElementOrThrow(":scope > :last-child", el)
-  internal$
-    .pipe(
-      observeOn(animationFrameScheduler),
-      tap(() => resetSearchResultList(list)),
-      switchMap(({ items }) => merge(
-        of(...items.slice(0, 10)),
-        of(...items.slice(10))
-          .pipe(
-            bufferCount(4),
-            zipWith(boundary$),
-            switchMap(([chunk]) => of(...chunk))
-          )
-      ))
     )
-      .subscribe(result => {
-        addToSearchResultList(list, renderSearchResultItem(result))
-      })
+      .subscribe(words => el.innerHTML = words
+        .join("")
+        .replace(/\s/g, "&nbsp;")
+      )
 
   /* Filter search result list */
   const result$ = rx$
@@ -141,6 +115,6 @@ export function mountSearchSuggest(
     .pipe(
       tap(internal$),
       finalize(() => internal$.complete()),
-      map(state => ({ ref: el, ...state }))
+      map(() => ({ ref: el }))
     )
 }

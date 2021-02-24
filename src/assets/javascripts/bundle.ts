@@ -65,7 +65,7 @@ import {
 import {
   SearchIndex,
   setupClipboardJS,
-  setupInstantLoading,
+  setupInstantLoading
 } from "./integrations"
 import {
   patchIndeterminate,

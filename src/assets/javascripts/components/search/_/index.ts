@@ -48,6 +48,7 @@ import {
 import { SearchQuery, mountSearchQuery } from "../query"
 import { mountSearchResult } from "../result"
 import { SearchShare, mountSearchShare } from "../share"
+import { SearchSuggest, mountSearchSuggest } from "../suggest"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -60,6 +61,7 @@ export type Search =
   | SearchQuery
   | SearchResult
   | SearchShare
+  | SearchSuggest
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -99,8 +101,8 @@ export function mountSearch(
   const worker = setupSearchWorker(config.search, index$)
 
   /* Retrieve nested components */
-  const query  = getComponentElement("search-query", el)
-  const result = getComponentElement("search-result", el)
+  const query   = getComponentElement("search-query", el)
+  const result  = getComponentElement("search-result", el)
 
   /* Re-emit query when search is ready */
   const { tx$, rx$ } = worker
@@ -212,6 +214,10 @@ export function mountSearch(
 
     /* Search sharing */
     ...getComponentElements("search-share", el)
-      .map(child => mountSearchShare(child as HTMLAnchorElement, { query$ }))
+      .map(child => mountSearchShare(child as HTMLAnchorElement, { query$ })),
+
+    /* Search suggestions */
+    ...getComponentElements("search-suggest", el)
+      .map(child => mountSearchSuggest(child, worker))
   )
 }
