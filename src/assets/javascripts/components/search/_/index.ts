@@ -142,10 +142,28 @@ export function mountSearch(
         const active = getActiveElement()
         switch (key.type) {
 
-          /* Enter: prevent form submission */
+          /* Enter: go to first (best) result */
           case "Enter":
-            if (active === query)
+            if (active === query) {
+              const anchors = new Map<HTMLAnchorElement, number>()
+              for (const anchor of getElements<HTMLAnchorElement>(
+                ":first-child [href]", result
+              )) {
+                const article = anchor.firstElementChild!
+                anchors.set(anchor, parseFloat(
+                  article.getAttribute("data-md-score")!
+                ))
+              }
+
+              /* Go to result with highest score, if any */
+              if (anchors.size) {
+                const [[best]] = [...anchors].sort(([, a], [, b]) => b - a)
+                best.click()
+              }
+
+              /* Otherwise omit form submission */
               key.claim()
+            }
             break
 
           /* Escape or Tab: close search */
