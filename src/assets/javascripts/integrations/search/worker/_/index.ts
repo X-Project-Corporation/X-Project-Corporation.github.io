@@ -21,7 +21,7 @@
  */
 
 import { ObservableInput, Subject, from } from "rxjs"
-import { map, share, tap } from "rxjs/operators"
+import { map, share } from "rxjs/operators"
 
 import { configuration, feature, translation } from "~/_"
 import { WorkerHandler, watchWorker } from "~/browser"

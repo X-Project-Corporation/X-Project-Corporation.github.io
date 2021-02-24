@@ -42,7 +42,7 @@ export type ComponentType =
   | "search"                           /* Search */
   | "search-query"                     /* Search input */
   | "search-result"                    /* Search results */
-  | "search-share"                     /* Search share */
+  | "search-share"                     /* Search sharing */
   | "search-suggest"                   /* Search suggestions */
   | "sidebar"                          /* Sidebar */
   | "skip"                             /* Skip link */

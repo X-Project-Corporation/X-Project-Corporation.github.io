@@ -35,14 +35,20 @@ import {
 } from "~/browser"
 import {
   SearchIndex,
+  SearchResult,
   isSearchQueryMessage,
   isSearchReadyMessage,
   setupSearchWorker
 } from "~/integrations"
 
-import { Component, getComponentElement } from "../../_"
+import {
+  Component,
+  getComponentElement,
+  getComponentElements
+} from "../../_"
 import { SearchQuery, mountSearchQuery } from "../query"
-import { SearchResult, mountSearchResult } from "../result"
+import { mountSearchResult } from "../result"
+import { SearchShare, mountSearchShare } from "../share"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -54,6 +60,7 @@ import { SearchResult, mountSearchResult } from "../result"
 export type Search =
   | SearchQuery
   | SearchResult
+  | SearchShare
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -117,8 +124,12 @@ export function mountSearch(
   tx$
     .pipe(
       filter(isSearchQueryMessage),
-      sample(rx$.pipe(filter(isSearchReadyMessage))),
-      take(1)
+      sample(rx$
+        .pipe(
+          filter(isSearchReadyMessage),
+          take(1)
+        )
+      )
     )
       .subscribe(tx$.next.bind(tx$))
 
@@ -196,6 +207,10 @@ export function mountSearch(
   const query$ = mountSearchQuery(query as HTMLInputElement, worker)
   return merge(
     query$,
-    mountSearchResult(result, worker, { query$ })
+    mountSearchResult(result, worker, { query$ }),
+
+    /* Search sharing */
+    ...getComponentElements("search-share", el)
+      .map(child => mountSearchShare(child as HTMLAnchorElement, { query$ }))
   )
 }
