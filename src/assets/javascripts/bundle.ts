@@ -21,7 +21,7 @@
  */
 
 import "focus-visible"
-import { Subject, defer, merge } from "rxjs"
+import { EMPTY, Subject, defer, merge } from "rxjs"
 import {
   delay,
   filter,
@@ -31,10 +31,11 @@ import {
   switchMap
 } from "rxjs/operators"
 
-import { feature } from "./_"
+import { configuration, feature } from "./_"
 import {
   at,
   getElement,
+  requestJSON,
   setToggle,
   watchDocument,
   watchKeyboard,
@@ -53,6 +54,7 @@ import {
   mountHeaderTitle,
   mountPalette,
   mountSearch,
+  mountSearchHiglight,
   mountSidebar,
   mountSource,
   mountTableOfContents,
@@ -61,8 +63,9 @@ import {
   watchMain
 } from "./components"
 import {
+  SearchIndex,
   setupClipboardJS,
-  setupInstantLoading
+  setupInstantLoading,
 } from "./integrations"
 import {
   patchIndeterminate,
@@ -89,6 +92,12 @@ const viewport$ = watchViewport()
 const tablet$   = watchMedia("(min-width: 960px)")
 const screen$   = watchMedia("(min-width: 1220px)")
 const print$    = watchPrint()
+
+/* Set up search index */
+const config = configuration()
+const index$ = __search?.index || requestJSON<SearchIndex>(
+  `${config.base}/search/search_index.json`
+)
 
 /* Set up Clipboard.js integration */
 const alert$ = new Subject<string>()
@@ -165,7 +174,7 @@ const control$ = merge(
 
   /* Search */
   ...getComponentElements("search")
-    .map(el => mountSearch(el, { keyboard$ })),
+    .map(el => mountSearch(el, { index$, keyboard$ })),
 
   /* Repository information */
   ...getComponentElements("source")
@@ -182,6 +191,13 @@ const content$ = defer(() => merge(
   /* Content */
   ...getComponentElements("content")
     .map(el => mountContent(el, { target$, viewport$, print$ })),
+
+  /* Search highlighting */
+  ...getComponentElements("content")
+    .map(el => feature("search.highlight")
+      ? mountSearchHiglight(el, { index$, location$ })
+      : EMPTY
+    ),
 
   /* Header title */
   ...getComponentElements("header-title")

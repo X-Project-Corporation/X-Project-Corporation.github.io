@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import { translation } from "~/_"
+import { feature, translation } from "~/_"
 import {
   SearchDocument,
   SearchMetadata,
@@ -65,10 +65,17 @@ function renderSearchDocument(
     .flat()
     .slice(0, -1)
 
+  /* Assemble query string for highlighting */
+  const href = new URL(document.location)
+  if (feature("search.highlight"))
+    href.searchParams.set("h", Object.entries(document.terms)
+      .filter(([, match]) => match)
+      .reduce((highlight, [value]) => `${highlight} ${value}`.trim(), "")
+    )
+
   /* Render article or section, depending on flags */
-  const url = document.location
   return (
-    <a href={url} class="md-search-result__link" tabIndex={-1}>
+    <a href={href.toString()} class="md-search-result__link" tabIndex={-1}>
       <article
         class={["md-search-result__article", ...parent
           ? ["md-search-result__article--document"]

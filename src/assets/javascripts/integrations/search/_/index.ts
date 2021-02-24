@@ -261,7 +261,7 @@ export class Search {
               item.push({
                 location,
                 title: highlight(title),
-                text: highlight(text),
+                text:  highlight(text),
                 score: score * (1 + boost),
                 terms
               })
