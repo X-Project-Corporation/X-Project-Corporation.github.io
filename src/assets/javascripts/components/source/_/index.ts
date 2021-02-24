@@ -53,7 +53,7 @@ export interface Source {
  * ------------------------------------------------------------------------- */
 
 /**
- * Repository facts observable
+ * Repository information observable
  */
 let fetch$: Observable<Source>
 
@@ -64,8 +64,8 @@ let fetch$: Observable<Source>
 /**
  * Watch repository information
  *
- * This function will try to read the repository facts from session storage,
- * and if unsuccessful, fetch them from the underlying provider.
+ * This function tries to read the repository facts from session storage, and
+ * if unsuccessful, fetches them from the underlying provider.
  *
  * @param el - Repository information element
  *

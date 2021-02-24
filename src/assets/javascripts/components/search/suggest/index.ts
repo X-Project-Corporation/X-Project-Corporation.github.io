@@ -36,6 +36,7 @@ import {
   tap
 } from "rxjs/operators"
 
+import { Keyboard } from "~/browser"
 import {
   SearchResult,
   SearchWorker,
@@ -54,6 +55,17 @@ import { Component, getComponentElement } from "../../_"
 export interface SearchSuggest {}
 
 /* ----------------------------------------------------------------------------
+ * Helper types
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Mount options
+ */
+interface MountOptions {
+  keyboard$: Observable<Keyboard>      /* Keyboard observable */
+}
+
+/* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
 
@@ -65,16 +77,17 @@ export interface SearchSuggest {}
  *
  * @param el - Search result list element
  * @param worker - Search worker
+ * @param options - Options
  *
  * @returns Search result list component observable
  */
 export function mountSearchSuggest(
-  el: HTMLElement, { rx$ }: SearchWorker
+  el: HTMLElement, { rx$ }: SearchWorker, { keyboard$ }: MountOptions
 ): Observable<Component<SearchSuggest>> {
   const internal$ = new Subject<SearchResult>()
 
   // TODO: refactor this
-  const query = getComponentElement<HTMLInputElement>("search-query")
+  const query = getComponentElement("search-query")
   const query$ = fromEvent(query, "keydown")
     .pipe(
       observeOn(asyncScheduler),
@@ -102,6 +115,25 @@ export function mountSearchSuggest(
         .join("")
         .replace(/\s/g, "&nbsp;")
       )
+
+  /* Set up search keyboard handlers */
+  keyboard$
+    .pipe(
+      filter(({ mode }) => mode === "search")
+    )
+      .subscribe(key => {
+        switch (key.type) {
+
+          /* Right arrow: accept current suggestion */
+          case "ArrowRight":
+            if (
+              el.innerText.length &&
+              query.selectionStart === query.value.length
+            )
+              query.value = el.innerText
+            break
+        }
+      })
 
   /* Filter search result list */
   const result$ = rx$

@@ -93,7 +93,7 @@ const tablet$   = watchMedia("(min-width: 960px)")
 const screen$   = watchMedia("(min-width: 1220px)")
 const print$    = watchPrint()
 
-/* Set up search index */
+/* Retrieve search index */
 const config = configuration()
 const index$ = __search?.index || requestJSON<SearchIndex>(
   `${config.base}/search/search_index.json`
@@ -178,7 +178,7 @@ const control$ = merge(
 
   /* Repository information */
   ...getComponentElements("source")
-    .map(el => mountSource(el as HTMLAnchorElement)),
+    .map(el => mountSource(el)),
 
   /* Navigation tabs */
   ...getComponentElements("tabs")

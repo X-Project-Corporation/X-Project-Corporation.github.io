@@ -207,17 +207,17 @@ export function mountSearch(
       })
 
   /* Create and return component */
-  const query$ = mountSearchQuery(query as HTMLInputElement, worker)
+  const query$ = mountSearchQuery(query, worker)
   return merge(
     query$,
     mountSearchResult(result, worker, { query$ }),
 
     /* Search sharing */
     ...getComponentElements("search-share", el)
-      .map(child => mountSearchShare(child as HTMLAnchorElement, { query$ })),
+      .map(child => mountSearchShare(child, { query$ })),
 
     /* Search suggestions */
     ...getComponentElements("search-suggest", el)
-      .map(child => mountSearchSuggest(child, worker))
+      .map(child => mountSearchSuggest(child, worker, { keyboard$ }))
   )
 }
