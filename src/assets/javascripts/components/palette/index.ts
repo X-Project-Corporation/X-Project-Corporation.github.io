@@ -124,7 +124,7 @@ export function mountPalette(
       if (typeof value === "string")
         document.body.setAttribute(`data-md-color-${key}`, value)
 
-    /* Toggle switch visibility */
+    /* Toggle visibility */
     for (let index = 0; index < inputs.length; index++) {
       const label = inputs[index].nextElementSibling as HTMLElement
       label.hidden = palette.index !== index

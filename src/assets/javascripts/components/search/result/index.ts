@@ -129,7 +129,7 @@ export function mountSearchResult(
         addToSearchResultList(list, renderSearchResultItem(result))
       })
 
-  /* Filter search result list */
+  /* Filter search result message */
   const result$ = rx$
     .pipe(
       filter(isSearchResultMessage),

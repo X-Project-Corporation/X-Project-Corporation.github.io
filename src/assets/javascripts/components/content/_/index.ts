@@ -25,9 +25,13 @@ import { Observable, merge } from "rxjs"
 import { Viewport, getElements } from "~/browser"
 
 import { Component } from "../../_"
-import { CodeBlock, mountCodeBlock } from "../code"
+import {
+  CodeBlock,
+  MermaidCodeBlock,
+  mountCodeBlock,
+  mountMermaidCodeBlock
+} from "../code"
 import { Details, mountDetails } from "../details"
-import { Mermaid, mountMermaid } from "../mermaid"
 import { DataTable, mountDataTable } from "../table"
 
 /* ----------------------------------------------------------------------------
@@ -39,9 +43,9 @@ import { DataTable, mountDataTable } from "../table"
  */
 export type Content =
   | CodeBlock
+  | MermaidCodeBlock
   | DataTable
   | Details
-  | Mermaid
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -80,16 +84,16 @@ export function mountContent(
     ...getElements("pre:not([class^=mermaid]) > code", el)
       .map(child => mountCodeBlock(child, { viewport$ })),
 
+    /* Mermaid code blocks */
+    ...getElements(".mermaid-experimental", el)
+      .map(child => mountMermaidCodeBlock(child)),
+
     /* Data tables */
     ...getElements("table:not([class])", el)
       .map(child => mountDataTable(child)),
 
     /* Details */
     ...getElements("details", el)
-      .map(child => mountDetails(child, { target$, print$ })),
-
-    /* Mermaid diagrams */
-    ...getElements(".mermaid-experimental", el)
-      .map(child => mountMermaid(child))
+      .map(child => mountDetails(child, { target$, print$ }))
   )
 }

@@ -81,7 +81,6 @@ theme:
   favicon: assets/favicon.png
   icon:
     logo: logo
-    translate: material/translate
 
 # Plugins
 plugins:

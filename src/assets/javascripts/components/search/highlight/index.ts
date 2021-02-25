@@ -52,14 +52,6 @@ export interface SearchHighlight {
  * ------------------------------------------------------------------------- */
 
 /**
- * Watch options
- */
-interface WatchOptions {
-  index$: ObservableInput<SearchIndex> /* Search index observable */
-  location$: Observable<URL>           /* Location observable */
-}
-
-/**
  * Mount options
  */
 interface MountOptions {
@@ -77,7 +69,7 @@ interface MountOptions {
  * @param el - Content element
  * @param options - Options
  *
- * @returns Search highlight component observable
+ * @returns Search highlighting component observable
  */
 export function mountSearchHiglight(
   el: HTMLElement, { index$, location$ }: MountOptions
@@ -91,14 +83,13 @@ export function mountSearchHiglight(
       )
   ])
     .pipe(
-      map(([index, url]) => {
-        const highlight = setupSearchHighlighter(index.config)
-        return highlight(url.searchParams.get("h")!)
-      }),
+      map(([index, url]) => setupSearchHighlighter(index.config)(
+        url.searchParams.get("h")!
+      )),
       map(fn => {
         const nodes = new Map<ChildNode, string>()
 
-        /* Collect all candidates */
+        /* Traverse text nodes and collect matches */
         const it = document.createNodeIterator(el, NodeFilter.SHOW_TEXT)
         for (let node = it.nextNode(); node; node = it.nextNode()) {
           if (node.parentElement?.offsetHeight) {
@@ -109,7 +100,7 @@ export function mountSearchHiglight(
           }
         }
 
-        /* Performa actual replacement */
+        /* Replace original nodes with matches */
         for (const [node, text] of nodes) {
           const { childNodes } = h("span", null, text)
           node.replaceWith(...Array.from(childNodes))

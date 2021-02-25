@@ -23,5 +23,4 @@
 export * from "./_"
 export * from "./code"
 export * from "./details"
-export * from "./mermaid"
 export * from "./table"

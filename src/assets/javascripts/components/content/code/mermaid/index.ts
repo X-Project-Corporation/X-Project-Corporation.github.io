@@ -25,16 +25,16 @@ import { mapTo, shareReplay, tap } from "rxjs/operators"
 
 import { watchScript } from "~/browser"
 
-import { Component } from "../../_"
+import { Component } from "../../../_"
 
 /* ----------------------------------------------------------------------------
  * Types
  * ------------------------------------------------------------------------- */
 
 /**
- * Mermaid diagram
+ * Mermaid code block
  */
-export interface Mermaid {}
+export interface MermaidCodeBlock {}
 
 /* ----------------------------------------------------------------------------
  * Data
@@ -55,15 +55,15 @@ let index = 0
  * ------------------------------------------------------------------------- */
 
 /**
- * Mount Mermaid diagram
+ * Mount Mermaid code block
  *
  * @param el - Code block element
  *
- * @returns Mermaid component observable
+ * @returns Mermaid code block component observable
  */
-export function mountMermaid(
+export function mountMermaidCodeBlock(
   el: HTMLElement
-): Observable<Component<Mermaid>> {
+): Observable<Component<MermaidCodeBlock>> {
   mermaid$ ||= watchScript(
     "https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js"
   )

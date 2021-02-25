@@ -83,7 +83,7 @@ export function mountIconSearch(
     `${config.base}/overrides/assets/javascripts/iconsearch_index.json`
   )
 
-  /* Retrieve nested components */
+  /* Retrieve query and result components */
   const query  = getComponentElement("iconsearch-query", el)
   const result = getComponentElement("iconsearch-result", el)
 

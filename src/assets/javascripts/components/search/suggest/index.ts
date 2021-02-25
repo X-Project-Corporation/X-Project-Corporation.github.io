@@ -86,8 +86,8 @@ export function mountSearchSuggest(
 ): Observable<Component<SearchSuggest>> {
   const internal$ = new Subject<SearchResult>()
 
-  // TODO: refactor this
-  const query = getComponentElement("search-query")
+  /* Retrieve query component and track all changes */
+  const query  = getComponentElement("search-query")
   const query$ = fromEvent(query, "keydown")
     .pipe(
       observeOn(asyncScheduler),
@@ -95,7 +95,7 @@ export function mountSearchSuggest(
       distinctUntilChanged(),
     )
 
-  // TODO: grab suggestion from "q" parameter?
+  /* Update search suggestions */
   internal$
     .pipe(
       combineLatestWith(query$),
@@ -135,7 +135,7 @@ export function mountSearchSuggest(
         }
       })
 
-  /* Filter search result list */
+  /* Filter search result message */
   const result$ = rx$
     .pipe(
       filter(isSearchResultMessage),
