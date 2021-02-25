@@ -1,7 +1,7 @@
 {#-
   This file was automatically generated - do not edit
 -#}
-{% macro render_nav_item(nav_item, path, level) %}
+{% macro render(nav_item, path, level) %}
   {% set class = "md-nav__item" %}
   {% if nav_item.active %}
     {% set class = class ~ " md-nav__item--active" %}
@@ -48,18 +48,10 @@
           {{ nav_item.title }}
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
-          {% set base = path %}
           {% for nav_item in nav_item.children %}
-            {% if not (
-              "navigation.indexes" in features and nav_item.is_index
-            ) %}
-              {{
-                render_nav_item(
-                  nav_item,
-                  path = base ~ "_" ~ loop.index,
-                  level = level + 1
-                )
-              }}
+            {% if "navigation.indexes" in features and nav_item.is_index %}
+            {% else %}
+              {{ render(nav_item, path ~ "_" ~ loop.index, level + 1) }}
             {% endif %}
           {% endfor %}
         </ul>
@@ -93,4 +85,4 @@
     </li>
   {% endif %}
 {% endmacro %}
-{{ render_nav_item(nav_item, path, level) }}
+{{ render(nav_item, path, level) }}
