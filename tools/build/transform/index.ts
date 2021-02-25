@@ -158,10 +158,7 @@ export function transformScript(
         const file = digest(options.to, js)
         return concat(
           mkdir(path.dirname(file)),
-          defer(() => fs.writeFile(`${file}`, js.replace(
-            /(sourceMappingURL=)(.*)/,
-            `$1${path.basename(file)}\n`
-          )))
+          defer(() => fs.writeFile(`${file}`, js))
         )
           .pipe(
             ignoreElements(),
