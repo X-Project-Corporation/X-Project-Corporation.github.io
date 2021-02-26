@@ -58,6 +58,7 @@ theme:
     # - navigation.indexes
     - navigation.tabs
     # - navigation.tabs.sticky
+    - navigation.tracking
     - search.highlight
     - search.share
     - search.suggest

@@ -39,6 +39,7 @@ import {
   tap
 } from "rxjs/operators"
 
+import { feature } from "~/_"
 import {
   resetAnchorActive,
   resetAnchorState,
@@ -49,6 +50,7 @@ import {
   Viewport,
   getElement,
   getElements,
+  getLocation,
   watchElementSize
 } from "~/browser"
 
@@ -106,15 +108,18 @@ interface MountOptions {
  *
  * Note that the current anchor is the last item of the `prev` anchor list.
  *
- * @param anchors - Anchor elements
+ * @param el - Table of contents element
  * @param options - Options
  *
  * @returns Table of contents observable
  */
 export function watchTableOfContents(
-  anchors: HTMLAnchorElement[], { viewport$, header$ }: WatchOptions
+  el: HTMLElement, { viewport$, header$ }: WatchOptions
 ): Observable<TableOfContents> {
   const table = new Map<HTMLAnchorElement, HTMLElement>()
+
+  /* Compute anchor-to-target mapping */
+  const anchors = getElements<HTMLAnchorElement>("[href^=\\#]", el)
   for (const anchor of anchors) {
     const id = decodeURIComponent(anchor.hash.substring(1))
     const target = getElement(`[id="${id}"]`)
@@ -233,7 +238,7 @@ export function watchTableOfContents(
 /**
  * Mount table of contents
  *
- * @param el - Anchor list element
+ * @param el - Table of contents element
  * @param options - Options
  *
  * @returns Table of contents component observable
@@ -259,11 +264,27 @@ export function mountTableOfContents(
           setAnchorActive(anchor, index === prev.length - 1)
           setAnchorState(anchor, "blur")
         }
+
+        /* Perform anchor tracking, if enabled */
+        if (feature("navigation.tracking")) {
+          const { pathname, href } = getLocation()
+
+          /* Set hash fragment to active anchor */
+          const anchor = prev[prev.length - 1]
+          if (anchor && anchor.length) {
+            const [active] = anchor
+            if (active.href !== href)
+              history.replaceState({}, "", active.href)
+
+          /* Reset anchor when at the top */
+          } else {
+            history.replaceState({}, "", pathname)
+          }
+        }
       })
 
   /* Create and return component */
-  const anchors = getElements<HTMLAnchorElement>("[href^=\\#]", el)
-  return watchTableOfContents(anchors, options)
+  return watchTableOfContents(el, options)
     .pipe(
       tap(internal$),
       finalize(() => internal$.complete()),
