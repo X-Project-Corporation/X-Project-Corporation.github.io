@@ -22,7 +22,6 @@
 
 import { createHash } from "crypto"
 import { build as esbuild } from "esbuild"
-import * as fs from "fs/promises"
 import * as path from "path"
 import postcss from "postcss"
 import {
@@ -39,7 +38,7 @@ import {
 import { render as sass } from "sass"
 import { promisify } from "util"
 
-import { base, mkdir } from "../_"
+import { base, mkdir, write } from "../_"
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -66,10 +65,12 @@ interface TransformOptions {
  * @returns File with digest
  */
 function digest(file: string, data: string): string {
-  const hash = createHash("sha256").update(data).digest("hex")
-  return process.argv.includes("--optimize")
-    ? file.replace(/\b(?=\.)/, `.${hash.slice(0, 8)}.min`)
-    : file
+  if (process.argv.includes("--optimize")) {
+    const hash = createHash("sha256").update(data).digest("hex")
+    return file.replace(/\b(?=\.)/, `.${hash.slice(0, 8)}.min`)
+  } else {
+    return file
+  }
 }
 
 /* ----------------------------------------------------------------------------
@@ -117,10 +118,10 @@ export function transformStyle(
         const file = digest(options.to, css)
         return concat(
           mkdir(path.dirname(file)),
-          defer(() => fs.writeFile(`${file}`, css.replace(
+          write(`${file}`, css.replace(
             options.from,
             path.basename(file)
-          )))
+          ))
         )
           .pipe(
             ignoreElements(),
@@ -142,6 +143,7 @@ export function transformScript(
 ): Observable<string> {
   return defer(() => esbuild({
     entryPoints: [options.from],
+    target: "es2015",
     write: false,
     bundle: true,
     sourcemap: false,
@@ -158,7 +160,7 @@ export function transformScript(
         const file = digest(options.to, js)
         return concat(
           mkdir(path.dirname(file)),
-          defer(() => fs.writeFile(`${file}`, js))
+          write(`${file}`, js)
         )
           .pipe(
             ignoreElements(),

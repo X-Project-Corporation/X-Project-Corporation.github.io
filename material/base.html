@@ -32,7 +32,7 @@
         {% endfor %}
       {% endif %}
       <link rel="shortcut icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.0.2+insiders-2.0.0">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.0.3+insiders-2.0.0">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -198,7 +198,7 @@
         "base": base_url,
         "features": features,
         "translations": {},
-        "search": "assets/javascripts/workers/search.eab36320.min.js" | url,
+        "search": "assets/javascripts/workers/search.9849d06a.min.js" | url,
         "version": config.extra.version or None
       } -%}
       {%- set translations = app.translations -%}
@@ -224,7 +224,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.5aea9258.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.8488cbc1.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
