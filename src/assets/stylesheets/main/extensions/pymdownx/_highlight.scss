@@ -245,7 +245,7 @@
   @include break-to-device(mobile) {
 
     // Top-level code block
-    > .highlight {
+    &.md-content__inner > .highlight {
       margin: 1em px2rem(-16px);
 
       // Highlighted line

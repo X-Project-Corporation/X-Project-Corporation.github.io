@@ -46,7 +46,7 @@ import {
   getElements,
   watchMedia
 } from "~/browser"
-import { renderClipboardButton } from "~/templates"
+import { renderAnnotation, renderClipboardButton } from "~/templates"
 
 import { Component } from "../../../_"
 
@@ -166,12 +166,60 @@ export function mountCodeBlock(
   /* Render button for Clipboard.js integration */
   if (ClipboardJS.isSupported()) {
     const parent = el.closest("pre")!
-    parent.id = `__code_${index++}`
+    parent.id = `__code_${++index}`
     parent.insertBefore(
       renderClipboardButton(parent.id),
       el
     )
   }
+
+  // const comments = getElements(".c, .c1, .cm", el)
+  // for (const comment of comments) {
+  //   const tip = document.createElement("div")
+  //   tip.innerText = "heyho!"
+  //   comment.appendChild(tip)
+  // }
+
+  if (el.closest(".annotate")) {
+    let annoIndex = 0
+    const container = el.closest(".annotate")!
+    if (container.nextElementSibling && container.nextElementSibling!.tagName === "OL") {
+      const list = container.nextElementSibling!
+      const items = getElements(":scope > li", list)
+      list.remove()
+
+      const comments = getElements(".c, .c1, .cm", el)
+
+      for (const comment of comments) {
+        const capture = comment.textContent!.match(/\((\d+)\)/)
+        if (capture) {
+          const [, id] = capture
+
+          // TODO: match ids!
+          comment.replaceWith(renderAnnotation(++annoIndex, items[+id - 1]))
+
+          // // + focus-within?
+          // const link = document.createElement("button") // this should be a container
+          // link.className = "md-annotation"
+          // // link.href = `#__annotation_${index}_${++annoIndex}`
+          // link.textContent = id
+
+          // mapping.set(link, items[+id - 1])
+
+          // comment.replaceWith(link)
+          // items[+id - 1].id = `__annotation_${index}_${annoIndex}`
+          // items[+id - 1].remove()
+          // replacewith anchor!!!
+
+           // only convert, if there is an entry in the list!
+        }
+      }
+      // console.log(mapping)
+    }
+
+  }
+
+
 
   /* Create and return component */
   return watchCodeBlock(el, options)

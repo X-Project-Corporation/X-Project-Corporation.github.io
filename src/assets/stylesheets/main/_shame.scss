@@ -23,3 +23,145 @@
 // ----------------------------------------------------------------------------
 // Nothing to see here, move along
 // ----------------------------------------------------------------------------
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--md-default-fg-color--lighter);
+    // transform: scale(0.95);
+  }
+
+  50% {
+    box-shadow: 0 0 0 4px var(--md-default-fg-color--lightest);
+    // transform: scale(1);
+  }
+}
+
+.md-typeset {
+
+  // TODO: generalize tooltip styles
+
+  .md-annotation {
+    // position: relative;
+    white-space: initial;
+    outline: none;
+
+
+    // TOOD: use a class
+    > .md-annotation__index { // TODO: make this a button!
+      position: relative;
+      // z-index: 100;
+      min-width: px2em(20px);
+      height: px2em(23px);
+      padding: 0 px2em(6px);
+      color: var(--md-default-bg-color);
+      background-color: var(--md-default-fg-color--light);
+      border-radius: px2em(20px);
+      cursor: pointer;
+      transition: background-color 250ms;
+      animation: pulse 2000ms infinite;
+      user-select: none;
+    }
+
+    &:not([hidden]) {
+      display: inline-block;
+    }
+
+    // Annotation tooltip
+    .md-tooltip {
+      max-width: 60%;
+      margin-top: px2em(-16px, 12.8px);
+      margin-left: px2em(10px, 12.8px);
+    }
+
+
+
+    &:hover,
+    &:focus,
+    &:focus-within {
+      .md-annotation__index {
+        color: var(--md-default-bg-color);
+        background-color: var(--md-accent-fg-color);
+      }
+    }
+  }
+
+  // Tooltip
+  .md-tooltip {
+    position: absolute;
+    max-height: 0;
+    overflow: auto;
+    color: var(--md-default-fg-color);
+    background-color: var(--md-default-bg-color);
+    border-radius: px2rem(2px);
+    box-shadow:
+      0 px2rem(4px) px2rem(10px) hsla(0, 0%, 0%, 0.1),
+      0 0           px2rem(1px)  hsla(0, 0%, 0%, 0.25);
+    transform: translate3d(0%, px2rem(6px), 0);
+    opacity: 0;
+    transition:
+      transform  250ms 375ms,
+      opacity    250ms,
+      max-height   0ms 500ms;
+
+    // Tooltip wrapper
+    &__inner {
+      padding: px2rem(16px);
+      font-size: px2rem(12.8px);
+
+      // Adjust spacing on first child
+      > :first-child {
+        margin-top: 0;
+      }
+
+      // Adjust spacing on last child
+      > :last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  :focus > .md-tooltip,
+  :focus-within > .md-tooltip {
+    max-height: 1000%;
+    transform: translate3d(0%, 0, 0);
+    opacity: 1;
+    transition:
+      transform  250ms cubic-bezier(0.1, 0.7, 0.1, 1),
+      opacity    250ms,
+      max-height 250ms 0ms;
+  }
+  // TODO: add a pulsating animatioN!
+
+  .js & .annotate + ol {
+    display: none;
+  }
+
+  // TODO: reorder tempaltes (clipboard -> code?
+
+  // // "Adding line annotations"
+  // .annotate + ol {
+  //   list-style: none;
+  // }
+  // .annotate + ol > li {
+  //   position: relative;
+  // }
+  // .annotate + ol > li::before {
+  //   position: absolute;
+  //   background-color: red;
+  //   border-radius: px2em(20px);
+  //   content: counter(index, decimal);
+  //   counter-increment:index;
+
+  //   background-color: var(--md-default-fg-color--light);
+  //   border-radius: px2em(20px);
+
+  //   top: px2em(3px);
+  //   left: px2em(-26px);
+  //   min-width: px2em(20px);
+  //   text-align: center;
+  //   height: px2em(20px);
+  //   font-size: 90%;
+  //   // TODO: we could just check task items!!!
+  // }
+}
