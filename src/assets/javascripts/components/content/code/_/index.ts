@@ -182,7 +182,7 @@ export function mountCodeBlock(
 
   if (el.closest(".annotate")) {
     let annoIndex = 0
-    const container = el.closest(".annotate")!
+    const container = el.closest(".annotate.highlighttable")! || el.closest(".annotate.highlight")!
     if (container.nextElementSibling && container.nextElementSibling!.tagName === "OL") {
       const list = container.nextElementSibling!
       const items = getElements(":scope > li", list)

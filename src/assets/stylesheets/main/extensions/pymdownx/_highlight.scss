@@ -173,7 +173,6 @@
 // Code block with line numbers
 .highlighttable {
   display: flow-root;
-  overflow: hidden;
 
   // Set table elements to block layout, because otherwise the whole flexbox
   // hacking won't work correctly
@@ -220,7 +219,7 @@
   // Code block container - stretch to remaining space
   .code {
     flex: 1;
-    overflow: hidden;
+    min-width: 0;
   }
 }
 
