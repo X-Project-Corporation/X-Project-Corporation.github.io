@@ -34,7 +34,9 @@ import { h } from "~/utilities"
  *
  * @returns Element
  */
-export function renderAnnotation(id: number, content: HTMLElement): HTMLElement {
+export function renderAnnotation(
+  id: number, content: Element
+): HTMLElement {
   return (
     <aside class="md-annotation" tabIndex={0}>
       <div class="md-tooltip">
