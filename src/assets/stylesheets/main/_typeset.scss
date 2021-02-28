@@ -32,7 +32,8 @@ body {
 
 // Define default fonts
 body,
-input {
+input,
+aside {
   color: var(--md-typeset-color);
   font-feature-settings: "kern", "liga";
   font-family:

@@ -30,10 +30,13 @@ import {
   of
 } from "rxjs"
 import {
+  combineLatestWith,
   distinctUntilKeyChanged,
   finalize,
   map,
   switchMap,
+  take,
+  takeWhile,
   tap,
   withLatestFrom
 } from "rxjs/operators"
@@ -42,11 +45,15 @@ import { resetFocusable, setFocusable } from "~/actions"
 import {
   Viewport,
   getElementContentSize,
+  getElementOrThrow,
   getElementSize,
   getElements,
   watchMedia
 } from "~/browser"
-import { renderClipboardButton } from "~/templates"
+import {
+  renderAnnotation,
+  renderClipboardButton
+} from "~/templates"
 
 import { Component } from "../../../_"
 
@@ -59,6 +66,7 @@ import { Component } from "../../../_"
  */
 export interface CodeBlock {
   scroll: boolean                      /* Code block overflows */
+  annotations?: HTMLElement[]          /* Code block annotations */
 }
 
 /* ----------------------------------------------------------------------------
@@ -120,6 +128,31 @@ export function watchCodeBlock(
       })
     )
 
+  /* Transform annotations */
+  const annotations: HTMLElement[] = []
+  const container =
+    el.closest(".annotate.highlighttable") ||
+    el.closest(".annotate.highlight")
+  if (container) {
+    const list = container.nextElementSibling
+    if (list instanceof HTMLOListElement) {
+      const items = Array.from(list.children)
+      list.remove()
+
+      /* Replace comments with annotations */
+      const comments = getElements(".c, .c1, .cm", el)
+      for (const [i, comment] of comments.entries()) {
+        const [, j = -1] = comment.textContent!.match(/\((\d+)\)/) || []
+        const content = items[+j - 1]
+        if (typeof content !== "undefined") {
+          const annotation = renderAnnotation(i + 1, content)
+          comment.replaceWith(annotation)
+          annotations.push(annotation)
+        }
+      }
+    }
+  }
+
   /* Check overflow on resize and tab change */
   return merge(
     viewport$.pipe(distinctUntilKeyChanged("size")),
@@ -130,7 +163,8 @@ export function watchCodeBlock(
         const visible = getElementSize(el)
         const content = getElementContentSize(el)
         return {
-          scroll: content.width > visible.width
+          scroll: content.width > visible.width,
+          ...annotations.length && { annotations }
         }
       }),
       distinctUntilKeyChanged("scroll")
@@ -163,10 +197,34 @@ export function mountCodeBlock(
           resetFocusable(el)
       })
 
+  /* Compute annotation position */
+  internal$
+    .pipe(
+      take(1),
+      takeWhile(({ annotations }) => !!annotations?.length),
+      map(({ annotations }) => annotations!
+        .map(annotation => getElementOrThrow(".md-tooltip", annotation))
+      ),
+      combineLatestWith(viewport$
+        .pipe(
+          distinctUntilKeyChanged("size")
+        )
+      )
+    )
+      .subscribe(([tooltips, { size }]) => {
+        for (const tooltip of tooltips) {
+          const { x, width } = tooltip.getBoundingClientRect()
+          if (x + width > size.width)
+            tooltip.classList.add("md-tooltip--end")
+          else
+            tooltip.classList.remove("md-tooltip--end")
+        }
+      })
+
   /* Render button for Clipboard.js integration */
   if (ClipboardJS.isSupported()) {
     const parent = el.closest("pre")!
-    parent.id = `__code_${index++}`
+    parent.id = `__code_${++index}`
     parent.insertBefore(
       renderClipboardButton(parent.id),
       el
