@@ -357,11 +357,7 @@ def bubble_sort(items):
 
 ### Highlighting inline code blocks
 
-<<<<<<< HEAD
-When [InlineHilite][19] is enabled, inline code blocks can be highlighted by
-=======
 When [InlineHilite][21] is enabled, inline code blocks can be highlighted by
->>>>>>> upstream/master
 prefixing them with a shebang-like sequence, i.e. `#!`, directly followed by
 the [language short name][17].
 
@@ -375,19 +371,11 @@ _Result_:
 
 The `#!python range()` function is used to generate a sequence of numbers.
 
-<<<<<<< HEAD
-  [19]: #inlinehilite
-
-### Adding keyboard keys
-
-When [Keys][20] is enabled, keyboard keys can be rendered with a simple syntax.
-=======
   [21]: #inlinehilite
 
 ### Adding keyboard keys
 
 When [Keys][22] is enabled, keyboard keys can be rendered with a simple syntax.
->>>>>>> upstream/master
 Consult the [Python Markdown Extensions][16] documentation to learn about all
 available key codes.
 
@@ -401,15 +389,6 @@ _Result_:
 
 ++ctrl+alt+del++
 
-<<<<<<< HEAD
-  [20]: #keys
-
-### Embedding external files
-
-_Also known as transcludes or file transclusion in [MultiMarkdown][21]_.
-
-When [Snippets][22] is enabled, content from other files can be embedded, which
-=======
   [22]: #keys
 
 ### Embedding external files
@@ -417,7 +396,6 @@ When [Snippets][22] is enabled, content from other files can be embedded, which
 _Also known as transcludes or file transclusion in [MultiMarkdown][23]_.
 
 When [Snippets][24] is enabled, content from other files can be embedded, which
->>>>>>> upstream/master
 is especially useful to reference and embed the contents of source files
 directly into your project documentation.
 
@@ -435,41 +413,23 @@ _Result_:
 last 4 years
 ```
 
-<<<<<<< HEAD
-Note that [Snippets][22] is not limited to code blocks, but can be used anywhere
-from a document to move repeating content to separate files, which is also
-explained in the [official documentation][16].
-
-  [21]: https://fletcher.github.io/MultiMarkdown-5/transclusion.html
-  [22]: #snippets
-=======
 Note that [Snippets][24] is not limited to code blocks, but can be used anywhere
 from a document to move repeating content to separate files, which is also
 explained in the [official documentation][16].
 
   [23]: https://fletcher.github.io/MultiMarkdown-5/transclusion.html
   [24]: #snippets
->>>>>>> upstream/master
 
 ## Customization
 
 ### Custom syntax theme
 
-<<<<<<< HEAD
-[:octicons-file-code-24: Source][23] ·
-:octicons-mortar-board-24: Difficulty: _easy_
-
-If [Pygments][24] is used, Material for MkDocs provides the [styles for code
-blocks][23], which are built with a custom and well-balanced palette that works
-equally well for both [color schemes][25]:
-=======
 [:octicons-file-code-24: Source][25] ·
 :octicons-mortar-board-24: Difficulty: _easy_
 
 If [Pygments][26] is used, Material for MkDocs provides the [styles for code
 blocks][25], which are built with a custom and well-balanced palette that works
 equally well for both [color schemes][27]:
->>>>>>> upstream/master
 
 - :material-checkbox-blank-circle:{: style="color: var(--md-code-hl-number-color) " } `--md-code-hl-number-color`
 - :material-checkbox-blank-circle:{: style="color: var(--md-code-hl-special-color) " } `--md-code-hl-special-color`
@@ -491,11 +451,7 @@ Code block foreground, background and line highlight colors are defined via:
 - :material-checkbox-blank-circle:{: style="color: var(--md-code-hl-color) " } `--md-code-hl-color`
 
 Let's say you want to change the color of `#!js "strings"`. While there are
-<<<<<<< HEAD
-several [types of string tokens][26], Material for MkDocs assigns a single color
-=======
 several [types of string tokens][28], Material for MkDocs assigns a single color
->>>>>>> upstream/master
 to most of them.
 
 Create an [additional stylesheet][6], and add:
@@ -507,11 +463,7 @@ Create an [additional stylesheet][6], and add:
 ```
 
 If you want to tweak a specific type of string, i.e. ``#!js `backticks` ``, you
-<<<<<<< HEAD
-can lookup the specific class name in the [syntax theme definition][27], and
-=======
 can lookup the specific class name in the [syntax theme definition][29], and
->>>>>>> upstream/master
 override it as part of your additional stylesheet:
 
 ``` css
@@ -520,16 +472,8 @@ override it as part of your additional stylesheet:
 }
 ```
 
-<<<<<<< HEAD
-  [23]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/_colors.scss#
-  [24]: #use-pygments
-  [25]: ../setup/changing-the-colors.md#color-scheme
-  [26]: https://pygments.org/docs/tokens/#literals
-  [27]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/markdown/_codehilite.scss
-=======
   [25]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/_colors.scss#
   [26]: #use-pygments
   [27]: ../setup/changing-the-colors.md#color-scheme
   [28]: https://pygments.org/docs/tokens/#literals
   [29]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/markdown/_codehilite.scss
->>>>>>> upstream/master
