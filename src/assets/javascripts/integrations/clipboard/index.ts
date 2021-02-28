@@ -80,9 +80,12 @@ export function setupClipboardJS(
   if (ClipboardJS.isSupported()) {
     new Observable<ClipboardJS.Event>(subscriber => {
       new ClipboardJS("[data-clipboard-target], [data-clipboard-text]", {
-        text: el => extract(getElementOrThrow(
-          el.getAttribute("data-clipboard-target")!
-        ))
+        text: el => (
+          el.getAttribute("data-clipboard-text")! ||
+          extract(getElementOrThrow(
+            el.getAttribute("data-clipboard-target")!
+          ))
+        )
       })
         .on("success", ev => subscriber.next(ev))
     })
