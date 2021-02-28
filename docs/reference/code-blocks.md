@@ -206,6 +206,96 @@ import tensorflow as tf
 
   [17]: https://pygments.org/docs/lexers/
 
+### Adding annotations
+
+[:octicons-file-code-24: Source][18] ·
+:octicons-beaker-24: Experimental ·
+[:octicons-heart-fill-24:{: .mdx-heart } Insiders only][18]{: .mdx-insiders }
+
+Annotations offer a comfortable and friendly way to attach explanations to
+arbitrary sections of code blocks by adding simple markers within block/inline
+comments that refer to items of a list following the code block, i.e. `(1)`,
+`(2)`, etc. Material for MkDocs removes the list from the flow of the document,
+injects the content of each list item into a tooltip, and links each list marker
+to the corresponding tooltip.
+
+In order to opt-in to annotation support, a slightly different syntax is
+required – just add the respective [language short code][17] and the `.annotate`
+class, after the three backticks.
+
+_Example_:
+
+```` markdown
+``` {: .js .annotate }
+document$.subscribe(function() { // (1)
+  var tables = document.querySelectorAll(/* (2) */ "article table")
+  tables.forEach(function(table) {
+    new Tablesort(table)
+  })
+})
+```
+
+1. ...
+2. ...
+````
+
+_Result_:
+
+``` {: .js .annotate }
+document$.subscribe(function() { // (1)
+  var tables = document.querySelectorAll(/* (2) */ "article table")
+  tables.forEach(function(table) {
+    new Tablesort(table) // (3)
+  })
+})
+```
+
+1. Annotations can contain __arbitrary content__ which is shown when the marker
+   is focussed, including any kind of formatting, links, admonitions, details,
+   and even diagrams:
+
+    ``` mermaid
+    graph LR
+      A[I'm] --> B{a} --> C[diagram];
+    ```
+
+    :octicons-light-bulb-16:
+    **Tip:** You can use ++tab++ to navigate annotations.
+
+2. Annotations can be __placed anywhere__ in a code block were a comment for the
+   underlying language can be placed. 
+
+    === "Python"
+
+        ``` python
+        # (1)
+        ```
+
+    === "JavaScript"
+
+        ``` js
+        // (2)
+        /* (2) */
+        ```
+
+    === "Lua"
+
+        ``` lua
+        -- (3)
+        ```
+
+    _We're working on a solution for languages without comments, which will be
+    available shortly._
+
+  1. Of course, this can be combined with [line numbers][10], highlighting and
+     all other code block related features.
+
+_Annotations require syntax highlighting with [Pygments][24] – they're currently
+not compatible with other JavaScript-based syntax highlighters. Support may be
+added later on._
+
+  [18]: ../insiders.md
+
 ### Adding line numbers
 
 Line numbers can be added to a code block by using the `linenums="<start>"`
@@ -265,7 +355,7 @@ def bubble_sort(items):
 
 ### Highlighting inline code blocks
 
-When [InlineHilite][18] is enabled, inline code blocks can be highlighted by
+When [InlineHilite][19] is enabled, inline code blocks can be highlighted by
 prefixing them with a shebang-like sequence, i.e. `#!`, directly followed by
 the [language short name][17].
 
@@ -279,11 +369,11 @@ _Result_:
 
 The `#!python range()` function is used to generate a sequence of numbers.
 
-  [18]: #inlinehilite
+  [19]: #inlinehilite
 
 ### Adding keyboard keys
 
-When [Keys][19] is enabled, keyboard keys can be rendered with a simple syntax.
+When [Keys][20] is enabled, keyboard keys can be rendered with a simple syntax.
 Consult the [Python Markdown Extensions][16] documentation to learn about all
 available key codes.
 
@@ -297,13 +387,13 @@ _Result_:
 
 ++ctrl+alt+del++
 
-  [19]: #keys
+  [20]: #keys
 
 ### Embedding external files
 
-_Also known as transcludes or file transclusion in [MultiMarkdown][20]_.
+_Also known as transcludes or file transclusion in [MultiMarkdown][21]_.
 
-When [Snippets][21] is enabled, content from other files can be embedded, which
+When [Snippets][22] is enabled, content from other files can be embedded, which
 is especially useful to reference and embed the contents of source files
 directly into your project documentation.
 
@@ -321,23 +411,23 @@ _Result_:
 last 4 years
 ```
 
-Note that [Snippets][21] is not limited to code blocks, but can be used anywhere
+Note that [Snippets][22] is not limited to code blocks, but can be used anywhere
 from a document to move repeating content to separate files, which is also
 explained in the [official documentation][16].
 
-  [20]: https://fletcher.github.io/MultiMarkdown-5/transclusion.html
-  [21]: #snippets
+  [21]: https://fletcher.github.io/MultiMarkdown-5/transclusion.html
+  [22]: #snippets
 
 ## Customization
 
 ### Custom syntax theme
 
-[:octicons-file-code-24: Source][22] ·
+[:octicons-file-code-24: Source][23] ·
 :octicons-mortar-board-24: Difficulty: _easy_
 
-If [Pygments][23] is used, Material for MkDocs provides the [styles for code
-blocks][22], which are built with a custom and well-balanced palette that works
-equally well for both [color schemes][24]:
+If [Pygments][24] is used, Material for MkDocs provides the [styles for code
+blocks][23], which are built with a custom and well-balanced palette that works
+equally well for both [color schemes][25]:
 
 - :material-checkbox-blank-circle:{: style="color: var(--md-code-hl-number-color) " } `--md-code-hl-number-color`
 - :material-checkbox-blank-circle:{: style="color: var(--md-code-hl-special-color) " } `--md-code-hl-special-color`
@@ -359,7 +449,7 @@ Code block foreground, background and line highlight colors are defined via:
 - :material-checkbox-blank-circle:{: style="color: var(--md-code-hl-color) " } `--md-code-hl-color`
 
 Let's say you want to change the color of `#!js "strings"`. While there are
-several [types of string tokens][25], Material for MkDocs assigns a single color
+several [types of string tokens][26], Material for MkDocs assigns a single color
 to most of them.
 
 Create an [additional stylesheet][6], and add:
@@ -371,7 +461,7 @@ Create an [additional stylesheet][6], and add:
 ```
 
 If you want to tweak a specific type of string, i.e. ``#!js `backticks` ``, you
-can lookup the specific class name in the [syntax theme definition][26], and
+can lookup the specific class name in the [syntax theme definition][27], and
 override it as part of your additional stylesheet:
 
 ``` css
@@ -380,8 +470,8 @@ override it as part of your additional stylesheet:
 }
 ```
 
-  [22]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/_colors.scss#
-  [23]: #use-pygments
-  [24]: ../setup/changing-the-colors.md#color-scheme
-  [25]: https://pygments.org/docs/tokens/#literals
-  [26]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/markdown/_codehilite.scss
+  [23]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/_colors.scss#
+  [24]: #use-pygments
+  [25]: ../setup/changing-the-colors.md#color-scheme
+  [26]: https://pygments.org/docs/tokens/#literals
+  [27]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/markdown/_codehilite.scss
