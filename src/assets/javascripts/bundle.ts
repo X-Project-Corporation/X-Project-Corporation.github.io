@@ -21,7 +21,7 @@
  */
 
 import "focus-visible"
-import { EMPTY, Subject, defer, merge } from "rxjs"
+import { NEVER, Subject, defer, merge } from "rxjs"
 import {
   delay,
   filter,
@@ -93,11 +93,13 @@ const tablet$   = watchMedia("(min-width: 960px)")
 const screen$   = watchMedia("(min-width: 1220px)")
 const print$    = watchPrint()
 
-/* Retrieve search index */
+/* Retrieve search index, if search is enabled */
 const config = configuration()
-const index$ = __search?.index || requestJSON<SearchIndex>(
-  `${config.base}/search/search_index.json`
-)
+const index$ = document.forms.namedItem("search")
+  ? __search?.index || requestJSON<SearchIndex>(
+    `${config.base}/search/search_index.json`
+  )
+  : NEVER
 
 /* Set up Clipboard.js integration */
 const alert$ = new Subject<string>()
@@ -196,7 +198,7 @@ const content$ = defer(() => merge(
   ...getComponentElements("content")
     .map(el => feature("search.highlight")
       ? mountSearchHiglight(el, { index$, location$ })
-      : EMPTY
+      : NEVER
     ),
 
   /* Header title */

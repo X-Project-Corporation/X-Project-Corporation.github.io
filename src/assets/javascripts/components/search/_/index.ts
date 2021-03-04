@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import { NEVER, Observable, ObservableInput, merge } from "rxjs"
+import { Observable, ObservableInput, merge } from "rxjs"
 import { filter, sample, take } from "rxjs/operators"
 
 import { configuration } from "~/_"
@@ -93,10 +93,6 @@ interface MountOptions {
 export function mountSearch(
   el: HTMLElement, { index$, keyboard$ }: MountOptions
 ): Observable<Component<Search>> {
-  if (location.protocol === "file:")
-    return NEVER
-
-  /* Set up search worker */
   const config = configuration()
   const worker = setupSearchWorker(config.search, index$)
 
