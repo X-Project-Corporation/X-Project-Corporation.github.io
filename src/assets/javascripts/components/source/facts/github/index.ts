@@ -57,16 +57,28 @@ export function fetchSourceFactsFromGitHub(
   if (typeof repo !== "undefined") {
     const url = `https://api.github.com/repos/${user}/${repo}`
     return zip(
-      requestJSON<Repo>(url),
+
+      /* Fetch version */
       requestJSON<Release>(`${url}/releases/latest`)
+        .pipe(
+          map(release => ({
+            version: release.tag_name
+          })),
+          defaultIfEmpty({})
+        ),
+
+      /* Fetch stars and forks */
+      requestJSON<Repo>(url)
+        .pipe(
+          map(info => ({
+            stars: info.stargazers_count,
+            forks: info.forks_count
+          })),
+          defaultIfEmpty({})
+        )
     )
       .pipe(
-        map(([info, release]) => ({
-          version: release.tag_name,
-          stars:   info.stargazers_count,
-          forks:   info.forks_count
-        })),
-        defaultIfEmpty({})
+        map(([release, info]) => ({ ...release, ...info }))
       )
 
   /* User or organization */
