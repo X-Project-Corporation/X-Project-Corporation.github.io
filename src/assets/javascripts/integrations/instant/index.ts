@@ -104,15 +104,17 @@ function preprocess(urls: string[]): string[] {
   if (urls.length < 2)
     return urls
 
-  /* Compute references URLs */
-  const [root, next] = urls.sort((a, b) => a.length - b.length)
+  /* Take the first two URLs and remove everything after the last slash */
+  const [root, next] = urls
+    .sort((a, b) => a.length - b.length)
+    .map(url => url.replace(/[^/]+$/, ""))
 
   /* Compute common prefix */
   let index = 0
   if (root === next)
     index = root.length
   else
-    while (root.charCodeAt(index) === root.charCodeAt(index))
+    while (root.charCodeAt(index) === next.charCodeAt(index))
       index++
 
   /* Replace common prefix (i.e. base) with effective base */
@@ -180,7 +182,9 @@ export function setupInstantLoading(
         .pipe(
           filter(ev => !ev.metaKey && !ev.ctrlKey),
           switchMap(ev => {
-            if (ev.target instanceof HTMLElement) {
+
+            /* Handle HTML and SVG elements */
+            if (ev.target instanceof Element) {
               const el = ev.target.closest("a")
               if (el && !el.target && urls.includes(el.href)) {
                 ev.preventDefault()
@@ -278,6 +282,7 @@ export function setupInstantLoading(
           "[data-md-component=announce]",
           "[data-md-component=header-topic]",
           "[data-md-component=container]",
+          "[data-md-component=logo], .md-logo", // compat
           "[data-md-component=skip]"
         ]) {
           const source = getElement(selector)
@@ -300,7 +305,8 @@ export function setupInstantLoading(
       concatMap(el => {
         const script = createElement("script")
         if (el.src) {
-          script.src = el.src
+          for (const name of el.getAttributeNames())
+            script.setAttribute(name, el.getAttribute(name)!)
           replaceElement(el, script)
 
           /* Complete when script is loaded */
