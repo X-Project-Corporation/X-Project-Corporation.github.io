@@ -59,6 +59,7 @@ $admonitions: (
 
   // Admonition
   .admonition {
+    display: flow-root;
     margin: px2em(20px, 12.8px) 0;
     padding: 0 px2rem(12px);
     color: var(--md-admonition-fg-color);
@@ -80,14 +81,6 @@ $admonitions: (
     [dir="rtl"] & {
       border-right: px2rem(4px) solid $clr-blue-a200;
       border-left: none;
-    }
-
-    // Hack: use a hacky old clearfix, because we can't use `overflow: hidden`
-    // to induce margin collapse because of tooltips becoming cutoff.
-    &::before,
-    &::after {
-      display: table;
-      content: "";
     }
 
     // Adjust spacing for nested admonitions
