@@ -402,6 +402,7 @@ following CSS to an [additional stylesheet][14]:
 .md-typeset .pied-piper > .admonition-title,
 .md-typeset .pied-piper > summary {
   background-color: rgba(43, 155, 70, 0.1);
+  border-color: rgb(43, 155, 70);
 }
 .md-typeset .pied-piper > .admonition-title::before,
 .md-typeset .pied-piper > summary::before {
@@ -426,6 +427,7 @@ colors. [You can even add animations][15].
   .md-typeset .pied-piper > .admonition-title,
   .md-typeset .pied-piper > summary {
     background-color: rgba(43, 155, 70, 0.1);
+    border-color: rgb(43, 155, 70);
   }
   .md-typeset .pied-piper > .admonition-title::before,
   .md-typeset .pied-piper > summary::before {
@@ -454,4 +456,4 @@ _Result_:
 
   [13]: https://github.com/squidfunk/mkdocs-material/tree/master/material/.icons
   [14]: ../customization.md#additional-css
-  [15]: https://facelessuser.github.io/pymdown-extensions/extensions/details/
+  [15]: ../icons-emojis.md#with-animations
