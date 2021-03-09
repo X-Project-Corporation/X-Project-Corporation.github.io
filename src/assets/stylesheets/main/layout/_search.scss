@@ -219,6 +219,7 @@
     z-index: 2;
     height: px2rem(48px);
     background-color: var(--md-default-bg-color);
+    box-shadow: 0 0 px2rem(12px) transparent;
     transition:
       color            250ms,
       background-color 250ms;
@@ -239,6 +240,7 @@
     [data-md-toggle="search"]:checked ~ .md-header & {
       background-color: var(--md-default-bg-color);
       border-radius: px2rem(2px) px2rem(2px) 0 0;
+      box-shadow: 0 0 px2rem(12px) hsla(0, 0%, 0%, 0.07);
     }
   }
 
