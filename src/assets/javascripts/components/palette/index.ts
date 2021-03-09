@@ -75,7 +75,11 @@ export interface Palette {
 export function watchPalette(
   inputs: HTMLInputElement[]
 ): Observable<Palette> {
-  const current = JSON.parse(localStorage.getItem("__palette")!)
+  const current = JSON.parse(localStorage.getItem("__palette")!) || {
+    index: inputs.findIndex(input => (
+      matchMedia(input.getAttribute("data-md-color-media")!).matches
+    ))
+  }
 
   /* Emit changes in color palette */
   const palette$ = of(...inputs)
@@ -85,7 +89,7 @@ export function watchPalette(
           mapTo(input)
         )
       ),
-      startWith(inputs[current?.index || 0]),
+      startWith(inputs[Math.max(0, current.index)]),
       map(input => ({
         index: inputs.indexOf(input),
         color: {
