@@ -345,6 +345,18 @@
             </article>
           </div>
         </div>
+
+        <!-- Back-to-top button -->
+        {% if "navigation.top" in features %}
+          <a
+            href="#"
+            class="md-top md-icon"
+            data-md-component="top"
+            data-md-state="hidden"
+          >
+            {% include ".icons/material/arrow-up.svg" %}
+          </a>
+        {% endif %}
       </main>
 
       <!-- Footer -->

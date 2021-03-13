@@ -34,6 +34,7 @@ import {
   distinctUntilKeyChanged,
   finalize,
   map,
+  mergeWith,
   switchMap,
   take,
   takeWhile,
@@ -154,11 +155,10 @@ export function watchCodeBlock(
   }
 
   /* Check overflow on resize and tab change */
-  return merge(
-    viewport$.pipe(distinctUntilKeyChanged("size")),
-    container$
-  )
+  return viewport$
     .pipe(
+      distinctUntilKeyChanged("size"),
+      mergeWith(container$),
       map(() => {
         const visible = getElementSize(el)
         const content = getElementContentSize(el)

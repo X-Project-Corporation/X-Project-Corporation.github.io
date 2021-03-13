@@ -49,6 +49,7 @@ export type ComponentType =
   | "source"                           /* Repository information */
   | "tabs"                             /* Navigation tabs */
   | "toc"                              /* Table of contents */
+  | "top"                              /* Back-to-top button */
 
 /**
  * A component
@@ -91,6 +92,7 @@ interface ComponentTypeMap {
   "source": HTMLAnchorElement          /* Repository information */
   "tabs": HTMLElement                  /* Navigation tabs */
   "toc": HTMLElement                   /* Table of contents */
+  "top": HTMLAnchorElement             /* Back-to-top button */
 }
 
 /* ----------------------------------------------------------------------------

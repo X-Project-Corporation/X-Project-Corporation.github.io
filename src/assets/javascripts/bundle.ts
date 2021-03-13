@@ -48,6 +48,7 @@ import {
 import {
   getComponentElement,
   getComponentElements,
+  mountBackToTop,
   mountContent,
   mountDialog,
   mountHeader,
@@ -220,6 +221,10 @@ const content$ = defer(() => merge(
   /* Table of contents */
   ...getComponentElements("toc")
     .map(el => mountTableOfContents(el, { viewport$, header$ })),
+
+  /* Back-to-top button */
+  ...getComponentElements("top")
+    .map(el => mountBackToTop(el, { viewport$, main$ })),
 ))
 
 /* Set up component observables */

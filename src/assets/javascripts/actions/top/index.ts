@@ -20,12 +20,29 @@
  * IN THE SOFTWARE.
  */
 
-export * from "./_"
-export * from "./anchor"
-export * from "./dialog"
-export * from "./header"
-export * from "./search"
-export * from "./sidebar"
-export * from "./source"
-export * from "./tabs"
-export * from "./top"
+/* ----------------------------------------------------------------------------
+ * Functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Set back-to-top state
+ *
+ * @param el - Back-to-top element
+ * @param state - Back-to-top state
+ */
+export function setBackToTopState(
+  el: HTMLElement, state: "hidden"
+): void {
+  el.setAttribute("data-md-state", state)
+}
+
+/**
+ * Reset back-to-top state
+ *
+ * @param el - Back-to-top element
+ */
+export function resetBackToTopState(
+  el: HTMLElement
+): void {
+  el.removeAttribute("data-md-state")
+}

@@ -88,9 +88,7 @@ export function mountIconSearch(
   const result = getComponentElement("iconsearch-result", el)
 
   /* Create and return component */
-  const query$ = mountIconSearchQuery(query)
-  return merge(
-    query$,
-    mountIconSearchResult(result, { index$, query$ })
-  )
+  const query$  = mountIconSearchQuery(query)
+  const result$ = mountIconSearchResult(result, { index$, query$ })
+  return merge(query$, result$)
 }

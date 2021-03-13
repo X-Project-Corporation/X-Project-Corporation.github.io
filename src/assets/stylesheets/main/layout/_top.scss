@@ -24,50 +24,42 @@
 // Rules
 // ----------------------------------------------------------------------------
 
-// Dialog
-.md-dialog {
-  @include z-depth(2);
-
-  position: fixed;
-  right: px2rem(16px);
-  bottom: px2rem(16px);
-  left: initial;
-  z-index: 3;
-  min-width: px2rem(222px);
-  padding: px2rem(8px) px2rem(12px);
-  background-color: var(--md-default-fg-color);
-  border-radius: px2rem(2px);
-  transform: translateY(100%);
-  opacity: 0;
+// Back-to-top button
+.md-top {
+  position: sticky;
+  bottom: px2rem(8px);
+  z-index: 1;
+  float: right;
+  margin: px2rem(-56px) px2rem(8px) px2rem(8px);
+  padding: px2rem(8px);
+  color: var(--md-primary-bg-color);
+  background: var(--md-primary-fg-color);
+  border-radius: 100%;
+  outline: none;
+  box-shadow:
+    0 px2rem(4px)   px2rem(10px) hsla(0, 0%, 0%, 0.1),
+    0 px2rem(0.5px) px2rem(1px)  hsla(0, 0%, 0%, 0.1);
+  transform: translateY(0);
   transition:
-    transform 0ms   400ms,
-    opacity   400ms;
-  pointer-events: none;
-
-  // [print]: Hide dialog
-  @media print {
-    display: none;
-  }
+    opacity          125ms,
+    transform        125ms cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 125ms;
 
   // Adjust for right-to-left languages
   [dir="rtl"] & {
-    right: initial;
-    left: px2rem(16px);
+    float: left;
   }
 
-  // Dialog in open state
-  &[data-md-state="open"] {
-    transform: translateY(0);
-    opacity: 1;
-    transition:
-      transform 400ms cubic-bezier(0.075, 0.85, 0.175, 1),
-      opacity   400ms;
-    pointer-events: initial;
+  // Back-to-top button in hidden state
+  &[data-md-state="hidden"] {
+    transform: translateY(px2rem(-4px));
+    opacity: 0;
   }
 
-  // Dialog wrapper
-  &__inner {
-    color: var(--md-default-bg-color);
-    font-size: px2rem(14px);
+  // Back-to-top button on focus/hover
+  &:focus,
+  &:hover {
+    background: var(--md-accent-fg-color);
+    transform: scale(1.1);
   }
 }

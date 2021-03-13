@@ -21,7 +21,7 @@
  */
 
 import { Observable, ObservableInput, merge } from "rxjs"
-import { filter, sample, take } from "rxjs/operators"
+import { filter, mergeWith, sample, take } from "rxjs/operators"
 
 import { configuration } from "~/_"
 import {
@@ -203,17 +203,19 @@ export function mountSearch(
       })
 
   /* Create and return component */
-  const query$ = mountSearchQuery(query, worker)
-  return merge(
-    query$,
-    mountSearchResult(result, worker, { query$ }),
+  const query$  = mountSearchQuery(query, worker)
+  const result$ = mountSearchResult(result, worker, { query$ })
+  return merge(query$, result$)
+    .pipe(
+      mergeWith(
 
-    /* Search sharing */
-    ...getComponentElements("search-share", el)
-      .map(child => mountSearchShare(child, { query$ })),
+        /* Search sharing */
+        ...getComponentElements("search-share", el)
+        .map(child => mountSearchShare(child, { query$ })),
 
-    /* Search suggestions */
-    ...getComponentElements("search-suggest", el)
-      .map(child => mountSearchSuggest(child, worker, { keyboard$ }))
-  )
+        /* Search suggestions */
+        ...getComponentElements("search-suggest", el)
+          .map(child => mountSearchSuggest(child, worker, { keyboard$ }))
+      )
+    )
 }

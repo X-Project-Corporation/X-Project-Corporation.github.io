@@ -117,6 +117,7 @@ $admonitions: (
     font-weight: 700;
     background-color: transparentize($clr-blue-a200, 0.9);
     border-left: px2rem(4px) solid $clr-blue-a200;
+    border-top-left-radius: px2rem(2px);
 
     // Adjust for right-to-left languages
     [dir="rtl"] & {
