@@ -368,7 +368,7 @@ theme:
 
 === "Separate table of contents"
 
-    [![Separate table of contents][8]][8]
+    [![Separate table of contents][7]][7]
 
   [25]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/layout/_nav.scss
   [26]: ../assets/screenshots/toc-integrate.png
@@ -398,15 +398,15 @@ hide:
 
 === "Hide navigation"
 
-    [![Hide navigation][27]][27]
+    [![Hide navigation][29]][29]
 
 === "Hide table of contents"
 
-    [![Hide table of contents][28]][28]
+    [![Hide table of contents][30]][30]
 
 === "Hide both"
 
-    [![Hide navigation and table of contents][29]][29]
+    [![Hide navigation and table of contents][31]][31]
 
   [27]: https://github.com/squidfunk/mkdocs-material/blob/master/src/base.html
   [28]: ../../reference/meta-tags/#metadata
