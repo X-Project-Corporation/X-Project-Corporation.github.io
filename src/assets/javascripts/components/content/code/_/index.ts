@@ -141,12 +141,11 @@ export function watchCodeBlock(
       list.remove()
 
       /* Replace comments with annotations */
-      const comments = getElements(".c, .c1, .cm", el)
-      for (const [i, comment] of comments.entries()) {
+      for (const comment of getElements(".c, .c1, .cm", el)) {
         const [, j = -1] = comment.textContent!.match(/\((\d+)\)/) || []
         const content = items[+j - 1]
         if (typeof content !== "undefined") {
-          const annotation = renderAnnotation(i + 1, content)
+          const annotation = renderAnnotation(+j, content)
           comment.replaceWith(annotation)
           annotations.push(annotation)
         }
