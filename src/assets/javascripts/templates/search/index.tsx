@@ -66,16 +66,16 @@ function renderSearchDocument(
     .slice(0, -1)
 
   /* Assemble query string for highlighting */
-  const href = new URL(document.location)
+  const url = new URL(document.location)
   if (feature("search.highlight"))
-    href.searchParams.set("h", Object.entries(document.terms)
+    url.searchParams.set("h", Object.entries(document.terms)
       .filter(([, match]) => match)
       .reduce((highlight, [value]) => `${highlight} ${value}`.trim(), "")
     )
 
   /* Render article or section, depending on flags */
   return (
-    <a href={href.toString()} class="md-search-result__link" tabIndex={-1}>
+    <a href={`${url}`} class="md-search-result__link" tabIndex={-1}>
       <article
         class={["md-search-result__article", ...parent
           ? ["md-search-result__article--document"]

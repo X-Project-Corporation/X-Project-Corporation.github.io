@@ -276,18 +276,22 @@ export function mountTableOfContents(
 
         /* Perform anchor tracking, if enabled */
         if (feature("navigation.tracking")) {
-          const { pathname, href } = getLocation()
+          const url = getLocation()
 
           /* Set hash fragment to active anchor */
           const anchor = prev[prev.length - 1]
           if (anchor && anchor.length) {
             const [active] = anchor
-            if (active.href !== href)
-              history.replaceState({}, "", active.href)
+            const { hash } = new URL(active.href)
+            if (url.hash !== hash) {
+              url.hash = hash
+              history.replaceState({}, "", `${url}`)
+            }
 
           /* Reset anchor when at the top */
           } else {
-            history.replaceState({}, "", pathname)
+            url.hash = ""
+            history.replaceState({}, "", `${url}`)
           }
         }
       })

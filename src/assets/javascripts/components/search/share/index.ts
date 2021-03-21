@@ -106,7 +106,7 @@ export function mountSearchShare(
   const internal$ = new Subject<SearchShare>()
   internal$.subscribe(({ url }) => {
     el.setAttribute("data-clipboard-text", el.href)
-    el.href = url.toString()
+    el.href = `${url}`
   })
 
   /* Prevent following of link */

@@ -240,7 +240,7 @@ export function setupInstantLoading(
       sample(response$)
     )
       .subscribe(({ url }) => {
-        history.pushState({}, "", url.toString())
+        history.pushState({}, "", `${url}`)
       })
 
   /* Parse and emit fetched document */
