@@ -30,6 +30,7 @@ env:
 jobs:
   documentation:
     name: Build documentation
+    if: github.event.repository.fork == false
     runs-on: ubuntu-latest
     steps:
 
