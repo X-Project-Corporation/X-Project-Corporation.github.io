@@ -176,7 +176,7 @@ export function watchTableOfContents(
           switchMap(index => combineLatest([viewport$, adjust$])
             .pipe(
               scan(([prev, next], [{ offset: { y }, size }, adjust]) => {
-                const last = body.height === y + size.height
+                const last = y + size.height >= Math.floor(body.height)
 
                 /* Look forward */
                 while (next.length) {
