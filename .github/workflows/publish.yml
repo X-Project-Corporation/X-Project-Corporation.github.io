@@ -20,17 +20,17 @@
 
 name: publish
 on:
-  release:
-    types:
-      - published
+  create:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
 
 env:
   PYTHON_VERSION: 3.x
 
 jobs:
-  publish_docker:
+  publish:
     name: Build and push Docker image
-    if: github.event.repository.fork == false
+    if: github.event.repository.fork == true
     runs-on: ubuntu-latest
     steps:
 
@@ -50,7 +50,7 @@ jobs:
           context: .
           tags: |
             ghcr.io/${{ github.event.repository.full_name }}:latest
-            ghcr.io/${{ github.event.repository.full_name }}:${{ github.event.release.tag_name }}
+            ghcr.io/${{ github.event.repository.full_name }}:${{ github.event.ref }}
 
       - name: Check Docker image
         run:
