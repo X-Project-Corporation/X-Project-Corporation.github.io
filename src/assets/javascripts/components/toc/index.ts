@@ -24,7 +24,9 @@ import {
   Observable,
   Subject,
   animationFrameScheduler,
-  combineLatest
+  combineLatest,
+  defer,
+  of
 } from "rxjs"
 import {
   bufferCount,
@@ -139,9 +141,9 @@ export function watchTableOfContents(
       distinctUntilKeyChanged("height"),
 
       /* Build index to map anchor paths to vertical offsets */
-      map(() => {
+      switchMap(body => defer(() => {
         let path: HTMLAnchorElement[] = []
-        return [...table].reduce((index, [anchor, target]) => {
+        return of([...table].reduce((index, [anchor, target]) => {
           while (path.length) {
             const last = table.get(path[path.length - 1])!
             if (last.tagName >= target.tagName) {
@@ -163,44 +165,48 @@ export function watchTableOfContents(
             [...path = [...path, anchor]].reverse(),
             offset
           )
-        }, new Map<HTMLAnchorElement[], number>())
-      }),
-
-      /* Sort index by vertical offset (see https://bit.ly/30z6QSO) */
-      map(index => new Map([...index].sort(([, a], [, b]) => a - b))),
-
-      /* Re-compute partition when viewport offset changes */
-      switchMap(index => combineLatest([adjust$, viewport$])
+        }, new Map<HTMLAnchorElement[], number>()))
+      })
         .pipe(
-          scan(([prev, next], [adjust, { offset: { y } }]) => {
 
-            /* Look forward */
-            while (next.length) {
-              const [, offset] = next[0]
-              if (offset - adjust < y) {
-                prev = [...prev, next.shift()!]
-              } else {
-                break
-              }
-            }
+          /* Sort index by vertical offset (see https://bit.ly/30z6QSO) */
+          map(index => new Map([...index].sort(([, a], [, b]) => a - b))),
 
-            /* Look backward */
-            while (prev.length) {
-              const [, offset] = prev[prev.length - 1]
-              if (offset - adjust >= y) {
-                next = [prev.pop()!, ...next]
-              } else {
-                break
-              }
-            }
+          /* Re-compute partition when viewport offset changes */
+          switchMap(index => combineLatest([viewport$, adjust$])
+            .pipe(
+              scan(([prev, next], [{ offset: { y }, size }, adjust]) => {
+                const last = body.height === y + size.height
 
-            /* Return partition */
-            return [prev, next]
-          }, [[], [...index]]),
-          distinctUntilChanged((a, b) => (
-            a[0] === b[0] &&
-            a[1] === b[1]
-          ))
+                /* Look forward */
+                while (next.length) {
+                  const [, offset] = next[0]
+                  if (offset - adjust < y || last) {
+                    prev = [...prev, next.shift()!]
+                  } else {
+                    break
+                  }
+                }
+
+                /* Look backward */
+                while (prev.length) {
+                  const [, offset] = prev[prev.length - 1]
+                  if (offset - adjust >= y && !last) {
+                    next = [prev.pop()!, ...next]
+                  } else {
+                    break
+                  }
+                }
+
+                /* Return partition */
+                return [prev, next]
+              }, [[], [...index]]),
+              distinctUntilChanged((a, b) => (
+                a[0] === b[0] &&
+                a[1] === b[1]
+              ))
+            )
+          )
         )
       )
     )

@@ -259,7 +259,7 @@ kbd {
   @include break-to-device(mobile) {
 
     // Unformatted text
-    > pre {
+    .md-content > & > pre {
       margin: 1em px2rem(-16px);
 
       // Code block
