@@ -188,10 +188,11 @@
 
     <!-- Retrieve features from configuration -->
     {% set features = config.theme.features or [] %}
+    {% include "partials/javascripts/base.html" %}
 
     <!-- User preference: color palette -->
     {% if not config.theme.palette is mapping %}
-      {% include "partials/preferences/palette.html" %}
+      {% include "partials/javascripts/palette.html" %}
     {% endif %}
 
     <!--
@@ -229,13 +230,27 @@
     <!-- Announcement bar -->
     <div data-md-component="announce">
       {% if self.announce() %}
-        <aside class="md-announce">
-          <div class="md-announce__inner md-grid md-typeset">
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
             {% block announce %}{% endblock %}
           </div>
         </aside>
       {% endif %}
     </div>
+
+    <!-- Version warning -->
+    {% if config.extra.version %}
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          {% if self.outdated() %}
+            <div class="md-banner__inner md-grid md-typeset">
+              {% block outdated %}{% endblock %}
+            </div>
+            {% include "partials/javascripts/outdated.html" %}
+          {% endif %}
+        </aside>
+      </div>
+    {% endif %}
 
     <!-- Header -->
     {% block header %}

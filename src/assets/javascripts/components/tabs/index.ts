@@ -31,12 +31,17 @@ import {
   finalize,
   map,
   observeOn,
+  switchMap,
   tap
 } from "rxjs/operators"
 
 import { feature } from "~/_"
 import { resetTabsState, setTabsState } from "~/actions"
-import { Viewport, watchViewportAt } from "~/browser"
+import {
+  Viewport,
+  watchElementSize,
+  watchViewportAt
+} from "~/browser"
 
 import { Component } from "../_"
 import { Header } from "../header"
@@ -87,8 +92,9 @@ interface MountOptions {
 export function watchTabs(
   el: HTMLElement, { viewport$, header$ }: WatchOptions
 ): Observable<Tabs> {
-  return watchViewportAt(el, { header$, viewport$ })
+  return watchElementSize(document.body)
     .pipe(
+      switchMap(() => watchViewportAt(el, { header$, viewport$ })),
       map(({ offset: { y } }) => {
         return {
           hidden: y >= 10

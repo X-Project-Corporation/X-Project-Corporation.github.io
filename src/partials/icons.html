@@ -20,8 +20,17 @@
   IN THE SOFTWARE.
 -->
 
-<!--
-  User preference: content - must be included exactly after the content to
-  omit a flash of white upon load when using a dark color scheme.
--->
-<script></script>
+<!-- Custom admonition icons -->
+{% if config.theme.icon.admonition %}
+  {% set style = ["\x3cstyle\x3e:root{"] %}
+  {% for type,icon in config.theme.icon.admonition.items() %}
+    {% import ".icons/" ~ icon ~ ".svg" as icon %}
+    {% set _ = style.append(
+      "--md-admonition-icon--" ~ type ~ ": " ~
+      "url('data:image/svg+xml;charset=utf-8," ~ icon ~
+      "');")
+    %}
+  {% endfor %}
+  {% set _ = style.append("\x3c/style\x3e") %}
+  {{ style | join }}
+{% endif %}

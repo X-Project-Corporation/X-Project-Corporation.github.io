@@ -186,11 +186,7 @@ const control$ = merge(
 
   /* Repository information */
   ...getComponentElements("source")
-    .map(el => mountSource(el)),
-
-  /* Navigation tabs */
-  ...getComponentElements("tabs")
-    .map(el => mountTabs(el, { viewport$, header$ })),
+    .map(el => mountSource(el))
 )
 
 /* Set up content component observables */
@@ -218,13 +214,17 @@ const content$ = defer(() => merge(
       : at(tablet$, () => mountSidebar(el, { viewport$, header$, main$ }))
     ),
 
+  /* Navigation tabs */
+  ...getComponentElements("tabs")
+    .map(el => mountTabs(el, { viewport$, header$ })),
+
   /* Table of contents */
   ...getComponentElements("toc")
     .map(el => mountTableOfContents(el, { viewport$, header$ })),
 
   /* Back-to-top button */
   ...getComponentElements("top")
-    .map(el => mountBackToTop(el, { viewport$, main$ })),
+    .map(el => mountBackToTop(el, { viewport$, main$ }))
 ))
 
 /* Set up component observables */

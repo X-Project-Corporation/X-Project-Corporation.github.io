@@ -44,7 +44,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.394ec26c.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.ec3b3678.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.de2705de.min.css' | url }}">
@@ -97,8 +97,9 @@
     <body dir="{{ direction }}">
   {% endif %}
     {% set features = config.theme.features or [] %}
+    {% include "partials/javascripts/base.html" %}
     {% if not config.theme.palette is mapping %}
-      {% include "partials/preferences/palette.html" %}
+      {% include "partials/javascripts/palette.html" %}
     {% endif %}
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -113,13 +114,25 @@
     </div>
     <div data-md-component="announce">
       {% if self.announce() %}
-        <aside class="md-announce">
-          <div class="md-announce__inner md-grid md-typeset">
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
             {% block announce %}{% endblock %}
           </div>
         </aside>
       {% endif %}
     </div>
+    {% if config.extra.version %}
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          {% if self.outdated() %}
+            <div class="md-banner__inner md-grid md-typeset">
+              {% block outdated %}{% endblock %}
+            </div>
+            {% include "partials/javascripts/outdated.html" %}
+          {% endif %}
+        </aside>
+      </div>
+    {% endif %}
     {% block header %}
       {% include "partials/header.html" %}
     {% endblock %}
@@ -230,7 +243,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.5cc711f9.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.9aafa2c6.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}

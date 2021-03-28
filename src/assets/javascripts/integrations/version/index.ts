@@ -22,6 +22,7 @@
 
 import { configuration } from "~/_"
 import { getElementOrThrow, requestJSON } from "~/browser"
+import { getComponentElements } from "~/components"
 import { Version, renderVersionSelector } from "~/templates"
 
 /* ----------------------------------------------------------------------------
@@ -35,7 +36,26 @@ export function setupVersionSelector(): void {
   const config = configuration()
   requestJSON<Version[]>(new URL("versions.json", config.base))
     .subscribe(versions => {
+      const [, current] = config.base.match(/([^/]+)\/?$/)!
+      const active =
+        versions.find(({ version, aliases }) => (
+          version === current || aliases.includes(current)
+        )) || versions[0]
+
+      /* Render version selector */
       const topic = getElementOrThrow(".md-header__topic")
-      topic.appendChild(renderVersionSelector(versions))
+      topic.appendChild(renderVersionSelector(versions, active))
+
+      /* Check if version state was already determined */
+      if (!sessionStorage.getItem(__prefix("__outdated"))) {
+        const latest  = config.version?.default || "latest"
+        const outdated = !active.aliases.includes(latest)
+
+        /* Persist version state in session storage */
+        sessionStorage.setItem(__prefix("__outdated"), JSON.stringify(outdated))
+        if (outdated)
+          for (const warning of getComponentElements("outdated"))
+            warning.hidden = false
+      }
     })
 }

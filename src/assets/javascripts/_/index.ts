@@ -76,6 +76,7 @@ export type Translations = Record<Translation, string>
  */
 export interface Versioning {
   provider: "mike"                     /* Version provider */
+  default?: string                     /* Default version */
 }
 
 /**
