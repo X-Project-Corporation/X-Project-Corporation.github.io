@@ -178,14 +178,13 @@ Then, e.g. to override the site title, add the following line to `main.html`:
 
 Material for MkDocs provides the following template blocks:
 
-| Block name        | Wrapped contents                                |
+| Block name        | Purpose                                         |
 |:------------------|:------------------------------------------------|
 | `analytics`       | Wraps the Google Analytics integration          |
 | `announce`        | Wraps the announcement bar                      |
 | `config`          | Wraps the JavaScript application config         |
 | `content`         | Wraps the main content                          |
 | `disqus`          | Wraps the Disqus integration                    |
-| `extracopyright`  | Empty block to add custom copyright information |
 | `extrahead`       | Empty block to add custom meta tags             |
 | `fonts`           | Wraps the font definitions                      |
 | `footer`          | Wraps the footer with navigation and copyright  |
@@ -203,7 +202,29 @@ Material for MkDocs provides the following template blocks:
 
 For more on this topic refer to the [MkDocs documentation][5].
 
-  [5]: https://www.mkdocs.org/user-guide/styling-your-docs/#overriding-template-blocks
+[5]: https://www.mkdocs.org/user-guide/styling-your-docs/#overriding-template-blocks
+
+#### Additional variables
+
+Besides template blocks, Material for MkDocs provides extra variables for parts
+that cannot be overridden with template blocks (due to technical limitations of
+the template engine). If you want to add further information after the _Made
+with Material for MkDocs_ hint in the footer, add the following line to
+`main.html`:
+
+``` html
+{% extends "base.html" %}
+
+{% set extracopyright %}
+  <!-- Add your additional information here -->
+{% endset %}
+```
+
+Material for MkDocs provides the following additional variables:
+
+| Block name        | Purpose                                         |
+|:------------------|:------------------------------------------------|
+| `extracopyright`  | Adds custom copyright information               |
 
 ## Theme development
 
