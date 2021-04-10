@@ -114,11 +114,8 @@ The following features are currently exclusively available to sponsors:
 - [x] [Version warning :material-new-box:][26]
 - [x] [Custom admonition icons :material-new-box:][28]
 - [x] [Code block annotations :material-new-box:][25]
-- [x] [Back-to-top button][17]
 - [x] [Anchor tracking ][24]
 - [x] [Section index pages][22]
-- [x] [Latest release tag][15]
-- [x] [Color palette toggle][16]
 - [x] [Sticky navigation tabs][21]
 - [x] [Mermaid.js integration][27]
 - [x] [Search suggestions][18]
@@ -141,16 +138,6 @@ from time to time to learn about what's new, or follow [@squidfunk on
 Following is a list of funding goals. When a funding goal is hit, the features
 that are tied to it are merged back into Material for MkDocs and released to
 the public for general availability.
-
-#### $ 2,000 – Black Pearl
-
-- [x] [Latest release tag][15]
-- [x] [Color palette toggle][16]
-- [x] [Back-to-top button][17]
-
-  [15]: ../setup/adding-a-git-repository.md#latest-release
-  [16]: ../setup/changing-the-colors.md#color-palette-toggle
-  [17]: ../setup/setting-up-navigation.md#back-to-top-button
 
 #### $ 2,500 – Biquinho Vermelho
 
@@ -202,7 +189,7 @@ the public for general availability.
 - [ ] Table of contents follows active anchor
 - [ ] Native lightbox integration
 
-#### $ 8,000 - Scotch Bonnet
+#### $ 8,000 – Scotch Bonnet
 
 - [x] [Custom admonition icons][28]
 - [ ] TBA
@@ -220,11 +207,24 @@ the public for general availability.
 
 ### Goals completed
 
-#### $ 500 – Madame Jeanette
+#### $ 2,000 – Black Pearl
 
-- [x] Improved search result grouping
-- [x] Improved search result relevance and scoring
-- [x] Missing query terms in search results
+- [x] Latest release tag
+- [x] [Color palette toggle][16]
+- [x] [Back-to-top button][17]
+
+  [16]: ../setup/changing-the-colors.md#color-palette-toggle
+  [17]: ../setup/setting-up-navigation.md#back-to-top-button
+
+#### $ 1,500 – Bhut Jolokia
+
+- [x] [Admonition inline blocks][12]
+- [x] [Site language selection][13]
+- [x] [Versioning][14]
+
+  [12]: ../reference/admonitions.md#inline-blocks
+  [13]: ../setup/changing-the-language.md#site-language-selector
+  [14]: ../setup/setting-up-versioning.md#versioning
 
 #### $ 1,000 – Prairie Fire
 
@@ -240,15 +240,11 @@ the public for general availability.
   [10]: ../setup/setting-up-navigation.md#navigation-integration
   [11]: ../setup/setting-up-the-header.md#automatic-hiding
 
-#### $ 1,500 – Bhut Jolokia
+#### $ 500 – Madame Jeanette
 
-- [x] [Admonition inline blocks][12]
-- [x] [Site language selection][13]
-- [x] [Versioning][14]
-
-  [12]: ../reference/admonitions.md#inline-blocks
-  [13]: ../setup/changing-the-language.md#site-language-selector
-  [14]: ../setup/setting-up-versioning.md#versioning
+- [x] Improved search result grouping
+- [x] Improved search result relevance and scoring
+- [x] Missing query terms in search results
 
 ## Frequently asked questions
 

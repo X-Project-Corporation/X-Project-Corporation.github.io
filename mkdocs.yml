@@ -65,15 +65,13 @@ theme:
     - search.suggest
     # - toc.integrate
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
+    - scheme: default
       primary: indigo
       accent: indigo
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
+    - scheme: slate
       primary: red
       accent: red
       toggle:
@@ -91,6 +89,7 @@ plugins:
   - search
   - redirects:
       redirect_maps:
+        changelog/insiders.md: insiders/changelog.md
         extensions/admonition.md: reference/admonitions.md
         extensions/codehilite.md: reference/code-blocks.md
         extensions/footnotes.md: reference/footnotes.md

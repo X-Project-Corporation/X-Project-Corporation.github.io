@@ -1,6 +1,6 @@
 {
   "name": "mkdocs-material",
-  "version": "7.0.7+insiders-2.5.0",
+  "version": "7.1.0+insiders-2.5.0",
   "description": "A Material Design theme for MkDocs",
   "keywords": [
     "mkdocs",
@@ -39,7 +39,7 @@
     "fuzzaldrin-plus": "^0.6.0",
     "lunr": "^2.3.9",
     "lunr-languages": "^1.4.0",
-    "rxjs": "^7.0.0-beta.13"
+    "rxjs": "^7.0.0-beta.15"
   },
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.15.3",
@@ -50,16 +50,16 @@
     "@types/fuzzaldrin-plus": "^0.6.1",
     "@types/html-minifier": "^4.0.0",
     "@types/lunr": "^2.3.3",
-    "@types/node": "^14.14.35",
+    "@types/node": "^14.14.37",
     "@types/resize-observer-browser": "^0.1.5",
     "@types/sass": "^1.16.0",
-    "@typescript-eslint/eslint-plugin": "^4.18.0",
-    "@typescript-eslint/parser": "^4.18.0",
+    "@typescript-eslint/eslint-plugin": "^4.20.0",
+    "@typescript-eslint/parser": "^4.20.0",
     "autoprefixer": "^10.2.5",
     "chokidar": "^3.5.1",
     "cssnano": "^4.1.10",
-    "esbuild": "^0.9.6",
-    "eslint": "^7.22.0",
+    "esbuild": "^0.11.5",
+    "eslint": "^7.23.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsdoc": "^32.3.0",
@@ -69,7 +69,7 @@
     "html-minifier": "^4.0.0",
     "material-design-color": "^2.3.2",
     "material-shadows": "^3.0.1",
-    "postcss": "^8.2.8",
+    "postcss": "^8.2.9",
     "postcss-inline-svg": "^5.0.0",
     "preact": "^10.5.13",
     "rimraf": "^3.0.2",
@@ -79,7 +79,7 @@
     "stylelint-config-recommended": "^4.0.0",
     "stylelint-config-standard": "^21.0.0",
     "stylelint-scss": "^3.19.0",
-    "svgo": "^2.2.2",
+    "svgo": "^2.3.0",
     "tiny-glob": "^0.2.8",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.3"
