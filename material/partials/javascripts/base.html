@@ -1,4 +1,4 @@
 {#-
   This file was automatically generated - do not edit
 -#}
-<script>function __prefix(e){return new URL("{{ base_url }}",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+<script>function __scope(t,e="{{ base_url }}"){return new URL(e,location).pathname+"."+t}function __get(t,e=localStorage,n){return JSON.parse(e.getItem(__scope(t,n)))}function __set(t,e,n=localStorage,o){try{n.setItem(__scope(t,o),JSON.stringify(e))}catch(t){}}</script>

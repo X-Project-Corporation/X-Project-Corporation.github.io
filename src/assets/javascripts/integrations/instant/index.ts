@@ -54,12 +54,13 @@ import {
   getElements,
   replaceElement,
   request,
-  requestXML,
   setLocation,
   setLocationHash,
   setViewportOffset
 } from "~/browser"
 import { getComponentElement } from "~/components"
+
+import { fetchSitemap } from "../sitemap"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -84,44 +85,6 @@ interface SetupOptions {
   document$: Subject<Document>         /* Document subject */
   location$: Subject<URL>              /* Location subject */
   viewport$: Observable<Viewport>      /* Viewport observable */
-}
-
-/* ----------------------------------------------------------------------------
- * Helper functions
- * ------------------------------------------------------------------------- */
-
-/**
- * Preprocess a list of URLs
- *
- * This function replaces the `site_url` in the sitemap with the actual base
- * URL, to allow instant loading to work in occasions like Netlify previews.
- *
- * @param urls - URLs
- *
- * @returns Processed URLs
- */
-function preprocess(urls: string[]): string[] {
-  if (urls.length < 2)
-    return urls
-
-  /* Take the first two URLs and remove everything after the last slash */
-  const [root, next] = urls
-    .sort((a, b) => a.length - b.length)
-    .map(url => url.replace(/[^/]+$/, ""))
-
-  /* Compute common prefix */
-  let index = 0
-  if (root === next)
-    index = root.length
-  else
-    while (root.charCodeAt(index) === next.charCodeAt(index))
-      index++
-
-  /* Replace common prefix (i.e. base) with effective base */
-  const config = configuration()
-  return urls.map(url => (
-    url.replace(root.slice(0, index), `${config.base}/`)
-  ))
 }
 
 /* ----------------------------------------------------------------------------
@@ -173,17 +136,13 @@ export function setupInstantLoading(
     favicon.href = favicon.href
 
   /* Intercept internal navigation */
-  const push$ = requestXML(`${config.base}/sitemap.xml`)
+  const push$ = fetchSitemap()
     .pipe(
-      map(sitemap => preprocess(getElements("loc", sitemap)
-        .map(node => node.textContent!)
-      )),
+      map(paths => paths.map(path => `${config.base}/${path}`)),
       switchMap(urls => fromEvent<MouseEvent>(document.body, "click")
         .pipe(
           filter(ev => !ev.metaKey && !ev.ctrlKey),
           switchMap(ev => {
-
-            /* Handle HTML and SVG elements */
             if (ev.target instanceof Element) {
               const el = ev.target.closest("a")
               if (el && !el.target && urls.includes(el.href)) {

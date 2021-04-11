@@ -51,13 +51,47 @@ declare global {
   const __search: GlobalSearchConfig | undefined
 
   /**
-   * Global function to prefix storage items
+   * Fetch the value for a key from the given storage
+   *
+   * This function is defined in `partials/javascripts/base.html`, so it can be
+   * used from the templates, as well as from the application bundle.
+   *
+   * @template T - Data type
+   *
+   * @param key - Key
+   * @param storage - Storage (default: local storage)
+   * @param base - Base URL (default: current base)
+   *
+   * @return Value or nothing
    */
-  function __prefix(key: string): string
+  function __get<T>(
+    key: string, storage?: Storage, base?: string
+  ): T | null
 
   /**
-   * Google Analytics
+   * Persist a key-value pair in the given storage
+   *
+   * This function is defined in `partials/javascripts/base.html`, so it can be
+   * used from the templates, as well as from the application bundle.
+   *
+   * @template T - Data type
+   *
+   * @param key - Key
+   * @param value - Value
+   * @param storage - Storage (default: local storage)
+   * @param base - Base URL (default: current base)
    */
+  function __set<T>(
+    key: string, value: T, storage?: Storage, base?: string
+  ): void
+}
+
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Google Analytics
+ */
+declare global {
   function ga(...args: string[]): void
 }
 
