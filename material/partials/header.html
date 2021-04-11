@@ -37,9 +37,11 @@
           {% set primary = option.primary | replace(" ", "-") | lower %}
           {% set accent  = option.accent  | replace(" ", "-") | lower %}
           <input class="md-option" data-md-color-media="{{ option.media }}" data-md-color-scheme="{{ option.scheme }}" data-md-color-primary="{{ primary }}" data-md-color-accent="{{ accent }}" type="radio" name="__palette" id="__palette_{{ loop.index }}">
-          <label class="md-header__button md-icon" title="{{ option.toggle.name }}" for="__palette_{{ loop.index0 or loop.length }}" hidden>
-            {% include ".icons/" ~ option.toggle.icon ~ ".svg" %}
-          </label>
+          {% if option.toggle %}
+            <label class="md-header__button md-icon" title="{{ option.toggle.name }}" for="__palette_{{ loop.index0 or loop.length }}" hidden>
+              {% include ".icons/" ~ option.toggle.icon ~ ".svg" %}
+            </label>
+          {% endif %}
         {% endfor %}
       </form>
     {% endif %}
@@ -47,14 +49,14 @@
       <div class="md-header__option">
         <div class="md-select">
           {% set icon = config.theme.icon.alternate or "material/translate" %}
-          <span class="md-header__button md-icon">
+          <button class="md-header__button md-icon">
             {% include ".icons/" ~ icon ~ ".svg" %}
-          </span>
+          </button>
           <div class="md-select__inner">
             <ul class="md-select__list">
               {% for alt in config.extra.alternate %}
                 <li class="md-select__item">
-                  <a href="{{ alt.link | url }}" class="md-select__link">
+                  <a href="{{ alt.link | url }}" hreflang="{{ alt.lang }}" class="md-select__link">
                     {{ alt.name }}
                   </a>
                 </li>
