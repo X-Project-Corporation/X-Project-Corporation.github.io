@@ -107,7 +107,7 @@ export function setupVersionSelector(): void {
       topic.appendChild(renderVersionSelector(versions, current))
 
       /* Check if version state was already determined */
-      if (__get("__outdated", sessionStorage) !== null) {
+      if (__get("__outdated", sessionStorage) === null) {
         const latest = config.version?.default || "latest"
         const outdated = !current.aliases.includes(latest)
 
