@@ -31,6 +31,7 @@ import {
   finalize,
   map,
   observeOn,
+  take,
   tap,
   withLatestFrom
 } from "rxjs/operators"
@@ -41,7 +42,12 @@ import {
   setSidebarHeight,
   setSidebarOffset
 } from "~/actions"
-import { Viewport } from "~/browser"
+import {
+  Viewport,
+  getElementContainer,
+  getElementSize,
+  getElements
+} from "~/browser"
 
 import { Component } from "../_"
 import { Header } from "../header"
@@ -152,6 +158,24 @@ export function mountSidebar(
         complete() {
           resetSidebarOffset(el)
           resetSidebarHeight(el)
+        }
+      })
+
+  // TODO: generalize this, so we can also use it in the table of contents
+  internal$
+    .pipe(
+      observeOn(animationFrameScheduler),
+      take(1)
+    )
+      .subscribe(() => {
+        for (const item of getElements(".md-nav__link--active[href]", el)) {
+          const container = getElementContainer(item)
+          if (typeof container !== "undefined") {
+            const offset = item.offsetTop - container.offsetTop
+            const { height } = getElementSize(container)
+            if (offset - height + item.offsetHeight > 0)
+              container.scrollTo(0, offset - height / 2)
+          }
         }
       })
 

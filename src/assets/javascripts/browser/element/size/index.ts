@@ -118,6 +118,32 @@ export function getElementContentSize(el: HTMLElement): ElementSize {
 /* ------------------------------------------------------------------------- */
 
 /**
+ * Retrieve the overflowing container of an element, if any
+ *
+ * @param el - Element
+ *
+ * @returns Overflowing container or nothing
+ */
+export function getElementContainer(
+  el: HTMLElement
+): HTMLElement | undefined {
+  let container = el.parentElement
+  while (container && container !== el.offsetParent) {
+    const visible = getElementSize(container)
+    const content = getElementContentSize(container)
+
+    /* Check if container overflows */
+    if (content.height > visible.height)
+      return container
+    else
+      container = container.parentElement
+  }
+  return undefined
+}
+
+/* ------------------------------------------------------------------------- */
+
+/**
  * Watch element size
  *
  * This function returns an observable that subscribes to a single internal
