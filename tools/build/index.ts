@@ -133,12 +133,19 @@ const assets$ = concat(
     })),
 
   /* Copy images and configurations */
-  ...[".icons/*.svg", "assets/images/*", "**/*.{py,yml}"]
+  ...[".icons/*.svg", "assets/images/*", "**/*.yml"]
     .map(pattern => copyAll(pattern, {
       from: "src",
       to: base
     }))
 )
+
+/* Copy all plugins and extensions */
+const sources$ = copyAll("**/*.py", {
+  from: "src",
+  to: base,
+  watch: process.argv.includes("--watch")
+})
 
 /* ------------------------------------------------------------------------- */
 
@@ -289,8 +296,8 @@ const index$ = zip(icons$, emojis$)
 /* Assemble pipeline */
 const build$ =
   process.argv.includes("--dirty")
-    ? templates$
-    : concat(assets$, merge(templates$, index$))
+    ? merge(templates$, sources$)
+    : concat(assets$, merge(templates$, sources$, index$))
 
 /* Let's get rolling */
 build$.subscribe()

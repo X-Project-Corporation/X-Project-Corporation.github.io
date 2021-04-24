@@ -18,50 +18,29 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-# -----------------------------------------------------------------------------
-# Node, TypeScript, Python
-# -----------------------------------------------------------------------------
-
-# Dependencies
-/node_modules
-/__pycache__
-/venv
-/.venv
-
-# Build files
-/build
-/MANIFEST
-/site
-
-# Distribution files
-/dist
-/mkdocs_material.egg-info
-
-# Caches and logs
-*.cpuprofile
-*.log
-*.tsbuildinfo
-.eslintcache
-__pycache__
+from mkdocs.contrib.search import SearchPlugin as Plugin
+from mkdocs.contrib.search.search_index import SearchIndex as Index
 
 # -----------------------------------------------------------------------------
-# General
+# Class
 # -----------------------------------------------------------------------------
 
-# Never ignore .gitkeep files
-!**/.gitkeep
+# Search plugin with custom search index
+class SearchPlugin(Plugin):
 
-# Husky hooks
-.husky/.gitignore
-.husky/_
+    # Overriden to use a custom search index
+    def on_pre_build(self, config, **kwargs):
+        self.search_index = SearchIndex(**self.config)
 
-# macOS internals
-.DS_Store
+# -----------------------------------------------------------------------------
 
-# Temporary files
-TODO
-tmp
+# Search index with tags support
+class SearchIndex(Index):
 
-# IDEs
-.vscode
-.idea
+    # Overriden to add tags support
+    def add_entry_from_context(self, page):
+        index = len(self._entries)
+        super().add_entry_from_context(page)
+        if "tags" in page.meta:
+            entry = self._entries[index]
+            entry["tags"] = page.meta["tags"]

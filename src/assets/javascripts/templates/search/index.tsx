@@ -90,6 +90,9 @@ function renderSearchDocument(
             {truncate(document.text, 320)}
           </p>
         }
+        {document.tags && document.tags.map(tag => (
+          <span class="md-tag">{tag}</span>
+        ))}
         {teaser > 0 && missing.length > 0 &&
           <p class="md-search-result__terms">
             {translation("search.result.term.missing")}: {...missing}

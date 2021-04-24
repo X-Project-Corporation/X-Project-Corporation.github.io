@@ -55,6 +55,7 @@ export interface SearchIndexDocument {
   location: string                     /* Document location */
   title: string                        /* Document title */
   text: string                         /* Document text */
+  tags?: string[]                      /* Document tags */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -198,10 +199,13 @@ export class Search {
           }
         }
 
-        /* Set up fields and reference */
-        this.field("title", { boost: 1000 })
-        this.field("text")
+        /* Set up reference */
         this.ref("location")
+
+        /* Set up fields */
+        this.field("title", { boost: 1e3 })
+        this.field("text")
+        this.field("tags", { boost: 1e6 })
 
         /* Index documents */
         for (const doc of docs)
@@ -248,7 +252,7 @@ export class Search {
           .reduce<SearchResultItem>((item, { ref, score, matchData }) => {
             const document = this.documents.get(ref)
             if (typeof document !== "undefined") {
-              const { location, title, text, parent } = document
+              const { location, title, text, tags, parent } = document
 
               /* Compute and analyze search query terms */
               const terms = getSearchQueryTerms(
@@ -262,6 +266,7 @@ export class Search {
                 location,
                 title: highlight(title),
                 text:  highlight(text),
+                ...tags && { tags: tags.map(highlight) },
                 score: score * (1 + boost),
                 terms
               })

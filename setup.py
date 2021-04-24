@@ -64,6 +64,9 @@ setup(
     entry_points = {
         "mkdocs.themes": [
             "material = material",
+        ],
+        "mkdocs.plugins": [
+            "search = material.plugins.search:SearchPlugin",
         ]
     },
     zip_safe = False

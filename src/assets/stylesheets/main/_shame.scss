@@ -23,3 +23,14 @@
 // ----------------------------------------------------------------------------
 // Nothing to see here, move along
 // ----------------------------------------------------------------------------
+
+.md-tag {
+  display: inline-block;
+  margin-right: 0.5em;
+  margin-bottom: 0.5em;
+  padding: px2rem(4px) px2rem(12px);
+  font-weight: 700;
+  font-size: px2rem(12.8px);
+  background: var(--md-default-fg-color--lightest);
+  border-radius: px2rem(16px);
+}
