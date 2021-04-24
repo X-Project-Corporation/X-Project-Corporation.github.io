@@ -523,6 +523,10 @@
 
     // Navigation title
     &--secondary &__title {
+      position: sticky;
+      top: 0;
+      background: var(--md-default-bg-color);
+      box-shadow: 0 0 px2rem(8px) px2rem(8px) var(--md-default-bg-color);
 
       // Adjust snapping behavior
       &[for="__toc"] {
@@ -542,6 +546,10 @@
 
     // Navigation title
     &--primary &__title {
+      position: sticky;
+      top: 0;
+      background: var(--md-default-bg-color);
+      box-shadow: 0 0 px2rem(8px) px2rem(8px) var(--md-default-bg-color);
 
       // Adjust snapping behavior
       &[for="__drawer"] {
