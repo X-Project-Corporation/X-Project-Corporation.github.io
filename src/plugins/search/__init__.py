@@ -28,7 +28,7 @@ from mkdocs.contrib.search.search_index import SearchIndex as Index
 # Search plugin with custom search index
 class SearchPlugin(Plugin):
 
-    # Overriden to use a custom search index
+    # Overridden to use a custom search index
     def on_pre_build(self, config, **kwargs):
         self.search_index = SearchIndex(**self.config)
 
@@ -37,7 +37,7 @@ class SearchPlugin(Plugin):
 # Search index with tags support
 class SearchIndex(Index):
 
-    # Overriden to add tags support
+    # Overridden to add tags support
     def add_entry_from_context(self, page):
         index = len(self._entries)
         super().add_entry_from_context(page)
