@@ -40,13 +40,13 @@ class TagsPlugin(BasePlugin):
         self.tags = defaultdict(list)
         self.tags_file = None
 
-    # Hack: second pass for index page
+    # Hack: second pass for tags index page
     def on_files(self, files, config, **kwargs):
         if self.config.get("index"):
             self.tags_file = files.get_file_from_path(self.config.get("index"))
             files.append(self.tags_file)
 
-    # Build inverted index and render index page
+    # Build inverted index and render tags index page
     def on_page_markdown(self, markdown, page, **kwargs):
         if "tags" in page.meta:
             for tag in page.meta["tags"]:

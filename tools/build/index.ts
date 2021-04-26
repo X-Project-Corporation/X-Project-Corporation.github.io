@@ -140,7 +140,7 @@ const assets$ = concat(
     }))
 )
 
-/* Copy all plugins and extensions */
+/* Copy plugins and extensions */
 const sources$ = copyAll("**/*.py", {
   from: "src",
   to: base,
