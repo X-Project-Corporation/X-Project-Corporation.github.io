@@ -23,3 +23,37 @@
 // ----------------------------------------------------------------------------
 // Nothing to see here, move along
 // ----------------------------------------------------------------------------
+
+// // Icon definitions
+// :root {
+//   --md-tag-icon: svg-load("material/tag.svg");
+// }
+
+// ----------------------------------------------------------------------------
+
+// Tag
+.md-tag {
+  display: inline-block;
+  margin-right: 0.5em;
+  margin-bottom: 0.5em;
+  padding: px2rem(4px) px2rem(12px);
+  font-weight: 700;
+  font-size: px2rem(12.8px);
+  vertical-align: middle;
+  background: var(--md-default-fg-color--lightest);
+  border-radius: px2rem(16px);
+
+  // // Tag icon
+  // &::before {
+  //   display: inline-block;
+  //   width: px2rem(12px);
+  //   height: px2rem(12px);
+  //   margin-right: px2rem(2px);
+  //   vertical-align: text-top;
+  //   background-color: currentColor;
+  //   mask-image: var(--md-tag-icon);
+  //   mask-repeat: no-repeat;
+  //   mask-size: contain;
+  //   content: "";
+  // }
+}
