@@ -30,7 +30,9 @@ class SearchPlugin(BasePlugin):
 
     # Overridden to use a custom search index
     def on_pre_build(self, config):
-        self.search_index = SearchIndex(**self.config)
+        super().on_pre_build(config)
+        if "tags" in config["plugins"]:
+            self.search_index = SearchIndex(**self.config)
 
 # -----------------------------------------------------------------------------
 

@@ -36,10 +36,10 @@
   display: inline-block;
   margin-right: 0.5em;
   margin-bottom: 0.5em;
-  padding: px2rem(4px) px2rem(12px);
+  padding: px2em(4px, 12.8px) px2em(12px, 12.8px);
   font-weight: 700;
   font-size: px2rem(12.8px);
-  vertical-align: middle;
+  line-height: 1.6;
   background: var(--md-default-fg-color--lightest);
   border-radius: px2rem(16px);
 
@@ -56,4 +56,21 @@
   //   mask-size: contain;
   //   content: "";
   // }
+
+  // Linked tag
+  &[href] {
+    color: inherit;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      color            125ms,
+      background-color 125ms;
+
+    // Linked tag on focus/hover
+    &:focus,
+    &:hover {
+      color: var(--md-accent-bg-color);
+      background-color: var(--md-accent-fg-color);
+    }
+  }
 }
