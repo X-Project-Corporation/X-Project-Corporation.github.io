@@ -57,14 +57,14 @@ class TagsPlugin(BasePlugin):
             )
 
     # Hack: 2nd pass for tags index page
-    def on_files(self, files, config, **kwargs):
+    def on_files(self, files, **kwargs):
         file = self.config.get("tags_file")
         if file:
             self.tags_file = files.get_file_from_path(file)
             files.append(self.tags_file)
 
     # Build and render tags index page
-    def on_page_markdown(self, markdown, page, config, **kwargs):
+    def on_page_markdown(self, markdown, page, **kwargs):
         if page.file == self.tags_file:
             return self._render_tag_index(markdown)
 
@@ -74,7 +74,7 @@ class TagsPlugin(BasePlugin):
                 self.tags[tag].append(page)
 
     # Inject tags into page (after search and before minification)
-    def on_page_context(self, context, page, **kwargs):
+    def on_page_context(self, page, **kwargs):
         if "tags" in page.meta:
             tags = [self._render_tag(tag, page) for tag in page.meta["tags"]]
 
