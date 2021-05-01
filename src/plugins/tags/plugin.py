@@ -46,9 +46,12 @@ class TagsPlugin(BasePlugin):
 
     # Retrieve configuration for anchor generation
     def on_config(self, config):
-        toc = { "slugify": slugify, "separator": "-" }
-        if "toc" in config["mdx_configs"]:
-            toc = { **toc, **config["mdx_configs"]["toc"] }
+        if "toc" in config["markdown_extensions"]:
+            toc = { "slugify": slugify, "separator": "-" }
+            if "toc" in config["mdx_configs"]:
+                toc = { **toc, **config["mdx_configs"]["toc"] }
+
+            # Partially apply slugify function
             self.slugify = lambda value: (
                 toc["slugify"](value, toc["separator"])
             )
