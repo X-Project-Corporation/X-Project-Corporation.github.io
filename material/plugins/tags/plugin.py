@@ -53,36 +53,56 @@ class TagsPlugin(BasePlugin):
                 toc["slugify"](value, toc["separator"])
             )
 
-    # Hack: second pass for tags index page
+    # Hack: 2nd pass for tags index page
     def on_files(self, files, config, **kwargs):
         file = self.config.get("tags_file")
         if file:
             self.tags_file = files.get_file_from_path(file)
             files.append(self.tags_file)
 
-    # Inject tags into page and render tags index page
+    # Build and render tags index page
     def on_page_markdown(self, markdown, page, config, **kwargs):
+        if page.file == self.tags_file:
+            return self._render_tag_index(markdown)
+
+        # Add page to tags index
         if "tags" in page.meta:
-            tags = [self._render_tag(tag, page) for tag in page.meta["tags"]]
             for tag in page.meta["tags"]:
                 self.tags[tag].append(page)
 
-            # Ensure tags are rendered below the main headline
-            match = re.search(r"(?m)^#[^\n]+$", markdown)
-            if match.start() > 0:
-                return "\n".join(["".join(tags), "", markdown])
-            else:
-                return "\n".join([
-                    markdown[:match.end()],
-                    "",
-                    "".join(tags),
-                    "",
-                    markdown[match.end():]
-                ])
+    # Inject tags into page (after search and before minification)
+    def on_page_context(self, context, page, **kwargs):
+        if "tags" in page.meta:
+            tags = [self._render_tag(tag, page) for tag in page.meta["tags"]]
 
-        # Render tags index page
-        if page.file == self.tags_file:
-            return self._render_tags(markdown)
+            # Ensure tags are injected below the main headline
+            match = re.search(r"(?m)<h1.*?<\/h1>", page.content)
+            page.content = "\n".join([
+                page.content[:match.end()],
+                "",
+                "".join(tags),
+                "",
+                page.content[match.end():]
+            ])
+
+    # Render tags index
+    def _render_tag_index(self, markdown):
+        if not markdown.find("[TAGS]"):
+            markdown += "\n[TAGS]"
+
+        # Replace placeholder in Markdown with rendered tags index
+        tags = [self._render_tag_links(*args) for args in self.tags.items()]
+        return markdown.replace("[TAGS]", "\n".join(tags))
+
+    # Render the given tag and links to all pages with occurrences
+    def _render_tag_links(self, tag, pages):
+        content = ["## <span class=\"md-tag\">{}</span>".format(tag), ""]
+        for page in pages:
+            url = page.file.url_relative_to(self.tags_file)
+            content.append("- [{}]({})".format(page.title, url))
+
+        # Return rendered tag links
+        return "\n".join(content)
 
     # Render the given tag, linking to the tags index (if enabled)
     def _render_tag(self, tag, page):
@@ -92,22 +112,3 @@ class TagsPlugin(BasePlugin):
             url = self.tags_file.url_relative_to(page.file)
             url += "#" + self.slugify(tag)
             return "<a href=\"{}\" class=\"md-tag\">{}</a>".format(url, tag)
-
-    # Render tags index inside
-    def _render_tags(self, markdown):
-        if not markdown.find("[TAGS]"):
-            markdown += "\n[TAGS]"
-
-        # Inject into placeholder into Markdown source
-        tags = [self._render_tag_pages(*args) for args in self.tags.items()]
-        return markdown.replace("[TAGS]", "\n".join(tags))
-
-    # Render the given tag and links to all pages with occurrences
-    def _render_tag_pages(self, tag, pages):
-        content = ["## <span class=\"md-tag\">{}</span>".format(tag), ""]
-        for page in pages:
-            url = page.file.url_relative_to(self.tags_file)
-            content.append("- [{}]({})".format(page.title, url))
-
-        # Return Markdown source
-        return "\n".join(content)

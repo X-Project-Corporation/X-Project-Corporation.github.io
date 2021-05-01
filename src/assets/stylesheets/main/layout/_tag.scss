@@ -73,4 +73,9 @@
       background-color: var(--md-accent-fg-color);
     }
   }
+
+  // Tag inside headline
+  [id] > & {
+    vertical-align: text-top;
+  }
 }
