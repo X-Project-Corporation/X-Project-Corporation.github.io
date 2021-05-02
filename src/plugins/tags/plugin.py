@@ -74,7 +74,7 @@ class TagsPlugin(BasePlugin):
                 self.tags[tag].append(page)
 
     # Inject tags into page (after search and before minification)
-    def on_page_context(self, page, **kwargs):
+    def on_page_context(self, context, page, **kwargs):
         if "tags" in page.meta:
             tags = [self._render_tag(tag, page) for tag in page.meta["tags"]]
 
