@@ -78,19 +78,22 @@ class TagsPlugin(BasePlugin):
         if "tags" in page.meta:
             tags = [self._render_tag(tag, page) for tag in page.meta["tags"]]
 
-            # Ensure tags are injected below the main headline
+            # Find main headline, if any
             match = re.search(r"(?m)<h1.*?<\/h1>", page.content)
+            index = match.end() if match else 0
+
+            # Ensure tags are injected below the main headline
             page.content = "\n".join([
-                page.content[:match.end()],
+                page.content[:index],
                 "",
                 "".join(tags),
                 "",
-                page.content[match.end():]
+                page.content[index:]
             ])
 
     # Render tags index
     def _render_tag_index(self, markdown):
-        if not markdown.find("[TAGS]"):
+        if not "[TAGS]" in markdown:
             markdown += "\n[TAGS]"
 
         # Replace placeholder in Markdown with rendered tags index
