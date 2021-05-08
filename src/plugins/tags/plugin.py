@@ -22,9 +22,10 @@ import re
 
 from collections import defaultdict
 from markdown.extensions.toc import slugify
-from mkdocs.structure.files import File
-from mkdocs.plugins import BasePlugin
+from mkdocs import utils
 from mkdocs.config.config_options import Type
+from mkdocs.plugins import BasePlugin
+from mkdocs.structure.files import File
 
 # -----------------------------------------------------------------------------
 # Class
@@ -104,7 +105,10 @@ class TagsPlugin(BasePlugin):
     def _render_tag_links(self, tag, pages):
         content = ["## <span class=\"md-tag\">{}</span>".format(tag), ""]
         for page in pages:
-            url = page.file.url_relative_to(self.tags_file)
+            url = utils.get_relative_url(
+                page.file.src_path,
+                self.tags_file.src_path
+            )
             content.append("- [{}]({})".format(page.title, url))
 
         # Return rendered tag links
