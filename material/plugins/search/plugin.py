@@ -31,18 +31,25 @@ class SearchPlugin(BasePlugin):
     # Overridden to use a custom search index
     def on_pre_build(self, config):
         super().on_pre_build(config)
-        if "tags" in config["plugins"]:
-            self.search_index = SearchIndex(**self.config)
+        self.search_index = SearchIndex(**self.config)
 
 # -----------------------------------------------------------------------------
 
-# Search index with tags support
+# Search index with additional fields support
 class SearchIndex(BaseIndex):
 
-    # Overridden to add tags for each page
+    # Overridden to add additional fields for each page
     def add_entry_from_context(self, page):
         index = len(self._entries)
         super().add_entry_from_context(page)
+        entry = self._entries[index]
+
+        # Add document tags
         if "tags" in page.meta:
-            entry = self._entries[index]
             entry["tags"] = page.meta["tags"]
+
+        # Add document boost for search
+        if "search" in page.meta:
+            search = page.meta["search"]
+            if "boost" in search:
+                entry["boost"] = search["boost"]
