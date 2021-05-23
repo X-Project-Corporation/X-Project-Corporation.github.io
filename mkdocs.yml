@@ -51,6 +51,7 @@ theme:
   # Default values, taken from mkdocs_theme.yml
   language: en
   features:
+    - content.tabs.link
     # - header.autohide
     # - navigation.expand
     # - navigation.instant

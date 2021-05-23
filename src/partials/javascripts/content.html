@@ -20,10 +20,22 @@
   IN THE SOFTWARE.
 -->
 
-<!-- User preference: color palette -->
-<script>
-  var palette = __get("__palette")
-  if (palette && typeof palette.color === "object")
-    for (var [key, value] of Object.entries(palette.color))
-      document.body.setAttribute("data-md-color-" + key, value)
-</script>
+<!-- User-preference: link content tabs -->
+{% if "content.tabs.link" in features %}
+  <script>
+    var tabs = __get("__tabs")
+    if (Array.isArray(tabs))
+      for (var set of document.querySelectorAll("[data-tabs]")) {
+        var labels = set.querySelectorAll(":scope > label")
+        main: for (var tab of tabs) {
+          for (var label of labels) {
+            if (label.innerText.trim() === tab) {
+              var input = label.previousElementSibling
+              input.checked = true
+              break main
+            }
+          }
+        }
+      }
+  </script>
+{% endif %}

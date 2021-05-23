@@ -114,6 +114,12 @@
       cursor: pointer;
       transition: color 250ms;
 
+      // Hack: omit flickering of content tabs label on initial page load when
+      // using linked content tabs.
+      .no-js & {
+        transition: none;
+      }
+
       // Tab label on hover
       &:hover {
         color: var(--md-accent-fg-color);

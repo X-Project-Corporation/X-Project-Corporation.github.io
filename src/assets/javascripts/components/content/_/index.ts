@@ -33,6 +33,7 @@ import {
 } from "../code"
 import { Details, mountDetails } from "../details"
 import { DataTable, mountDataTable } from "../table"
+import { ContentTabs, mountContentTabs } from "../tabs"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -42,6 +43,7 @@ import { DataTable, mountDataTable } from "../table"
  * Content
  */
 export type Content =
+  | ContentTabs
   | CodeBlock
   | MermaidCodeBlock
   | DataTable
@@ -94,6 +96,10 @@ export function mountContent(
 
     /* Details */
     ...getElements("details", el)
-      .map(child => mountDetails(child, { target$, print$ }))
+      .map(child => mountDetails(child, { target$, print$ })),
+
+    /* Content tabs */
+    ...getElements("[data-tabs]", el)
+      .map(child => mountContentTabs(child))
   )
 }

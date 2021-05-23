@@ -44,7 +44,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.48946aae.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.9501b472.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.77b964be.min.css' | url }}">
@@ -197,6 +197,7 @@
                 {% include "partials/integrations/disqus.html" %}
               {% endblock %}
             </article>
+            {% include "partials/javascripts/content.html" %}
           </div>
         </div>
         {% if "navigation.top" in features %}
@@ -243,7 +244,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.37e8e405.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.c6dbc1c4.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}

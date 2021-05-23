@@ -121,7 +121,7 @@ export function watchCodeBlock(
         const container = child.closest("[data-tabs]")
         if (container instanceof HTMLElement) {
           return merge(
-            ...getElements("input", container)
+            ...getElements(":scope > input", container)
               .map(input => fromEvent(input, "change"))
           )
         }
