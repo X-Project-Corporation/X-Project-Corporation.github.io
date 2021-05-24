@@ -30,6 +30,7 @@ import {
   tap
 } from "rxjs/operators"
 
+import { feature } from "~/_"
 import { getElements } from "~/browser"
 
 import { Component } from "../../_"
@@ -92,18 +93,22 @@ export function mountContentTabs(
 ): Observable<Component<ContentTabs>> {
   const internal$ = new Subject<ContentTabs>()
   internal$.subscribe(({ active }) => {
-    const tab = active.innerText.trim()
-    for (const set of getElements("[data-tabs]"))
-      for (const label of getElements(":scope > label", set))
-        if (label.innerText.trim() === tab) {
-          const input = label.previousElementSibling as HTMLInputElement
-          input.checked = true
-          break
-        }
 
-    /* Persist active tabs in local storage */
-    const tabs = __get<string[]>("__tabs") || []
-    __set("__tabs", [...new Set([tab, ...tabs])])
+    /* Set up linking of content tabs, if enabled */
+    if (feature("content.tabs.link")) {
+      const tab = active.innerText.trim()
+      for (const set of getElements("[data-tabs]"))
+        for (const label of getElements(":scope > label", set))
+          if (label.innerText.trim() === tab) {
+            const input = label.previousElementSibling as HTMLInputElement
+            input.checked = true
+            break
+          }
+
+      /* Persist active tabs in local storage */
+      const tabs = __get<string[]>("__tabs") || []
+      __set("__tabs", [...new Set([tab, ...tabs])])
+    }
   })
 
   /* Create and return component */

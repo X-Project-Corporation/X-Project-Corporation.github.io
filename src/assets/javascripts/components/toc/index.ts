@@ -274,7 +274,7 @@ export function mountTableOfContents(
           setAnchorState(anchor, "blur")
         }
 
-        /* Perform anchor tracking, if enabled */
+        /* Set up anchor tracking, if enabled */
         if (feature("navigation.tracking")) {
           const url = getLocation()
 
