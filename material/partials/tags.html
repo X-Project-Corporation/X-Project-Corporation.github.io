@@ -8,7 +8,9 @@
   <nav class="md-tags" {{ hidden }}>
     {% for tag in tags %}
       {% if tag.url %}
-        <a href="{{ tag.url | url }}" class="md-tag">{{ tag.name }}</a>
+        <a href="{{ tag.url | url }}" class="md-tag">
+          {{ tag.name }}
+        </a>
       {% else %}
         <span class="md-tag">{{ tag.name }}</span>
       {% endif %}

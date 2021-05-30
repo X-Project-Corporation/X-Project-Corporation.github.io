@@ -23,7 +23,6 @@ from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.config.config_options import Type
 from mkdocs.plugins import BasePlugin
-from mkdocs.structure.files import File
 
 # -----------------------------------------------------------------------------
 # Class
@@ -105,6 +104,6 @@ class TagsPlugin(BasePlugin):
         if not self.tags_file or not self.slugify:
             return dict(name = tag)
         else:
-            url = self.tags_file.url_relative_to(page.file)
+            url = self.tags_file.url
             url += "#" + self.slugify(tag)
             return dict(name = tag, url = url)
