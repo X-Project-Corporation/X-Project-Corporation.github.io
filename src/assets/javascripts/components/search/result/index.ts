@@ -34,6 +34,7 @@ import {
   map,
   observeOn,
   switchMap,
+  take,
   tap,
   withLatestFrom,
   zipWith
@@ -52,6 +53,7 @@ import {
 import {
   SearchResult,
   SearchWorker,
+  isSearchReadyMessage,
   isSearchResultMessage
 } from "~/integrations"
 import { renderSearchResultItem } from "~/templates"
@@ -95,8 +97,21 @@ export function mountSearchResult(
       filter(Boolean)
     )
 
-  /* Update search result metadata */
+  /* Retrieve nested components */
   const meta = getElementOrThrow(":scope > :first-child", el)
+  const list = getElementOrThrow(":scope > :last-child", el)
+
+  /* Update search result metadata when ready */
+  rx$
+    .pipe(
+      filter(isSearchReadyMessage),
+      take(1)
+    )
+      .subscribe(() => {
+        resetSearchResultMeta(meta)
+      })
+
+  /* Update search result metadata */
   internal$
     .pipe(
       observeOn(animationFrameScheduler),
@@ -110,7 +125,6 @@ export function mountSearchResult(
       })
 
   /* Update search result list */
-  const list = getElementOrThrow(":scope > :last-child", el)
   internal$
     .pipe(
       observeOn(animationFrameScheduler),

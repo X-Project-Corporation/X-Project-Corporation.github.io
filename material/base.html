@@ -32,7 +32,7 @@
         {% endfor %}
       {% endif %}
       <link rel="icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.1.5+insiders-2.9.1">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.1.6+insiders-2.9.1">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -44,10 +44,10 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.9501b472.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
-        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.77b964be.min.css' | url }}">
+        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.css' | url }}">
         {% if palette.primary %}
           {% import "partials/palette.html" as map %}
           {% set primary = map.primary(
@@ -244,7 +244,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.08adbded.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.b7018b44.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
