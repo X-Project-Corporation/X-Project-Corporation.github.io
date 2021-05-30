@@ -44,10 +44,10 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.92048cb8.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
-        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.css' | url }}">
+        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.73e53a79.min.css' | url }}">
         {% if palette.primary %}
           {% import "partials/palette.html" as map %}
           {% set primary = map.primary(
@@ -181,6 +181,9 @@
                     {% include ".icons/material/pencil.svg" %}
                   </a>
                 {% endif %}
+                {% if "tags" in config.plugins %}
+                  {% include "partials/tags.html" %}
+                {% endif %}
                 {% if not "\x3ch1" in page.content %}
                   <h1>{{ page.title | d(config.site_name, true)}}</h1>
                 {% endif %}
@@ -218,7 +221,7 @@
         "base": base_url,
         "features": features,
         "translations": {},
-        "search": "assets/javascripts/workers/search.4c32c4e3.min.js" | url,
+        "search": "assets/javascripts/workers/search.df8cae7d.min.js" | url,
         "version": config.extra.version or None
       } -%}
       {%- set translations = app.translations -%}
@@ -244,7 +247,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.b7018b44.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.0c4ae912.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}

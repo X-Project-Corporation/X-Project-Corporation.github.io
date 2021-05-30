@@ -18,8 +18,6 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import re
-
 from collections import defaultdict
 from markdown.extensions.toc import slugify
 from mkdocs import utils
@@ -78,19 +76,7 @@ class TagsPlugin(BasePlugin):
     def on_page_context(self, context, page, **kwargs):
         if "tags" in page.meta:
             tags = [self._render_tag(tag, page) for tag in page.meta["tags"]]
-
-            # Find main headline, if any
-            match = re.search(r"(?m)<h1.*?<\/h1>", page.content)
-            index = match.end() if match else 0
-
-            # Ensure tags are injected below the main headline
-            page.content = "\n".join([
-                page.content[:index],
-                "",
-                "".join(tags),
-                "",
-                page.content[index:]
-            ])
+            context["tags"] = tags
 
     # Render tags index
     def _render_tag_index(self, markdown):
@@ -117,8 +103,8 @@ class TagsPlugin(BasePlugin):
     # Render the given tag, linking to the tags index (if enabled)
     def _render_tag(self, tag, page):
         if not self.tags_file or not self.slugify:
-            return "<span class=\"md-tag\">{}</span>".format(tag)
+            return dict(name = tag)
         else:
             url = self.tags_file.url_relative_to(page.file)
             url += "#" + self.slugify(tag)
-            return "<a href=\"{}\" class=\"md-tag\">{}</a>".format(url, tag)
+            return dict(name = tag, url = url)

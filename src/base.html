@@ -336,6 +336,11 @@
                   </a>
                 {% endif %}
 
+                <!-- Tags -->
+                {% if "tags" in config.plugins %}
+                  {% include "partials/tags.html" %}
+                {% endif %}
+
                 <!--
                   Hack: check whether the content contains a h1 headline. If it
                   doesn't, the page title (or respectively site name) is used
