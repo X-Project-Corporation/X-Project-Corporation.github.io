@@ -88,8 +88,6 @@ theme:
 # Plugins
 plugins:
   - search
-  - tags:
-      tags_file: license.md
   - redirects:
       redirect_maps:
         changelog/insiders.md: insiders/changelog.md
