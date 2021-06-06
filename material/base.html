@@ -32,7 +32,7 @@
         {% endfor %}
       {% endif %}
       <link rel="icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.1.6+insiders-2.9.1">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.1.7+insiders-2.9.1">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -238,7 +238,8 @@
         "search.result.other",
         "search.result.more.one",
         "search.result.more.other",
-        "search.result.term.missing"
+        "search.result.term.missing",
+        "select.version.title"
       ] -%}
         {%- set _ = translations.update({ key: lang.t(key) }) -%}
       {%- endfor -%}
@@ -247,7 +248,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.0c4ae912.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.d0a281eb.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
