@@ -90,7 +90,6 @@ export function watchSearchShare(
         return { url }
       })
     )
-
 }
 
 /**
