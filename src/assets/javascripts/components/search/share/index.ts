@@ -84,6 +84,7 @@ export function watchSearchShare(
     .pipe(
       map(({ value }) => {
         const url = getLocation()
+        url.hash = ""
         url.searchParams.delete("h")
         url.searchParams.set("q", value)
         return { url }
