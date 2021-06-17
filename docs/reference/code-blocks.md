@@ -247,7 +247,7 @@ document$.subscribe(function() { // (1)
 
 _Result_:
 
-``` {: .js .annotate }
+``` { .js .annotate }
 document$.subscribe(function() { // (1)
   var tables = document.querySelectorAll(/* (2) */ "article table")
   tables.forEach(function(table) {
@@ -296,7 +296,7 @@ document$.subscribe(function() { // (1)
   1. Of course, this can be combined with [line numbers][10], highlighting and
      all other code block related features.
 
-_Annotations require syntax highlighting with [Pygments][24] – they're currently
+_Annotations require syntax highlighting with [Pygments][26] – they're currently
 not compatible with other JavaScript-based syntax highlighters. Support may be
 added later on._
 

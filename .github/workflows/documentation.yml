@@ -49,6 +49,14 @@ jobs:
             mkdocs-minify-plugin>=0.3 \
             mkdocs-redirects>=1.0
 
+      - name: Install Insiders build
+        if: github.event.repository.fork == false
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git clone --depth 1 https://${GH_TOKEN}@github.com/squidfunk/mkdocs-material-insiders.git
+          echo "THEME_DIR=mkdocs-material-insiders/material" >> $GITHUB_ENV
+
       - name: Deploy documentation
         env:
           GOOGLE_ANALYTICS_KEY: ${{ secrets.GOOGLE_ANALYTICS_KEY }}
