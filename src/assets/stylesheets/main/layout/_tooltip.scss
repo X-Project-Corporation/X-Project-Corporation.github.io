@@ -25,7 +25,7 @@
 // ----------------------------------------------------------------------------
 
 // Continuous pulse animation
-@keyframes md-annotation--pulse {
+@keyframes pulse {
   0% {
     box-shadow: 0 0 0 0 var(--md-default-fg-color--lightest);
   }
@@ -67,6 +67,11 @@
     max-height   0ms 250ms,
     z-index    250ms;
 
+  // Disable animation for motion reduction preference
+  @media (prefers-reduced-motion) {
+    transition: none;
+  }
+
   // Tooltip wrapper
   &__inner {
     padding: px2rem(16px);
@@ -94,6 +99,11 @@
       opacity    250ms,
       max-height 250ms 0ms,
       z-index      0ms;
+
+    // Disable animation for motion reduction preference
+    @media (prefers-reduced-motion) {
+      transition: none;
+    }
 
     // Modifier for end alignment
     &--end {
@@ -154,8 +164,14 @@
     transition:
       background-color 250ms,
       z-index          250ms;
-    animation: md-annotation--pulse 2000ms infinite;
+    animation: pulse 2000ms infinite;
     user-select: none;
+
+    // Disable animation for motion reduction preference
+    @media (prefers-reduced-motion) {
+      transition: none;
+      animation: none;
+    }
 
     // Annotation index on focus
     :focus-within > & {
@@ -163,6 +179,11 @@
         background-color 250ms,
         z-index            0ms;
       animation: none;
+
+      // Disable animation for motion reduction preference
+      @media (prefers-reduced-motion) {
+        transition: none;
+      }
     }
 
     // Annotation index on focus/hover
