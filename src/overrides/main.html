@@ -25,9 +25,6 @@
 <!-- Custom front matter -->
 {% block extrahead %}
 
-  <!-- Don't index the Sponsorware version to omit duplicate content -->
-  <meta name="robots" content="noindex" />
-
   <!-- Determine title -->
   {% set title = config.site_name %}
   {% if page and page.title and not page.is_homepage %}
