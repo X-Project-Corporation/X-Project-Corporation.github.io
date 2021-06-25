@@ -153,6 +153,7 @@ export function transformScript(
     write: false,
     bundle: true,
     sourcemap: false,
+    legalComments: "none",
     minify: process.argv.includes("--optimize")
   }))
     .pipe(
