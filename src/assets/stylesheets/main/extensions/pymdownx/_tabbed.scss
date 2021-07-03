@@ -54,6 +54,12 @@
       }
     }
 
+    // Hack: omit flickering of content tabs on initial page load when a code
+    // block with annotations is followed by an ordered list.
+    > .annotate:first-child pre {
+      margin: 0;
+    }
+
     // Adjust spacing for nested tab
     > .tabbed-set {
       margin: 0;
