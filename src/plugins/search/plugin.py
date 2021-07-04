@@ -35,7 +35,7 @@ class SearchPlugin(BasePlugin):
 
 # -----------------------------------------------------------------------------
 
-# Search index with additional fields support
+# Search index with support for additional fields
 class SearchIndex(BaseIndex):
 
     # Overridden to add additional fields for each page

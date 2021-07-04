@@ -34,7 +34,7 @@ edit_uri: ""
 
 # Copyright
 copyright: Copyright &copy; 2016 - 2021 Martin Donath
-
+use_directory_urls: true
 # Configuration
 theme:
   name: null
@@ -88,6 +88,11 @@ theme:
 # Plugins
 plugins:
   - search
+  - social:
+      cards_defaults:
+        # background: "#00FF00"
+        # color: "#0000FF"
+        # description: This is a default description
   - redirects:
       redirect_maps:
         changelog/insiders.md: insiders/changelog.md
