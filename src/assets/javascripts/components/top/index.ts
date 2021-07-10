@@ -24,7 +24,8 @@ import {
   Observable,
   Subject,
   animationFrameScheduler,
-  combineLatest
+  combineLatest,
+  fromEvent
 } from "rxjs"
 import {
   bufferCount,
@@ -32,7 +33,11 @@ import {
   distinctUntilKeyChanged,
   finalize,
   map,
+  mapTo,
+  mergeWith,
   observeOn,
+  takeLast,
+  takeUntil,
   tap,
   withLatestFrom
 } from "rxjs/operators"
@@ -43,7 +48,7 @@ import {
   setBackToTopOffset,
   setBackToTopState
 } from "~/actions"
-import { Viewport } from "~/browser"
+import { Viewport, setElementFocus } from "~/browser"
 
 import { Component } from "../_"
 import { Header } from "../header"
@@ -89,13 +94,13 @@ interface MountOptions {
 /**
  * Watch back-to-top
  *
- * @param _el - Back-to-top element
+ * @param el - Back-to-top element
  * @param options - Options
  *
  * @returns Back-to-top observable
  */
 export function watchBackToTop(
-  _el: HTMLElement, { viewport$, main$ }: WatchOptions
+  el: HTMLElement, { viewport$, main$ }: WatchOptions
 ): Observable<BackToTop> {
 
   /* Compute direction */
@@ -104,7 +109,12 @@ export function watchBackToTop(
       map(({ offset: { y } }) => y),
       bufferCount(2, 1),
       map(([a, b]) => a > b),
-      distinctUntilChanged()
+      distinctUntilChanged(),
+      mergeWith(fromEvent(el, "click")
+        .pipe(
+          mapTo(false)
+        )
+      )
     )
 
   /* Compute whether button should be hidden */
@@ -153,10 +163,12 @@ export function mountBackToTop(
         /* Update state */
         next([{ hidden }, { height }]) {
           setBackToTopOffset(el, height + 16)
-          if (hidden)
+          if (hidden) {
             setBackToTopState(el, "hidden")
-          else
+            setElementFocus(el, false)
+          } else {
             resetBackToTopState(el)
+          }
         },
 
         /* Reset on complete */
