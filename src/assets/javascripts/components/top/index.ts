@@ -94,13 +94,13 @@ interface MountOptions {
 /**
  * Watch back-to-top
  *
- * @param el - Back-to-top element
+ * @param _el - Back-to-top element
  * @param options - Options
  *
  * @returns Back-to-top observable
  */
 export function watchBackToTop(
-  el: HTMLElement, { viewport$, main$ }: WatchOptions
+  _el: HTMLElement, { viewport$, main$ }: WatchOptions
 ): Observable<BackToTop> {
 
   /* Compute direction */
@@ -108,13 +108,8 @@ export function watchBackToTop(
     .pipe(
       map(({ offset: { y } }) => y),
       bufferCount(2, 1),
-      map(([a, b]) => a > b),
-      distinctUntilChanged(),
-      mergeWith(fromEvent(el, "click")
-        .pipe(
-          mapTo(false)
-        )
-      )
+      map(([a, b]) => a > b && b),
+      distinctUntilChanged()
     )
 
   /* Compute whether button should be hidden */
