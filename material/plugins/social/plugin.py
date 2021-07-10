@@ -35,7 +35,7 @@ class SocialPlugin(BasePlugin):
     config_scheme = (
         ("cards", Type(bool, default = True)),
         # TODO: rename cards whatever, because that's not the single thing we generate...
-        ("cards_directory", Type(str, default = "assets/images/preview")),
+        ("cards_directory", Type(str, default = "assets/images/social")),
         ("cards_defaults", Type(dict, required = False)),
     )
 
@@ -124,6 +124,8 @@ class SocialPlugin(BasePlugin):
             { "property": "og:image:width", "content": "1200" },
             { "property": "og:image:height", "content": "630" }
         ]
+
+        # TODO: just inject before the end of </head>?
 
         metatags1 = ["<meta name=\"{}\" content=\"{}\" />".format(
             tag["name"], tag["content"]
