@@ -82,7 +82,7 @@ function preprocess(urls: Sitemap): Sitemap {
  * @returns Sitemap observable
  */
 export function fetchSitemap(base?: string): Observable<Sitemap> {
-  const cached = __get<Sitemap>("__sitemap", sessionStorage, base)
+  const cached = __md_get<Sitemap>("__sitemap", sessionStorage, base)
   if (cached) {
     return of(cached)
   } else {
@@ -93,7 +93,7 @@ export function fetchSitemap(base?: string): Observable<Sitemap> {
           .map(node => node.textContent!)
         )),
         defaultIfEmpty([]),
-        tap(sitemap => __set("__sitemap", sitemap, sessionStorage, base)),
+        tap(sitemap => __md_set("__sitemap", sitemap, sessionStorage, base))
       )
   }
 }

@@ -106,8 +106,8 @@ export function mountContentTabs(
           }
 
       /* Persist active tabs in local storage */
-      const tabs = __get<string[]>("__tabs") || []
-      __set("__tabs", [...new Set([tab, ...tabs])])
+      const tabs = __md_get<string[]>("__tabs") || []
+      __md_set("__tabs", [...new Set([tab, ...tabs])])
     }
   })
 

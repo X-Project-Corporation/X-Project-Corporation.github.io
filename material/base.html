@@ -44,7 +44,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.3b24981d.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.322e8ebd.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.73e53a79.min.css' | url }}">
@@ -76,6 +76,7 @@
     {% for path in config["extra_css"] %}
       <link rel="stylesheet" href="{{ path | url }}">
     {% endfor %}
+    {% include "partials/javascripts/base.html" %}
     {% block analytics %}
       {% include "partials/integrations/analytics.html" %}
     {% endblock %}
@@ -95,7 +96,6 @@
     <body dir="{{ direction }}">
   {% endif %}
     {% set features = config.theme.features or [] %}
-    {% include "partials/javascripts/base.html" %}
     {% if not config.theme.palette is mapping %}
       {% include "partials/javascripts/palette.html" %}
     {% endif %}
@@ -215,6 +215,18 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
+    {{ config.extra.consent }}
+    {% if config.extra.consent %}
+      <div class="md-consent" data-md-component="consent" hidden>
+        <div class="md-consent__overlay"></div>
+        <aside class="md-consent__inner">
+          <form class="md-consent__form md-grid md-typeset" name="consent">
+            {% include "partials/consent.html" %}
+          </form>
+        </aside>
+      </div>
+      {% include "partials/javascripts/consent.html" %}
+    {% endif %}
     {% block config %}
       {%- set app = {
         "base": base_url,
@@ -247,7 +259,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.a4ea285e.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.dde17773.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}

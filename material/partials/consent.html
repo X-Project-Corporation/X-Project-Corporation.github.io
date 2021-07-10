@@ -1,0 +1,29 @@
+{#-
+  This file was automatically generated - do not edit
+-#}
+{% import "partials/language.html" as lang with context %}
+<h4>Cookie consent</h4>
+<p>
+  We use cookies to recognize your repeated visits and preferences, as well as
+  to measure the effectiveness of our documentation and whether users find what
+  they're searching for. With your consent, you're helping us to make our
+  documentation better.
+</p>
+<input type="checkbox" class="md-toggle" id="__settings">
+<div class="md-consent__settings">
+  <ul class="task-list">
+    {% if config.extra.analytics %}
+      <li class="task-list-item">
+        <label class="task-list-control">
+          <input type="checkbox" name="analytics" checked>
+          <span class="task-list-indicator"></span>
+          Site Analytics
+        <label>
+      </li>
+    {% endif %}
+  </ul>
+</div>
+<div class="md-consent__controls">
+  <label class="md-button" for="__settings">Manage settings</label>
+  <button class="md-button md-button--primary">Accept</button>
+</div>

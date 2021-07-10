@@ -155,6 +155,9 @@
       <link rel="stylesheet" href="{{ path | url }}" />
     {% endfor %}
 
+    <!-- Helper functions for inline scripts -->
+    {% include "partials/javascripts/base.html" %}
+
     <!-- Analytics -->
     {% block analytics %}
       {% include "partials/integrations/analytics.html" %}
@@ -183,10 +186,7 @@
   {% else %}
     <body dir="{{ direction }}">
   {% endif %}
-
-    <!-- Retrieve features from configuration -->
     {% set features = config.theme.features or [] %}
-    {% include "partials/javascripts/base.html" %}
 
     <!-- User preference: color palette -->
     {% if not config.theme.palette is mapping %}
@@ -396,6 +396,21 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
+
+    <!-- Consent -->
+    {% if config.extra.consent %}
+      <div class="md-consent" data-md-component="consent" hidden>
+        <div class="md-consent__overlay"></div>
+        <aside class="md-consent__inner">
+          <form class="md-consent__form md-grid md-typeset" name="consent">
+            {% include "partials/consent.html" %}
+          </form>
+        </aside>
+      </div>
+
+      <!-- User preference: consent -->
+      {% include "partials/javascripts/consent.html" %}
+    {% endif %}
 
     <!-- Theme-related configuration -->
     {% block config %}

@@ -163,7 +163,7 @@
 // [tablet -]: Show overlay on active drawer
 @include break-to-device(tablet) {
 
-  // Sidebar overlay
+  // Drawer overlay
   .md-overlay {
     position: fixed;
     top: 0;

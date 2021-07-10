@@ -20,35 +20,28 @@
   IN THE SOFTWARE.
 -->
 
-<!-- Determine analytics provider (deprecated, removed in v8) -->
-{% if config.google_analytics %}
-  {% set provider = "google" %}
-{% endif %}
+<!-- User-preference: link content tabs -->
+<script>
+  var consent = __md_get("__consent")
+  if (consent === null) {
+    var el = document.querySelector("[data-md-component=consent]")
+    setTimeout(function() {
+      el.hidden = false
+    }, 250)
 
-<!-- Determine analytics provider -->
-{% if config.extra.analytics %}
-  {% set provider = config.extra.analytics.provider %}
-{% endif %}
+    /* Intercept submission of consent form */
+    var form = document.forms.consent
+    form.addEventListener("submit", function(ev) {
+      ev.preventDefault()
 
-<!-- Set up analytics provider -->
-{% if provider %}
-  {% include "partials/integrations/analytics/" ~ provider ~ ".html" %}
+      /* Grab and serialize form data */
+      __md_set("__consent", Object.fromEntries(
+        Array.from(new FormData(form).keys())
+          .map(function (key){ return [key, true] })
+      ))
 
-  <!-- Consent necessary -->
-  {% if config.extra.consent %}
-    <script>
-      if (typeof __md_analytics !== "undefined") {
-        var consent = __md_get("__consent")
-        if (consent && consent.analytics)
-          __md_analytics()
-      }
-    </script>
-
-  <!-- Consent unnecessary -->
-  {% else %}
-    <script>
-      if (typeof __md_analytics !== "undefined")
-        __md_analytics()
-    </script>
-  {% endif %}
-{% endif %}
+      /* Reload window (for now) */
+      location.reload()
+    })
+  }
+</script>
