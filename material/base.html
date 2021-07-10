@@ -44,7 +44,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.322e8ebd.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.450838a0.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.73e53a79.min.css' | url }}">
@@ -215,7 +215,6 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    {{ config.extra.consent }}
     {% if config.extra.consent %}
       <div class="md-consent" data-md-component="consent" hidden>
         <div class="md-consent__overlay"></div>
@@ -232,7 +231,7 @@
         "base": base_url,
         "features": features,
         "translations": {},
-        "search": "assets/javascripts/workers/search.ae6eae72.min.js" | url,
+        "search": "assets/javascripts/workers/search.74af7bc3.min.js" | url,
         "version": config.extra.version or None
       } -%}
       {%- set translations = app.translations -%}
@@ -259,7 +258,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.dde17773.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.b748f191.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
