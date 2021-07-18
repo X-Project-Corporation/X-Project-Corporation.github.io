@@ -87,7 +87,7 @@ export function mountContent(
       .map(child => mountCodeBlock(child, { viewport$ })),
 
     /* Mermaid code blocks */
-    ...getElements(".mermaid-experimental", el)
+    ...getElements(".mermaid, .mermaid-experimental", el)
       .map(child => mountMermaidCodeBlock(child)),
 
     /* Data tables */

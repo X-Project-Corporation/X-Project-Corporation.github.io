@@ -21,9 +21,20 @@
  */
 
 import { Observable } from "rxjs"
-import { mapTo, shareReplay, tap } from "rxjs/operators"
+import {
+  combineLatestWith,
+  mapTo,
+  shareReplay,
+  switchMap,
+  tap
+} from "rxjs/operators"
 
-import { watchScript } from "~/browser"
+import {
+  createElement,
+  getElementOrThrow,
+  request,
+  watchScript
+} from "~/browser"
 
 import { Component } from "../../../_"
 
@@ -51,6 +62,25 @@ let mermaid$: Observable<void>
 let index = 0
 
 /* ----------------------------------------------------------------------------
+ * Helper functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Fetch Mermaid styles
+ *
+ * @returns Mermaid styles observable
+ */
+function fetchStyles(): Observable<string> {
+  const style = getElementOrThrow<HTMLLinkElement>(
+    "[rel=preload][href*=mermaid]"
+  )
+  return request(style.href)
+    .pipe(
+      switchMap(res => res.text())
+    )
+}
+
+/* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
 
@@ -68,18 +98,27 @@ export function mountMermaidCodeBlock(
     "https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js"
   )
     .pipe(
-      tap(() => mermaid.initialize({
+      combineLatestWith(fetchStyles()),
+      tap(([, themeCSS]) => mermaid.initialize({
         startOnLoad: false,
         themeCSS
       })),
+      mapTo(undefined),
       shareReplay(1)
     )
 
   /* Render diagram */
   mermaid$.subscribe(() => {
-    const code = el.innerText
-    mermaid.mermaidAPI.render(`__mermaid_${index++}`, code, (svg: string) => {
-      el.innerHTML = svg
+    const id = `__mermaid_${index++}`
+    const host = createElement("div")
+    mermaid.mermaidAPI.render(id, el.innerText, (svg: string) => {
+
+      /* Create a shadow root and inject diagram */
+      const shadow = host.attachShadow({ mode: "closed" })
+      shadow.innerHTML = svg
+
+      /* Replace code block with diagram */
+      el.replaceWith(host)
     })
   })
 
@@ -89,84 +128,3 @@ export function mountMermaidCodeBlock(
       mapTo({ ref: el })
     )
 }
-
-// Move to external CSS and load via `request`
-const themeCSS = `
-  rect.actor {
-    fill: white;
-  }
-  .classLabel .box {
-    background-color: var(--md-mermaid-label-bg-color);
-    fill: var(--md-mermaid-label-bg-color);
-    opacity: 1;
-  }
-  .classLabel .label {
-    font-family: var(--md-mermaid-font-family);
-    fill: var(--md-mermaid-label-fg-color)
-  }
-  .statediagram-cluster.statediagram-cluster .inner {
-    fill: var(--md-default-bg-color);
-  }
-  .statediagram-state rect.divider {
-    stroke: var(--md-default-fg-color--lighter);
-    fill: var(--md-default-fg-color--lightest);
-  }
-  .cluster rect {
-    stroke: var(--md-default-fg-color--lighter);
-    fill: var(--md-default-fg-color--lightest);
-  }
-  .edgeLabel,
-  .edgeLabel rect {
-    background-color: var(--md-mermaid-label-bg-color);
-    fill: var(--md-mermaid-label-bg-color);
-  }
-  .cardinality text {
-    fill: inherit !important;
-  }
-  .cardinality,
-  g.classGroup text {
-    font-family: var(--md-mermaid-font-family);
-    fill: var(--md-mermaid-label-fg-color);
-  }
-  .edgeLabel .label rect {
-    fill: transparent;
-  }
-  .nodeLabel,
-  .label,
-  .label div .edgeLabel {
-    font-family: var(--md-mermaid-font-family);
-    color: var(--md-mermaid-label-fg-color);
-  }
-  .label foreignObject {
-    overflow: visible;
-  }
-  .arrowheadPath,
-  marker {
-    fill: var(--md-mermaid-edge-color) !important;
-  }
-  .edgePath .path,
-  .flowchart-link,
-  .relation,
-  .transition {
-    stroke: var(--md-mermaid-edge-color);
-  }
-  .statediagram-cluster rect,
-  g.classGroup line,
-  g.classGroup rect,
-  .node circle,
-  .node ellipse,
-  .node path,
-  .node polygon,
-  .node rect {
-    fill: var(--md-mermaid-node-bg-color);
-    stroke: var(--md-mermaid-node-fg-color);
-  }
-  .node circle.state-end {
-    fill: var(--md-mermaid-label-bg-color);
-    stroke: none;
-  }
-  .node circle.state-start {
-    fill: var(--md-mermaid-label-fg-color);
-    stroke: var(--md-mermaid-label-fg-color);
-  }
-`

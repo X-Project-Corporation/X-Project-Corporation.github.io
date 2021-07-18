@@ -111,6 +111,12 @@
         {% endif %}
       {% endif %}
 
+      <!-- Custom Mermaid styles -->
+      <link
+        rel="preload" as="style"
+        href="{{ 'assets/stylesheets/vendor/mermaid.css' | url }}"
+      />
+
       <!-- Custom icons -->
       {% include "partials/icons.html" %}
     {% endblock %}
