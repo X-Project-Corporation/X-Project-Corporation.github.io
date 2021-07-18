@@ -37,7 +37,7 @@
       /* Grab and serialize form data */
       __md_set("__consent", Object.fromEntries(
         Array.from(new FormData(form).keys())
-          .map(function (key){ return [key, true] })
+          .map(function(key) { return [key, true] })
       ))
 
       /* Reload window (for now) */
