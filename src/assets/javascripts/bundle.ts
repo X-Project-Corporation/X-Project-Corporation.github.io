@@ -49,6 +49,7 @@ import {
   getComponentElement,
   getComponentElements,
   mountBackToTop,
+  mountConsent,
   mountContent,
   mountDialog,
   mountHeader,
@@ -167,6 +168,10 @@ const main$ = document$
 
 /* Set up control component observables */
 const control$ = merge(
+
+  /* Consent */
+  ...getComponentElements("consent")
+    .map(el => mountConsent(el, { target$ })),
 
   /* Dialog */
   ...getComponentElements("dialog")

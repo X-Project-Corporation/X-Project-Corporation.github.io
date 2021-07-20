@@ -20,28 +20,34 @@
   IN THE SOFTWARE.
 -->
 
-<!-- User-preference: link content tabs -->
+<!-- User-preference: consent -->
 <script>
   var consent = __md_get("__consent")
-  if (consent === null) {
-    var el = document.querySelector("[data-md-component=consent]")
+  if (consent) {
+    for (var input of document.forms.consent.elements)
+      if (input.name)
+        input.checked = consent[input.name] || false
+
+  /* Show consent with a small delay */
+  } else {
     setTimeout(function() {
+      var el = document.querySelector("[data-md-component=consent]")
       el.hidden = false
     }, 250)
-
-    /* Intercept submission of consent form */
-    var form = document.forms.consent
-    form.addEventListener("submit", function(ev) {
-      ev.preventDefault()
-
-      /* Grab and serialize form data */
-      __md_set("__consent", Object.fromEntries(
-        Array.from(new FormData(form).keys())
-          .map(function(key) { return [key, true] })
-      ))
-
-      /* Reload window (for now) */
-      location.reload()
-    })
   }
+
+  /* Intercept submission of consent form */
+  var form = document.forms.consent
+  form.addEventListener("submit", function(ev) {
+    ev.preventDefault()
+
+    /* Grab and serialize form data */
+    __md_set("__consent", Object.fromEntries(
+      Array.from(new FormData(form).keys())
+        .map(function(key) { return [key, true] })
+    ))
+
+    /* Reload window (for now) */
+    location.reload()
+  })
 </script>

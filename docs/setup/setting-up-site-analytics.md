@@ -115,7 +115,7 @@ integrated by using the `cookies` field:
 
 When a user first visits your site, a cookie consent form is rendered:
 
-[![With tabs][7]][7]
+[![Cookie consent][7]][7]
 
   [5]: ../insiders/index.md
   [6]: #custom-cookies

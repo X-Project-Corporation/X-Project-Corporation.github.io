@@ -24,8 +24,7 @@ import {
   Observable,
   Subject,
   animationFrameScheduler,
-  combineLatest,
-  fromEvent
+  combineLatest
 } from "rxjs"
 import {
   bufferCount,
@@ -33,11 +32,7 @@ import {
   distinctUntilKeyChanged,
   finalize,
   map,
-  mapTo,
-  mergeWith,
   observeOn,
-  takeLast,
-  takeUntil,
   tap,
   withLatestFrom
 } from "rxjs/operators"
