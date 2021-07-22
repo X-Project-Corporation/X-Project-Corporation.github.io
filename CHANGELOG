@@ -1,3 +1,35 @@
+mkdocs-material-7.2.0 (2021-07-21)
+
+  * Added support for search suggestions to save keystrokes
+  * Added support for search highlighting
+  * Added support for search sharing (i.e. deep linking)
+
+mkdocs-material-7.1.11+insiders.2.11.1 (2021-07-20)
+
+  * Fixed order of tags index, now sorted alphabetically
+
+mkdocs-material-7.1.11+insiders.2.11.0 (2021-07-18)
+
+  * Improved Mermaid.js intergration, now stable
+  * Added support for sequence diagrams
+  * Added support for entity relationship diagrams
+  * Added support for cookie consent configuration
+  * Added feature flag to always enable annotations
+
+mkdocs-material-7.1.11 (2021-07-18)
+
+  * Updated Spanish and Galician translations
+
+mkdocs-material-7.1.10+insiders.2.10.0 (2021-07-10)
+
+  * Added support for cookie consent
+  * Fixed #2807: Back-to-top button not hidden when using sticky tabs
+
+mkdocs-material-7.1.10 (2021-07-10)
+
+  * Refactored appearance of back-to-top button
+  * Fixed graceful handling of search when browsing locally
+
 mkdocs-material-7.1.9 (2021-06-25)
 
   * Improved search language support for Thai and Hindi

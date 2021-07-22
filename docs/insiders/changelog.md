@@ -6,6 +6,23 @@ template: overrides/main.html
 
 ## Material for MkDocs Insiders
 
+### 2.11.1 <small>_ July 20, 2021</small>
+
+- Fixed order of tags index, now sorted alphabetically
+
+### 2.11.0 <small>_ July 18, 2021</small>
+
+- Improved Mermaid.js intergration, now stable
+- Added support for sequence diagrams
+- Added support for entity relationship diagrams
+- Added support for cookie consent configuration
+- Added feature flag to always enable annotations
+
+### 2.10.0 <small>_ July 10, 2021</small>
+
+- Added support for cookie consent
+- Fixed #2807: Back-to-top button not hidden when using sticky tabs
+
 ### 2.9.2 <small>_ May 30, 2021</small>
 
 - Moved tags to partial for easier customization

@@ -30,6 +30,7 @@ import { getElementOrThrow, getLocation } from "~/browser"
  * Feature flag
  */
 export type Flag =
+  | "content.code.annotate"            /* Annotate code blocks */
   | "content.tabs.link"                /* Link content tabs */
   | "header.autohide"                  /* Hide header */
   | "navigation.expand"                /* Automatic expansion */

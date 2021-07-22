@@ -75,7 +75,7 @@ export interface Palette {
 export function watchPalette(
   inputs: HTMLInputElement[]
 ): Observable<Palette> {
-  const current = __get<Palette>("__palette") || {
+  const current = __md_get<Palette>("__palette") || {
     index: inputs.findIndex(input => (
       matchMedia(input.getAttribute("data-md-color-media")!).matches
     ))
@@ -103,7 +103,7 @@ export function watchPalette(
 
   /* Persist preference in local storage */
   palette$.subscribe(palette => {
-    __set("__palette", palette)
+    __md_set("__palette", palette)
   })
 
   /* Return palette */

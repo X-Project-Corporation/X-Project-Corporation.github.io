@@ -83,8 +83,9 @@ class TagsPlugin(BasePlugin):
             markdown += "\n[TAGS]"
 
         # Replace placeholder in Markdown with rendered tags index
-        tags = [self._render_tag_links(*args) for args in self.tags.items()]
-        return markdown.replace("[TAGS]", "\n".join(tags))
+        return markdown.replace("[TAGS]", "\n".join([
+            self._render_tag_links(*args) for args in sorted(self.tags.items())
+        ]))
 
     # Render the given tag and links to all pages with occurrences
     def _render_tag_links(self, tag, pages):

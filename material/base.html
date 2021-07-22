@@ -32,7 +32,7 @@
         {% endfor %}
       {% endif %}
       <link rel="icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.1.9+insiders-2.9.2">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.2.0+insiders-2.11.1">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -44,7 +44,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.086df014.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.84bd30f0.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.73e53a79.min.css' | url }}">
@@ -56,6 +56,7 @@
           <meta name="theme-color" content="{{ primary }}">
         {% endif %}
       {% endif %}
+      <link rel="preload" as="style" href="{{ 'assets/stylesheets/vendor/mermaid.733f213f.min.css' | url }}">
       {% include "partials/icons.html" %}
     {% endblock %}
     {% block libs %}{% endblock %}
@@ -76,6 +77,7 @@
     {% for path in config["extra_css"] %}
       <link rel="stylesheet" href="{{ path | url }}">
     {% endfor %}
+    {% include "partials/javascripts/base.html" %}
     {% block analytics %}
       {% include "partials/integrations/analytics.html" %}
     {% endblock %}
@@ -95,7 +97,6 @@
     <body dir="{{ direction }}">
   {% endif %}
     {% set features = config.theme.features or [] %}
-    {% include "partials/javascripts/base.html" %}
     {% if not config.theme.palette is mapping %}
       {% include "partials/javascripts/palette.html" %}
     {% endif %}
@@ -215,12 +216,23 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
+    {% if config.extra.consent %}
+      <div class="md-consent" data-md-component="consent" id="__consent" hidden>
+        <div class="md-consent__overlay"></div>
+        <aside class="md-consent__inner">
+          <form class="md-consent__form md-grid md-typeset" name="consent">
+            {% include "partials/consent.html" %}
+          </form>
+        </aside>
+      </div>
+      {% include "partials/javascripts/consent.html" %}
+    {% endif %}
     {% block config %}
       {%- set app = {
         "base": base_url,
         "features": features,
         "translations": {},
-        "search": "assets/javascripts/workers/search.ae6eae72.min.js" | url,
+        "search": "assets/javascripts/workers/search.74af7bc3.min.js" | url,
         "version": config.extra.version or None
       } -%}
       {%- set translations = app.translations -%}
@@ -247,7 +259,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.bc2488c3.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.1afabad3.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}

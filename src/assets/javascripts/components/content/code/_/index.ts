@@ -42,6 +42,7 @@ import {
   withLatestFrom
 } from "rxjs/operators"
 
+import { feature } from "~/_"
 import { resetFocusable, setFocusable } from "~/actions"
 import {
   Viewport,
@@ -132,11 +133,14 @@ export function watchCodeBlock(
   /* Transform annotations */
   const annotations: HTMLElement[] = []
   const container =
-    el.closest(".annotate.highlighttable") ||
-    el.closest(".annotate.highlight")
+    el.closest(".highlighttable") ||
+    el.closest(".highlight")
   if (container) {
     const list = container.nextElementSibling
-    if (list instanceof HTMLOListElement) {
+    if (list instanceof HTMLOListElement && (
+      container.classList.contains("annotate") ||
+      feature("content.code.annotate")
+    )) {
       const items = Array.from(list.children)
       list.remove()
 

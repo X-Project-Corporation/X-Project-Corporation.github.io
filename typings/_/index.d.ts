@@ -64,7 +64,7 @@ declare global {
    *
    * @return Value or nothing
    */
-  function __get<T>(
+  function __md_get<T>(
     key: string, storage?: Storage, base?: string
   ): T | null
 
@@ -81,7 +81,7 @@ declare global {
    * @param storage - Storage (default: local storage)
    * @param base - Base URL (default: current base)
    */
-  function __set<T>(
+  function __md_set<T>(
     key: string, value: T, storage?: Storage, base?: string
   ): void
 }
