@@ -18,16 +18,17 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import os
+import re
+import requests
+
+from cairosvg import svg2png
+from cssutils import parseString
+from hashlib import md5
+from io import BytesIO
 from mkdocs.config.config_options import Type
 from mkdocs.plugins import BasePlugin
-import os
-
-# TODO: move this somewhere else
-from io import BytesIO
-import cairosvg
-from PIL import Image
-
-from .card import Card
+from PIL import Image, ImageDraw, ImageFont
 
 # -----------------------------------------------------------------------------
 # Class
@@ -40,13 +41,17 @@ class SocialPlugin(BasePlugin):
     config_scheme = (
         ("cards", Type(bool, default = True)),
         # TODO: rename cards whatever, because that's not the single thing we generate...
-        ("cards_directory", Type(str, default = "assets/images/social")),
-        ("cards_defaults", Type(dict, required = False)),
+        ("cards_directory", Type(str, default = "assets/images/social"))
     )
 
     # Initialize plugin
     def __init__(self):
-        [self.background, self.color] = colors.get("indigo")
+        self.color = colors.get("indigo")
+
+        # Resolve and create cache directory
+        self.cache = os.path.join(os.path.dirname(__file__), ".cache")
+        if not os.path.isdir(self.cache):
+            os.makedirs(self.cache)
 
     # Retrieve configuration for rendering
     def on_config(self, config):
@@ -55,132 +60,284 @@ class SocialPlugin(BasePlugin):
         # Retrieve palette from theme configuration
         if "palette" in theme:
             palette = theme["palette"]
+
+            # Use first palette, if multiple are defined
             if isinstance(palette, list):
                 palette = palette[0]
 
             # Set colors according to palette
-            if "primary" in palette and palette["primary"] in colors:
-                [self.background, self.color] = colors.get(palette["primary"])
+            if "primary" in palette and palette["primary"] in palette:
+                self.color = colors.get(palette["primary"])
 
-            # # Set colors according to defaults
-            # defaults = self.config.get("cards_defaults", {}) or {} # TODO: hacky
-            # if "background" in defaults:
-            #     self.background = defaults["background"]
-            # if "color" in defaults:
-            #     self.color = defaults["color"]
+        # Retrieve logo and font
+        self.logo = self.__load_logo(config)
+        self.font = self.__load_font(config)
 
-    # Render social cards
-    def on_page_content(self, html, page, config, files):
-
-        # if self.config.get("cards"):
+    # Create social cards
+    def on_page_markdown(self, markdown, page, config, **kwargs):
         directory = self.config.get("cards_directory")
-        file = os.path.splitext(page.file.src_path)[0]
+        file, _ = os.path.splitext(page.file.src_path)
 
-        url = "{}.png".format(os.path.join(config.get("site_url"), directory, file))
-        target = "{}.png".format(os.path.join(config.get("site_dir"), directory, file))
+        # print(title)
+        # print(md5(".".join([title, project]).encode("ascii")).hexdigest())
 
-        project = config.get("site_name")
+        # Resolve path of image
+        path = "{}.png".format(os.path.join(
+            config.get("site_dir"),
+            directory,
+            file
+        ))
 
-        title = page.title
-        if "title" in page.meta:
-            title = page.meta["title"]
+        # Resolve path of image directory
+        directory = os.path.dirname(path)
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
 
+        # Render card and save to file
+        image = self.__render_card(config, page)
+        image.save(path)
+
+        # Inject meta tags into page
+        meta = page.meta.get("meta", [])
+        page.meta["meta"] = meta + self.__generate_meta(page, config)
+
+    # -------------------------------------------------------------------------
+
+    # Render social card
+    def __render_card(self, config, page, size = (1200, 630)):
+        image = self.__render_card_background(size, self.color["bg"])
+
+        # Render logo
+        logo = self.logo
+        image.alpha_composite(
+            logo.resize((128, int(160 * logo.height / logo.width))),
+            (1200 - 128 - 64, 64)
+        )
+
+        # Render site name
+        data = config.get("site_name")
+        font = ImageFont.truetype(self.font.get(700), 40)
+        image.alpha_composite(
+            self.__render_text((826, 48), font, data),
+            (64, 64)
+        )
+
+        # Render page title
+        data = page.meta.get("title", page.title)
+        font = ImageFont.truetype(self.font.get(700), 96)
+        image.alpha_composite(
+            self.__render_text((826, 348), font, data),
+            (64, 160)
+        )
+
+        # Return social card image
+        return image
+
+    # Render social card background
+    def __render_card_background(self, size, fill):
+        return Image.new(mode = "RGBA", size = size, color = fill)
+
+    # Render social card text
+    def __render_text(self, size, font, text):
+        lines, words = [], []
+
+        # Create temporary image
+        image = Image.new(mode = "RGBA", color = "red", size = size)
+
+        # Create drawing context and split text into lines
+        context = ImageDraw.Draw(image)
+        for word in text.split(" "):
+            combine = " ".join(words + [word])
+            textbox = context.textbbox((0, 0), combine, font = font)
+            if textbox[2] <= image.width:
+                words.append(word)
+            else:
+                lines.append(words)
+                words = [word]
+
+        # Balance words on last line
+        if len(lines) > 0:
+            prev = len(" ".join(lines[-1]))
+            last = len(" ".join(words))
+
+            # Heuristic: try to find a good ratio
+            if last / prev < 0.6:
+                words.insert(0, lines[-1].pop())
+
+        # Join words for each line and create image
+        lines.append(words)
+        lines = [" ".join(line) for line in lines]
+        image = Image.new(mode = "RGBA", size = size, color = "red")
+
+        # Create drawing context and split text into lines
+        context = ImageDraw.Draw(image)
+        context.text(
+            (0, 0), "\n".join(lines),
+            font = font, fill = self.color["fg"], spacing = font.size / 4
+        )
+
+        # Return text image
+        return image
+
+    # -------------------------------------------------------------------------
+
+    # Generate meta tags
+    def __generate_meta(self, page, config):
+        directory = self.config.get("cards_directory")
+        file, _ = os.path.splitext(page.file.src_path)
+
+        # Compute page title
+        title = page.meta.get("title", page.title)
+        if not page.is_homepage:
+            title = "{} - {}".format(title, config.get("site_name"))
+
+        # Compute page description
         description = config.get("site_description")
         if "description" in page.meta:
             description = page.meta["description"]
 
-        theme = config.get("theme")
+        # Resolve image URL
+        url = "{}.png".format(os.path.join(
+            config.get("site_url"),
+            directory,
+            file
+        ))
 
-        # Retrieve palette from theme configuration
-        logo = None
-        if "icon" in theme:
-            icon = theme["icon"]
-            if "logo" in icon:
-                # resolve logo icon from here!
-                path2 = "./material/.icons/" + icon["logo"] + ".svg"
-                file = open(path2).read()
-                file = file.replace("<svg", "<svg fill='" + self.color + "'")
+        # Return meta tags
+        return [
 
-                out = BytesIO()
-                cairosvg.svg2png(bytestring=file, write_to=out, scale=2)
-                logo = Image.open(out)
+            # Meta tags for Open Graph
+            { "property": "og:type", "content": "website" },
+            { "property": "og:title", "content": title },
+            { "property": "og:description", "content": description },
+            { "property": "og:image", "content": url },
+            { "property": "og:image:type", "content": "image/png" },
+            { "property": "og:image:width", "content": "1200" },
+            { "property": "og:image:height", "content": "630" },
+            { "property": "og:url", "content": page.canonical_url },
 
-        # https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono
-
-        card = Card(
-            background = self.background,
-            color = self.color,
-            logo = logo,
-            project = project,
-            title = title,
-            description = description
-        )
-
-        output_dir = os.path.dirname(target)
-        os.makedirs(output_dir, exist_ok=True)
-
-        image = card.render()
-        image.save(target)
-
-        # Twitter
-        social = [
+            # Meta tags for Twitter
             { "name": "twitter:card", "content": "summary_large_image" },
-            { "name": "twitter:site", "content": "@squidfunk" },
-            { "name": "twitter:creator", "content": "@squidfunk" },
+            # { "name": "twitter:site", "content": user },
+            # { "name": "twitter:creator", "content": user },
             { "name": "twitter:title", "content": title },
             { "name": "twitter:description", "content": description },
             { "name": "twitter:image", "content": url }
         ]
 
-        # Open Graph
-        properties = [
-            { "property": "og:type", "content": "website" },
-            { "property": "og:title", "content": title },
-            { "property": "og:description", "content": description },
-            { "property": "og:url", "content": page.canonical_url },
-            { "property": "og:image", "content": url },
-            { "property": "og:image:type", "content": "image/png" },
-            { "property": "og:image:width", "content": "1200" },
-            { "property": "og:image:height", "content": "630" }
-        ]
+    # Retrieve logo image or icon
+    def __load_logo(self, config):
+        theme = config.get("theme")
 
-        # TODO: just inject before the end of </head>?
+        # Handle images (precedence over icons)
+        if "logo" in theme:
+            _, extension = os.path.splitext(theme["logo"])
+            if extension == ".svg":
+                return self.__load_logo_svg(theme["logo"])
 
-        metatags1 = ["<meta name=\"{}\" content=\"{}\" />".format(
-            tag["name"], tag["content"]
-        ) for tag in social]
+            # Just load and return logo
+            return Image.open(theme["logo"])
 
-        metatags2 = ["<meta property=\"{}\" content=\"{}\" />".format(
-            tag["property"], tag["content"]
-        ) for tag in properties]
+        # Handle icons
+        icon = "material/library"
+        if "logo" in theme["icon"]:
+            icon = theme["icon"]["logo"]
 
-        return html + "\n" + "\n".join(metatags2) + "\n".join(metatags1)
+        # Resolve path of package
+        base = os.path.abspath(os.path.join(
+            os.path.dirname(__file__),
+            "../.."
+        ))
+
+        # Load icon data and fill with color
+        path = "{}/.icons/{}.svg".format(base, icon)
+        return self.__load_logo_svg(path, self.color["fg"])
+
+    # Load SVG file and convert to PNG
+    def __load_logo_svg(self, path, fill):
+        file = BytesIO()
+        data = open(path).read()
+
+        # Fill with color, if given
+        if fill:
+            data = data.replace(
+                "<svg",
+                "<svg fill=\"{}\"".format(fill)
+            )
+
+        # Convert to PNG and return image
+        svg2png(bytestring = data, write_to = file, scale = 4)
+        return Image.open(file)
+
+    # Retrieve fonts
+    def __load_font(self, config):
+        theme = config.get("theme")
+
+        # Retrieve font name (use Roboto, if disabled)
+        name = "Roboto"
+        if theme["font"]:
+            name = theme["font"]["text"]
+
+        # Retrieve font files, if not already done
+        if not all(os.path.isfile(
+            os.path.join(self.cache, "{}.{}.ttf".format(name, weight))
+        ) for weight in ["400", "700"]):
+            self.__load_font_webfont(name)
+
+        # Return paths associated with font weights
+        return {
+            400: os.path.join(self.cache, "{}.400.ttf".format(name)),
+            700: os.path.join(self.cache, "{}.700.ttf".format(name))
+        }
+
+    # Retrieve font from Google Fonts
+    def __load_font_webfont(self, name):
+        url = "https://fonts.googleapis.com/css?family={}:400,700"
+        res = requests.get(url.format(name.replace(" ", "+")))
+
+        # Parse font declarations from stylesheet
+        sheet = parseString(res.text)
+        fonts = dict((
+            rule.style["font-weight"],
+            rule.style["src"]
+        ) for rule in sheet)
+
+        # Fetch referenced fonts
+        for weight, url in fonts.items():
+            url = re.search("url\((.+?)\)", url).group(1)
+            res = requests.get(url)
+
+            # Save font to file
+            font = "{}.{}.ttf".format(name, weight)
+            file = open(os.path.join(self.cache, font), "wb")
+            file.write(res.content)
+            file.close()
 
 # -----------------------------------------------------------------------------
 # Data
 # -----------------------------------------------------------------------------
 
-# Default Material Design colors
+# Color palette
 colors = dict({
-    "red":         ["#ef5552", "#ffffff"],
-    "pink":        ["#e92063", "#ffffff"],
-    "purple":      ["#ab47bd", "#ffffff"],
-    "deep-purple": ["#7e56c2", "#ffffff"],
-    "indigo":      ["#4051b5", "#ffffff"],
-    "blue":        ["#2094f3", "#ffffff"],
-    "light-blue":  ["#02a6f2", "#ffffff"],
-    "cyan":        ["#00bdd6", "#ffffff"],
-    "teal":        ["#009485", "#ffffff"],
-    "green":       ["#4cae4f", "#ffffff"],
-    "light-green": ["#8bc34b", "#ffffff"],
-    "lime":        ["#cbdc38", "#000000"],
-    "yellow":      ["#ffec3d", "#000000"],
-    "amber":       ["#ffc105", "#000000"],
-    "orange":      ["#ffa724", "#000000"],
-    "deep-orange": ["#ff6e42", "#ffffff"],
-    "brown":       ["#795649", "#ffffff"],
-    "grey":        ["#757575", "#ffffff"],
-    "blue-grey":   ["#546d78", "#ffffff"],
-    "black":       ["#000000", "#ffffff"],
-    "white":       ["#ffffff", "#000000"]
+    "red":         { "bg": "#ef5552", "fg": "#ffffff" },
+    "pink":        { "bg": "#e92063", "fg": "#ffffff" },
+    "purple":      { "bg": "#ab47bd", "fg": "#ffffff" },
+    "deep-purple": { "bg": "#7e56c2", "fg": "#ffffff" },
+    "indigo":      { "bg": "#4051b5", "fg": "#ffffff" },
+    "blue":        { "bg": "#2094f3", "fg": "#ffffff" },
+    "light-blue":  { "bg": "#02a6f2", "fg": "#ffffff" },
+    "cyan":        { "bg": "#00bdd6", "fg": "#ffffff" },
+    "teal":        { "bg": "#009485", "fg": "#ffffff" },
+    "green":       { "bg": "#4cae4f", "fg": "#ffffff" },
+    "light-green": { "bg": "#8bc34b", "fg": "#ffffff" },
+    "lime":        { "bg": "#cbdc38", "fg": "#000000" },
+    "yellow":      { "bg": "#ffec3d", "fg": "#000000" },
+    "amber":       { "bg": "#ffc105", "fg": "#000000" },
+    "orange":      { "bg": "#ffa724", "fg": "#000000" },
+    "deep-orange": { "bg": "#ff6e42", "fg": "#ffffff" },
+    "brown":       { "bg": "#795649", "fg": "#ffffff" },
+    "grey":        { "bg": "#757575", "fg": "#ffffff" },
+    "blue-grey":   { "bg": "#546d78", "fg": "#ffffff" },
+    "black":       { "bg": "#000000", "fg": "#ffffff" },
+    "white":       { "bg": "#ffffff", "fg": "#000000" }
 })

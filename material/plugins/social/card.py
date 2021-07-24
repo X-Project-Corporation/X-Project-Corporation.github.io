@@ -204,7 +204,8 @@ import os
 class FontLoader:
 
     # Initialize font loader
-    def __init__(self, name, base = ".cache"):
+    def __init__(self, name, base = os.path.join(os.path.dirname(os.path.realpath(__file__)), ".cache")):
+        print(base)
         self.name = name
         self.base = base
 

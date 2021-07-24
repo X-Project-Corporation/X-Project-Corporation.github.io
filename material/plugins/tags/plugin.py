@@ -64,31 +64,32 @@ class TagsPlugin(BasePlugin):
     # Build and render tags index page
     def on_page_markdown(self, markdown, page, **kwargs):
         if page.file == self.tags_file:
-            return self._render_tag_index(markdown)
+            return self.__render_tag_index(markdown)
 
         # Add page to tags index
-        if "tags" in page.meta:
-            for tag in page.meta["tags"]:
-                self.tags[tag].append(page)
+        for tag in page.meta.get("tags", []):
+            self.tags[tag].append(page)
 
     # Inject tags into page (after search and before minification)
     def on_page_context(self, context, page, **kwargs):
         if "tags" in page.meta:
-            tags = [self._render_tag(tag, page) for tag in page.meta["tags"]]
+            tags = [self.__render_tag(tag) for tag in page.meta["tags"]]
             context["tags"] = tags
 
+    # -------------------------------------------------------------------------
+
     # Render tags index
-    def _render_tag_index(self, markdown):
+    def __render_tag_index(self, markdown):
         if not "[TAGS]" in markdown:
             markdown += "\n[TAGS]"
 
         # Replace placeholder in Markdown with rendered tags index
         return markdown.replace("[TAGS]", "\n".join([
-            self._render_tag_links(*args) for args in sorted(self.tags.items())
+            self.__render_tag_links(*args) for args in sorted(self.tags.items())
         ]))
 
     # Render the given tag and links to all pages with occurrences
-    def _render_tag_links(self, tag, pages):
+    def __render_tag_links(self, tag, pages):
         content = ["## <span class=\"md-tag\">{}</span>".format(tag), ""]
         for page in pages:
             url = utils.get_relative_url(
@@ -101,7 +102,7 @@ class TagsPlugin(BasePlugin):
         return "\n".join(content)
 
     # Render the given tag, linking to the tags index (if enabled)
-    def _render_tag(self, tag, page):
+    def __render_tag(self, tag):
         if not self.tags_file or not self.slugify:
             return dict(name = tag)
         else:

@@ -1,5 +1,10 @@
 ---
 template: overrides/main.html
+tags:
+  - hey
+  - ho2
+meta:
+  - { name: foo, content: bar }
 ---
 
 # Creating your site

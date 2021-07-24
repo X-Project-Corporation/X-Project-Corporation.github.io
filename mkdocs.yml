@@ -19,13 +19,12 @@
 # IN THE SOFTWARE.
 
 # Project information
-site_name: Material for MkDocs Insiders
-site_url: https://squidfunk.github.io/mkdocs-material-insiders/
+site_name: Material for MkDocs
+site_url: https://squidfunk.github.io/mkdocs-material/
 site_author: Martin Donath
 site_description: >-
   Create a branded static site from a set of Markdown files to host the
-  documentation of your Open Source or commercial project – customizable,
-  searchable, mobile-friendly, 40+ languages
+  documentation of your Open Source or commercial project
 
 # Repository
 repo_name: squidfunk/mkdocs-material
@@ -68,7 +67,7 @@ theme:
     # - toc.integrate
   palette:
     - scheme: default
-      primary: indigo
+      primary: yellow
       accent: indigo
       toggle:
         icon: material/toggle-switch-off-outline
@@ -88,14 +87,10 @@ theme:
 
 # Plugins
 plugins:
+  - search
   - tags:
       tags_file: license.md
-  - search
-  - social:
-      cards_defaults:
-        # background: "#00FF00"
-        # color: "#0000FF"
-        # description: This is a default description
+  - social
   - redirects:
       redirect_maps:
         changelog/insiders.md: insiders/changelog.md
