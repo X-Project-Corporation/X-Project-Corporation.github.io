@@ -22,6 +22,11 @@ from mkdocs.config.config_options import Type
 from mkdocs.plugins import BasePlugin
 import os
 
+# TODO: move this somewhere else
+from io import BytesIO
+import cairosvg
+from PIL import Image
+
 from .card import Card
 
 # -----------------------------------------------------------------------------
@@ -57,12 +62,12 @@ class SocialPlugin(BasePlugin):
             if "primary" in palette and palette["primary"] in colors:
                 [self.background, self.color] = colors.get(palette["primary"])
 
-            # Set colors according to defaults
-            defaults = self.config.get("cards_defaults", {}) or {} # TODO: hacky
-            if "background" in defaults:
-                self.background = defaults["background"]
-            if "color" in defaults:
-                self.color = defaults["color"]
+            # # Set colors according to defaults
+            # defaults = self.config.get("cards_defaults", {}) or {} # TODO: hacky
+            # if "background" in defaults:
+            #     self.background = defaults["background"]
+            # if "color" in defaults:
+            #     self.color = defaults["color"]
 
     # Render social cards
     def on_page_content(self, html, page, config, files):
@@ -75,10 +80,6 @@ class SocialPlugin(BasePlugin):
         target = "{}.png".format(os.path.join(config.get("site_dir"), directory, file))
 
         project = config.get("site_name")
-        if "social" in page.meta:
-            social = page.meta["social"]
-            if "project" in social:
-                project = social["project"]
 
         title = page.title
         if "title" in page.meta:
@@ -88,10 +89,28 @@ class SocialPlugin(BasePlugin):
         if "description" in page.meta:
             description = page.meta["description"]
 
+        theme = config.get("theme")
+
+        # Retrieve palette from theme configuration
+        logo = None
+        if "icon" in theme:
+            icon = theme["icon"]
+            if "logo" in icon:
+                # resolve logo icon from here!
+                path2 = "./material/.icons/" + icon["logo"] + ".svg"
+                file = open(path2).read()
+                file = file.replace("<svg", "<svg fill='" + self.color + "'")
+
+                out = BytesIO()
+                cairosvg.svg2png(bytestring=file, write_to=out, scale=2)
+                logo = Image.open(out)
+
+        # https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono
+
         card = Card(
             background = self.background,
             color = self.color,
-            logo = "tmp/material.png", # TODO: modularize
+            logo = logo,
             project = project,
             title = title,
             description = description

@@ -88,6 +88,8 @@ theme:
 
 # Plugins
 plugins:
+  - tags:
+      tags_file: license.md
   - search
   - social:
       cards_defaults:
