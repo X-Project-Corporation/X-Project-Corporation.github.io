@@ -40,7 +40,6 @@ class SocialPlugin(BasePlugin):
     # Configuration scheme
     config_scheme = (
         ("cards", Type(bool, default = True)),
-        # TODO: rename cards whatever, because that's not the single thing we generate...
         ("cards_directory", Type(str, default = "assets/images/social"))
     )
 
