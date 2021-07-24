@@ -26,7 +26,7 @@
 <html lang="{{ lang.t('language') }}" class="no-js">
   <head>
 
-    <!-- Metatags -->
+    <!-- Meta tags -->
     {% block site_meta %}
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -168,6 +168,17 @@
     {% block analytics %}
       {% include "partials/integrations/analytics.html" %}
     {% endblock %}
+
+    <!-- Meta tags from front matter or plugins -->
+    {% if page and page.meta and page.meta.meta %}
+      {% for tag in page.meta.meta %}
+        <meta
+          {% for key, value in tag.items() %}
+            {{ key }}="{{value}}"
+          {% endfor %}
+        />
+      {% endfor %}
+    {% endif %}
 
     <!-- Custom front matter -->
     {% block extrahead %}{% endblock %}

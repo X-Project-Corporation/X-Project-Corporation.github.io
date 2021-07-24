@@ -28,17 +28,17 @@ from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
 # Search plugin with custom search index
 class SearchPlugin(BasePlugin):
 
-    # Overridden to use a custom search index
+    # Override to use a custom search index
     def on_pre_build(self, config):
         super().on_pre_build(config)
         self.search_index = SearchIndex(**self.config)
 
 # -----------------------------------------------------------------------------
 
-# Search index with additional fields support
+# Search index with support for additional fields
 class SearchIndex(BaseIndex):
 
-    # Overridden to add additional fields for each page
+    # Override to add additional fields for each page
     def add_entry_from_context(self, page):
         index = len(self._entries)
         super().add_entry_from_context(page)
@@ -49,7 +49,6 @@ class SearchIndex(BaseIndex):
             entry["tags"] = page.meta["tags"]
 
         # Add document boost for search
-        if "search" in page.meta:
-            search = page.meta["search"]
-            if "boost" in search:
-                entry["boost"] = search["boost"]
+        search = page.meta.get("search", {})
+        if "boost" in search:
+            entry["boost"] = search["boost"]

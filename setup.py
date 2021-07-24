@@ -67,6 +67,7 @@ setup(
         ],
         "mkdocs.plugins": [
             "search = material.plugins.search.plugin:SearchPlugin",
+            "social = material.plugins.social.plugin:SocialPlugin",
             "tags = material.plugins.tags.plugin:TagsPlugin"
         ]
     },
