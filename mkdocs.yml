@@ -33,7 +33,7 @@ edit_uri: ""
 
 # Copyright
 copyright: Copyright &copy; 2016 - 2021 Martin Donath
-use_directory_urls: true
+
 # Configuration
 theme:
   name: null
@@ -67,7 +67,7 @@ theme:
     # - toc.integrate
   palette:
     - scheme: default
-      primary: yellow
+      primary: indigo
       accent: indigo
       toggle:
         icon: material/toggle-switch-off-outline
@@ -88,8 +88,6 @@ theme:
 # Plugins
 plugins:
   - search
-  - tags:
-      tags_file: license.md
   - social
   - redirects:
       redirect_maps:
