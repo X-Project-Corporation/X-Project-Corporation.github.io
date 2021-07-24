@@ -54,9 +54,9 @@ theme:
     - content.tabs.link
     # - header.autohide
     # - navigation.expand
+    # - navigation.indexes
     # - navigation.instant
     - navigation.sections
-    # - navigation.indexes
     - navigation.tabs
     # - navigation.tabs.sticky
     - navigation.top

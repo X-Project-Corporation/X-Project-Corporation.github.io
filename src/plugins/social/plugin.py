@@ -24,8 +24,8 @@ import requests
 
 from cairosvg import svg2png
 from cssutils import parseString
-from hashlib import md5
 from io import BytesIO
+from math import floor
 from mkdocs.config.config_options import Type
 from mkdocs.plugins import BasePlugin
 from PIL import Image, ImageDraw, ImageFont
@@ -77,9 +77,6 @@ class SocialPlugin(BasePlugin):
         directory = self.config.get("cards_directory")
         file, _ = os.path.splitext(page.file.src_path)
 
-        # print(title)
-        # print(md5(".".join([title, project]).encode("ascii")).hexdigest())
-
         # Resolve path of image
         path = "{}.png".format(os.path.join(
             config.get("site_dir"),
@@ -109,24 +106,32 @@ class SocialPlugin(BasePlugin):
         # Render logo
         logo = self.logo
         image.alpha_composite(
-            logo.resize((128, int(160 * logo.height / logo.width))),
-            (1200 - 128 - 64, 64)
+            logo.resize((144, int(144 * logo.height / logo.width))),
+            (1200 - 228, 64)
         )
 
         # Render site name
         data = config.get("site_name")
-        font = ImageFont.truetype(self.font.get(700), 40)
+        font = ImageFont.truetype(self.font.get(700), 36)
         image.alpha_composite(
             self.__render_text((826, 48), font, data),
-            (64, 64)
+            (64 + 4, 64)
         )
 
         # Render page title
         data = page.meta.get("title", page.title)
-        font = ImageFont.truetype(self.font.get(700), 96)
+        font = ImageFont.truetype(self.font.get(700), 92)
         image.alpha_composite(
-            self.__render_text((826, 348), font, data),
+            self.__render_text((826, 328), font, data, 20),
             (64, 160)
+        )
+
+        # Render page description
+        data = page.meta.get("description", config.get("site_description"))
+        font = ImageFont.truetype(self.font.get(400), 28)
+        image.alpha_composite(
+            self.__render_text((826, 80), font, data, 14),
+            (64 + 4, 512)
         )
 
         # Return social card image
@@ -137,11 +142,11 @@ class SocialPlugin(BasePlugin):
         return Image.new(mode = "RGBA", size = size, color = fill)
 
     # Render social card text
-    def __render_text(self, size, font, text):
+    def __render_text(self, size, font, text, spacing = 0):
         lines, words = [], []
 
         # Create temporary image
-        image = Image.new(mode = "RGBA", color = "red", size = size)
+        image = Image.new(mode = "RGBA", size = size)
 
         # Create drawing context and split text into lines
         context = ImageDraw.Draw(image)
@@ -166,13 +171,13 @@ class SocialPlugin(BasePlugin):
         # Join words for each line and create image
         lines.append(words)
         lines = [" ".join(line) for line in lines]
-        image = Image.new(mode = "RGBA", size = size, color = "red")
+        image = Image.new(mode = "RGBA", size = size)
 
         # Create drawing context and split text into lines
         context = ImageDraw.Draw(image)
         context.text(
             (0, 0), "\n".join(lines),
-            font = font, fill = self.color["fg"], spacing = font.size / 4
+            font = font, fill = self.color["fg"], spacing = spacing
         )
 
         # Return text image
