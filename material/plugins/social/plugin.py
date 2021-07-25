@@ -24,11 +24,12 @@ import requests
 
 from cairosvg import svg2png
 from cssutils import parseString
+from hashlib import md5
 from io import BytesIO
-from math import floor
 from mkdocs.config.config_options import Type
 from mkdocs.plugins import BasePlugin
 from PIL import Image, ImageDraw, ImageFont
+from shutil import copyfile
 
 # -----------------------------------------------------------------------------
 # Class
@@ -48,7 +49,7 @@ class SocialPlugin(BasePlugin):
         self.color = colors.get("indigo")
 
         # Resolve and create cache directory
-        self.cache = os.path.join(os.path.dirname(__file__), ".cache")
+        self.cache = ".cache"
         if not os.path.isdir(self.cache):
             os.makedirs(self.cache)
 
@@ -65,7 +66,7 @@ class SocialPlugin(BasePlugin):
                 palette = palette[0]
 
             # Set colors according to palette
-            if "primary" in palette and palette["primary"] in palette:
+            if "primary" in palette and palette["primary"] in colors:
                 self.color = colors.get(palette["primary"])
 
         # Retrieve logo and font
@@ -89,9 +90,25 @@ class SocialPlugin(BasePlugin):
         if not os.path.isdir(directory):
             os.makedirs(directory)
 
+        # Compute site name
+        site_name = config.get("site_name")
+
+        # Compute page title and description
+        title = page.meta.get("title", page.title)
+        description = config.get("site_description")
+        if "description" in page.meta:
+            description = page.meta["description"]
+
+        # Compute hash and try to copy from cache
+        hash = md5("".join([site_name, title, description]).encode("ascii"))
+        file = os.path.join(self.cache, "{}.png".format(hash.hexdigest()))
+        if os.path.isfile(file):
+            copyfile(file, path)
+
         # Render card and save to file
-        image = self.__render_card(config, page)
-        image.save(path)
+        else:
+            image = self.__render_card(config, site_name, title, description)
+            image.save(path)
 
         # Inject meta tags into page
         meta = page.meta.get("meta", [])
@@ -100,37 +117,34 @@ class SocialPlugin(BasePlugin):
     # -------------------------------------------------------------------------
 
     # Render social card
-    def __render_card(self, config, page, size = (1200, 630)):
-        image = self.__render_card_background(size, self.color["bg"])
-
-        # Render logo
+    def __render_card(self, site_name, title, description):
         logo = self.logo
+
+        # Render background and logo
+        image = self.__render_card_background((1200, 630), self.color["bg"])
         image.alpha_composite(
             logo.resize((144, int(144 * logo.height / logo.width))),
-            (1200 - 228, 64)
+            (1200 - 228, 64 - 4)
         )
 
         # Render site name
-        data = config.get("site_name")
         font = ImageFont.truetype(self.font.get(700), 36)
         image.alpha_composite(
-            self.__render_text((826, 48), font, data),
+            self.__render_text((826, 48), font, site_name),
             (64 + 4, 64)
         )
 
         # Render page title
-        data = page.meta.get("title", page.title)
         font = ImageFont.truetype(self.font.get(700), 92)
         image.alpha_composite(
-            self.__render_text((826, 328), font, data, 20),
+            self.__render_text((826, 328), font, title, 20),
             (64, 160)
         )
 
         # Render page description
-        data = page.meta.get("description", config.get("site_description"))
         font = ImageFont.truetype(self.font.get(400), 28)
         image.alpha_composite(
-            self.__render_text((826, 80), font, data, 14),
+            self.__render_text((826, 80), font, description, 14),
             (64 + 4, 512)
         )
 
