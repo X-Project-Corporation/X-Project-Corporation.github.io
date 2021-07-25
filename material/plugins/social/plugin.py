@@ -237,7 +237,10 @@ class SocialPlugin(BasePlugin):
         if "logo" in theme:
             _, extension = os.path.splitext(theme["logo"])
             if extension == ".svg":
-                return self.__load_logo_svg(theme["logo"])
+                return self.__load_logo_svg(os.path.join(
+                    config.get("docs_dir"),
+                    theme["logo"]
+                ))
 
             # Just load and return logo
             return Image.open(theme["logo"])
@@ -258,7 +261,7 @@ class SocialPlugin(BasePlugin):
         return self.__load_logo_svg(path, self.color["fg"])
 
     # Load SVG file and convert to PNG
-    def __load_logo_svg(self, path, fill):
+    def __load_logo_svg(self, path, fill = None):
         file = BytesIO()
         data = open(path).read()
 
@@ -270,7 +273,7 @@ class SocialPlugin(BasePlugin):
             )
 
         # Convert to PNG and return image
-        svg2png(bytestring = data, write_to = file, scale = 4)
+        svg2png(bytestring = data, write_to = file, scale = 10)
         return Image.open(file)
 
     # Retrieve fonts
