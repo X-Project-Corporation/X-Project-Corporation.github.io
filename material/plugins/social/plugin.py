@@ -100,7 +100,7 @@ class SocialPlugin(BasePlugin):
             description = page.meta["description"]
 
         # Compute hash and try to copy from cache
-        hash = md5("".join([site_name, title, description]).encode("ascii"))
+        hash = md5("".join([site_name, title, description]).encode("utf-8"))
         file = os.path.join(self.cache, "{}.png".format(hash.hexdigest()))
         if os.path.isfile(file):
             copyfile(file, path)
