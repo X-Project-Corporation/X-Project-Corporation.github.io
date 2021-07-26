@@ -91,11 +91,11 @@ class SocialPlugin(BasePlugin):
             os.makedirs(directory)
 
         # Compute site name
-        site_name = config.get("site_name", "")
+        site_name = config.get("site_name")
 
         # Compute page title and description
         title = page.meta.get("title", page.title)
-        description = config.get("site_description", "")
+        description = config.get("site_description") or ""
         if "description" in page.meta:
             description = page.meta["description"]
 
