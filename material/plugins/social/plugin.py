@@ -260,9 +260,10 @@ class SocialPlugin(BasePlugin):
             return Image.open(theme["logo"])
 
         # Handle icons
-        icon = "material/library"
-        if "logo" in theme["icon"]:
-            icon = theme["icon"]["logo"]
+        logo = "material/library"
+        icon = theme["icon"] or {}
+        if "logo" in icon and icon["logo"]:
+            logo = icon["logo"]
 
         # Resolve path of package
         base = os.path.abspath(os.path.join(
@@ -271,7 +272,7 @@ class SocialPlugin(BasePlugin):
         ))
 
         # Load icon data and fill with color
-        path = "{}/.icons/{}.svg".format(base, icon)
+        path = "{}/.icons/{}.svg".format(base, logo)
         return self.__load_logo_svg(path, self.color["fg"])
 
     # Load SVG file and convert to PNG
