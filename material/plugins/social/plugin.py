@@ -257,7 +257,7 @@ class SocialPlugin(BasePlugin):
                 return self.__load_logo_svg(path)
 
             # Load PNG, JPEG, etc.
-            return Image.open(path)
+            return Image.open(path).convert("RGBA")
 
         # Handle icons
         logo = "material/library"
