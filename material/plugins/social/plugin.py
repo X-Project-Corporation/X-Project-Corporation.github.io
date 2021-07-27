@@ -250,14 +250,14 @@ class SocialPlugin(BasePlugin):
         # Handle images (precedence over icons)
         if "logo" in theme:
             _, extension = os.path.splitext(theme["logo"])
-            if extension == ".svg":
-                return self.__load_logo_svg(os.path.join(
-                    config.get("docs_dir"),
-                    theme["logo"]
-                ))
 
-            # Just load and return logo
-            return Image.open(theme["logo"])
+            # Load SVG and convert to PNG
+            path = os.path.join(config.get("docs_dir"), theme["logo"])
+            if extension == ".svg":
+                return self.__load_logo_svg(path)
+
+            # Load PNG, JPEG, etc.
+            return Image.open(path)
 
         # Handle icons
         logo = "material/library"
