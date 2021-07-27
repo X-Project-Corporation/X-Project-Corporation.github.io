@@ -66,8 +66,9 @@ class SocialPlugin(BasePlugin):
                 palette = palette[0]
 
             # Set colors according to palette
-            if "primary" in palette and palette["primary"] in colors:
-                self.color = colors.get(palette["primary"])
+            if "primary" in palette:
+                primary = palette["primary"].replace(" ", "-")
+                self.color = colors.get(primary, self.color)
 
         # Retrieve logo and font
         self.logo = self.__load_logo(config)
