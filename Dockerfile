@@ -39,18 +39,19 @@ COPY requirements.txt requirements.txt
 COPY setup.py setup.py
 
 # Perform build and cleanup artifacts and caches
-RUN \
-  apk upgrade --update-cache -a && \
-  apk add --no-cache \
+RUN apk upgrade --update-cache -a \
+  && apk add --no-cache \
+    cairo \
+    freetype-dev \
     git \
     git-fast-import \
+    jpeg-dev \
     openssh \
+    zlib-dev \
   && apk add --no-cache --virtual .build \
     gcc \
-    jpeg-dev \
     libffi-dev \
     musl-dev \
-    zlib-dev \
   && pip install --no-cache-dir . \
   && \
     if [ "${WITH_PLUGINS}" = "true" ]; then \
@@ -58,7 +59,7 @@ RUN \
         "mkdocs-minify-plugin>=0.3" \
         "mkdocs-redirects>=1.0"; \
     fi \
-  && apk del .build gcc musl-dev \
+  && apk del .build \
   && \
     for theme in mkdocs readthedocs; do \
       rm -rf ${PACKAGES}/mkdocs/themes/$theme; \
