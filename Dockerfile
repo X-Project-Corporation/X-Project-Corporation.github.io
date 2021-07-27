@@ -45,7 +45,12 @@ RUN \
     git \
     git-fast-import \
     openssh \
-  && apk add --no-cache --virtual .build gcc musl-dev \
+  && apk add --no-cache --virtual .build \
+    gcc \
+    jpeg-dev \
+    libffi-dev \
+    musl-dev \
+    zlib-dev \
   && pip install --no-cache-dir . \
   && \
     if [ "${WITH_PLUGINS}" = "true" ]; then \
