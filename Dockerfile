@@ -39,8 +39,10 @@ COPY requirements.txt requirements.txt
 COPY setup.py setup.py
 
 # Perform build and cleanup artifacts and caches
-RUN apk upgrade --update-cache -a \
-  && apk add --no-cache \
+RUN \
+  apk upgrade --update-cache -a \
+&& \
+  apk add --no-cache \
     cairo \
     freetype-dev \
     git \
@@ -48,31 +50,35 @@ RUN apk upgrade --update-cache -a \
     jpeg-dev \
     openssh \
     zlib-dev \
-  && apk add --no-cache --virtual .build \
+&& \
+  apk add --no-cache --virtual .build \
     gcc \
     libffi-dev \
     musl-dev \
-  && pip install --no-cache-dir . \
-  && \
-    if [ "${WITH_PLUGINS}" = "true" ]; then \
-      pip install --no-cache-dir \
-        "mkdocs-minify-plugin>=0.3" \
-        "mkdocs-redirects>=1.0"; \
-    fi \
-  && apk del .build \
-  && \
-    for theme in mkdocs readthedocs; do \
-      rm -rf ${PACKAGES}/mkdocs/themes/$theme; \
-      ln -s \
-        ${PACKAGES}/material \
-        ${PACKAGES}/mkdocs/themes/$theme; \
-    done \
-  && rm -rf /tmp/* /root/.cache \
-  && \
-    find ${PACKAGES} \
-      -type f \
-      -path "*/__pycache__/*" \
-      -exec rm -f {} \;
+&& \
+  pip install --no-cache-dir . \
+&& \
+  if [ "${WITH_PLUGINS}" = "true" ]; then \
+    pip install --no-cache-dir \
+      "mkdocs-minify-plugin>=0.3" \
+      "mkdocs-redirects>=1.0"; \
+  fi \
+&& \
+  apk del .build \
+&& \
+  for theme in mkdocs readthedocs; do \
+    rm -rf ${PACKAGES}/mkdocs/themes/$theme; \
+    ln -s \
+      ${PACKAGES}/material \
+      ${PACKAGES}/mkdocs/themes/$theme; \
+  done \
+&& \
+  rm -rf /tmp/* /root/.cache \
+&& \
+  find ${PACKAGES} \
+    -type f \
+    -path "*/__pycache__/*" \
+    -exec rm -f {} \;
 
 # Set working directory
 WORKDIR /docs
