@@ -70,7 +70,7 @@ export function setupSearchHighlighter(
       .trim()
 
     /* Create search term match expression */
-    const match = new RegExp(`(^|${config.separator})(${
+    const match = new RegExp(`(^|${config.separator}|\\b)(${
       query
         .replace(/[|\\{}()[\]^$+*?.-]/g, "\\$&")
         .replace(separator, "|")

@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import escapeHTML from "escape-html"
+// import escapeHTML from "escape-html"
 
 import { SearchIndexDocument } from "../_"
 
@@ -54,7 +54,7 @@ export type SearchDocumentMap = Map<string, SearchDocument>
  * @returns Search document map
  */
 export function setupSearchDocumentMap(
-  docs: SearchIndexDocument[]
+  docs: SearchDocument[]
 ): SearchDocumentMap {
   const documents = new Map<string, SearchDocument>()
   const parents   = new Set<SearchDocument>()
@@ -67,9 +67,9 @@ export function setupSearchDocumentMap(
     const tags     = doc.tags
 
     /* Escape and cleanup text */
-    const text = escapeHTML(doc.text)
-      .replace(/\s+(?=[,.:;!?])/g, "")
-      .replace(/\s+/g, " ")
+    const text = doc.text//escapeHTML(doc.text)
+      // .replace(/\s+(?=[,.:;!?])/g, "")
+      // .replace(/\s+/g, " ")
 
     /* Handle section */
     if (hash) {
@@ -85,22 +85,27 @@ export function setupSearchDocumentMap(
 
       /* Add subsequent section */
       } else {
-        documents.set(location, {
-          location,
-          title,
-          text,
-          parent
-        })
+        parent.text += " " + title + " " + text
+        doc.parent = parent
+        documents.set(location, doc)
+
+        // documents.set(location, {
+        //   location,
+        //   title,
+        //   text,
+        //   parent
+        // })
       }
 
     /* Add article */
     } else {
-      documents.set(location, {
-        location,
-        title,
-        text,
-        ...tags && { tags }
-      })
+      documents.set(location, doc)
+      // documents.set(location, {
+      //   location,
+      //   title,
+      //   text,
+      //   ...tags && { tags }
+      // })
     }
   }
   return documents

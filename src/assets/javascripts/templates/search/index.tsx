@@ -86,8 +86,8 @@ function renderSearchDocument(
         {parent > 0 && <div class="md-search-result__icon md-icon"></div>}
         <h1 class="md-search-result__title">{document.title}</h1>
         {teaser > 0 && document.text.length > 0 &&
-          <p class="md-search-result__teaser">
-            {truncate(document.text, 320)}
+          <p class="md-search-result__teaser md-typeset">
+            {document.text}
           </p>
         }
         {document.tags && document.tags.map(tag => (

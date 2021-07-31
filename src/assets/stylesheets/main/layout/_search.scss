@@ -749,27 +749,27 @@
 
   // Search result teaser
   &__teaser {
-    display: -webkit-box;
-    max-height: px2rem(40px);
+    // display: -webkit-box;
+    // max-height: px2rem(40px);
     margin: 0.5em 0;
     overflow: hidden;
     color: var(--md-default-fg-color--light);
     font-size: px2rem(12.8px);
     line-height: 1.6;
-    text-overflow: ellipsis;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    // text-overflow: ellipsis;
+    // -webkit-box-orient: vertical;
+    // -webkit-line-clamp: 2;
 
     // [mobile -]: Adjust number of lines
     @include break-to-device(mobile) {
-      max-height: px2rem(60px);
-      -webkit-line-clamp: 3;
+      // max-height: px2rem(60px);
+      // -webkit-line-clamp: 3;
     }
 
     // [tablet landscape]: Adjust number of lines
     @include break-at-device(tablet landscape) {
-      max-height: px2rem(60px);
-      -webkit-line-clamp: 3;
+      // max-height: px2rem(60px);
+      // -webkit-line-clamp: 3;
     }
 
     // Search term highlighting
