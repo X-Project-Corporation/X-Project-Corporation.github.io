@@ -77,18 +77,14 @@ function renderSearchDocument(
   return (
     <a href={`${url}`} class="md-search-result__link" tabIndex={-1}>
       <article
-        class={["md-search-result__article", ...parent
-          ? ["md-search-result__article--document"]
-          : []
-        ].join(" ")}
+        class="md-search-result__article md-typeset"
         data-md-score={document.score.toFixed(2)}
       >
         {parent > 0 && <div class="md-search-result__icon md-icon"></div>}
-        <h1 class="md-search-result__title">{document.title}</h1>
+        {parent > 0 && <h1>{document.title}</h1>}
+        {parent <= 0 && <h2>{document.title}</h2>}
         {teaser > 0 && document.text.length > 0 &&
-          <p class="md-search-result__teaser md-typeset">
-            {document.text}
-          </p>
+          document.text
         }
         {document.tags && document.tags.map(tag => (
           <span class="md-tag">{tag}</span>

@@ -57,55 +57,18 @@ export function setupSearchDocumentMap(
   docs: SearchDocument[]
 ): SearchDocumentMap {
   const documents = new Map<string, SearchDocument>()
-  const parents   = new Set<SearchDocument>()
   for (const doc of docs) {
-    const [path, hash] = doc.location.split("#")
+    const [path] = doc.location.split("#")
 
-    /* Extract location, title and tags */
-    const location = doc.location
-    const title    = doc.title
-    const tags     = doc.tags
-
-    /* Escape and cleanup text */
-    const text = doc.text//escapeHTML(doc.text)
-      // .replace(/\s+(?=[,.:;!?])/g, "")
-      // .replace(/\s+/g, " ")
+    /* Handle article */
+    const article = documents.get(path)
+    if (typeof article === "undefined") {
+      documents.set(path, doc)
 
     /* Handle section */
-    if (hash) {
-      const parent = documents.get(path)!
-
-      /* Ignore first section, override article */
-      if (!parents.has(parent)) {
-        parent.title = doc.title
-        parent.text  = text
-
-        /* Remember that we processed the article */
-        parents.add(parent)
-
-      /* Add subsequent section */
-      } else {
-        parent.text += " " + title + " " + text
-        doc.parent = parent
-        documents.set(location, doc)
-
-        // documents.set(location, {
-        //   location,
-        //   title,
-        //   text,
-        //   parent
-        // })
-      }
-
-    /* Add article */
     } else {
-      documents.set(location, doc)
-      // documents.set(location, {
-      //   location,
-      //   title,
-      //   text,
-      //   ...tags && { tags }
-      // })
+      documents.set(doc.location, doc)
+      doc.parent = article
     }
   }
   return documents

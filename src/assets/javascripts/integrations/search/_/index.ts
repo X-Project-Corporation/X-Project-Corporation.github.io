@@ -171,12 +171,34 @@ export class Search {
     this.documents = setupSearchDocumentMap(docs)
     this.highlight = setupSearchHighlighter(config)
 
+    console.log(lunr.tokenizer)
+    // lunr.tokenizer = function (obj) {
+    //   if (!arguments.length || obj == null || obj == undefined) return []
+    //   if (Array.isArray(obj)) return obj.map(function (t) { return t.toLowerCase() })
+
+    //   var str = obj.toString().replace(/^\s+/, '')
+
+    //   for (var i = str.length - 1; i >= 0; i--) {
+    //     if (/\S/.test(str.charAt(i))) {
+    //       str = str.substring(0, i + 1)
+    //       break
+    //     }
+    //   }
+
+    //   return str
+    //     .split(/\s+/)
+    //     .map(function (token) {
+    //       return token.replace(/^\W+/, '').replace(/\W+$/, '').toLowerCase()
+    //     })
+    // }
+
     /* Set separator for tokenizer */
     lunr.tokenizer.separator = new RegExp(config.separator)
 
     /* If no index was given, create it */
     if (typeof index === "undefined") {
       this.index = lunr(function () {
+        this.metadataWhitelist = ["position"]
 
         /* Set up multi-language support */
         if (config.lang.length === 1 && config.lang[0] !== "en") {
@@ -184,6 +206,46 @@ export class Search {
         } else if (config.lang.length > 1) {
           this.use((lunr as any).multiLanguage(...config.lang))
         }
+
+        // lunr.trimmer
+
+        // lunr3.trimmer = function(token) {
+        //   return token.update(function(s) {
+        //     return s.replace(/^\W+/, "").replace(/\W+$/, "");
+        //   });
+        // };
+
+        // TODO: replace with a custom trimmer that includes some other characters
+        // then filter shit...
+        // this.pipeline.remove(lunr.trimmer)
+        // if ()
+
+        // TODO: insert tokenfilter BEFORE trimmer!!!!
+
+        // // // drop HTML tags...
+        const filter = function (token) {
+          console.log(token)
+          if (token.toString().includes("<")) {
+            console.log(">>>", token)
+            console.log("filter")
+            return token.update(s => {
+              // TODO: update position!
+              return s.replace(/<\/?\w+>/g, "")
+            })
+          }
+          // return token.toString().split("@").map(function (str) {
+          //   return token.clone().update(function () { return str })
+          // })
+        }
+        this.pipeline.before(lunr.trimmer, filter)
+
+        // this.pipeline.add(filters)
+        console.log(lunr.tokenizer.separator)
+        const t = this.tokenizer("abx def <code>with code</code>")
+        console.log(">!!!!", t)
+        this.tokenizer(t)
+        console.log("XYYY", this.pipeline.run(t))
+        return
 
         /* Compute functions to be removed from the pipeline */
         const fns = difference([
@@ -260,6 +322,7 @@ export class Search {
                 clauses,
                 Object.keys(matchData.metadata)
               )
+              console.log(title, matchData.metadata)
 
               /* Highlight title and text and apply post-query boosts */
               const boost = +!parent + +Object.values(terms).every(t => t)
@@ -278,7 +341,7 @@ export class Search {
           /* Sort search results again after applying boosts */
           .sort((a, b) => b.score - a.score)
 
-          /* Group search results by page */
+          /* Group search results by article */
           .reduce((items, result) => {
             const document = this.documents.get(result.location)
             if (typeof document !== "undefined") {
@@ -289,6 +352,13 @@ export class Search {
             }
             return items
           }, new Map<string, SearchResultItem>())
+
+        /* Ensure that every item set has an article */
+        for (const [ref, items] of groups)
+          if (!items.find(item => item.location === ref)) {
+            const document = this.documents.get(ref)!
+            items.push({ ...document, score: 0, terms: {} })
+          }
 
         /* Generate search suggestions, if desired */
         let suggestions: string[] | undefined

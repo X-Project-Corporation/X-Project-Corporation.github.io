@@ -687,18 +687,6 @@
         padding-left: px2rem(16px);
       }
     }
-
-    // Search result article document
-    &--document {
-
-      // Search result title
-      .md-search-result__title {
-        margin: px2rem(11px) 0;
-        font-weight: 400;
-        font-size: px2rem(16px);
-        line-height: 1.4;
-      }
-    }
   }
 
   // Search result icon
@@ -739,49 +727,68 @@
     }
   }
 
-  // Search result title
-  &__title {
-    margin: 0.5em 0;
-    font-weight: 700;
-    font-size: px2rem(12.8px);
-    line-height: 1.6;
-  }
-
-  // Search result teaser
-  &__teaser {
-    // display: -webkit-box;
-    // max-height: px2rem(40px);
-    margin: 0.5em 0;
-    overflow: hidden;
+  // Typesetted content
+  .md-typeset {
     color: var(--md-default-fg-color--light);
     font-size: px2rem(12.8px);
     line-height: 1.6;
-    // text-overflow: ellipsis;
-    // -webkit-box-orient: vertical;
-    // -webkit-line-clamp: 2;
 
-    // [mobile -]: Adjust number of lines
-    @include break-to-device(mobile) {
-      // max-height: px2rem(60px);
-      // -webkit-line-clamp: 3;
+    // Search result article title
+    h1 {
+      margin: px2rem(11px) 0;
+      color: var(--md-default-fg-color);
+      font-weight: 400;
+      font-size: px2rem(16px);
+      line-height: 1.4;
+
+      // Search term highlighting
+      mark {
+        text-decoration: none;
+      }
     }
 
-    // [tablet landscape]: Adjust number of lines
-    @include break-at-device(tablet landscape) {
-      // max-height: px2rem(60px);
-      // -webkit-line-clamp: 3;
+    // Search result section title
+    h2 {
+      margin: 0.5em 0;
+      color: var(--md-default-fg-color);
+      font-weight: 700;
+      font-size: px2rem(12.8px);
+      line-height: 1.6;
+
+      // Search term highlighting
+      mark {
+        text-decoration: none;
+      }
     }
 
-    // Search term highlighting
-    mark {
-      text-decoration: underline;
-      background-color: transparent;
+    // Search result content
+    p:not([class]) {
+      display: inline;
+      margin: 0.5em 0;
+
+      // Ensure last child has bottom spacing
+      &:last-child {
+        display: inline-block;
+        margin-top: 0;
+      }
+
+      // Inline paragraphs
+      + p::before {
+        content: " ";
+      }
+    }
+
+    // Omit empty elements
+    :not([class]):empty {
+      display: none;
     }
   }
 
   // Search result terms
   &__terms {
+    display: block;
     margin: 0.5em 0;
+    color: var(--md-default-fg-color);
     font-size: px2rem(12.8px);
     font-style: italic;
   }
@@ -789,6 +796,7 @@
   // Search term highlighting
   mark {
     color: var(--md-accent-fg-color);
+    text-decoration: underline;
     background-color: transparent;
   }
 }

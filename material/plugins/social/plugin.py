@@ -103,13 +103,12 @@ class SocialPlugin(BasePlugin):
         # Compute hash and try to copy from cache
         hash = md5("".join([site_name, title, description]).encode("utf-8"))
         file = os.path.join(self.cache, "{}.png".format(hash.hexdigest()))
-        if os.path.isfile(file):
-            copyfile(file, path)
-
-        # Render card and save to file
-        else:
+        if not os.path.isfile(file):
             image = self.__render_card(site_name, title, description)
-            image.save(path)
+            image.save(file)
+
+        # Copy file from cache
+        copyfile(file, path)
 
         # Inject meta tags into page
         meta = page.meta.get("meta", [])

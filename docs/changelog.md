@@ -2,9 +2,11 @@
 template: overrides/main.html
 ---
 
-# Changelog
+foobar lol fuck you
 
-## Material for MkDocs
+## Material for MkDocs `with code`
+
+Here's some text after the changelog!
 
 ### 7.2.0 <small>_ July 25, 2021</small>
 
