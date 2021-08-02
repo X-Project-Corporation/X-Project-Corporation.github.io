@@ -168,7 +168,7 @@ class SocialPlugin(BasePlugin):
         for word in text.split(" "):
             combine = " ".join(words + [word])
             textbox = context.textbbox((0, 0), combine, font = font)
-            if textbox[2] <= image.width:
+            if not words or textbox[2] <= image.width:
                 words.append(word)
             else:
                 lines.append(words)
