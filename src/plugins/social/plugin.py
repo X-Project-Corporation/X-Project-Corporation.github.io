@@ -41,7 +41,8 @@ class SocialPlugin(BasePlugin):
     # Configuration scheme
     config_scheme = (
         ("cards", Type(bool, default = True)),
-        ("cards_directory", Type(str, default = "assets/images/social"))
+        ("cards_directory", Type(str, default = "assets/images/social")),
+        ("cards_color", Type(dict, default = {}))
     )
 
     # Initialize plugin
@@ -69,6 +70,9 @@ class SocialPlugin(BasePlugin):
             if "primary" in palette:
                 primary = palette["primary"].replace(" ", "-")
                 self.color = colors.get(primary, self.color)
+
+        # Retrieve color overrides
+        self.color = { **self.color, **self.config.get("cards_color") }
 
         # Retrieve logo and font
         self.logo = self.__load_logo(config)
@@ -122,7 +126,7 @@ class SocialPlugin(BasePlugin):
         logo = self.logo
 
         # Render background and logo
-        image = self.__render_card_background((1200, 630), self.color["bg"])
+        image = self.__render_card_background((1200, 630), self.color["fill"])
         image.alpha_composite(
             logo.resize((144, int(144 * logo.height / logo.width))),
             (1200 - 228, 64 - 4)
@@ -192,7 +196,7 @@ class SocialPlugin(BasePlugin):
         context = ImageDraw.Draw(image)
         context.text(
             (0, 0), "\n".join(lines),
-            font = font, fill = self.color["fg"], spacing = spacing
+            font = font, fill = self.color["text"], spacing = spacing
         )
 
         # Return text image
@@ -274,7 +278,7 @@ class SocialPlugin(BasePlugin):
 
         # Load icon data and fill with color
         path = "{}/.icons/{}.svg".format(base, logo)
-        return self.__load_logo_svg(path, self.color["fg"])
+        return self.__load_logo_svg(path, self.color["text"])
 
     # Load SVG file and convert to PNG
     def __load_logo_svg(self, path, fill = None):
@@ -342,25 +346,25 @@ class SocialPlugin(BasePlugin):
 
 # Color palette
 colors = dict({
-    "red":         { "bg": "#ef5552", "fg": "#ffffff" },
-    "pink":        { "bg": "#e92063", "fg": "#ffffff" },
-    "purple":      { "bg": "#ab47bd", "fg": "#ffffff" },
-    "deep-purple": { "bg": "#7e56c2", "fg": "#ffffff" },
-    "indigo":      { "bg": "#4051b5", "fg": "#ffffff" },
-    "blue":        { "bg": "#2094f3", "fg": "#ffffff" },
-    "light-blue":  { "bg": "#02a6f2", "fg": "#ffffff" },
-    "cyan":        { "bg": "#00bdd6", "fg": "#ffffff" },
-    "teal":        { "bg": "#009485", "fg": "#ffffff" },
-    "green":       { "bg": "#4cae4f", "fg": "#ffffff" },
-    "light-green": { "bg": "#8bc34b", "fg": "#ffffff" },
-    "lime":        { "bg": "#cbdc38", "fg": "#000000" },
-    "yellow":      { "bg": "#ffec3d", "fg": "#000000" },
-    "amber":       { "bg": "#ffc105", "fg": "#000000" },
-    "orange":      { "bg": "#ffa724", "fg": "#000000" },
-    "deep-orange": { "bg": "#ff6e42", "fg": "#ffffff" },
-    "brown":       { "bg": "#795649", "fg": "#ffffff" },
-    "grey":        { "bg": "#757575", "fg": "#ffffff" },
-    "blue-grey":   { "bg": "#546d78", "fg": "#ffffff" },
-    "black":       { "bg": "#000000", "fg": "#ffffff" },
-    "white":       { "bg": "#ffffff", "fg": "#000000" }
+    "red":         { "fill": "#ef5552", "text": "#ffffff" },
+    "pink":        { "fill": "#e92063", "text": "#ffffff" },
+    "purple":      { "fill": "#ab47bd", "text": "#ffffff" },
+    "deep-purple": { "fill": "#7e56c2", "text": "#ffffff" },
+    "indigo":      { "fill": "#4051b5", "text": "#ffffff" },
+    "blue":        { "fill": "#2094f3", "text": "#ffffff" },
+    "light-blue":  { "fill": "#02a6f2", "text": "#ffffff" },
+    "cyan":        { "fill": "#00bdd6", "text": "#ffffff" },
+    "teal":        { "fill": "#009485", "text": "#ffffff" },
+    "green":       { "fill": "#4cae4f", "text": "#ffffff" },
+    "light-green": { "fill": "#8bc34b", "text": "#ffffff" },
+    "lime":        { "fill": "#cbdc38", "text": "#000000" },
+    "yellow":      { "fill": "#ffec3d", "text": "#000000" },
+    "amber":       { "fill": "#ffc105", "text": "#000000" },
+    "orange":      { "fill": "#ffa724", "text": "#000000" },
+    "deep-orange": { "fill": "#ff6e42", "text": "#ffffff" },
+    "brown":       { "fill": "#795649", "text": "#ffffff" },
+    "grey":        { "fill": "#757575", "text": "#ffffff" },
+    "blue-grey":   { "fill": "#546d78", "text": "#ffffff" },
+    "black":       { "fill": "#000000", "text": "#ffffff" },
+    "white":       { "fill": "#ffffff", "text": "#000000" }
 })
