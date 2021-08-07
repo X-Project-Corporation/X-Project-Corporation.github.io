@@ -25,12 +25,7 @@ import {
   Subject,
   animationFrameScheduler
 } from "rxjs"
-import {
-  finalize,
-  map,
-  observeOn,
-  tap
-} from "rxjs/operators"
+import { map, observeOn, tap } from "rxjs/operators"
 
 import { Component } from "../_"
 
@@ -112,7 +107,6 @@ export function mountConsent(
   return watchConsent(el, options)
     .pipe(
       tap(internal$),
-      finalize(() => internal$.complete()),
       map(state => ({ ref: el, ...state }))
     )
 }

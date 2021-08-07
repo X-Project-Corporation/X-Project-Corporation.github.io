@@ -32,7 +32,6 @@ import {
   bufferCount,
   distinctUntilChanged,
   distinctUntilKeyChanged,
-  finalize,
   map,
   observeOn,
   scan,
@@ -300,7 +299,6 @@ export function mountTableOfContents(
   return watchTableOfContents(el, options)
     .pipe(
       tap(internal$),
-      finalize(() => internal$.complete()),
       map(state => ({ ref: el, ...state }))
     )
 }

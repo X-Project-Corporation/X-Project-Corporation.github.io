@@ -22,7 +22,6 @@
 
 import { Observable, Subject, fromEvent, of } from "rxjs"
 import {
-  finalize,
   map,
   mapTo,
   mergeMap,
@@ -115,7 +114,6 @@ export function mountContentTabs(
   return watchContentTabs(el)
     .pipe(
       tap(internal$),
-      finalize(() => internal$.complete()),
       map(state => ({ ref: el, ...state }))
     )
 }

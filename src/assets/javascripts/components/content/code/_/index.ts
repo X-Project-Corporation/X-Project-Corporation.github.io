@@ -32,7 +32,6 @@ import {
 import {
   combineLatestWith,
   distinctUntilKeyChanged,
-  finalize,
   map,
   mergeWith,
   switchMap,
@@ -238,7 +237,6 @@ export function mountCodeBlock(
   return watchCodeBlock(el, options)
     .pipe(
       tap(internal$),
-      finalize(() => internal$.complete()),
       map(state => ({ ref: el, ...state }))
     )
 }

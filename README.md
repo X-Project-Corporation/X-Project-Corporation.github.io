@@ -139,14 +139,16 @@ For other installation methods, configuration options, and a demo, visit
 
 ### ... leading companies
 
+[Atlassian](https://atlassian-labs.github.io/data-center-helm-charts/),
 [AWS](https://aws.github.io/copilot-cli/),
 [Binance](https://docs.binance.org/),
 [Datadog](https://datadoghq.dev/integrations-core/),
 [Google](https://google.github.io/iree/),
 [ING](https://ing-bank.github.io/baker/),
+[Intel](https://open-amt-cloud-toolkit.github.io/docs/),
 [LinkedIn](https://linkedin.github.io/school-of-sre/),
-[Mozilla](https://mozillafoundation.github.io/engineering-handbook/),
 [Microsoft](https://microsoft.github.io/code-with-engineering-playbook/),
+[Mozilla](https://mozillafoundation.github.io/engineering-handbook/),
 [Netflix](https://netflix.github.io/titus/),
 [Salesforce](https://policy-sentry.readthedocs.io/en/latest/),
 [SoundCloud](https://intervene.dev/),
@@ -160,8 +162,8 @@ For other installation methods, configuration options, and a demo, visit
 [Crystal](https://crystal-lang.org/reference/),
 [Electron](https://www.electron.build/),
 [FastAPI](https://fastapi.tiangolo.com/),
-[Kubernetes](https://kops.sigs.k8s.io/),
 [Knative](https://knative.dev/docs/),
+[Kubernetes](https://kops.sigs.k8s.io/),
 [kSQL](https://docs.ksqldb.io/),
 [Nokogiri](https://nokogiri.org/),
 [OpenFaaS](https://docs.openfaas.com/),
