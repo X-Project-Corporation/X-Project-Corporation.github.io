@@ -138,7 +138,7 @@ export function setupInstantLoading(
   /* Intercept internal navigation */
   const push$ = fetchSitemap()
     .pipe(
-      map(paths => paths.map(path => `${config.base}/${path}`)),
+      map(paths => paths.map(path => `${new URL(path, config.base)}`)),
       switchMap(urls => fromEvent<MouseEvent>(document.body, "click")
         .pipe(
           filter(ev => !ev.metaKey && !ev.ctrlKey),
