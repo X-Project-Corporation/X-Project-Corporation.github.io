@@ -45,7 +45,7 @@ import {
   switchMap
 } from "rxjs/operators"
 
-import { configuration } from "~/_"
+import { configuration, feature } from "~/_"
 import {
   Viewport,
   ViewportOffset,
@@ -242,7 +242,10 @@ export function setupInstantLoading(
           "[data-md-component=container]",
           "[data-md-component=header-topic]",
           "[data-md-component=logo], .md-logo", // compat
-          "[data-md-component=skip]"
+          "[data-md-component=skip]",
+          ...feature("navigation.tabs.sticky")
+            ? ["[data-md-component=tabs]"]
+            : []
         ]) {
           const source = getElement(selector)
           const target = getElement(selector, replacement)
