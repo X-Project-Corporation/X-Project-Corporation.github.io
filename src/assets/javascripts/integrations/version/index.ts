@@ -65,7 +65,7 @@ export function setupVersionSelector(): void {
       map(([versions, current]) => new Map(versions
         .filter(version => version !== current)
         .map(version => [
-          `${new URL(`${version.version}/`, config.base)}`,
+          `${new URL(`../${version.version}/`, config.base)}`,
           version
         ])
       )),
@@ -88,9 +88,9 @@ export function setupVersionSelector(): void {
               .pipe(
                 map(sitemap => {
                   const location = getLocation()
-                  const path = location.href.replace(`${config.base}/`, "")
+                  const path = location.href.replace(config.base, "")
                   return sitemap.includes(path)
-                    ? new URL(`${version}/${path}`, config.base)
+                    ? new URL(`../${version}/${path}`, config.base)
                     : new URL(url)
                 })
               )
