@@ -102,7 +102,7 @@ export interface Config {
  */
 const script = getElementOrThrow("#__config")
 const config: Config = JSON.parse(script.textContent!)
-config.base = new URL(config.base, getLocation()).toString()
+config.base = `${new URL(config.base, getLocation())}`
 
 /* ----------------------------------------------------------------------------
  * Functions
