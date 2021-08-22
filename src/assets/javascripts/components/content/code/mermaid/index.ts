@@ -110,7 +110,7 @@ export function mountMermaidCodeBlock(
   /* Render diagram */
   mermaid$.subscribe(() => {
     const id = `__mermaid_${index++}`
-    const host = h("div")
+    const host = h("div", { class: "mermaid" })
     mermaid.mermaidAPI.render(id, el.innerText, (svg: string) => {
 
       /* Create a shadow root and inject diagram */
