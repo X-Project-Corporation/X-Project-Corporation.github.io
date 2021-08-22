@@ -45,11 +45,10 @@ import {
   switchMap
 } from "rxjs/operators"
 
-import { configuration } from "~/_"
+import { configuration, feature } from "~/_"
 import {
   Viewport,
   ViewportOffset,
-  createElement,
   getElement,
   getElements,
   replaceElement,
@@ -59,6 +58,7 @@ import {
   setViewportOffset
 } from "~/browser"
 import { getComponentElement } from "~/components"
+import { h } from "~/utilities"
 
 import { fetchSitemap } from "../sitemap"
 
@@ -138,18 +138,30 @@ export function setupInstantLoading(
   /* Intercept internal navigation */
   const push$ = fetchSitemap()
     .pipe(
-      map(paths => paths.map(path => `${config.base}/${path}`)),
+      map(paths => paths.map(path => `${new URL(path, config.base)}`)),
       switchMap(urls => fromEvent<MouseEvent>(document.body, "click")
         .pipe(
           filter(ev => !ev.metaKey && !ev.ctrlKey),
           switchMap(ev => {
             if (ev.target instanceof Element) {
               const el = ev.target.closest("a")
-              if (el && !el.target && urls.includes(el.href)) {
-                ev.preventDefault()
-                return of({
-                  url: new URL(el.href)
-                })
+              if (el && !el.target) {
+                const url = new URL(el.href)
+
+                /* Canonicalize URL */
+                url.search = ""
+                url.hash = ""
+
+                /* Check if URL should be intercepted */
+                if (
+                  url.pathname !== location.pathname &&
+                  urls.includes(url.toString())
+                ) {
+                  ev.preventDefault()
+                  return of({
+                    url: new URL(el.href)
+                  })
+                }
               }
             }
             return NEVER
@@ -211,18 +223,6 @@ export function setupInstantLoading(
     )
       .subscribe(document$)
 
-  /* Emit history state change */
-  merge(push$, pop$)
-    .pipe(
-      sample(document$)
-    )
-      .subscribe(({ url, offset }) => {
-        if (url.hash && !offset)
-          setLocationHash(url.hash)
-        else
-          setViewportOffset(offset || { y: 0 })
-      })
-
   /* Replace meta tags and components */
   document$
     .pipe(
@@ -242,7 +242,10 @@ export function setupInstantLoading(
           "[data-md-component=container]",
           "[data-md-component=header-topic]",
           "[data-md-component=logo], .md-logo", // compat
-          "[data-md-component=skip]"
+          "[data-md-component=skip]",
+          ...feature("navigation.tabs.sticky")
+            ? ["[data-md-component=tabs]"]
+            : []
         ]) {
           const source = getElement(selector)
           const target = getElement(selector, replacement)
@@ -262,7 +265,7 @@ export function setupInstantLoading(
       map(() => getComponentElement("container")),
       switchMap(el => of(...getElements("script", el))),
       concatMap(el => {
-        const script = createElement("script")
+        const script = h("script")
         if (el.src) {
           for (const name of el.getAttributeNames())
             script.setAttribute(name, el.getAttribute(name)!)
@@ -282,6 +285,19 @@ export function setupInstantLoading(
       })
     )
       .subscribe()
+
+  /* Emit history state change */
+  merge(push$, pop$)
+    .pipe(
+      sample(document$),
+    )
+      .subscribe(({ url, offset }) => {
+        if (url.hash && !offset) {
+          setLocationHash(url.hash)
+        } else {
+          setViewportOffset(offset || { y: 0 })
+        }
+      })
 
   /* Debounce update of viewport offset */
   viewport$

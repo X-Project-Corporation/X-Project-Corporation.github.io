@@ -67,7 +67,7 @@ class SocialPlugin(BasePlugin):
                 palette = palette[0]
 
             # Set colors according to palette
-            if "primary" in palette:
+            if palette["primary"]:
                 primary = palette["primary"].replace(" ", "-")
                 self.color = colors.get(primary, self.color)
 
@@ -104,7 +104,7 @@ class SocialPlugin(BasePlugin):
         if "description" in page.meta:
             description = page.meta["description"]
 
-        # Compute hash and try to copy from cache
+        # Generate social card if not in cache - TODO: values from mkdocs.yml
         hash = md5("".join([site_name, title, description]).encode("utf-8"))
         file = os.path.join(self.cache, "{}.png".format(hash.hexdigest()))
         if not os.path.isfile(file):
