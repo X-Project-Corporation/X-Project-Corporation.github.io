@@ -20,39 +20,54 @@
  * IN THE SOFTWARE.
  */
 
-import lunr from "lunr"
-
 /* ----------------------------------------------------------------------------
- * Global types
+ * Functions
  * ------------------------------------------------------------------------- */
 
-declare global {
-  namespace lunr {
+/**
+ * Custom tokenizer with support for HTML tags
+ *
+ * This tokenizer implementation is adapted from the original tokenizer, but
+ * skips all HTML tags and attributes to prevent interference with search.
+ *
+ * @param value - String value
+ *
+ * @returns Tokens
+ */
+export function tokenizer(value: string): lunr.Token[] {
+  const tokens: lunr.Token[] = []
+  if (typeof value === "string") {
+    value = value.toLowerCase()
 
-    /**
-     * Query clause - add missing field definitions
-     */
-    namespace Query {
-      interface Clause {
-        presence: Query.presence
+    /* Consume characters from string and group into tokens */
+    for (let start = 0, end = 0; end <= value.length; end++) {
+      const char = value.charAt(end)
+      if (
+        lunr.tokenizer.separator.test(char) ||
+        char === "<" || end === value.length
+      ) {
+
+        /* Create token */
+        if (end > start)
+          tokens.push(
+            new lunr.Token(value.slice(start, end), {
+              position: [start, end],
+              // index: tokens.length,
+              pointer: tokens[tokens.length - 1] // or just the START number of the last top-level block?
+            })
+          )
+
+        /* Always skip HTML tags */
+        if (char === "<")
+          while (value.charAt(end) !== ">")
+            end++
+
+        /* Adjust start position */
+        start = end + 1
       }
     }
-
-    /**
-     * Query parser - add missing class definitions
-     */
-    class QueryParser {
-      constructor(value: string, query: Query)
-      public parse(): void
-    }
-
-    /**
-     * Enable multi-language support
-     *
-     * @param lang - Languages
-     *
-     * @returns Plugin
-     */
-    function multiLanguage(...lang: string[]): Builder.Plugin
   }
+
+  /* Return tokens */
+  return tokens
 }

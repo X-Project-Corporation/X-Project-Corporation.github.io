@@ -25,10 +25,7 @@ import {
   SearchDocumentMap,
   setupSearchDocumentMap
 } from "../document"
-import {
-  SearchHighlightFactoryFn,
-  setupSearchHighlighter
-} from "../highlighter"
+import { tokenizer } from "../internal"
 import { SearchOptions } from "../options"
 import {
   SearchQueryTerms,
@@ -63,9 +60,6 @@ export interface SearchIndexDocument {
 
 /**
  * Search index
- *
- * This interfaces describes the format of the `search_index.json` file which
- * is automatically built by the MkDocs search plugin.
  */
 export interface SearchIndex {
   config: SearchIndexConfig            /* Search index configuration */
@@ -145,11 +139,6 @@ export class Search {
   protected documents: SearchDocumentMap
 
   /**
-   * Search highlight factory function
-   */
-  protected highlight: SearchHighlightFactoryFn
-
-  /**
    * The underlying Lunr.js search index
    */
   protected index: lunr.Index
@@ -167,85 +156,23 @@ export class Search {
   public constructor({ config, docs, index, options }: SearchIndex) {
     this.options = options
 
-    /* Set up document map and highlighter factory */
-    this.documents = setupSearchDocumentMap(docs)
-    this.highlight = setupSearchHighlighter(config)
-
-    console.log(lunr.tokenizer)
-    // lunr.tokenizer = function (obj) {
-    //   if (!arguments.length || obj == null || obj == undefined) return []
-    //   if (Array.isArray(obj)) return obj.map(function (t) { return t.toLowerCase() })
-
-    //   var str = obj.toString().replace(/^\s+/, '')
-
-    //   for (var i = str.length - 1; i >= 0; i--) {
-    //     if (/\S/.test(str.charAt(i))) {
-    //       str = str.substring(0, i + 1)
-    //       break
-    //     }
-    //   }
-
-    //   return str
-    //     .split(/\s+/)
-    //     .map(function (token) {
-    //       return token.replace(/^\W+/, '').replace(/\W+$/, '').toLowerCase()
-    //     })
-    // }
-
-    /* Set separator for tokenizer */
+    /* Set up tokenizer */
+    lunr.tokenizer = tokenizer as typeof lunr.tokenizer
     lunr.tokenizer.separator = new RegExp(config.separator)
 
     /* If no index was given, create it */
+    this.documents = setupSearchDocumentMap(docs)
     if (typeof index === "undefined") {
       this.index = lunr(function () {
-        this.metadataWhitelist = ["position"]
+        this.metadataWhitelist = ["position", "pointer"]
 
-        /* Set up multi-language support */
+        /* Set up (multi-)language support */
         if (config.lang.length === 1 && config.lang[0] !== "en") {
-          this.use((lunr as any)[config.lang[0]])
+          // @ts-expect-error - namespace indexing is not allowed
+          this.use(lunr[config.lang[0]])
         } else if (config.lang.length > 1) {
-          this.use((lunr as any).multiLanguage(...config.lang))
+          this.use(lunr.multiLanguage(...config.lang))
         }
-
-        // lunr.trimmer
-
-        // lunr3.trimmer = function(token) {
-        //   return token.update(function(s) {
-        //     return s.replace(/^\W+/, "").replace(/\W+$/, "");
-        //   });
-        // };
-
-        // TODO: replace with a custom trimmer that includes some other characters
-        // then filter shit...
-        // this.pipeline.remove(lunr.trimmer)
-        // if ()
-
-        // TODO: insert tokenfilter BEFORE trimmer!!!!
-
-        // // // drop HTML tags...
-        const filter = function (token) {
-          console.log(token)
-          if (token.toString().includes("<")) {
-            console.log(">>>", token)
-            console.log("filter")
-            return token.update(s => {
-              // TODO: update position!
-              return s.replace(/<\/?\w+>/g, "")
-            })
-          }
-          // return token.toString().split("@").map(function (str) {
-          //   return token.clone().update(function () { return str })
-          // })
-        }
-        this.pipeline.before(lunr.trimmer, filter)
-
-        // this.pipeline.add(filters)
-        console.log(lunr.tokenizer.separator)
-        const t = this.tokenizer("abx def <code>with code</code>")
-        console.log(">!!!!", t)
-        this.tokenizer(t)
-        console.log("XYYY", this.pipeline.run(t))
-        return
 
         /* Compute functions to be removed from the pipeline */
         const fns = difference([
@@ -254,7 +181,8 @@ export class Search {
 
         /* Remove functions from the pipeline for registered languages */
         for (const lang of config.lang.map(language => (
-          language === "en" ? lunr : (lunr as any)[language]
+          // @ts-expect-error - namespace indexing is not allowed
+          language === "en" ? lunr : lunr[language]
         ))) {
           for (const fn of fns) {
             this.pipeline.remove(lang[fn])
@@ -279,6 +207,7 @@ export class Search {
     } else {
       this.index = lunr.Index.load(index)
     }
+    console.log(this.index)
   }
 
   /**
@@ -300,7 +229,6 @@ export class Search {
   public search(query: string): SearchResult {
     if (query) {
       try {
-        const highlight = this.highlight(query)
 
         /* Parse query to extract clauses for analysis */
         const clauses = parseSearchQuery(query)
@@ -322,15 +250,58 @@ export class Search {
                 clauses,
                 Object.keys(matchData.metadata)
               )
-              console.log(title, matchData.metadata)
+              console.log(matchData.metadata)
+
+              // TODO: detect range to render...
+
+              // for ()
+
+              // highlighting... hmmm... also search snippets...
+
+              // console.log(matchData.metadata)
+              // just extract all ranges! - positions work correctly...!
+              const positions: [number, number][] = []
+              for (const key of Object.keys(matchData.metadata)) {
+                // TODO: only text here...
+                if (matchData.metadata[key].text)
+                  positions.push(...matchData.metadata[key].text.position)
+              }
+              // start from the end...
+              positions.sort((a, b) => b[0] - a[0] || b[1] - a[1])
+
+              var highlightedText = text
+              for (const position of positions) {
+                highlightedText =
+                  highlightedText.substring(0, position[0]) +
+                  `<mark data-md-highlight>${highlightedText.substring(position[0], position[1])}</mark>` +
+                  highlightedText.substring(position[1])
+              }
+
+              // console.log(matchData.metadata)
+              // just extract all ranges!
+              const positions2: [number, number][] = []
+              for (const key of Object.keys(matchData.metadata)) {
+                // TODO: only text here...
+                if (matchData.metadata[key].title)
+                  positions2.push(...matchData.metadata[key].title.position)
+              }
+              positions2.sort((a, b) => b[0] - a[0] || b[1] - a[1])
+
+              var highlightedTitle = title
+              for (const position of positions2) {
+                highlightedTitle =
+                  highlightedTitle.substring(0, position[0]) +
+                  `<mark data-md-highlight>${highlightedTitle.substring(position[0], position[1])}</mark>` +
+                  highlightedTitle.substring(position[1])
+              }
 
               /* Highlight title and text and apply post-query boosts */
               const boost = +!parent + +Object.values(terms).every(t => t)
               item.push({
                 location,
-                title: highlight(title),
-                text:  highlight(text),
-                ...tags && { tags: tags.map(highlight) },
+                title: highlightedTitle,//: highlight(title),
+                text: highlightedText,//: highlight(text),
+                ...tags && { tags },//: tags.map(highlight) },
                 score: score * (1 + boost),
                 terms
               })

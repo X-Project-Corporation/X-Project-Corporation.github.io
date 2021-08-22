@@ -20,8 +20,6 @@
  * IN THE SOFTWARE.
  */
 
-// import escapeHTML from "escape-html"
-
 import { SearchIndexDocument } from "../_"
 
 /* ----------------------------------------------------------------------------

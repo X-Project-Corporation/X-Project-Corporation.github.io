@@ -89,7 +89,7 @@ class SearchIndex(BaseIndex):
 
         toc_item = self._find_toc_by_id(toc, section.id)
 
-        text = ''.join(section.text) if self.config['indexing'] == 'full' else ''
+        text = ''.join(section.text) # TODO: always use full indexing...
         # TODO: when literal h1, h2 etc are used, this won't work
         if toc_item is not None and section.tag != "h1":
             self._add_entry(

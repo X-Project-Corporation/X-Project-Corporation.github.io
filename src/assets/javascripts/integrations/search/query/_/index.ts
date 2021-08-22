@@ -53,8 +53,8 @@ export type SearchQueryTerms = Record<string, boolean>
 export function parseSearchQuery(
   value: string
 ): SearchQueryClause[] {
-  const query  = new (lunr as any).Query(["title", "text"])
-  const parser = new (lunr as any).QueryParser(value, query)
+  const query  = new lunr.Query(["title", "text"])
+  const parser = new lunr.QueryParser(value, query)
 
   /* Parse and return query clauses */
   parser.parse()
