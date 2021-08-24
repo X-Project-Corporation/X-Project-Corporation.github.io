@@ -67,7 +67,7 @@ class SocialPlugin(BasePlugin):
                 palette = palette[0]
 
             # Set colors according to palette
-            if palette["primary"]:
+            if "primary" in palette and palette["primary"]:
                 primary = palette["primary"].replace(" ", "-")
                 self.color = colors.get(primary, self.color)
 
