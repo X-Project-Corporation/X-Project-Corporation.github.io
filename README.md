@@ -139,7 +139,7 @@ For other installation methods, configuration options, and a demo, visit
 
 ### ... leading organizations
 
-[Atlassian](https://atlassian-labs.github.io/data-center-helm-charts/),
+[Atlassian](https://atlassian.github.io/data-center-helm-charts/),
 [AWS](https://aws.github.io/copilot-cli/),
 [Binance](https://docs.binance.org/),
 [CERN](http://abpcomputing.web.cern.ch/),
@@ -158,6 +158,7 @@ For other installation methods, configuration options, and a demo, visit
 
 ### ... and successful Open Source projects
 
+[Arduino](https://arduino.github.io/arduino-cli/),
 [AutoKeras](https://autokeras.com/),
 [BFE](https://www.bfe-networks.net/),
 [Crystal](https://crystal-lang.org/reference/),
