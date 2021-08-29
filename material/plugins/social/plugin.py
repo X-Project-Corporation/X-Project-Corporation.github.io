@@ -48,17 +48,19 @@ class SocialPlugin(BasePlugin):
     # Initialize plugin
     def __init__(self):
         self.color = colors.get("indigo")
-
-        # Resolve and create cache directory
         self.cache = ".cache"
-        if not os.path.isdir(self.cache):
-            os.makedirs(self.cache)
 
     # Retrieve configuration for rendering
     def on_config(self, config):
-        theme = config.get("theme")
+        if not self.config.get("cards"):
+            return
+
+        # Ensure presence of cache directory
+        if not os.path.isdir(self.cache):
+            os.makedirs(self.cache)
 
         # Retrieve palette from theme configuration
+        theme = config.get("theme")
         if "palette" in theme:
             palette = theme["palette"]
 
@@ -67,7 +69,7 @@ class SocialPlugin(BasePlugin):
                 palette = palette[0]
 
             # Set colors according to palette
-            if palette["primary"]:
+            if "primary" in palette and palette["primary"]:
                 primary = palette["primary"].replace(" ", "-")
                 self.color = colors.get(primary, self.color)
 
@@ -80,6 +82,10 @@ class SocialPlugin(BasePlugin):
 
     # Create social cards
     def on_page_markdown(self, markdown, page, config, **kwargs):
+        if not self.config.get("cards"):
+            return
+
+        # Resolve image directory
         directory = self.config.get("cards_directory")
         file, _ = os.path.splitext(page.file.src_path)
 
