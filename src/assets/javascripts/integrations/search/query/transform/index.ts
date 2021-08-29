@@ -52,7 +52,9 @@ export type SearchTransformFn = (value: string) => string
  *    character or are at the end of the query string. Furthermore, filter
  *    unmatched quotation marks.
  *
- * 3. Trim excess whitespace from left and right.
+ * 3. TODO: document
+ *
+ * 4. Trim excess whitespace from left and right.
  *
  * @param query - Query value
  *
@@ -67,5 +69,9 @@ export function defaultTransform(query: string): string {
       )
       .join("")
     .replace(/"|(?:^|\s+)[*+\-:^~]+(?=\s+|$)/g, "") /* => 2 */
-    .trim()                                         /* => 3 */
+    .split(/\s+/g)                                  /* => 3 */
+      .filter(term => term.length)
+      .map(term => /^[+-]/.test(term) ? term : `${term}*`)
+      .join(" ")
+    .trim()                                         /* => 4 */
 }

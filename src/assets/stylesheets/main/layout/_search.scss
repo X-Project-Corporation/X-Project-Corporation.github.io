@@ -761,23 +761,6 @@
       }
     }
 
-    // Search result content
-    p:not([class]) {
-      display: inline;
-      margin: 0.5em 0;
-
-      // Ensure last child has bottom spacing
-      &:last-child {
-        display: inline-block;
-        margin-top: 0;
-      }
-
-      // Inline paragraphs
-      + p::before {
-        content: " ";
-      }
-    }
-
     // Omit empty elements
     :not([class]):empty {
       display: none;

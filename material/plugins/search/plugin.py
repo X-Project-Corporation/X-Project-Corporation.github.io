@@ -89,7 +89,7 @@ class SearchIndex(BaseIndex):
 
         toc_item = self._find_toc_by_id(toc, section.id)
 
-        text = ''.join(section.text) # TODO: always use full indexing...
+        text = ''.join(section.text).strip() # TODO: always use full indexing...
         # TODO: when literal h1, h2 etc are used, this won't work
         if toc_item is not None and section.tag != "h1":
             self._add_entry(
@@ -134,16 +134,16 @@ class ContentParser(HTMLParser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Tags to filter (i.e. to not include contents in index)
-        self.filter = set([
+        # Tags to skip (i.e. to not include contents in index)
+        self.skip = set([
             "img",
             "object",
             "script",
             "style"
         ])
 
-        # Tags to preserve
-        self.preserve = set([
+        # Tags to keep
+        self.keep = set([
             "code",
             "li",
             "ol",
@@ -174,14 +174,15 @@ class ContentParser(HTMLParser):
             for attr in attrs:
                 if attr[0] == "id":
                     self.section.id = attr[1]
+                    break
 
         # Handle preface to headings - ensure top-level section
         if not self.section:
             self.section = ContentSection("h1")
             self.data.append(self.section)
 
-        # Render opening tag if preserved
-        if tag in self.preserve:
+        # Render opening tag if kept
+        if tag in self.keep:
             text = self.section.text
             if self.section.tag in self.stack:
                 text = self.section.title
@@ -194,8 +195,8 @@ class ContentParser(HTMLParser):
         if self.stack[-1] == tag:
             self.stack.pop()
 
-        # Render closing tag if preserved
-        if tag in self.preserve:
+        # Render closing tag if kept
+        if tag in self.keep:
             text = self.section.text
             if self.section.tag in self.stack:
                 text = self.section.title
@@ -205,18 +206,21 @@ class ContentParser(HTMLParser):
 
     # Called for the text contents of each tag.
     def handle_data(self, data):
-        if self.filter.intersection(self.stack):
+        if self.skip.intersection(self.stack):
             return
 
         # Collapse whitespace in non-pre contexts
         if not "pre" in self.stack:
-            data = data.strip("\n").replace("\n", " ")
+            if not data.isspace():
+                data = data.replace("\n", " ")
+            else:
+                data = " "
 
         # Ignore section headline
         if self.section.tag in self.stack:
             if not "a" in self.stack:
-                self.section.title.append(escape(data))
+                self.section.title.append(escape(data, quote = False))
 
         # Handle everything else
         else:
-            self.section.text.append(escape(data))
+            self.section.text.append(escape(data, quote = False))

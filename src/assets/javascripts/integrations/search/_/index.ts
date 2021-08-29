@@ -25,7 +25,7 @@ import {
   SearchDocumentMap,
   setupSearchDocumentMap
 } from "../document"
-import { tokenizer } from "../internal"
+import { highlighter, tokenizer } from "../internal"
 import { SearchOptions } from "../options"
 import {
   SearchQueryTerms,
@@ -156,7 +156,7 @@ export class Search {
   public constructor({ config, docs, index, options }: SearchIndex) {
     this.options = options
 
-    /* Set up tokenizer */
+    /* Set up custom tokenizer */
     lunr.tokenizer = tokenizer as typeof lunr.tokenizer
     lunr.tokenizer.separator = new RegExp(config.separator)
 
@@ -164,7 +164,7 @@ export class Search {
     this.documents = setupSearchDocumentMap(docs)
     if (typeof index === "undefined") {
       this.index = lunr(function () {
-        this.metadataWhitelist = ["position", "pointer"]
+        this.metadataWhitelist = ["position"]
 
         /* Set up (multi-)language support */
         if (config.lang.length === 1 && config.lang[0] !== "en") {
@@ -250,59 +250,42 @@ export class Search {
                 clauses,
                 Object.keys(matchData.metadata)
               )
-              console.log(matchData.metadata)
 
-              // TODO: detect range to render...
-
-              // for ()
-
-              // highlighting... hmmm... also search snippets...
-
-              // console.log(matchData.metadata)
-              // just extract all ranges! - positions work correctly...!
-              const positions: [number, number][] = []
-              for (const key of Object.keys(matchData.metadata)) {
-                // TODO: only text here...
-                if (matchData.metadata[key].text)
-                  positions.push(...matchData.metadata[key].text.position)
+              const metadata = matchData.metadata
+              const allpos: any[] = []
+              for (const [, fields] of Object.entries(metadata)) {
+                for (const [field, { position }] of Object.entries(fields)) {
+                  if (field === "text") {
+                    allpos.push(...position)
+                  }
+                }
               }
-              // start from the end...
-              positions.sort((a, b) => b[0] - a[0] || b[1] - a[1])
+              const highlightedText = highlighter(text, allpos)
 
-              var highlightedText = text
-              for (const position of positions) {
-                highlightedText =
-                  highlightedText.substring(0, position[0]) +
-                  `<mark data-md-highlight>${highlightedText.substring(position[0], position[1])}</mark>` +
-                  highlightedText.substring(position[1])
+              const allpos2: any[] = []
+              for (const [, fields] of Object.entries(metadata)) {
+                for (const [field, { position }] of Object.entries(fields)) {
+                  if (field === "title") {
+                    allpos2.push(...position)
+                  }
+                }
               }
-
-              // console.log(matchData.metadata)
-              // just extract all ranges!
-              const positions2: [number, number][] = []
-              for (const key of Object.keys(matchData.metadata)) {
-                // TODO: only text here...
-                if (matchData.metadata[key].title)
-                  positions2.push(...matchData.metadata[key].title.position)
-              }
-              positions2.sort((a, b) => b[0] - a[0] || b[1] - a[1])
-
-              var highlightedTitle = title
-              for (const position of positions2) {
-                highlightedTitle =
-                  highlightedTitle.substring(0, position[0]) +
-                  `<mark data-md-highlight>${highlightedTitle.substring(position[0], position[1])}</mark>` +
-                  highlightedTitle.substring(position[1])
-              }
+              const highlightedTitle = highlighter(title, allpos2)
+              // console.log(highlightedText)
+              // console.log(highlightedTitle)
 
               /* Highlight title and text and apply post-query boosts */
-              const boost = +!parent + +Object.values(terms).every(t => t)
+              const boost = Object.values(terms).filter(t => t).length /
+                Object.keys(terms).length
+
+              console.log(ref, boost)
+
               item.push({
                 location,
                 title: highlightedTitle,//: highlight(title),
                 text: highlightedText,//: highlight(text),
                 ...tags && { tags },//: tags.map(highlight) },
-                score: score * (1 + boost),
+                score: score * (1 + boost ** 2),
                 terms
               })
             }
@@ -355,7 +338,7 @@ export class Search {
           ...typeof suggestions !== "undefined" && { suggestions }
         }
 
-      /* Log errors to console (for now) */
+      /* Log errors to console */
       } catch {
         console.warn(`Invalid query: ${query} – see https://bit.ly/2s3ChXG`)
       }

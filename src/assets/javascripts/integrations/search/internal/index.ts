@@ -21,14 +21,90 @@
  */
 
 /* ----------------------------------------------------------------------------
+ * Types
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Position
+ */
+export interface Position {
+  table: number[]                  /* Position table */
+  index: number                    /* Position index */
+}
+
+/* ----------------------------------------------------------------------------
+ * Helper types
+ * ------------------------------------------------------------------------- */
+
+/**
+ * String section
+ *
+ * A section consists of a start and end position, as well as a block index to
+ * denote to which top-level block it belongs.
+ */
+type Section = [number, number, number]
+
+/* ----------------------------------------------------------------------------
+ * Helper functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Split a string into sections
+ *
+ * This function preprocesses the given string by isolating all non-HTML parts
+ * of a string, in order to ensure that HTML tags are removed before indexing.
+ *
+ * @param value - String value
+ *
+ * @returns String sections
+ */
+function split(value: string): Section[] {
+
+  let start = 0                        /* Current start offset */
+  let end = 0                          /* Current end offset */
+  let block = 0                        /* Current block */
+
+  /* Split string into sections */
+  const sections: Section[] = []
+  for (let stack = 0; end < value.length; end++) {
+
+    /* Opening tag after non-empty section */
+    if (value.charAt(end) === "<" && end > start) {
+      sections.push([start, start = end, block])
+
+    /* Closing tag */
+    } else if (value.charAt(end) === ">") {
+      if (value.charAt(start + 1) === "/") {
+        if (--stack === 0)
+          sections.push([end + 1, end + 1, ++block])
+
+      /* Self-closing tag */
+      } else if (value.charAt(end - 1) !== "/") {
+        stack++
+      }
+
+      /* New section */
+      start = end + 1
+    }
+  }
+
+  /* Add trailing section */
+  if (end > start)
+    sections.push([start, end, block])
+
+  /* Return sections */
+  return sections
+}
+
+/* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
 
 /**
- * Custom tokenizer with support for HTML tags
+ * Split a string into tokens
  *
- * This tokenizer implementation is adapted from the original tokenizer, but
- * skips all HTML tags and attributes to prevent interference with search.
+ * This tokenizer supersedes the default tokenizer that is provided by Lunr.js,
+ * as it is aware of HTML tags and allows for multi-character splitting.
  *
  * @param value - String value
  *
@@ -37,37 +113,77 @@
 export function tokenizer(value: string): lunr.Token[] {
   const tokens: lunr.Token[] = []
   if (typeof value === "string") {
-    value = value.toLowerCase()
+    const table = [0]
 
-    /* Consume characters from string and group into tokens */
-    for (let start = 0, end = 0; end <= value.length; end++) {
-      const char = value.charAt(end)
-      if (
-        lunr.tokenizer.separator.test(char) ||
-        char === "<" || end === value.length
-      ) {
+    /* Tokenize section */
+    for (const [start, end, block] of split(value)) {
+      const section = value.slice(start, end)
+      const separator = new RegExp(lunr.tokenizer.separator, "g")
 
-        /* Create token */
-        if (end > start)
-          tokens.push(
-            new lunr.Token(value.slice(start, end), {
-              position: [start, end],
-              // index: tokens.length,
-              pointer: tokens[tokens.length - 1] // or just the START number of the last top-level block?
-            })
+      /* Split section into tokens */
+      let match: RegExpExecArray
+      let index = 0
+      do {
+        match = separator.exec(section)!
+
+        /* Add table entry for non-empty section */
+        const until = match?.index ?? section.length
+        if (index < until) {
+          table.push(
+            start + index << 14 |
+            until - index <<  8 |
+            block         <<  2
           )
 
-        /* Always skip HTML tags */
-        if (char === "<")
-          while (value.charAt(end) !== ">")
-            end++
+          /* Add token */
+          tokens.push(
+            new lunr.Token(
+              section.slice(index, until).toLowerCase(), {
+                position: {
+                  table,
+                  index: table.length - 1
+                }
+              }
+            )
+          )
+        }
 
-        /* Adjust start position */
-        start = end + 1
-      }
+        /* Update index */
+        if (match)
+          index = match.index + match[0].length
+      } while (match)
     }
   }
 
   /* Return tokens */
   return tokens
+}
+
+/**
+ * Highlight all occurrences in a string
+ *
+ * @param value - String value
+ * @param positions - Positions of occurrences
+ *
+ * @returns Highlighted string value
+ */
+export function highlighter(
+  value: string, positions: Position[]
+): string {
+  for (const { table, index } of positions
+    .sort((a, b) => b.index - a.index)
+  ) {
+    const offset = table[index] >> 14
+    const length = table[index] >>  8 & 0x3F
+
+    /* Wrap occurrence with marker */
+    value = [
+      value.slice(0, offset),
+      "<mark>", value.slice(offset, offset + length), "</mark>",
+      value.slice(offset + length)
+    ].join("")
+  }
+
+  /* Return highlighted string value */
+  return value
 }

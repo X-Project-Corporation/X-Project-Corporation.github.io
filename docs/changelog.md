@@ -2,6 +2,8 @@
 template: overrides/main.html
 ---
 
+# Changelog
+
 ## Material for MkDocs
 
 ### 7.2.5 <small>_ August 25, 2021</small>

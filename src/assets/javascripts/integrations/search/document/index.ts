@@ -58,12 +58,12 @@ export function setupSearchDocumentMap(
   for (const doc of docs) {
     const [path] = doc.location.split("#")
 
-    /* Handle article */
+    /* Add document article */
     const article = documents.get(path)
     if (typeof article === "undefined") {
       documents.set(path, doc)
 
-    /* Handle section */
+    /* Add document section */
     } else {
       documents.set(doc.location, doc)
       doc.parent = article
