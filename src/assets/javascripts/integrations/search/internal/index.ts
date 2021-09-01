@@ -113,7 +113,7 @@ function split(value: string): Section[] {
 export function tokenizer(value: string): lunr.Token[] {
   const tokens: lunr.Token[] = []
   if (typeof value === "string") {
-    const table = [0]
+    const table = []
 
     /* Tokenize section */
     for (const [start, end, block] of split(value)) {
@@ -163,7 +163,7 @@ export function tokenizer(value: string): lunr.Token[] {
  * Highlight all occurrences in a string
  *
  * @param value - String value
- * @param positions - Positions of occurrences
+ * @param positions - Occurrences
  *
  * @returns Highlighted string value
  */

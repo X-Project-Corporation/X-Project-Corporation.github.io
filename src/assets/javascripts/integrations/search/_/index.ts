@@ -262,6 +262,8 @@ export class Search {
               }
               const highlightedText = highlighter(text, allpos)
 
+              console.log(allpos)
+
               const allpos2: any[] = []
               for (const [, fields] of Object.entries(metadata)) {
                 for (const [field, { position }] of Object.entries(fields)) {
@@ -274,11 +276,11 @@ export class Search {
               // console.log(highlightedText)
               // console.log(highlightedTitle)
 
+              // 1. remove all blocks that contain no matches...
+
               /* Highlight title and text and apply post-query boosts */
               const boost = Object.values(terms).filter(t => t).length /
                 Object.keys(terms).length
-
-              console.log(ref, boost)
 
               item.push({
                 location,
