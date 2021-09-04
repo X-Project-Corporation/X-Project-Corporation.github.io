@@ -88,7 +88,7 @@ theme:
 # Plugins
 plugins:
   - search:
-      separator: "[\\s\\-,:!=\\[\\]()\"/]+|\\.(?!\\d)"
+      separator: "[\\s\\-,:!=\\[\\]()\"/]+|\\.(?!\\d)|&[lg]t;|(?!\\b)(?=[A-Z])"
   - social
   - redirects:
       redirect_maps:

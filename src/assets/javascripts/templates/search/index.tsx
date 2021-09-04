@@ -136,10 +136,12 @@ export function renderSearchResultItem(
     ...more.length ? [
       <details class="md-search-result__more">
         <summary tabIndex={-1}>
-          {more.length > 0 && more.length === 1
-            ? translation("search.result.more.one")
-            : translation("search.result.more.other", more.length)
-          }
+          <div>
+            {more.length > 0 && more.length === 1
+              ? translation("search.result.more.one")
+              : translation("search.result.more.other", more.length)
+            }
+          </div>
         </summary>
         {...more.map(section => renderSearchDocument(section, Flag.TEASER))}
       </details>

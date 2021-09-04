@@ -62,6 +62,10 @@ class SearchIndex(BaseIndex):
         parser.feed(page.content)
         parser.close()
 
+        # temporarily index less stuff
+        if not "search" in page.url:
+            return
+
         # Get the absolute URL for the page, this is then
         # prepended to the urls of the sections
         url = page.url
@@ -129,6 +133,9 @@ class ContentParser(HTMLParser):
     Given a block of HTML, group the content under the preceding
     heading tags which can then be used for creating an index
     for that section.
+
+    Attributes:
+        skip        Tags to skip (?)
     """
 
     def __init__(self, *args, **kwargs):

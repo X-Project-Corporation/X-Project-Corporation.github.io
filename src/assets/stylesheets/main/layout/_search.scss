@@ -628,36 +628,16 @@
     }
   }
 
-  // Search result more link
+  // Search result more container
   &__more summary {
+    position: sticky;
+    top: 0;
+    z-index: 1;
     display: block;
-    padding: px2em(12px) px2rem(16px);
-    color: var(--md-typeset-a-color);
-    font-size: px2rem(12.8px);
+    background-color: var(--md-default-bg-color);
     outline: none;
     cursor: pointer;
-    transition:
-      color            250ms,
-      background-color 250ms;
     scroll-snap-align: start;
-
-    // [tablet landscape +]: Adjust spacing
-    @include break-from-device(tablet landscape) {
-      padding-left: px2rem(44px);
-
-      // Adjust for right-to-left languages
-      [dir="rtl"] & {
-        padding-right: px2rem(44px);
-        padding-left: px2rem(16px);
-      }
-    }
-
-    // Search result more link on focus/hover
-    &:focus,
-    &:hover {
-      color: var(--md-accent-fg-color);
-      background-color: var(--md-accent-fg-color--transparent);
-    }
 
     // Hide native details marker
     &::marker,
@@ -665,9 +645,32 @@
       display: none;
     }
 
-    // Adjust transparency of less relevant results
-    ~ * > * {
-      opacity: 0.65;
+    // Search result more button
+    > div {
+      padding: px2em(12px) px2rem(16px);
+      color: var(--md-typeset-a-color);
+      font-size: px2rem(12.8px);
+      transition:
+        color            250ms,
+        background-color 250ms;
+
+      // [tablet landscape +]: Adjust spacing
+      @include break-from-device(tablet landscape) {
+        padding-left: px2rem(44px);
+
+        // Adjust for right-to-left languages
+        [dir="rtl"] & {
+          padding-right: px2rem(44px);
+          padding-left: px2rem(16px);
+        }
+      }
+    }
+
+    // Search result more link on focus/hover
+    &:focus > div,
+    &:hover > div {
+      color: var(--md-accent-fg-color);
+      background-color: var(--md-accent-fg-color--transparent);
     }
   }
 
