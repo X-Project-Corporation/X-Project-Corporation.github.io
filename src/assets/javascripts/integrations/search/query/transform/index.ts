@@ -52,7 +52,10 @@ export type SearchTransformFn = (value: string) => string
  *    character or are at the end of the query string. Furthermore, filter
  *    unmatched quotation marks.
  *
- * 3. TODO: document
+ * 3. Split the query string at whitespace and append a wildcard to every term
+ *    that is not explicitly marked with a `+` or `-` modifier, as this ensures
+ *    consistent and stable ranking when multiple terms are entered. Before,
+ *    only the last term was suffixed with a wildcard.
  *
  * 4. Trim excess whitespace from left and right.
  *

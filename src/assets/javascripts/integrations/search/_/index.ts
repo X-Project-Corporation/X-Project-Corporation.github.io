@@ -207,7 +207,6 @@ export class Search {
     } else {
       this.index = lunr.Index.load(index)
     }
-    console.log(this.index)
   }
 
   /**
@@ -262,7 +261,7 @@ export class Search {
               }
               const highlightedText = highlighter(text, allpos)
 
-              console.log(allpos)
+              // console.log(allpos)
 
               const allpos2: any[] = []
               for (const [, fields] of Object.entries(metadata)) {

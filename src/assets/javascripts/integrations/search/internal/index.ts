@@ -25,11 +25,19 @@
  * ------------------------------------------------------------------------- */
 
 /**
+ * Block
+ */
+export interface Block {
+  type?: string                        /* Block type */
+  data: number[]                       /* Block data */
+}
+
+/**
  * Position
  */
 export interface Position {
-  table: number[]                  /* Position table */
-  index: number                    /* Position index */
+  table: Block[]                       /* Position table */
+  index: number                        /* Position index */
 }
 
 /* ----------------------------------------------------------------------------
@@ -38,11 +46,8 @@ export interface Position {
 
 /**
  * String section
- *
- * A section consists of a start and end position, as well as a block index to
- * denote to which top-level block it belongs.
  */
-type Section = [number, number, number]
+type Section = [number, number, number, number]
 
 /* ----------------------------------------------------------------------------
  * Helper functions
@@ -60,27 +65,26 @@ type Section = [number, number, number]
  */
 function split(value: string): Section[] {
 
+  let block = 0                        /* Current block */
   let start = 0                        /* Current start offset */
   let end = 0                          /* Current end offset */
-  let block = 0                        /* Current block */
 
   /* Split string into sections */
   const sections: Section[] = []
   for (let stack = 0; end < value.length; end++) {
 
-    /* Opening tag after non-empty section */
+    /* Tag start after non-empty section */
     if (value.charAt(end) === "<" && end > start) {
-      sections.push([start, start = end, block])
+      sections.push([block, 1, start, start = end])
 
-    /* Closing tag */
+    /* Tag end */
     } else if (value.charAt(end) === ">") {
       if (value.charAt(start + 1) === "/") {
         if (--stack === 0)
-          sections.push([end + 1, end + 1, ++block])
-
-      /* Self-closing tag */
+          block++
       } else if (value.charAt(end - 1) !== "/") {
-        stack++
+        if (stack++ === 0)
+          sections.push([block, 0, start + 1, end])
       }
 
       /* New section */
@@ -90,7 +94,7 @@ function split(value: string): Section[] {
 
   /* Add trailing section */
   if (end > start)
-    sections.push([start, end, block])
+    sections.push([block, 1, start, end])
 
   /* Return sections */
   return sections
@@ -113,45 +117,58 @@ function split(value: string): Section[] {
 export function tokenizer(value: string): lunr.Token[] {
   const tokens: lunr.Token[] = []
   if (typeof value === "string") {
-    const table = []
+    const table: Block[] = []
 
     /* Tokenize section */
-    for (const [start, end, block] of split(value)) {
+    for (const [block, add, start, end] of split(value)) {
       const section = value.slice(start, end)
-      const separator = new RegExp(lunr.tokenizer.separator, "g")
+      if (add) {
+        const separator = new RegExp(lunr.tokenizer.separator, "g")
 
-      /* Split section into tokens */
-      let match: RegExpExecArray
-      let index = 0
-      do {
-        match = separator.exec(section)!
+        /* Split section into tokens */
+        let match: RegExpExecArray
+        let index = 0
+        do {
+          match = separator.exec(section)!
 
-        /* Add table entry for non-empty section */
-        const until = match?.index ?? section.length
-        if (index < until) {
-          table.push(
-            start + index << 14 |
-            until - index <<  8 |
-            block         <<  2
-          )
+          /* Add table entry for non-empty section */
+          const until = match?.index ?? section.length
+          if (index < until) {
+            table[block] ||= { data: [] }
+            table[block].data.push(
+              start + index << 8 |
+              until - index
+            )
 
-          /* Add token */
-          tokens.push(
-            new lunr.Token(
+            /* Add token to block */
+            tokens.push(new lunr.Token(
               section.slice(index, until).toLowerCase(), {
                 position: {
                   table,
-                  index: table.length - 1
+                  index: block << 16 | table[block].data.length - 1
                 }
               }
-            )
-          )
-        }
+            ))
+          }
 
-        /* Update index */
-        if (match)
-          index = match.index + match[0].length
-      } while (match)
+          /* Update index */
+          if (match) {
+            const [term] = match
+            index = match.index + term.length
+
+            /* Support pure lookahead separators */
+            if (term.length === 0)
+              separator.lastIndex = match.index + 1
+          }
+        } while (match)
+
+      /* Start new block */
+      } else {
+        table[block] = {
+          ...end > start && { type: value.slice(start, end) },
+          data: []
+        }
+      }
     }
   }
 
@@ -170,11 +187,15 @@ export function tokenizer(value: string): lunr.Token[] {
 export function highlighter(
   value: string, positions: Position[]
 ): string {
-  for (const { table, index } of positions
+  for (const { table, index: i } of positions
     .sort((a, b) => b.index - a.index)
   ) {
-    const offset = table[index] >> 14
-    const length = table[index] >>  8 & 0x3F
+    const block = i >> 16
+    const index = i  & 0xFFFF
+
+    /* Retrieve offset and length of match */
+    const offset = table[block].data[index] >> 8
+    const length = table[block].data[index]  & 0xFF
 
     /* Wrap occurrence with marker */
     value = [
