@@ -20,6 +20,8 @@
  * IN THE SOFTWARE.
  */
 
+import { split } from "~/utilities"
+
 /* ----------------------------------------------------------------------------
  * Types
  * ------------------------------------------------------------------------- */
@@ -54,7 +56,7 @@ type Section = [number, number, number, number]
  * ------------------------------------------------------------------------- */
 
 /**
- * Split a string into sections
+ * Extract all non-HTML parts of a string
  *
  * This function preprocesses the given string by isolating all non-HTML parts
  * of a string, in order to ensure that HTML tags are removed before indexing.
@@ -63,7 +65,7 @@ type Section = [number, number, number, number]
  *
  * @returns String sections
  */
-function split(value: string): Section[] {
+function extract(value: string): Section[] {
 
   let block = 0                        /* Current block */
   let start = 0                        /* Current start offset */
@@ -110,57 +112,39 @@ function split(value: string): Section[] {
  * This tokenizer supersedes the default tokenizer that is provided by Lunr.js,
  * as it is aware of HTML tags and allows for multi-character splitting.
  *
- * @param value - String value
+ * @param input - String value or token
  *
  * @returns Tokens
  */
-export function tokenizer(value: string): lunr.Token[] {
+export function tokenizer(input?: lunr.Token | string): lunr.Token[] {
   const tokens: lunr.Token[] = []
-  if (typeof value === "string") {
+  if (input) {
+    const value = input.toString()
     const table: Block[] = []
 
     /* Tokenize section */
-    for (const [block, add, start, end] of split(value)) {
+    for (const [block, add, start, end] of extract(value)) {
       const section = value.slice(start, end)
       if (add) {
-        const separator = new RegExp(lunr.tokenizer.separator, "g")
+        split(section, lunr.tokenizer.separator, ([index, until]) => {
 
-        /* Split section into tokens */
-        let match: RegExpExecArray
-        let index = 0
-        do {
-          match = separator.exec(section)!
+          /* Add table entry */
+          table[block] ||= { data: [] }
+          table[block].data.push(
+            start + index << 8 |
+            until - index
+          )
 
-          /* Add table entry for non-empty section */
-          const until = match?.index ?? section.length
-          if (index < until) {
-            table[block] ||= { data: [] }
-            table[block].data.push(
-              start + index << 8 |
-              until - index
-            )
-
-            /* Add token to block */
-            tokens.push(new lunr.Token(
-              section.slice(index, until).toLowerCase(), {
-                position: {
-                  table,
-                  index: block << 16 | table[block].data.length - 1
-                }
+          /* Add token to block */
+          tokens.push(new lunr.Token(
+            section.slice(index, until).toLowerCase(), {
+              position: {
+                table,
+                index: block << 16 | table[block].data.length - 1
               }
-            ))
-          }
-
-          /* Update index */
-          if (match) {
-            const [term] = match
-            index = match.index + term.length
-
-            /* Support pure lookahead separators */
-            if (term.length === 0)
-              separator.lastIndex = match.index + 1
-          }
-        } while (match)
+            }
+          ))
+        })
 
       /* Start new block */
       } else {

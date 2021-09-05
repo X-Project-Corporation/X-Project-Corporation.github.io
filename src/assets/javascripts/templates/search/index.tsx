@@ -26,7 +26,7 @@ import {
   SearchMetadata,
   SearchResultItem
 } from "~/integrations/search"
-import { h, truncate } from "~/utilities"
+import { h } from "~/utilities"
 
 /* ----------------------------------------------------------------------------
  * Helper types

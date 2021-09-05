@@ -61,9 +61,10 @@ export function parseSearchQuery(
   const query  = new lunr.Query(["title", "text"])
   const parser = new lunr.QueryParser(value, query)
 
-  /* Parse and return query clauses */
+  /* Parse Search query */
   parser.parse()
-  return query.clauses.map(clause => {
+  for (const clause of query.clauses) {
+    clause.usePipeline = true
 
     /* Handle leading wildcards */
     if (clause.term.startsWith("*")) {
@@ -76,10 +77,10 @@ export function parseSearchQuery(
       clause.wildcard = lunr.Query.wildcard.TRAILING
       clause.term = clause.term.slice(0, -1)
     }
+  }
 
-    /* Return query clause */
-    return clause
-  })
+  /* Return query clauses */
+  return query.clauses
 }
 
 /**

@@ -168,7 +168,7 @@ export class Search {
 
         /* Set up (multi-)language support */
         if (config.lang.length === 1 && config.lang[0] !== "en") {
-          // @ts-expect-error - namespace indexing is not allowed
+          // @ts-expect-error - namespace indexing not supported
           this.use(lunr[config.lang[0]])
         } else if (config.lang.length > 1) {
           this.use(lunr.multiLanguage(...config.lang))
@@ -181,7 +181,7 @@ export class Search {
 
         /* Remove functions from the pipeline for registered languages */
         for (const lang of config.lang.map(language => (
-          // @ts-expect-error - namespace indexing is not allowed
+          // @ts-expect-error - namespace indexing not supported
           language === "en" ? lunr : lunr[language]
         ))) {
           for (const fn of fns) {
@@ -236,7 +236,7 @@ export class Search {
           ))
 
         /* Perform search and post-process results */
-        const groups = this.index.search(`${query}*`)
+        const groups = this.index.search(query)
 
           /* Apply post-query boosts based on title and search query terms */
           .reduce<SearchResultItem>((item, { ref, score, matchData }) => {
@@ -272,10 +272,6 @@ export class Search {
                 }
               }
               const highlightedTitle = highlighter(title, allpos2)
-              // console.log(highlightedText)
-              // console.log(highlightedTitle)
-
-              // 1. remove all blocks that contain no matches...
 
               /* Highlight title and text and apply post-query boosts */
               const boost = Object.values(terms).filter(t => t).length /
