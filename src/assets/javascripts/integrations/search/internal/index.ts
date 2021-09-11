@@ -27,18 +27,10 @@ import { split } from "~/utilities"
  * ------------------------------------------------------------------------- */
 
 /**
- * Block
- */
-export interface Block {
-  type?: string                        /* Block type */
-  data: number[]                       /* Block data */
-}
-
-/**
  * Position
  */
 export interface Position {
-  table: Block[]                       /* Position table */
+  table: number[][]                    /* Position table */
   index: number                        /* Position index */
 }
 
@@ -83,10 +75,13 @@ function extract(value: string): Section[] {
     } else if (value.charAt(end) === ">") {
       if (value.charAt(start + 1) === "/") {
         if (--stack === 0)
-          block++
+          sections.push([block++, 2, start, end + 1])
+
+      /* Tag is not self-closing */
       } else if (value.charAt(end - 1) !== "/") {
-        if (stack++ === 0)
-          sections.push([block, 0, start + 1, end])
+        if (stack++ === 0) {
+          sections.push([block, 0, start, end + 1])
+        }
       }
 
       /* New section */
@@ -120,38 +115,41 @@ export function tokenizer(input?: lunr.Token | string): lunr.Token[] {
   const tokens: lunr.Token[] = []
   if (input) {
     const value = input.toString()
-    const table: Block[] = []
+    const table: number[][] = []
 
-    /* Tokenize section */
-    for (const [block, add, start, end] of extract(value)) {
-      const section = value.slice(start, end)
-      if (add) {
+    /* Split string into sections and tokenize content blocks */
+    for (const [block, type, start, end] of extract(value)) {
+      if (type & 1) {
+        const section = value.slice(start, end)
         split(section, lunr.tokenizer.separator, ([index, until]) => {
 
-          /* Add table entry */
-          table[block] ||= { data: [] }
-          table[block].data.push(
-            start + index << 8 |
-            until - index
+          /* Add block to table */
+          table[block] ||= []
+          table[block].push(
+            start + index << 12 |
+            until - index <<  2 |
+            type
           )
 
-          /* Add token to block */
+          /* Add block as token */
           tokens.push(new lunr.Token(
             section.slice(index, until).toLowerCase(), {
               position: {
                 table,
-                index: block << 16 | table[block].data.length - 1
+                index: block << 24 | table[block].length - 1
               }
             }
           ))
         })
 
-      /* Start new block */
+      /* Add non-content block to table */
       } else {
-        table[block] = {
-          ...end > start && { type: value.slice(start, end) },
-          data: []
-        }
+        table[block] ||= []
+        table[block].push(
+          start       << 12 |
+          end - start <<  2 |
+          type
+        )
       }
     }
   }
@@ -171,24 +169,60 @@ export function tokenizer(input?: lunr.Token | string): lunr.Token[] {
 export function highlighter(
   value: string, positions: Position[]
 ): string {
-  for (const { table, index: i } of positions
-    .sort((a, b) => b.index - a.index)
+  if (positions.length === 0)
+    return value // TODO: associate tables with entries...
+
+  const table = positions[0].table
+
+  /* Map matches to blocks */
+  const blocks = new Map<number, number[]>()
+  for (const i of positions
+    .sort((a, b) => a.index - b.index)
+    .map(({ index }) => index)
   ) {
-    const block = i >> 16
-    const index = i  & 0xFFFF
+    const block = i >> 24
+    const index = i  & 0xFFFFFF
 
-    /* Retrieve offset and length of match */
-    const offset = table[block].data[index] >> 8
-    const length = table[block].data[index]  & 0xFF
+    /* Ensure presence of block group */
+    let group = blocks.get(block)
+    if (typeof group === "undefined")
+      blocks.set(block, group = [])
 
-    /* Wrap occurrence with marker */
-    value = [
-      value.slice(0, offset),
-      "<mark>", value.slice(offset, offset + length), "</mark>",
-      value.slice(offset + length)
-    ].join("")
+    /* Add index to group */
+    group.push(index)
+  }
+
+  let count = 0
+
+  const slices: string[] = []
+  for (const [block, indexes] of blocks) {
+    const t = table[block]
+
+    const start  = t[0]            >> 12
+    const end    = t[t.length - 1] >> 12
+    const length = t[t.length - 1] >> 2 & 0x3FF
+
+    /* Extract and highlight slice/block */
+    let slice = value.slice(start, end + length)
+    for (const i of indexes.sort((a, b) => b - a)) {
+
+      /* Retrieve offset and length of match */
+      const p = (t[i] >> 12) - start
+      const q = (t[i] >>  2 & 0x3FF) + p
+
+      // now we already have indeverted the indexes
+      slice = [
+        slice.slice(0, p),
+        "<mark>", slice.slice(p, q), "</mark>",
+        slice.slice(q)
+      ].join("")
+
+    }
+    slices.push(slice)
+    if (++count > 1)
+      break
   }
 
   /* Return highlighted string value */
-  return value
+  return slices.join("")
 }

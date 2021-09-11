@@ -47,6 +47,7 @@ import {
   setSearchResultMeta
 } from "~/actions"
 import {
+  getElement,
   getElementOrThrow,
   watchElementThreshold
 } from "~/browser"
@@ -137,10 +138,22 @@ export function mountSearchResult(
             zipWith(boundary$),
             switchMap(([chunk]) => of(...chunk))
           )
-      ))
+      )),
+      // TODO: memleak, refactor into distinct chain
+      map(result => {
+        const item = renderSearchResultItem(result)
+        addToSearchResultList(list, item)
+        return getElement("details", item)
+      })
     )
-      .subscribe(result => {
-        addToSearchResultList(list, renderSearchResultItem(result))
+      // TODO: memleak, refactor into distinct chain
+      .subscribe(item => {
+        if (item)
+          item.addEventListener("toggle", () => {
+            if (!item.open) {
+              el.parentElement!.scrollTop = item.offsetTop
+            }
+          })
       })
 
   /* Filter search result message */

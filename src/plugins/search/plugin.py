@@ -50,10 +50,11 @@ class SearchIndex(BaseIndex):
 
     # Override to add additional fields for each page
     def add_entry_from_context(self, page):
-        #index = len(self._entries)
-        # super().add_entry_from_context(page)
-
-        ###
+        """
+        Create a set of entries in the index for a page. One for
+        the page itself and then one for each of its' heading
+        tags.
+        """
 
         # Create the content parser and feed in the HTML for the
         # full page. This handles all the parsing and prepares
@@ -69,17 +70,6 @@ class SearchIndex(BaseIndex):
             for section in parser.data:
                 self.create_entry_for_section(section, page.toc, url, page)
 
-        # entry = self._entries[index]
-
-        # # Add document tags
-        # if "tags" in page.meta:
-        #     entry["tags"] = page.meta["tags"]
-
-        # # Add document boost for search
-        # search = page.meta.get("search", {})
-        # if "boost" in search:
-        #     entry["boost"] = search["boost"]
-
     def create_entry_for_section(self, section, toc, abs_url, page):
         """
         Given a section on the page, the table of contents and
@@ -89,7 +79,8 @@ class SearchIndex(BaseIndex):
 
         toc_item = self._find_toc_by_id(toc, section.id)
 
-        text = ''.join(section.text).strip() # TODO: always use full indexing...
+        # TODO: always use full indexing...
+        text = ''.join(section.text).strip()
         # TODO: when literal h1, h2 etc are used, this won't work
         if toc_item is not None and section.tag != "h1":
             self._add_entry(
@@ -104,6 +95,16 @@ class SearchIndex(BaseIndex):
                 text=text,
                 loc=abs_url
             )
+
+        # Add document tags
+        entry = self._entries[len(self._entries) - 1] # TODO: too hacky
+        if "tags" in page.meta:
+            entry["tags"] = page.meta["tags"]
+
+        # Add document boost for search
+        search = page.meta.get("search", {})
+        if "boost" in search:
+            entry["boost"] = search["boost"]
 
 class ContentSection:
     """
@@ -156,14 +157,14 @@ class ContentParser(HTMLParser):
             # "tr"
         ])
 
-        self.stack = []
+        self.context = []
+        self.section = None
 
         self.data = []
-        self.section = None
 
     # Called at the start of every HTML tag
     def handle_starttag(self, tag, attrs):
-        self.stack.append(tag)
+        self.context.append(tag)
 
         # Handle headings
         if tag in ([f"h{x}" for x in range(1, 7)]):
@@ -184,7 +185,7 @@ class ContentParser(HTMLParser):
         # Render opening tag if kept
         if tag in self.keep:
             text = self.section.text
-            if self.section.tag in self.stack:
+            if self.section.tag in self.context:
                 text = self.section.title
 
             # Append to section title or text
@@ -192,13 +193,13 @@ class ContentParser(HTMLParser):
 
     # Called at the end of every HTML tag
     def handle_endtag(self, tag):
-        if self.stack[-1] == tag:
-            self.stack.pop()
+        if self.context[-1] == tag:
+            self.context.pop()
 
         # Render closing tag if kept
         if tag in self.keep:
             text = self.section.text
-            if self.section.tag in self.stack:
+            if self.section.tag in self.context:
                 text = self.section.title
 
             # Append to section title or text
@@ -206,19 +207,19 @@ class ContentParser(HTMLParser):
 
     # Called for the text contents of each tag.
     def handle_data(self, data):
-        if self.skip.intersection(self.stack):
+        if self.skip.intersection(self.context):
             return
 
         # Collapse whitespace in non-pre contexts
-        if not "pre" in self.stack:
+        if not "pre" in self.context:
             if not data.isspace():
                 data = data.replace("\n", " ")
             else:
                 data = " "
 
         # Ignore section headline
-        if self.section.tag in self.stack:
-            if not "a" in self.stack:
+        if self.section.tag in self.context:
+            if not "a" in self.context:
                 self.section.title.append(escape(data, quote = False))
 
         # Handle everything else

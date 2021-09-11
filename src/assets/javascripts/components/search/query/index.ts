@@ -58,8 +58,8 @@ import {
   SearchMessageType,
   SearchQueryMessage,
   SearchWorker,
-  defaultTransform,
-  isSearchReadyMessage
+  isSearchReadyMessage,
+  transform
 } from "~/integrations"
 import { split } from "~/utilities"
 
@@ -114,7 +114,7 @@ interface MountOptions {
 export function watchSearchQuery(
   el: HTMLInputElement, { rx$ }: SearchWorker, { index$ }: WatchOptions
 ): Observable<SearchQuery> {
-  const fn = __search?.transform || defaultTransform
+  const fn = __search?.transform || transform
 
   /* Intercept focus and input events */
   const focus$ = watchElementFocus(el)
@@ -124,13 +124,13 @@ export function watchSearchQuery(
   )
     .pipe(
       switchMapTo(index$),
-      map(({ config }) => {
-        const tokens: string[] = []
-        split(el.value, config.separator, range => {
-          tokens.push(el.value.slice(...range))
+      map(({ config }) => fn(el.value, term => {
+        const terms: string[] = []
+        split(term, config.separator, range => {
+          terms.push(term.slice(...range))
         })
-        return fn(tokens.join(" "))
-      }),
+        return terms
+      })),
       distinctUntilChanged()
     )
 
