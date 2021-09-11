@@ -53,7 +53,7 @@ jobs:
         run: npm install
 
       - name: Check project
-        run: npm run lint
+        run: npm run check
 
       - name: Build project
         run: |
