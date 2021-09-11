@@ -30,7 +30,7 @@ from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
 # Search plugin with custom search index
 class SearchPlugin(BasePlugin):
 
-    # Override to use a custom search index
+    # Override: use custom search index
     def on_pre_build(self, config):
         super().on_pre_build(config)
         self.search_index = SearchIndex(**self.config)
@@ -40,64 +40,44 @@ class SearchPlugin(BasePlugin):
 # Search index with support for additional fields
 class SearchIndex(BaseIndex):
 
-    # A simple wrapper to add an entry, dropping bad characters
-    def _add_entry(self, title, text, loc):
-        self._entries.append({
-            'title': title,
-            'text': text,
-            'location': loc
-        })
-
-    # Override to add additional fields for each page
+    # Override: use custom content parser
     def add_entry_from_context(self, page):
-        """
-        Create a set of entries in the index for a page. One for
-        the page itself and then one for each of its' heading
-        tags.
-        """
-
-        # Create the content parser and feed in the HTML for the
-        # full page. This handles all the parsing and prepares
-        # us to iterate through it.
         parser = ContentParser()
         parser.feed(page.content)
         parser.close()
 
-        # Get the absolute URL for the page, this is then
-        # prepended to the urls of the sections
-        url = page.url
-        if self.config['indexing'] in ['full', 'sections']:
-            for section in parser.data:
-                self.create_entry_for_section(section, page.toc, url, page)
+        # Ensure presence of top-level section
+        if len(parser.data) and parser.data[0].tag != "h1":
+            section = ContentSection("h1")
+            section.title.append(page.title)
 
-    def create_entry_for_section(self, section, toc, abs_url, page):
-        """
-        Given a section on the page, the table of contents and
-        the absolute url for the page create an entry in the
-        index
-        """
+            # Insert section at the start
+            parser.data.insert(0, section)
 
-        toc_item = self._find_toc_by_id(toc, section.id)
+        # Add sections to index
+        for section in parser.data:
+            self.create_entry_for_section(section, page.toc, page.url, page)
 
-        # TODO: always use full indexing...
-        text = ''.join(section.text).strip()
-        # TODO: when literal h1, h2 etc are used, this won't work
-        if toc_item is not None and section.tag != "h1":
-            self._add_entry(
-                title="".join(section.title),
-                text=text,
-                loc=abs_url + toc_item.url
-            )
-        else:
-            # this is a whole page entry!
-            self._add_entry(
-                title=page.title,
-                text=text,
-                loc=abs_url
-            )
+    # Override: graceful indexing and additional fields
+    def create_entry_for_section(self, section, toc, url, page):
+        item = self._find_toc_by_id(toc, section.id)
+        if item and not section.tag == "h1":
+            url = url + item.url
+
+        # Create section title and text
+        title = "".join(section.title)
+        text  = ""
+        if self.config["indexing"] != "titles":
+            text = "".join(section.text).strip()
+
+        # Create section entry
+        entry = {
+            "title": title,
+            "text": text,
+            "location": url
+        }
 
         # Add document tags
-        entry = self._entries[len(self._entries) - 1] # TODO: too hacky
         if "tags" in page.meta:
             entry["tags"] = page.meta["tags"]
 
@@ -106,60 +86,60 @@ class SearchIndex(BaseIndex):
         if "boost" in search:
             entry["boost"] = search["boost"]
 
+        # Add entry to index
+        self._entries.append(entry)
+
+# -----------------------------------------------------------------------------
+
+# Content section
 class ContentSection:
     """
-    Used by the ContentParser class to capture the information we
-    need when it is parsing the HMTL.
+    A content section is a block of text, preceded by a headline with a certain
+    tag and title, optionally with an identifier. It's used by the parser.
     """
 
-    def __init__(self, tag, text=None, id_=None, title=None):
-        self.text = text or []
-        self.id = id_
-        self.title = title or []
-        self.tag = tag
+    # Intialize content section
+    def __init__(self, tag):
+        self.tag   = tag
+        self.text  = []
+        self.title = []
+        self.id    = None
 
-    def __eq__(self, other):
-        return (
-            self.text == other.text and
-            self.id == other.id and
-            self.title == other.title
-        )
+# -----------------------------------------------------------------------------
 
+# Content parser
 class ContentParser(HTMLParser):
     """
-    Given a block of HTML, group the content under the preceding
-    heading tags which can then be used for creating an index
-    for that section.
+    This parser divides the given string of HTML into a list of sections, each
+    of which are preceded by a h1-h6 level heading. A white- and blacklist of
+    tags dictates which tags should be preserved as part of the index, and
+    which should be ignored in its entirety.
     """
 
+    # Initialize content parser
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Tags to skip (i.e. to not include contents in index)
+        # Tags to skip
         self.skip = set([
-            "img",
-            "object",
-            "script",
-            "style"
+            "img",                     # Images
+            "object",                  # Objects
+            "script",                  # Scripts
+            "style"                    # Styles
         ])
 
         # Tags to keep
         self.keep = set([
-            "code",
-            "li",
-            "ol",
-            "p",
-            "pre",
-            "ul",
-            # "table",
-            # "td",
-            # "th",
-            # "tr"
+            "p",                       # Paragraphs
+            "code", "pre",             # Code blocks
+            "li", "ol", "ul"           # Lists
         ])
 
+        # Current context and section
         self.context = []
         self.section = None
 
+        # All parsed sections
         self.data = []
 
     # Called at the start of every HTML tag
@@ -168,8 +148,12 @@ class ContentParser(HTMLParser):
 
         # Handle headings
         if tag in ([f"h{x}" for x in range(1, 7)]):
-            self.section = ContentSection(tag)
-            self.data.append(self.section)
+            if not self.section or (
+                tag != "h1" or
+                tag != self.section.tag
+            ):
+                self.section = ContentSection(tag)
+                self.data.append(self.section)
 
             # Set identifier on section for TOC resolution
             for attr in attrs:
@@ -220,8 +204,12 @@ class ContentParser(HTMLParser):
         # Ignore section headline
         if self.section.tag in self.context:
             if not "a" in self.context:
-                self.section.title.append(escape(data, quote = False))
+                self.section.title.append(
+                    escape(data, quote = False)
+                )
 
         # Handle everything else
         else:
-            self.section.text.append(escape(data, quote = False))
+            self.section.text.append(
+                escape(data, quote = False)
+            )

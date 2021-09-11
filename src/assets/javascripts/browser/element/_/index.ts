@@ -74,6 +74,8 @@ export function getElementOrThrow<T extends HTMLElement>(
     throw new ReferenceError(
       `Missing element: expected "${selector}" to be present`
     )
+
+  /* Return element */
   return el
 }
 
