@@ -208,6 +208,6 @@ export function mountSearchQuery(
       tap(state => internal$.next(state)),
       finalize(() => internal$.complete()),
       map(state => ({ ref: el, ...state })),
-      share({ resetOnRefCountZero: true })
+      share()
     )
 }
