@@ -150,7 +150,7 @@ export function mountSearchResult(
       .subscribe(item => {
         if (item)
           item.addEventListener("toggle", () => {
-            if (!item.open) {
+            if (!item.open && item.offsetTop <= el.parentElement!.scrollTop) {
               el.parentElement!.scrollTop = item.offsetTop
             }
           })

@@ -63,7 +63,7 @@ export function split(
     match = separator.exec(value)
 
     /* Emit non-empty range */
-    const until = match?.index ?? value.length
+    const until = match ? match.index : value.length
     if (index < until)
       fn([index, until])
 

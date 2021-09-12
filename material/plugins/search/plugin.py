@@ -64,24 +64,23 @@ class SearchIndex(BaseIndex):
         if item and not section.tag == "h1":
             url = url + item.url
 
-        # Create section title and text
-        title = "".join(section.title)
-        text  = ""
+        # Compute text
+        text = ""
         if self.config["indexing"] != "titles":
             text = "".join(section.text).strip()
 
-        # Create section entry
+        # Create entry for section
         entry = {
-            "title": title,
+            "title": "".join(section.title),
             "text": text,
             "location": url
         }
 
-        # Add document tags
+        # Add document tags, if any
         if "tags" in page.meta:
             entry["tags"] = page.meta["tags"]
 
-        # Add document boost for search
+        # Add document boost for search, if any
         search = page.meta.get("search", {})
         if "boost" in search:
             entry["boost"] = search["boost"]

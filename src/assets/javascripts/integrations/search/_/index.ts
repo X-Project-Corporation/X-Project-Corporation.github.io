@@ -27,6 +27,7 @@ import {
 } from "../document"
 import {
   Position,
+  Table,
   highlighter,
   tokenizer
 } from "../internal"
@@ -151,6 +152,8 @@ export class Search {
    */
   protected options: SearchOptions
 
+  protected tables: Record<string, Partial<Record<keyof SearchDocument, Table>>>
+
   /**
    * Create the search integration
    *
@@ -162,6 +165,9 @@ export class Search {
     /* Set up custom tokenizer */
     lunr.tokenizer = tokenizer as typeof lunr.tokenizer
     lunr.tokenizer.separator = new RegExp(config.separator)
+
+    this.tables = {}
+    const tables = this.tables
 
     /* Set up document map and index */
     this.documents = setupSearchDocumentMap(docs)
@@ -196,14 +202,36 @@ export class Search {
       /* Set up reference */
       this.ref("location")
 
+      function extractor(field: Partial<keyof SearchIndexDocument>): any {
+        return (document: SearchIndexDocument) => {
+          tables[document.location][field] = []
+          if (Array.isArray(document[field])) {
+            const values = document[field] as string[]
+            return values.map(value => ({
+              toString() { return value },
+              table: tables[document.location][field]
+            }))
+          } else if (document[field]) {
+            return {
+              toString() { return document[field] },
+              table: tables[document.location][field]
+            }
+          } else {
+            return undefined
+          }
+        }
+      }
+
       /* Set up fields */
-      this.field("title", { boost: 1e3 })
-      this.field("text")
-      this.field("tags", { boost: 1e6 })
+      this.field("title", { boost: 1e3, extractor: extractor("title") })
+      this.field("text", { extractor: extractor("text") })
+      this.field("tags", { boost: 1e6, extractor: extractor("tags") })
 
       /* Index documents */
-      for (const doc of docs)
-        this.add(doc, { boost: doc.boost })
+      for (const document of docs) {
+        tables[document.location] = {}
+        this.add(document, { boost: document.boost })
+      }
     })
   }
 
@@ -263,7 +291,9 @@ export class Search {
 
               for (const [field, positions] of Object.entries(map))
                 document[field as Key] = highlighter(
-                  document[field as Key], positions
+                  document[field as Key],
+                  this.tables[document.location][field as Key]!,
+                  positions
                 )
 
               /* Highlight title and text and apply post-query boosts */
@@ -274,7 +304,7 @@ export class Search {
 
               item.push({
                 ...document,
-                ...tags && { tags },//: tags.map(highlight) },
+                ...tags && { tags }, // TODO: highlight tags, if present
                 score: score * (1 + boost ** 2),
                 terms
               })

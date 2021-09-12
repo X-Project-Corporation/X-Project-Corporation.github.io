@@ -27,12 +27,14 @@ import { split } from "~/utilities"
  * ------------------------------------------------------------------------- */
 
 /**
+ * Table for indexing
+ */
+export type Table = number[][]
+
+/**
  * Position
  */
-export interface Position {
-  table: number[][]                    /* Position table */
-  index: number                        /* Position index */
-}
+export type Position = number
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -43,6 +45,19 @@ export interface Position {
  */
 type Section = [number, number, number, number]
 
+/**
+ * String with table
+ */
+interface StringLike {
+  toString(): string                   /* String representation */
+  table: Table                         /* Table for indexing */
+}
+
+/**
+ * Visitor function
+ */
+type VisitorFn = (...args: Section) => void
+
 /* ----------------------------------------------------------------------------
  * Helper functions
  * ------------------------------------------------------------------------- */
@@ -52,36 +67,36 @@ type Section = [number, number, number, number]
  *
  * This function preprocesses the given string by isolating all non-HTML parts
  * of a string, in order to ensure that HTML tags are removed before indexing.
+ * A visitor function is used to reduce pressure on the garbage collector as
+ * only the latest section is needed during indexing.
  *
  * @param value - String value
- *
- * @returns String sections
+ * @param fn - Visitor function
  */
-function extract(value: string): Section[] {
+function extract(value: string, fn: VisitorFn): void {
 
   let block = 0                        /* Current block */
   let start = 0                        /* Current start offset */
   let end = 0                          /* Current end offset */
 
   /* Split string into sections */
-  const sections: Section[] = []
+  // const sections: Section[] = []
   for (let stack = 0; end < value.length; end++) {
 
     /* Tag start after non-empty section */
     if (value.charAt(end) === "<" && end > start) {
-      sections.push([block, 1, start, start = end])
+      fn(block, 1, start, start = end)
 
     /* Tag end */
     } else if (value.charAt(end) === ">") {
       if (value.charAt(start + 1) === "/") {
         if (--stack === 0)
-          sections.push([block++, 2, start, end + 1])
+          fn(block++, 2, start, end + 1)
 
       /* Tag is not self-closing */
       } else if (value.charAt(end - 1) !== "/") {
-        if (stack++ === 0) {
-          sections.push([block, 0, start, end + 1])
-        }
+        if (stack++ === 0)
+          fn(block, 0, start, end + 1)
       }
 
       /* New section */
@@ -91,10 +106,7 @@ function extract(value: string): Section[] {
 
   /* Add trailing section */
   if (end > start)
-    sections.push([block, 1, start, end])
-
-  /* Return sections */
-  return sections
+    fn(block, 1, start, end)
 }
 
 /* ----------------------------------------------------------------------------
@@ -111,14 +123,23 @@ function extract(value: string): Section[] {
  *
  * @returns Tokens
  */
-export function tokenizer(input?: lunr.Token | string): lunr.Token[] {
+export function tokenizer(
+  input?: StringLike | Array<StringLike>
+): lunr.Token[] {
   const tokens: lunr.Token[] = []
-  if (input) {
+
+  /* Tokenize an array of string values */
+  if (Array.isArray(input)) {
+    for (const value of input)
+      tokens.push(...tokenizer(value))
+
+  /* Tokenize a string value */
+  } else if (input) {
     const value = input.toString()
-    const table: number[][] = []
+    const table = input.table || []
 
     /* Split string into sections and tokenize content blocks */
-    for (const [block, type, start, end] of extract(value)) {
+    extract(value, (block, type, start, end) => {
       if (type & 1) {
         const section = value.slice(start, end)
         split(section, lunr.tokenizer.separator, ([index, until]) => {
@@ -134,10 +155,7 @@ export function tokenizer(input?: lunr.Token | string): lunr.Token[] {
           /* Add block as token */
           tokens.push(new lunr.Token(
             section.slice(index, until).toLowerCase(), {
-              position: {
-                table,
-                index: block << 24 | table[block].length - 1
-              }
+              position: block << 20 | table[block].length - 1
             }
           ))
         })
@@ -151,7 +169,7 @@ export function tokenizer(input?: lunr.Token | string): lunr.Token[] {
           type
         )
       }
-    }
+    })
   }
 
   /* Return tokens */
@@ -162,26 +180,22 @@ export function tokenizer(input?: lunr.Token | string): lunr.Token[] {
  * Highlight all occurrences in a string
  *
  * @param value - String value
+ * @param table - Table for indexing
  * @param positions - Occurrences
  *
  * @returns Highlighted string value
  */
 export function highlighter(
-  value: string, positions: Position[]
+  value: string, table: Table, positions: Position[]
 ): string {
-  if (positions.length === 0)
-    return value // TODO: associate tables with entries...
-
-  const table = positions[0].table
 
   /* Map matches to blocks */
   const blocks = new Map<number, number[]>()
   for (const i of positions
-    .sort((a, b) => a.index - b.index)
-    .map(({ index }) => index)
+    .sort((a, b) => a - b)
   ) {
-    const block = i >> 24
-    const index = i  & 0xFFFFFF
+    const block = i >>> 20
+    const index = i  & 0xFFFFF
 
     /* Ensure presence of block group */
     let group = blocks.get(block)
@@ -198,17 +212,17 @@ export function highlighter(
   for (const [block, indexes] of blocks) {
     const t = table[block]
 
-    const start  = t[0]            >> 12
-    const end    = t[t.length - 1] >> 12
-    const length = t[t.length - 1] >> 2 & 0x3FF
+    const start  = t[0]            >>> 12
+    const end    = t[t.length - 1] >>> 12
+    const length = t[t.length - 1] >>> 2 & 0x3FF
 
     /* Extract and highlight slice/block */
     let slice = value.slice(start, end + length)
     for (const i of indexes.sort((a, b) => b - a)) {
 
       /* Retrieve offset and length of match */
-      const p = (t[i] >> 12) - start
-      const q = (t[i] >>  2 & 0x3FF) + p
+      const p = (t[i] >>> 12) - start
+      const q = (t[i] >>>  2 & 0x3FF) + p
 
       // now we already have indeverted the indexes
       slice = [
