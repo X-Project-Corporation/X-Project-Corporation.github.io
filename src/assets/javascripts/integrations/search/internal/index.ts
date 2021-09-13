@@ -224,7 +224,7 @@ export function highlighter(
       const p = (t[i] >>> 12) - start
       const q = (t[i] >>>  2 & 0x3FF) + p
 
-      // now we already have indeverted the indexes
+      /* Wrap occurrence */ // TODO: improve, make fewer concatenations
       slice = [
         slice.slice(0, p),
         "<mark>", slice.slice(p, q), "</mark>",

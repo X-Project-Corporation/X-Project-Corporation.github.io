@@ -42,6 +42,11 @@ class SearchIndex(BaseIndex):
 
     # Override: use custom content parser
     def add_entry_from_context(self, page):
+        search = page.meta.get("search", {})
+        if "exclude" in search and search["exclude"]:
+            return
+
+        # Divide page content into sections
         parser = ContentParser()
         parser.feed(page.content)
         parser.close()
