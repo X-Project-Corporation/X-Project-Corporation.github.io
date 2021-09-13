@@ -54,14 +54,20 @@ export type SearchHighlightFactoryFn = (query: string) => SearchHighlightFn
  * Create a search highlighter
  *
  * @param config - Search index configuration
- * @param escape - Whether to escape HTML
  *
  * @returns Search highlight factory function
  */
 export function setupSearchHighlighter(
-  config: SearchIndexConfig, escape: boolean
+  config: SearchIndexConfig
 ): SearchHighlightFactoryFn {
-  const separator = new RegExp(config.separator, "img")
+  // Hack: temporarily remove pure lookaheads
+  const regex = config.separator.split("|").map(term => {
+    const temp = term.replace(/(\(\?[!=][^)]+\))/g, "")
+    return temp.length === 0 ? "�" : term
+  })
+    .join("|")
+
+  const separator = new RegExp(regex, "img")
   const highlight = (_: unknown, data: string, term: string) => {
     return `${data}<mark data-md-highlight>${term}</mark>`
   }
@@ -73,19 +79,15 @@ export function setupSearchHighlighter(
       .trim()
 
     /* Create search term match expression */
-    const match = new RegExp(`(^|${config.separator})(${
+    const match = new RegExp(`(^|${config.separator}|\\b)(${
       query
         .replace(/[|\\{}()[\]^$+*?.-]/g, "\\$&")
         .replace(separator, "|")
     })`, "img")
 
     /* Highlight string value */
-    return value => (
-      escape
-        ? escapeHTML(value)
-        : value
-      )
-        .replace(match, highlight)
-        .replace(/<\/mark>(\s+)<mark[^>]*>/img, "$1")
+    return value => escapeHTML(value)
+      .replace(match, highlight)
+      .replace(/<\/mark>(\s+)<mark[^>]*>/img, "$1")
   }
 }

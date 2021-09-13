@@ -20,39 +20,61 @@
  * IN THE SOFTWARE.
  */
 
-import lunr from "lunr"
-
 /* ----------------------------------------------------------------------------
- * Global types
+ * Types
  * ------------------------------------------------------------------------- */
 
-declare global {
-  namespace lunr {
+/**
+ * Range
+ */
+export type Range = [number, number]
 
-    /**
-     * Query clause - add missing field definitions
-     */
-    namespace Query {
-      interface Clause {
-        presence: Query.presence
-      }
+/* ----------------------------------------------------------------------------
+ * Helper types
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Visitor function
+ *
+ * @param range - Range
+ */
+type VisitorFn = (range: Range) => void
+
+/* ----------------------------------------------------------------------------
+ * Functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Split a string using the given separator
+ *
+ * @param value - String value
+ * @param separator - Separator
+ * @param fn - Visitor function
+ */
+export function split(
+  value: string, separator: RegExp | string, fn: VisitorFn
+): void {
+  separator = new RegExp(separator, "g")
+
+  /* Split string using separator */
+  let match: RegExpExecArray | null
+  let index = 0
+  do {
+    match = separator.exec(value)
+
+    /* Emit non-empty range */
+    const until = match ? match.index : value.length
+    if (index < until)
+      fn([index, until])
+
+    /* Update last index */
+    if (match) {
+      const [term] = match
+      index = match.index + term.length
+
+      /* Support zero-length lookaheads */
+      if (term.length === 0)
+        separator.lastIndex = match.index + 1
     }
-
-    /**
-     * Query parser - add missing class definitions
-     */
-    class QueryParser {
-      constructor(value: string, query: Query)
-      public parse(): void
-    }
-
-    /**
-     * Enable multi-language support
-     *
-     * @param lang - Languages
-     *
-     * @returns Plugin
-     */
-    function multiLanguage(...lang: string[]): Builder.Plugin
-  }
+  } while (match)
 }

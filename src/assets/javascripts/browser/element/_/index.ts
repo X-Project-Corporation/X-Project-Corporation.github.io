@@ -36,7 +36,7 @@
  */
 export function getElement<T extends keyof HTMLElementTagNameMap>(
   selector: T, node?: ParentNode
-): HTMLElementTagNameMap[T]
+): HTMLElementTagNameMap[T] | undefined
 
 export function getElement<T extends HTMLElement>(
   selector: string, node?: ParentNode
@@ -74,6 +74,8 @@ export function getElementOrThrow<T extends HTMLElement>(
     throw new ReferenceError(
       `Missing element: expected "${selector}" to be present`
     )
+
+  /* Return element */
   return el
 }
 

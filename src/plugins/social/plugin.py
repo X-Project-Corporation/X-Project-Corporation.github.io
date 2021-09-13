@@ -117,7 +117,7 @@ class SocialPlugin(BasePlugin):
             image = self.__render_card(site_name, title, description)
             image.save(file)
 
-        # Render card and save to file
+        # Copy file from cache
         copyfile(file, path)
 
         # Inject meta tags into page

@@ -205,7 +205,7 @@ export function mountSearch(
         })
 
     /* Create and return component */
-    const query$  = mountSearchQuery(query, worker)
+    const query$  = mountSearchQuery(query, worker, { index$ })
     const result$ = mountSearchResult(result, worker, { query$ })
     return merge(query$, result$)
       .pipe(
@@ -213,7 +213,7 @@ export function mountSearch(
 
           /* Search sharing */
           ...getComponentElements("search-share", el)
-          .map(child => mountSearchShare(child, { query$ })),
+            .map(child => mountSearchShare(child, { query$ })),
 
           /* Search suggestions */
           ...getComponentElements("search-suggest", el)
