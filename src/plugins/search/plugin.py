@@ -165,7 +165,7 @@ class ContentParser(HTMLParser):
                     self.section.id = attr[1]
                     break
 
-        # Handle preface to headings - ensure top-level section
+        # Handle preface - ensure top-level section
         if not self.section:
             self.section = ContentSection("h1")
             self.data.append(self.section)
@@ -204,6 +204,11 @@ class ContentParser(HTMLParser):
                 data = data.replace("\n", " ")
             else:
                 data = " "
+
+        # Handle preface - ensure top-level section
+        if not self.section:
+            self.section = ContentSection("h1")
+            self.data.append(self.section)
 
         # Ignore section headline
         if self.section.tag in self.context:
