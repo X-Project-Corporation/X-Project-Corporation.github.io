@@ -31,8 +31,7 @@ from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
 class SearchPlugin(BasePlugin):
 
     # Override: use custom search index
-    def on_pre_build(self, config):
-        super().on_pre_build(config)
+    def on_pre_build(self, **kwargs):
         self.search_index = SearchIndex(**self.config)
 
 # -----------------------------------------------------------------------------
@@ -76,7 +75,7 @@ class SearchIndex(BaseIndex):
 
         # Create entry for section
         entry = {
-            "title": "".join(section.title),
+            "title": "".join(section.title).strip(),
             "text": text,
             "location": url
         }
@@ -103,11 +102,11 @@ class ContentSection:
     """
 
     # Intialize content section
-    def __init__(self, tag):
+    def __init__(self, tag, ident = None):
         self.tag   = tag
         self.text  = []
         self.title = []
-        self.id    = None
+        self.id    = ident
 
 # -----------------------------------------------------------------------------
 
@@ -126,7 +125,6 @@ class ContentParser(HTMLParser):
 
         # Tags to skip
         self.skip = set([
-            "img",                     # Images
             "object",                  # Objects
             "script",                  # Scripts
             "style"                    # Styles
@@ -148,7 +146,29 @@ class ContentParser(HTMLParser):
 
     # Called at the start of every HTML tag
     def handle_starttag(self, tag, attrs):
-        self.context.append(tag)
+        """
+        Handle an opening tag
+
+        There are several cases that need to be handled, including some quirks
+        of the underlying parser, as the default parser does not handle HTML 5
+        particularly well. However, using a HTML 5 parser is more or less out
+        of the question because of significantly worse performance.
+
+        Following is a list of quirks that are explicitly handled:
+
+        1.  Self-closing tags (void) must have a slash. As HTML 5 allows the
+            omission of the slash at the end of a self-closing tag, we just skip
+            those tags on principle. They wouldn't be discoverable by search
+            anyways, as there's not text to be indexed.
+
+        2.  TBD
+        """
+
+        # Ignore self-closing tags
+        if not tag in void:
+            self.context.append(tag)
+        else:
+            return
 
         # Handle headings
         if tag in ([f"h{x}" for x in range(1, 7)]):
@@ -181,8 +201,10 @@ class ContentParser(HTMLParser):
 
     # Called at the end of every HTML tag
     def handle_endtag(self, tag):
-        if self.context[-1] == tag:
+        if self.context and self.context[-1] == tag:
             self.context.pop()
+        else:
+            return
 
         # Render closing tag if kept
         if tag in self.keep:
@@ -222,3 +244,25 @@ class ContentParser(HTMLParser):
             self.section.text.append(
                 escape(data, quote = False)
             )
+
+# -----------------------------------------------------------------------------
+# Data
+# -----------------------------------------------------------------------------
+
+# Tags that are self-closing
+void = set([
+    "area",                    # Image map areas
+    "base",                    # Document base
+    "br",                      # Line breaks
+    "col",                     # Table columns
+    "embed",                   # External content
+    "hr",                      # Horizontal rules
+    "img",                     # Images
+    "input",                   # Input fields
+    "link",                    # Links
+    "meta",                    # Metadata
+    "param",                   # External parameters
+    "source",                  # Image source sets
+    "track",                   # Text track
+    "wbr"                      # Line break opportunities
+])
