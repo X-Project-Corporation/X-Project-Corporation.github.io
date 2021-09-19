@@ -59,6 +59,8 @@ class SearchIndex(BaseIndex):
         item = self._find_toc_by_id(toc, section.id)
         if item:
             url = url + item.url
+        elif section.id:
+            url = url + "#{}".format(section.id)
 
         # Compute title and text
         title = "".join(section.title or page.title).strip()
