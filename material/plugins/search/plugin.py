@@ -52,7 +52,8 @@ class SearchIndex(BaseIndex):
 
         # Add sections to index
         for section in parser.data:
-            self.create_entry_for_section(section, page.toc, page.url, page)
+            if not section.is_excluded():
+                self.create_entry_for_section(section, page.toc, page.url, page)
 
     # Override: graceful indexing and additional fields
     def create_entry_for_section(self, section, toc, url, page):
@@ -98,7 +99,7 @@ class Element:
     parser to access attributes in other callbacks than handle_starttag.
     """
 
-    # Intialize HTML element
+    # Initialize HTML element
     def __init__(self, tag, attrs = {}):
         self.tag   = tag
         self.attrs = attrs
@@ -123,12 +124,21 @@ class Section:
     headline with a certain level (h1-h6). Internally used by the parser.
     """
 
-    # Intialize HTML section
+    # Initialize HTML section
     def __init__(self, el):
         self.el    = el
         self.text  = []
         self.title = []
         self.id = None
+
+    # Check whether the section should be excluded
+    def is_excluded(self):
+        for key, _ in self.el.attrs:
+            if key == "data-search-exclude":
+                return True
+
+        # Section is not excluded
+        return False
 
 # -----------------------------------------------------------------------------
 
