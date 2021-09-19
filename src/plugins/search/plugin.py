@@ -179,6 +179,11 @@ class Parser(HTMLParser):
             for key, value in attrs:
                 if key == "id":
 
+                    # Ensure top-level section
+                    if tag != "h1" and not self.data:
+                        self.section = Section(Element("hx"))
+                        self.data.append(self.section)
+
                     # Set identifier, if not first section
                     self.section = Section(el)
                     if self.data:
