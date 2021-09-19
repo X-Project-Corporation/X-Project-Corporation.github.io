@@ -85,7 +85,9 @@ class TagsPlugin(BasePlugin):
 
         # Replace placeholder in Markdown with rendered tags index
         return markdown.replace("[TAGS]", "\n".join([
-            self.__render_tag_links(*args) for args in sorted(self.tags.items())
+            self.__render_tag_links(*args) for args in sorted(
+                self.tags.items()
+            )
         ]))
 
     # Render the given tag and links to all pages with occurrences
@@ -107,5 +109,5 @@ class TagsPlugin(BasePlugin):
             return dict(name = tag)
         else:
             url = self.tags_file.url
-            url += "#" + self.slugify(tag)
+            url += "#{}".format(self.slugify(tag))
             return dict(name = tag, url = url)
