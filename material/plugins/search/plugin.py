@@ -46,7 +46,7 @@ class SearchIndex(BaseIndex):
             return
 
         # Divide page content into sections
-        parser = ContentParser()
+        parser = Parser()
         parser.feed(page.content)
         parser.close()
 
@@ -94,14 +94,14 @@ class SearchIndex(BaseIndex):
 
 # -----------------------------------------------------------------------------
 
-# Content section
-class ContentSection:
+# HTML section
+class Section:
     """
-    A content section is a block of text, preceded by a headline with a certain
+    A section is a block of text, preceded by a headline with a certain
     tag and title, optionally with an identifier. It's used by the parser.
     """
 
-    # Intialize content section
+    # Intialize HTML section
     def __init__(self, tag, ident = None):
         self.tag   = tag
         self.text  = []
@@ -110,8 +110,33 @@ class ContentSection:
 
 # -----------------------------------------------------------------------------
 
-# Content parser
-class ContentParser(HTMLParser):
+# HTML element
+class Element:
+    """
+    An element with attributes, essentially a small wrapper object for the
+    parser to access attributes in other callbacks than handle_starttag.
+    """
+
+    # Intialize HTML element
+    def __init__(self, tag, attrs):
+        self.tag   = tag
+        self.attrs = attrs
+
+    # Support comparison (compare by tag only)
+    def __eq__(self, other):
+        if other is Element:
+            return self.tag == other.tag
+        else:
+            return self.tag == other
+
+    # Support set operations
+    def __hash__(self):
+        return hash(self.tag)
+
+# -----------------------------------------------------------------------------
+
+# HTML parser
+class Parser(HTMLParser):
     """
     This parser divides the given string of HTML into a list of sections, each
     of which are preceded by a h1-h6 level heading. A white- and blacklist of
@@ -119,7 +144,7 @@ class ContentParser(HTMLParser):
     which should be ignored in its entirety.
     """
 
-    # Initialize content parser
+    # Initialize HTML parser
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -166,7 +191,7 @@ class ContentParser(HTMLParser):
 
         # Ignore self-closing tags
         if not tag in void:
-            self.context.append(tag)
+            self.context.append(Element(tag, attrs))
         else:
             return
 
@@ -176,7 +201,7 @@ class ContentParser(HTMLParser):
                 tag != "h1" or
                 tag != self.section.tag
             ):
-                self.section = ContentSection(tag)
+                self.section = Section(tag)
                 self.data.append(self.section)
 
             # Set identifier on section for TOC resolution
@@ -187,7 +212,7 @@ class ContentParser(HTMLParser):
 
         # Handle preface - ensure top-level section
         if not self.section:
-            self.section = ContentSection("h1")
+            self.section = Section("h1")
             self.data.append(self.section)
 
         # Render opening tag if kept
@@ -215,7 +240,7 @@ class ContentParser(HTMLParser):
             # Append to section title or text
             text.append("</{}>".format(tag))
 
-    # Called for the text contents of each tag.
+    # Called for the text contents of each tag
     def handle_data(self, data):
         if self.skip.intersection(self.context):
             return
@@ -229,12 +254,21 @@ class ContentParser(HTMLParser):
 
         # Handle preface - ensure top-level section
         if not self.section:
-            self.section = ContentSection("h1")
+            self.section = Section("h1")
             self.data.append(self.section)
 
-        # Ignore section headline
+        # Handle section headline
         if self.section.tag in self.context:
-            if not "a" in self.context:
+            permalink = False
+            for el in self.context:
+                if el.tag == "a":
+                    for (key, value) in el.attrs:
+                        if key == "class" and "headerlink" in value:
+                            permalink = True
+                            break
+
+            # Ignore permalinks
+            if not permalink:
                 self.section.title.append(
                     escape(data, quote = False)
                 )
