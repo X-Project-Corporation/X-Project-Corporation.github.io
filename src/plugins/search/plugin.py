@@ -36,9 +36,14 @@ class SearchPlugin(BasePlugin):
     def on_pre_build(self, **kwargs):
         self.search_index = SearchIndex(**self.config)
 
-    # Remove search pragmas after indexing
-    def on_page_content(self, content, **kwargs):
-        return re.sub(r'\s?data-search-\w+="[^"]+"', "", content)
+    # Override: remove search pragmas after indexing
+    def on_page_context(self, context, page, **kwargs):
+        self.search_index.add_entry_from_context(context['page'])
+        page.content = re.sub(
+            r'\s?data-search-\w+="[^"]+"',
+            "",
+            page.content
+        )
 
 # -----------------------------------------------------------------------------
 
