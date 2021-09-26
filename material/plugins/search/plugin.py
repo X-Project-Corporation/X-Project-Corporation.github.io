@@ -18,6 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import re
+
 from html import escape
 from html.parser import HTMLParser
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
@@ -33,6 +35,10 @@ class SearchPlugin(BasePlugin):
     # Override: use custom search index
     def on_pre_build(self, **kwargs):
         self.search_index = SearchIndex(**self.config)
+
+    # Remove search pragmas after indexing
+    def on_page_content(self, content, **kwargs):
+        return re.sub(r'\s?data-search-\w+="[^"]+"', "", content)
 
 # -----------------------------------------------------------------------------
 
