@@ -84,7 +84,7 @@ export function mountContent(
 
     /* Code blocks */
     ...getElements("pre:not([class^=mermaid]) > code", el)
-      .map(child => mountCodeBlock(child, { viewport$ })),
+      .map(child => mountCodeBlock(child, { viewport$, print$ })),
 
     /* Mermaid code blocks */
     ...getElements(".mermaid, .mermaid-experimental", el)
