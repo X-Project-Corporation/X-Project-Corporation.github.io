@@ -32,7 +32,7 @@
         {% endfor %}
       {% endif %}
       <link rel="icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.2.8+insiders-3.0.1">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.3.0+insiders-3.0.1">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -44,7 +44,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.dcf81f63.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.285ecafd.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.1d832a92.min.css' | url }}">
@@ -264,7 +264,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.e7b111c5.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.19d539c8.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
