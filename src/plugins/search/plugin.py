@@ -115,6 +115,15 @@ class Element:
     def __hash__(self):
         return hash(self.tag)
 
+    # Check whether the element should be excluded
+    def is_excluded(self):
+        for key, _ in self.attrs:
+            if key == "data-search-exclude":
+                return True
+
+        # Element is not excluded
+        return False
+
 # -----------------------------------------------------------------------------
 
 # HTML section
@@ -133,12 +142,7 @@ class Section:
 
     # Check whether the section should be excluded
     def is_excluded(self):
-        for key, _ in self.el.attrs:
-            if key == "data-search-exclude":
-                return True
-
-        # Section is not excluded
-        return False
+        return self.el.is_excluded()
 
 # -----------------------------------------------------------------------------
 
@@ -189,30 +193,37 @@ class Parser(HTMLParser):
         # Handle headings
         if tag in ([f"h{x}" for x in range(1, 7)]):
             for key, value in attrs:
-                if key == "id":
+                if key != "id":
+                    continue
 
-                    # Ensure top-level section
-                    if tag != "h1" and not self.data:
-                        self.section = Section(Element("hx"))
-                        self.data.append(self.section)
-
-                    # Set identifier, if not first section
-                    self.section = Section(el)
-                    if self.data:
-                        self.section.id = value
-
-                    # Append section to list
+                # Ensure top-level section
+                if tag != "h1" and not self.data:
+                    self.section = Section(Element("hx"))
                     self.data.append(self.section)
+
+                # Set identifier, if not first section
+                self.section = Section(el)
+                if self.data:
+                    self.section.id = value
+
+                # Append section to list
+                self.data.append(self.section)
 
         # Handle preface - ensure top-level section
         if not self.section:
             self.section = Section(Element("hx"))
             self.data.append(self.section)
 
+        # Append element to skip list
+        for key, value in attrs:
+            if key == "data-search-exclude":
+                self.skip.add(el)
+                return
+
         # Render opening tag if kept
         if tag in self.keep:
             data = self.section.text
-            if self.section.el in self.context:
+            if self.section.el in reversed(self.context):
                 data = self.section.title
 
             # Append to section title or text
@@ -220,15 +231,19 @@ class Parser(HTMLParser):
 
     # Called at the end of every HTML tag
     def handle_endtag(self, tag):
-        if self.context and self.context[-1] == tag:
-            self.context.pop()
-        else:
+        if not self.context or self.context[-1] != tag:
+            return
+
+        # Remove element from skip list
+        el = self.context.pop()
+        if el.is_excluded():
+            self.skip.remove(el)
             return
 
         # Render closing tag if kept
         if tag in self.keep:
             data = self.section.text
-            if self.section.el in self.context:
+            if self.section.el in reversed(self.context):
                 data = self.section.title
 
             # Append to section title or text
@@ -252,7 +267,7 @@ class Parser(HTMLParser):
             self.data.append(self.section)
 
         # Handle section headline
-        if self.section.el in self.context:
+        if self.section.el in reversed(self.context):
             permalink = False
             for el in self.context:
                 if el.tag == "a":
