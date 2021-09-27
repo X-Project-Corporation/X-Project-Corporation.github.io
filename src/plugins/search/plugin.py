@@ -247,7 +247,7 @@ class Parser(HTMLParser):
 
         # Remove element from skip list
         el = self.context.pop()
-        if el.is_excluded():
+        if el in self.skip:
             self.skip.remove(el)
             return
 
