@@ -86,12 +86,15 @@ export function mountContentTabs(
     if (feature("content.tabs.link")) {
       const tab = active.innerText.trim()
       for (const set of getElements("[data-tabs]"))
-        for (const label of getElements(":scope > label", set))
+        for (const input of getElements<HTMLInputElement>(
+          ":scope > input", set
+        )) {
+          const label = getElementOrThrow(`label[for=${input.id}]`)
           if (label.innerText.trim() === tab) {
-            const input = label.previousElementSibling as HTMLInputElement
             input.checked = true
             break
           }
+        }
 
       /* Persist active tabs in local storage */
       const tabs = __md_get<string[]>("__tabs") || []
