@@ -231,6 +231,9 @@ class SocialPlugin(BasePlugin):
             file
         ))
 
+        # Ensure forward slashes
+        url = url.replace(os.path.sep, "/")
+
         # Return meta tags
         return [
 
