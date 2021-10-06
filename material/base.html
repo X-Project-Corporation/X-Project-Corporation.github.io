@@ -32,7 +32,7 @@
         {% endfor %}
       {% endif %}
       <link rel="icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.3.1+insiders-3.1.1">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-7.3.2+insiders-3.1.1">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -264,7 +264,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.665a53ce.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.80a943f2.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
