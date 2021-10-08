@@ -23,7 +23,7 @@ jinja2>=2.11.1
 markdown>=3.2
 # mkdocs>=1.2.2
 # Temporary, until 1.2.3 is out, see https://github.com/mkdocs/mkdocs/pull/2591
-mkdocs @ git+git://github.com/mkdocs/mkdocs.git@4ea78da2e93e1165c2600df5f5a66704ff8bc197
+mkdocs @ git+https://github.com/mkdocs/mkdocs.git@4ea78da2e93e1165c2600df5f5a66704ff8bc197
 mkdocs-material-extensions>=1.0
 pygments>=2.4
 pymdown-extensions>=9.0
