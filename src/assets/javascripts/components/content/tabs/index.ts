@@ -80,13 +80,16 @@ export function mountContentTabs(
 ): Observable<Component<ContentTabs>> {
   const internal$ = new Subject<ContentTabs>()
   internal$.subscribe(({ active }) => {
-
-    /* Scroll active tab into view */
-    active.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "start"
-    })
+    // TODO: Hack, scrollIntoView is too buggy
+    const container = active.parentElement!
+    if (
+      active.offsetLeft + active.offsetWidth > container.scrollLeft + container.offsetWidth ||
+      active.offsetLeft                      < container.scrollLeft
+    )
+      container.scrollTo({
+        behavior: "smooth",
+        left: active.offsetLeft
+      })
 
     /* Set up linking of content tabs, if enabled */
     if (feature("content.tabs.link")) {
