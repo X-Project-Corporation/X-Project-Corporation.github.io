@@ -49,6 +49,7 @@ import {
   getElementContentSize,
   getElementOrThrow,
   getElementSize,
+  getElement,
   getElements,
   watchMedia
 } from "~/browser"
@@ -163,8 +164,8 @@ export function watchCodeBlock(
           container.insertAdjacentElement("afterend", list)
           for (const annotation of annotations) {
             const id = parseInt(annotation.getAttribute("data-index")!, 10)
-            const nodes = getElements(":scope .md-typeset > *", annotation)
-            items[id - 1].append(...nodes)
+            const typeset = getElement(":scope .md-typeset", annotation)!
+            items[id - 1].append(...Array.from(typeset.childNodes))
           }
         } else {
           list.remove()
