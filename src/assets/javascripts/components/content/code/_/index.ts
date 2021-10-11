@@ -46,10 +46,10 @@ import { feature } from "~/_"
 import { resetFocusable, setFocusable } from "~/actions"
 import {
   Viewport,
+  getElement,
   getElementContentSize,
   getElementOrThrow,
   getElementSize,
-  getElement,
   getElements,
   watchMedia
 } from "~/browser"
