@@ -18,10 +18,12 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import logging
 import re
 
 from html import escape
 from html.parser import HTMLParser
+from mkdocs.commands.build import DuplicateFilter
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
 from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
 
@@ -35,10 +37,18 @@ class SearchPlugin(BasePlugin):
     # Override: use custom search index
     def on_pre_build(self, **kwargs):
         self.search_index = SearchIndex(**self.config)
+        if self.config["prebuild_index"]:
+            log.warning(
+                "Material for MkDocs doesn't support the 'prebuild_index' "
+                "option. Please remove it from 'mkdocs.yml'."
+            )
+
+            # Set to false, just to be sure
+            self.config["prebuild_index"] = False
 
     # Override: remove search pragmas after indexing
     def on_page_context(self, context, page, **kwargs):
-        self.search_index.add_entry_from_context(context['page'])
+        self.search_index.add_entry_from_context(context["page"])
         page.content = re.sub(
             r'\s?data-search-\w+="[^"]+"',
             "",
@@ -91,7 +101,14 @@ class SearchIndex(BaseIndex):
 
         # Add document tags, if any
         if "tags" in page.meta:
-            entry["tags"] = page.meta["tags"]
+            if type(page.meta["tags"]) is list:
+                entry["tags"] = page.meta["tags"]
+            else:
+                log.warning(
+                    "Skipping 'tags' due to invalid syntax [%s]: %s",
+                    page.file.src_path,
+                    page.meta["tags"]
+                )
 
         # Add document boost for search, if any
         search = page.meta.get("search", {})
@@ -302,6 +319,10 @@ class Parser(HTMLParser):
 # -----------------------------------------------------------------------------
 # Data
 # -----------------------------------------------------------------------------
+
+# Set up logging
+log = logging.getLogger("mkdocs")
+log.addFilter(DuplicateFilter())
 
 # Tags that are self-closing
 void = set([
