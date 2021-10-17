@@ -35,8 +35,9 @@ from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
 class SearchPlugin(BasePlugin):
 
     # Override: use custom search index
-    def on_pre_build(self, **kwargs):
-        self.search_index = SearchIndex(**self.config)
+    def on_pre_build(self, config):
+        options = { "tags": "tags" in config["plugins"] }
+        self.search_index = SearchIndex(**self.config, **options)
         if self.config["prebuild_index"]:
             log.warning(
                 "Material for MkDocs doesn't support the 'prebuild_index' "
@@ -100,7 +101,7 @@ class SearchIndex(BaseIndex):
         }
 
         # Add document tags, if any
-        if "tags" in page.meta:
+        if self.config["tags"] and "tags" in page.meta:
             if type(page.meta["tags"]) is list:
                 entry["tags"] = page.meta["tags"]
             else:
