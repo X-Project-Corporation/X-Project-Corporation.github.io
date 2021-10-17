@@ -142,21 +142,21 @@ class SocialPlugin(BasePlugin):
         # Render site name
         font = ImageFont.truetype(self.font.get("Bold"), 36)
         image.alpha_composite(
-            self.__render_text((826, 48), font, site_name),
+            self.__render_text((826, 48), font, site_name, 1, 20),
             (64 + 4, 64)
         )
 
         # Render page title
         font = ImageFont.truetype(self.font.get("Bold"), 92)
         image.alpha_composite(
-            self.__render_text((826, 328), font, title, 20),
+            self.__render_text((826, 328), font, title, 3, 30),
             (64, 160)
         )
 
         # Render page description
         font = ImageFont.truetype(self.font.get("Regular"), 28)
         image.alpha_composite(
-            self.__render_text((826, 80), font, description, 14),
+            self.__render_text((826, 80), font, description, 2, 14),
             (64 + 4, 512)
         )
 
@@ -168,31 +168,37 @@ class SocialPlugin(BasePlugin):
         return Image.new(mode = "RGBA", size = size, color = fill)
 
     # Render social card text
-    def __render_text(self, size, font, text, spacing = 0):
+    def __render_text(self, size, font, text, lmax, spacing = 0):
         lines, words = [], []
 
         # Create temporary image
         image = Image.new(mode = "RGBA", size = size)
+
+        # Retrieve y-offset of textbox to correct for spacing
+        yoffset = 0
 
         # Create drawing context and split text into lines
         context = ImageDraw.Draw(image)
         for word in text.split(" "):
             combine = " ".join(words + [word])
             textbox = context.textbbox((0, 0), combine, font = font)
+            yoffset = textbox[1]
             if not words or textbox[2] <= image.width:
                 words.append(word)
             else:
                 lines.append(words)
                 words = [word]
 
-        # Balance words on last line
-        if len(lines) > 0:
-            prev = len(" ".join(lines[-1]))
-            last = len(" ".join(words))
+        # # Balance words on last line - TODO: overflows when broken word is too long
+        # if len(lines) > 0:
+        #     prev = len(" ".join(lines[-1]))
+        #     last = len(" ".join(words))#
 
-            # Heuristic: try to find a good ratio
-            if last / prev < 0.6:
-                words.insert(0, lines[-1].pop())
+        #     print(last, prev)
+
+        #     # Heuristic: try to find a good ratio
+        #     if last / prev < 0.6:
+        #         words.insert(0, lines[-1].pop())
 
         # Join words for each line and create image
         lines.append(words)
@@ -202,8 +208,8 @@ class SocialPlugin(BasePlugin):
         # Create drawing context and split text into lines
         context = ImageDraw.Draw(image)
         context.text(
-            (0, 0), "\n".join(lines),
-            font = font, fill = self.color["text"], spacing = spacing
+            (0, spacing / 2 - yoffset), "\n".join(lines[:lmax]),
+            font = font, fill = self.color["text"], spacing = spacing - yoffset
         )
 
         # Return text image
@@ -310,7 +316,7 @@ class SocialPlugin(BasePlugin):
     def __load_font(self, config):
         theme = config.get("theme")
 
-        # Retrieve font name (use Roboto, if disabled)
+        # Retrieve font name (default: Roboto)
         name = "Roboto"
         if theme["font"]:
             name = theme["font"]["text"]
