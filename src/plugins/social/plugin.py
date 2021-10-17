@@ -23,13 +23,15 @@ import re
 import requests
 
 from cairosvg import svg2png
-from cssutils import parseString
+from collections import defaultdict
 from hashlib import md5
 from io import BytesIO
 from mkdocs.config.config_options import Type
 from mkdocs.plugins import BasePlugin
 from PIL import Image, ImageDraw, ImageFont
 from shutil import copyfile
+from tempfile import TemporaryFile
+from zipfile import ZipFile
 
 # -----------------------------------------------------------------------------
 # Class
@@ -138,21 +140,21 @@ class SocialPlugin(BasePlugin):
         )
 
         # Render site name
-        font = ImageFont.truetype(self.font.get(700), 36)
+        font = ImageFont.truetype(self.font.get("Bold"), 36)
         image.alpha_composite(
             self.__render_text((826, 48), font, site_name),
             (64 + 4, 64)
         )
 
         # Render page title
-        font = ImageFont.truetype(self.font.get(700), 92)
+        font = ImageFont.truetype(self.font.get("Bold"), 92)
         image.alpha_composite(
             self.__render_text((826, 328), font, title, 20),
             (64, 160)
         )
 
         # Render page description
-        font = ImageFont.truetype(self.font.get(400), 28)
+        font = ImageFont.truetype(self.font.get("Regular"), 28)
         image.alpha_composite(
             self.__render_text((826, 80), font, description, 14),
             (64 + 4, 512)
@@ -304,7 +306,7 @@ class SocialPlugin(BasePlugin):
         svg2png(bytestring = data, write_to = file, scale = 10)
         return Image.open(file)
 
-    # Retrieve fonts
+    # Retrieve font
     def __load_font(self, config):
         theme = config.get("theme")
 
@@ -314,39 +316,38 @@ class SocialPlugin(BasePlugin):
             name = theme["font"]["text"]
 
         # Retrieve font files, if not already done
-        if not all(os.path.isfile(
-            os.path.join(self.cache, "{}.{}.ttf".format(name, weight))
-        ) for weight in ["400", "700"]):
-            self.__load_font_webfont(name)
+        files = os.listdir(self.cache)
+        files = [file for file in files if file.endswith(".ttf")] or (
+            self.__load_font_from_google(name)
+        )
 
-        # Return paths associated with font weights
-        return {
-            400: os.path.join(self.cache, "{}.400.ttf".format(name)),
-            700: os.path.join(self.cache, "{}.700.ttf".format(name))
-        }
+        # Map available font weights to file paths
+        font = dict()
+        for file in files:
+            match = re.search("-(\w+)\.ttf$", file)
+            font[match.group(1)] = os.path.join(self.cache, file)
+
+        # Return available font weights with fallback
+        return defaultdict(lambda: font["Regular"], font)
 
     # Retrieve font from Google Fonts
-    def __load_font_webfont(self, name):
-        url = "https://fonts.googleapis.com/css?family={}:400,700"
-        res = requests.get(url.format(name.replace(" ", "+")))
+    def __load_font_from_google(self, name):
+        url = "https://fonts.google.com/download?family={}"
+        res = requests.get(url.format(name.replace(" ", "+")), stream = True)
 
-        # Parse font declarations from stylesheet
-        sheet = parseString(res.text)
-        fonts = dict((
-            rule.style["font-weight"],
-            rule.style["src"]
-        ) for rule in sheet)
+        # Write archive to temporary file
+        tmp = TemporaryFile()
+        for chunk in res.iter_content(chunk_size = 128):
+            tmp.write(chunk)
 
-        # Fetch referenced fonts
-        for weight, url in fonts.items():
-            url = re.search("url\((.+?)\)", url).group(1)
-            res = requests.get(url)
+        # Unzip fonts from temporary file
+        zip = ZipFile(tmp)
+        files = [file for file in zip.namelist() if file.endswith(".ttf")]
+        zip.extractall(self.cache, files)
 
-            # Save font to file
-            font = "{}.{}.ttf".format(name, weight)
-            file = open(os.path.join(self.cache, font), "wb")
-            file.write(res.content)
-            file.close()
+        # Close and delete temporary file
+        tmp.close()
+        return files
 
 # -----------------------------------------------------------------------------
 # Data
