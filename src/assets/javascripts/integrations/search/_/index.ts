@@ -162,10 +162,6 @@ export class Search {
   public constructor({ config, docs, options }: SearchIndex) {
     this.options = options
 
-    /* Set up custom tokenizer */
-    lunr.tokenizer = tokenizer as typeof lunr.tokenizer
-    lunr.tokenizer.separator = new RegExp(config.separator)
-
     this.tables = {}
     const tables = this.tables
 
@@ -182,6 +178,10 @@ export class Search {
       } else if (config.lang.length > 1) {
         this.use(lunr.multiLanguage(...config.lang))
       }
+
+      /* Set up custom tokenizer (after language setup) */
+      this.tokenizer = tokenizer as typeof lunr.tokenizer
+      this.tokenizer.separator = new RegExp(config.separator)
 
       /* Compute functions to be removed from the pipeline */
       const fns = difference([

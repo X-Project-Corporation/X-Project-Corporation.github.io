@@ -54,5 +54,13 @@ declare global {
      * @returns Plugin
      */
     function multiLanguage(...lang: string[]): Builder.Plugin
+
+    /**
+     * Segmenter for Japanese
+     */
+    class TinySegmenter {
+      public ctype_(value: string): string
+      public segment(value: string): string[]
+    }
   }
 }

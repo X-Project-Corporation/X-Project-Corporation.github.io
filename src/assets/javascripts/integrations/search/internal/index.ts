@@ -80,7 +80,6 @@ function extract(value: string, fn: VisitorFn): void {
   let end = 0                          /* Current end offset */
 
   /* Split string into sections */
-  // const sections: Section[] = []
   for (let stack = 0; end < value.length; end++) {
 
     /* Tag start after non-empty section */
@@ -128,6 +127,16 @@ export function tokenizer(
 ): lunr.Token[] {
   const tokens: lunr.Token[] = []
 
+  /**
+   * Initialize segmenter, if loaded
+   *
+   * Note that doing this here is not ideal, but it's okay as we just test it
+   * before bringing the new search implementation in its final shape.
+   */
+  const segmenter = "TinySegmenter" in lunr
+    ? new lunr.TinySegmenter()
+    : undefined
+
   /* Tokenize an array of string values */
   if (Array.isArray(input)) {
     for (const value of input)
@@ -143,6 +152,40 @@ export function tokenizer(
       if (type & 1) {
         const section = value.slice(start, end)
         split(section, lunr.tokenizer.separator, ([index, until]) => {
+
+          /**
+           * Apply segmenter after tokenization. Note that the segmenter will
+           * also split words at word boundaries, which is not what we want, so
+           * we need to check if we can somehow mitigate this behavior.
+           */
+          if (typeof segmenter !== "undefined") {
+            const subsection = section.slice(index, until)
+            // eslint-disable-next-line
+            if (/^[MHIK]$/.test(segmenter.ctype_(subsection))) {
+              const segments = segmenter.segment(subsection)
+              for (let i = 0, l = 0; i < segments.length; i++) {
+
+                /* Add block to table */
+                table[block] ||= []
+                table[block].push(
+                  start + index + l  << 12 |
+                  segments[i].length <<  2 |
+                  type
+                )
+
+                /* Add block as token */
+                tokens.push(new lunr.Token(
+                  segments[i].toLowerCase(), {
+                    position: block << 20 | table[block].length - 1
+                  }
+                ))
+
+                // Keep track of length
+                l += segments[i].length
+              }
+              return
+            }
+          }
 
           /* Add block to table */
           table[block] ||= []
