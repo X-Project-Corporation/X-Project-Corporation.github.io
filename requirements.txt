@@ -28,6 +28,5 @@ pymdown-extensions>=9.0
 
 # Requirements for social plugin
 cairosvg>=2.5
-cssutils>=2.3
 pillow>=8.0
 requests>=2.26
