@@ -64,7 +64,7 @@
     }
   </script>
 
-<!-- Google Analytics (UA-XXXXXXXX-X) -->
+<!-- Universal Analytics (UA-XXXXXXXX-X) -->
 {% elif property.startswith("UA-") %}
   <script id="__analytics">
     function __md_analytics() {
@@ -80,6 +80,8 @@
 
       /* Register virtual event handlers */
       document.addEventListener("DOMContentLoaded", function() {
+
+        /* Set up search tracking */
         if (document.forms.search) {
           var query = document.forms.search.query
           query.addEventListener("blur", function() {
@@ -87,6 +89,22 @@
               var path = document.location.pathname;
               ga("send", "pageview", path + "?q=" + this.value)
             }
+          })
+        }
+
+        /* Set up feedback, i.e. "Was this page helpful?" */
+        if (document.forms.feedback) {
+          var feedback = document.forms.feedback
+          feedback.addEventListener("submit", function(ev) {
+            ev.preventDefault()
+
+            /* Retrieve and send data */
+            var page = document.location.pathname
+            var data = ev.submitter.getAttribute("data-md-value")
+            ga("send", "event", "helpful", "click", page, data)
+
+            /* Disable form after submit */
+            feedback.firstElementChild.disabled = true
           })
         }
 

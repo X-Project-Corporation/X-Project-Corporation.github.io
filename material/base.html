@@ -44,7 +44,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.7eca9957.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.2b73a8c3.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.1d832a92.min.css' | url }}">
@@ -192,12 +192,14 @@
                   <h1>{{ page.title | d(config.site_name, true)}}</h1>
                 {% endif %}
                 {{ page.content }}
-                {% if page and page.meta %}
-                  {% if page.meta.git_revision_date_localized or
-                        page.meta.revision_date
-                  %}
-                    {% include "partials/source-file.html" %}
-                  {% endif %}
+                {% block feedback %}
+                  {% include "partials/feedback.html" %}
+                {% endblock %}
+                {% if page and page.meta and (
+                  page.meta.git_revision_date_localized or
+                  page.meta.revision_date
+                ) %}
+                  {% include "partials/source-file.html" %}
                 {% endif %}
               {% endblock %}
               {% block disqus %}

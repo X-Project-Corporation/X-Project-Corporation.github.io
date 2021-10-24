@@ -368,13 +368,17 @@
                 <!-- Markdown content -->
                 {{ page.content }}
 
+                <!-- Was this page helpful? -->
+                {% block feedback %}
+                  {% include "partials/feedback.html" %}
+                {% endblock %}
+
                 <!-- Last update of source file -->
-                {% if page and page.meta %}
-                  {% if page.meta.git_revision_date_localized or
-                        page.meta.revision_date
-                  %}
-                    {% include "partials/source-file.html" %}
-                  {% endif %}
+                {% if page and page.meta and (
+                  page.meta.git_revision_date_localized or
+                  page.meta.revision_date
+                ) %}
+                  {% include "partials/source-file.html" %}
                 {% endif %}
               {% endblock %}
 

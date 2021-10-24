@@ -1,0 +1,25 @@
+{#-
+  This file was automatically generated - do not edit
+-#}
+{% if config.extra.analytics %}
+  {% set feedback = config.extra.analytics.feedback %}
+{% endif %}
+{% if feedback %}
+  <form class="md-feedback" name="feedback">
+    <fieldset class="md-feedback__inner">
+      <legend class="md-feedback__title">
+        Was this page helpful?
+      </legend>
+      <div class="md-feedback__list">
+        {% for value in feedback %}
+          <button class="md-feedback__icon md-icon" type="submit" data-md-value="{{ value.data }}">
+            {% include ".icons/" ~ value.icon ~ ".svg" %}
+          </button>
+          <span class="md-feedback__name">
+            {{ value.name }}
+          </span>
+        {% endfor %}
+      </div>
+    </fieldset>
+  </form>
+{% endif %}
