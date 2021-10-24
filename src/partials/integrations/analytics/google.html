@@ -101,7 +101,7 @@
             /* Retrieve and send data */
             var page = document.location.pathname
             var data = ev.submitter.getAttribute("data-md-value")
-            ga("send", "event", "helpful", "click", page, data)
+            ga("send", "event", "feedback", "click", page, data)
 
             /* Disable form after submit */
             feedback.firstElementChild.disabled = true
