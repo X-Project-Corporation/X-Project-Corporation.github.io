@@ -243,20 +243,28 @@ class Parser(HTMLParser):
             self.section = Section(Element("hx"))
             self.data.append(self.section)
 
-        # Append element to skip list
+        # Handle special cases to skip
         for key, value in attrs:
+
+            # Skip block if explicitly excluded from search
             if key == "data-search-exclude":
                 self.skip.add(el)
                 return
 
-        # Render opening tag if kept
-        if tag in self.keep:
-            data = self.section.text
-            if self.section.el in reversed(self.context):
-                data = self.section.title
+            # Skip line numbers, see https://bit.ly/3GvubZx
+            if key == "class" and value == "linenodiv":
+                self.skip.add(el)
+                return
 
-            # Append to section title or text
-            data.append("<{}>".format(tag))
+        # Render opening tag if kept
+        if not self.skip.intersection(self.context):
+            if tag in self.keep:
+                data = self.section.text
+                if self.section.el in reversed(self.context):
+                    data = self.section.title
+
+                # Append to section title or text
+                data.append("<{}>".format(tag))
 
     # Called at the end of every HTML tag
     def handle_endtag(self, tag):
@@ -270,13 +278,14 @@ class Parser(HTMLParser):
             return
 
         # Render closing tag if kept
-        if tag in self.keep:
-            data = self.section.text
-            if self.section.el in reversed(self.context):
-                data = self.section.title
+        if not self.skip.intersection(self.context):
+            if tag in self.keep:
+                data = self.section.text
+                if self.section.el in reversed(self.context):
+                    data = self.section.title
 
-            # Append to section title or text
-            data.append("</{}>".format(tag))
+                # Append to section title or text
+                data.append("</{}>".format(tag))
 
     # Called for the text contents of each tag
     def handle_data(self, data):
