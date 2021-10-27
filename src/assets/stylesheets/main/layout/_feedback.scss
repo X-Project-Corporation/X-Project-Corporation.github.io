@@ -30,10 +30,10 @@
 
   // Feedback container
   &__inner {
-    border: none;
-    padding: 0;
     margin: 0;
+    padding: 0;
     text-align: center;
+    border: none;
   }
 
   // Feedback container title
@@ -47,8 +47,8 @@
     position: relative;
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     align-content: baseline;
+    justify-content: center;
     min-height: px2rem(48px);
 
     // Feedback icon on hover
@@ -59,8 +59,8 @@
 
   // Feedback icon
   &__icon {
-    margin: 0 px2rem(2px);
     flex-shrink: 0;
+    margin: 0 px2rem(2px);
     color: var(--md-default-fg-color--light);
     cursor: pointer;
     transition: color 125ms;
@@ -80,11 +80,12 @@
   // Feedback name
   &__name {
     position: absolute;
-    opacity: 0;
     top: px2rem(24px);
-    font-size: px2rem(13.6px);
+    width: 100%;
     color: var(--md-default-fg-color--light);
+    font-size: px2rem(13.6px);
     transform: translateY(px2rem(8px));
+    opacity: 0;
     transition:
       transform 400ms cubic-bezier(0.1, 0.7, 0.1, 1),
       opacity   150ms;
@@ -92,12 +93,7 @@
 
   // Feedback name on icon hover
   &__icon:hover + &__name {
-    opacity: 1;
     transform: translateX(0);
-  }
-
-  // Feedback name
-  &__name {
-    width: 100%;
+    opacity: 1;
   }
 }
