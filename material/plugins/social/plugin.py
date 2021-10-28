@@ -171,6 +171,9 @@ class SocialPlugin(BasePlugin):
     def __render_text(self, size, font, text, lmax, spacing = 0):
         lines, words = [], []
 
+        # Remove remnant HTML tags
+        text = re.sub(r"(<[^>]+>)", "", text)
+
         # Create temporary image
         image = Image.new(mode = "RGBA", size = size)
 
