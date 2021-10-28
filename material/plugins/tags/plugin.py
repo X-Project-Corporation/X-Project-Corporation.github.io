@@ -69,9 +69,11 @@ class TagsPlugin(BasePlugin):
         # Replace 1st with 2nd occurrence
         for page in nav.pages:
             if page.file == self.tags_file:
-                index = nav.pages.index(page)
-                nav.pages[index] = nav.pages.pop()
-                nav.items[index] = nav.items.pop()
+                start = nav.pages.index(page)
+                if len(nav.pages) > start + 1:
+                    end = nav.pages.index(page, start + 1)
+                    nav.pages[start] = nav.pages.pop(end)
+                    nav.items[start] = nav.items.pop(end)
 
     # Build and render tags index page
     def on_page_markdown(self, markdown, page, **kwargs):
