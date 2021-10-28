@@ -61,6 +61,18 @@ class TagsPlugin(BasePlugin):
             self.tags_file = files.get_file_from_path(file)
             files.append(self.tags_file)
 
+    # Hack: 2nd pass for tags index page
+    def on_nav(self, nav, **kwargs):
+        if not self.tags_file:
+            return
+
+        # Replace 1st with 2nd occurrence
+        for page in nav.pages:
+            if page.file == self.tags_file:
+                index = nav.pages.index(page)
+                nav.pages[index] = nav.pages.pop()
+                nav.items[index] = nav.items.pop()
+
     # Build and render tags index page
     def on_page_markdown(self, markdown, page, **kwargs):
         if page.file == self.tags_file:
