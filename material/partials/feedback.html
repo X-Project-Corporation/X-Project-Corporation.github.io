@@ -5,20 +5,31 @@
   {% set feedback = config.extra.analytics.feedback %}
 {% endif %}
 {% if feedback %}
-  <form class="md-feedback" name="feedback">
-    <fieldset class="md-feedback__inner">
+  <form class="md-feedback" name="feedback" hidden>
+    <fieldset>
       <legend class="md-feedback__title">
         Was this page helpful?
       </legend>
-      <div class="md-feedback__list">
-        {% for value in feedback %}
-          <button class="md-feedback__icon md-icon" type="submit" data-md-value="{{ value.data }}">
-            {% include ".icons/" ~ value.icon ~ ".svg" %}
-          </button>
-          <span class="md-feedback__name">
-            {{ value.name }}
-          </span>
-        {% endfor %}
+      <div class="md-feedback__inner">
+        <div class="md-feedback__list">
+          {% for value in feedback %}
+            <button class="md-feedback__icon md-icon" type="submit" aria-label="{{ value.name }}" data-md-value="{{ value.data }}">
+              {% include ".icons/" ~ value.icon ~ ".svg" %}
+            </button>
+            <span class="md-feedback__name">
+              {{ value.name }}
+            </span>
+          {% endfor %}
+        </div>
+        <div class="md-feedback__note">
+          {% for value in feedback %}
+            <div data-md-value="{{ value.data }}" hidden>
+              {% if value.note %}
+                {{ value.note.format("/" ~ page.url) }}
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
       </div>
     </fieldset>
   </form>

@@ -86,8 +86,8 @@
           var query = document.forms.search.query
           query.addEventListener("blur", function() {
             if (this.value) {
-              var path = document.location.pathname;
-              ga("send", "pageview", path + "?q=" + this.value)
+              var page = document.location.pathname;
+              ga("send", "pageview", page + "?q=" + this.value)
             }
           })
         }
@@ -103,9 +103,17 @@
             var data = ev.submitter.getAttribute("data-md-value")
             ga("send", "event", "feedback", "click", page, data)
 
-            /* Disable form after submit */
+            /* Disable form and show note, if given */
             feedback.firstElementChild.disabled = true
+            var note = feedback.querySelector(
+              ".md-feedback__note [data-md-value='" + data + "']"
+            )
+            if (note)
+              note.hidden = false
           })
+
+          /* Show feedback */
+          feedback.hidden = false
         }
 
         /* Send page view on location change */

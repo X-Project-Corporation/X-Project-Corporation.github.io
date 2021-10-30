@@ -113,9 +113,8 @@ extra:
         name: This page could be improved
         data: 0
         note: >-
-          Thanks for your feedback! Help us improve the documentation by telling
-          us what you specifically did not like by using our
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSe8L5YDggZiVjgvBKfv-XCdbQAEJrseRh8MBh-jS92TU2aqzw/viewform?usp=pp_url&entry.853143515={url}">feedback form</a>.
+          Thanks for your feedback! Help us improve this page by
+          using our <a href="https://docs.google.com/forms/d/e/1FAIpQLSe8L5YDggZiVjgvBKfv-XCdbQAEJrseRh8MBh-jS92TU2aqzw/viewform?usp=pp_url&entry.853143515={}" target=_blank>feedback form</a>.
 
   social:
     - icon: fontawesome/brands/github

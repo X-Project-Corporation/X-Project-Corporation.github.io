@@ -27,19 +27,24 @@
 // Was this page helpful?
 .md-feedback {
   margin: 2em 0 1em;
+  text-align: center;
 
-  // Feedback container
-  &__inner {
+  // Feedback fieldset
+  fieldset {
     margin: 0;
     padding: 0;
-    text-align: center;
     border: none;
   }
 
-  // Feedback container title
+  // Feedback title
   &__title {
     margin: 1em 0;
     font-weight: 700;
+  }
+
+  // Feedback wrapper
+  &__inner {
+    position: relative;
   }
 
   // Feedback list
@@ -54,6 +59,11 @@
     // Feedback icon on hover
     &:hover .md-icon:not(:disabled) {
       color: var(--md-default-fg-color--lighter);
+    }
+
+    // Adjust height after submission
+    :disabled & {
+      min-height: px2rem(36px);
     }
   }
 
@@ -89,11 +99,38 @@
     transition:
       transform 400ms cubic-bezier(0.1, 0.7, 0.1, 1),
       opacity   150ms;
+
+    // Hide after submission
+    :disabled & {
+      display: none;
+    }
   }
 
   // Feedback name on icon hover
   &__icon:hover + &__name {
     transform: translateX(0);
     opacity: 1;
+  }
+
+  // Feedback note
+  &__note {
+    position: relative;
+    transform: translateY(px2rem(8px));
+    opacity: 0;
+    transition:
+      transform 400ms cubic-bezier(0.1, 0.7, 0.1, 1),
+      opacity   150ms;
+
+    // Feedback note value
+    > * {
+      max-width: px2rem(320px);
+      margin: 0 auto;
+    }
+
+    // Show after submission
+    :disabled & {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 }
