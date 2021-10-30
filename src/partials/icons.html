@@ -27,9 +27,10 @@
     {% import ".icons/" ~ icon ~ ".svg" as icon %}
     {% set _ = style.append(
       "--md-admonition-icon--" ~ type ~ ": " ~
-      "url('data:image/svg+xml;charset=utf-8," ~ icon ~
-      "');")
-    %}
+      "url('data:image/svg+xml;charset=utf-8," ~
+        icon | replace("\n", "") ~
+      "');"
+    ) %}
   {% endfor %}
   {% set _ = style.append("\x3c/style\x3e") %}
   {{ style | join }}
