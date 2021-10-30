@@ -138,9 +138,18 @@ MkDocs includes a live preview server, so you can preview your changes as you
 write your documentation. The server will automatically rebuild the site upon
 saving. Start it with:
 
+``` sh
+mkdocs serve # (1)
 ```
-mkdocs serve
-```
+
+1.  If you have a large documentation project, it might take minutes until
+    MkDocs has rebuilt all pages for you to preview. If you're only interested
+    in the current page, the [`--dirtyreload`][--dirtyreload] flag will make
+    rebuilds much faster:
+
+    ```
+    mkdocs serve --dirtyreload
+    ```
 
 If you're running Material for MkDocs from within Docker, use:
 
@@ -160,6 +169,7 @@ Point your browser to [localhost:8000][live preview] and you should see:
 
 [![Creating your site]][Creating your site]
 
+  [--dirtyreload]: https://www.mkdocs.org/about/release-notes/#support-for-dirty-builds-990
   [live preview]: http://localhost:8000
   [Creating your site]: assets/screenshots/creating-your-site.png
 
