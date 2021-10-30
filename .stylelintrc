@@ -99,6 +99,14 @@
       "vh",
       "vw"
     ],
+    "value-keyword-case": [
+      "lower",
+      {
+        "ignoreProperties": [
+          "/^--/"
+        ]
+      }
+    ],
     "value-list-comma-newline-after": null,
     "value-no-vendor-prefix": [
       true,
