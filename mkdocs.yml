@@ -108,9 +108,15 @@ extra:
       - icon: material/emoticon-happy-outline
         name: This page was helpful
         data: 1
+        note: Thanks for your feedback!
       - icon: material/emoticon-sad-outline
         name: This page could be improved
         data: 0
+        note: >-
+          Thanks for your feedback! Help us improve the documentation by telling
+          us what you specifically did not like by using our
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSe8L5YDggZiVjgvBKfv-XCdbQAEJrseRh8MBh-jS92TU2aqzw/viewform?usp=pp_url&entry.853143515={url}">feedback form</a>.
+
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/squidfunk
