@@ -20,9 +20,8 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable } from "rxjs"
+import { Observable, combineLatest, of } from "rxjs"
 import {
-  combineLatestWith,
   mapTo,
   shareReplay,
   switchMap,
@@ -66,6 +65,19 @@ let index = 0
  * ------------------------------------------------------------------------- */
 
 /**
+ * Fetch Mermaid script
+ *
+ * @returns Mermaid scripts observable
+ */
+function fetchScripts(): Observable<void> {
+  return typeof mermaid !== "undefined"
+    ? of(undefined)
+    : watchScript(
+      "https://unpkg.com/mermaid@8.13.3/dist/mermaid.min.js"
+    )
+}
+
+/**
  * Fetch Mermaid styles
  *
  * @returns Mermaid styles observable
@@ -94,11 +106,8 @@ function fetchStyles(): Observable<string> {
 export function mountMermaidCodeBlock(
   el: HTMLElement
 ): Observable<Component<MermaidCodeBlock>> {
-  mermaid$ ||= watchScript(
-    "https://unpkg.com/mermaid@8.13.3/dist/mermaid.min.js"
-  )
+  mermaid$ ||= combineLatest([fetchScripts(), fetchStyles()])
     .pipe(
-      combineLatestWith(fetchStyles()),
       tap(([, themeCSS]) => mermaid.initialize({
         startOnLoad: false,
         themeCSS
