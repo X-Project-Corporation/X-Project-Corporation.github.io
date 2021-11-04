@@ -20,9 +20,8 @@
 
 name: publish
 on:
-  create:
-    tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+  release:
+    types: [published]
 
 env:
   PYTHON_VERSION: 3.x
