@@ -95,7 +95,7 @@ export function mountMermaidCodeBlock(
   el: HTMLElement
 ): Observable<Component<MermaidCodeBlock>> {
   mermaid$ ||= watchScript(
-    "https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js"
+    "https://unpkg.com/mermaid@8.13.3/dist/mermaid.min.js"
   )
     .pipe(
       combineLatestWith(fetchStyles()),
