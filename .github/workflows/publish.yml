@@ -19,9 +19,11 @@
 # IN THE SOFTWARE.
 
 name: publish
+
 on:
-  release:
-    types: [published]
+  create:
+    tags:
+      - ".+"
 
 env:
   PYTHON_VERSION: 3.x
