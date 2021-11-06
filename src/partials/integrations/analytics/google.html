@@ -101,7 +101,7 @@
 
               /* Retrieve and send data */
               var page = document.location.pathname
-              var data = button.getAttribute("data-md-value")
+              var data = this.getAttribute("data-md-value")
               ga("send", "event", "feedback", "click", page, data)
 
               /* Disable form and show note, if given */
