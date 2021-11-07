@@ -369,9 +369,7 @@
                 {{ page.content }}
 
                 <!-- Was this page helpful? -->
-                {% block feedback %}
-                  {% include "partials/feedback.html" %}
-                {% endblock %}
+                {% include "partials/feedback.html" %}
 
                 <!-- Last update of source file -->
                 {% if page and page.meta and (

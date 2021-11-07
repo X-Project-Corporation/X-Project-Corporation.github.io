@@ -25,6 +25,13 @@
   {% set feedback = config.extra.analytics.feedback %}
 {% endif %}
 
+<!-- Determine whether to show feedback -->
+{% if page and page.meta and page.meta.hide %}
+  {% if "feedback" in page.meta.hide %}
+    {% set feedback = None %}
+  {% endif %}
+{% endif %}
+
 <!-- Was this page helpful? -->
 {% if feedback %}
   <form class="md-feedback" name="feedback" hidden>

@@ -4,6 +4,11 @@
 {% if config.extra.analytics %}
   {% set feedback = config.extra.analytics.feedback %}
 {% endif %}
+{% if page and page.meta and page.meta.hide %}
+  {% if "feedback" in page.meta.hide %}
+    {% set feedback = None %}
+  {% endif %}
+{% endif %}
 {% if feedback %}
   <form class="md-feedback" name="feedback" hidden>
     <fieldset>
