@@ -149,13 +149,25 @@ export function watchCodeBlock(
 
       /* Replace comments with annotations */
       for (const comment of getElements(".c, .c1, .cm", el)) {
-        const [, j = -1] = comment.textContent!.match(/\((\d+)\)/) || []
-        const content = items[+j - 1]
-        if (typeof content !== "undefined") {
-          const annotation = renderAnnotation(+j, content.childNodes)
-          comment.replaceWith(annotation)
-          annotations.push(annotation)
-        }
+
+        /* Split comment at annotations */ // TODO: refactor when revisiting annotations
+        let match: RegExpExecArray | null
+        let text = comment.firstChild as Text
+        do {
+          match = /\((\d+)\)/.exec(text.textContent!)
+          if (match && match.index) {
+            const bubble = text.splitText(match.index)
+            text = bubble.splitText(match[0].length) // complete match length
+
+            const [, j = -1] = match
+            const content = items[+j - 1]
+            if (typeof content !== "undefined") {
+              const annotation = renderAnnotation(+j, content.childNodes)
+              bubble.replaceWith(annotation)
+              annotations.push(annotation)
+            }
+          }
+        } while (match)
       }
 
       /* Move elements back on print */ // TODO: refactor memleak (instant loading)
