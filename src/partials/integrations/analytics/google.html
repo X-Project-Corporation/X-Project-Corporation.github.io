@@ -43,12 +43,40 @@
 
       /* Register virtual event handlers */
       document.addEventListener("DOMContentLoaded", function() {
+
+        /* Set up search tracking */
         if (document.forms.search) {
           var query = document.forms.search.query
           query.addEventListener("blur", function() {
             if (this.value)
               gtag("event", "search", { search_term: this.value })
           })
+        }
+
+        /* Set up feedback, i.e. "Was this page helpful?" */
+        if (document.forms.feedback) {
+          var feedback = document.forms.feedback
+          for (var button of feedback.querySelectorAll("[type=submit]")) {
+            button.addEventListener("click", function(ev) {
+              ev.preventDefault()
+
+              /* Retrieve and send data */
+              var page = document.location.pathname
+              var data = this.getAttribute("data-md-value")
+              gtag("event", "feedback", { page, data })
+
+              /* Disable form and show note, if given */
+              feedback.firstElementChild.disabled = true
+              var note = feedback.querySelector(
+                ".md-feedback__note [data-md-value='" + data + "']"
+              )
+              if (note)
+                note.hidden = false
+            })
+
+            /* Show feedback */
+            feedback.hidden = false
+          }
         }
 
         /* Send page view on location change */
