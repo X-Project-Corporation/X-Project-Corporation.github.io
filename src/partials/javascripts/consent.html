@@ -28,8 +28,8 @@
       if (input.name)
         input.checked = consent[input.name] || false
 
-  /* Show consent with a small delay */
-  } else {
+  /* Show consent with a small delay, but not if browsing locally */
+  } else if (location.protocol !== "file:") {
     setTimeout(function() {
       var el = document.querySelector("[data-md-component=consent]")
       el.hidden = false
