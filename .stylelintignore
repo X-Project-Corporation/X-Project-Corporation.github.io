@@ -20,7 +20,6 @@
 
 # Distribution files
 docs
-examples
 material
 src/**/*.html
 
