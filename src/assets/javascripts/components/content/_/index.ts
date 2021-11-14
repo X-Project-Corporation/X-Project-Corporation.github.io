@@ -83,11 +83,11 @@ export function mountContent(
   return merge(
 
     /* Code blocks */
-    ...getElements("pre:not([class^=mermaid]) > code", el)
+    ...getElements("pre:not(.mermaid) > code", el)
       .map(child => mountCodeBlock(child, { viewport$, print$ })),
 
     /* Mermaid code blocks */
-    ...getElements(".mermaid, .mermaid-experimental", el)
+    ...getElements("pre.mermaid", el)
       .map(child => mountMermaidCodeBlock(child)),
 
     /* Data tables */
