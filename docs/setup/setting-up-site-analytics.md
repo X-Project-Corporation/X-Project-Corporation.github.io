@@ -242,7 +242,7 @@ integrated by using the `cookies` field:
           custom: Custom cookie
     ```
 
-    1. If you add a custom cookie to the `cookies` field, $$the `analytics` cookie 
+    1. If you add a custom cookie to the `cookies` field, the `analytics` cookie 
        must be added back explicitly, or analytics won't be triggered.
 
 When a user first visits your site, a cookie consent form is rendered:
