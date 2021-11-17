@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, combineLatest, of } from "rxjs"
+import { Observable, of, zip } from "rxjs"
 import {
   mapTo,
   shareReplay,
@@ -106,7 +106,8 @@ function fetchStyles(): Observable<string> {
 export function mountMermaidCodeBlock(
   el: HTMLElement
 ): Observable<Component<MermaidCodeBlock>> {
-  mermaid$ ||= combineLatest([fetchScripts(), fetchStyles()])
+  el.classList.remove("mermaid") // Hack: mitigate https://bit.ly/3CiN6Du
+  mermaid$ ||= zip([fetchScripts(), fetchStyles()])
     .pipe(
       tap(([, themeCSS]) => mermaid.initialize({
         startOnLoad: false,
@@ -118,6 +119,7 @@ export function mountMermaidCodeBlock(
 
   /* Render diagram */
   mermaid$.subscribe(() => {
+    el.classList.add("mermaid") // Hack: mitigate https://bit.ly/3CiN6Du
     const id = `__mermaid_${index++}`
     const host = h("div", { class: "mermaid" })
     mermaid.mermaidAPI.render(id, el.innerText, (svg: string) => {
