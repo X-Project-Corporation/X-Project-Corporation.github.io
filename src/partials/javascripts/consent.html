@@ -47,9 +47,7 @@
         .map(function(key) { return [key, true] })
     ))
 
-
-    /* Reload window (for now) */
-    /* First remove the anchor tag so that the dialog disappears */
+    /* Remove anchor to omit consent from reappearing and reload */
     location.hash = '';
     location.reload()
   })
