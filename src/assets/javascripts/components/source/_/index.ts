@@ -20,21 +20,28 @@
  * IN THE SOFTWARE.
  */
 
-import { NEVER, Observable, Subject, defer, of } from "rxjs"
 import {
+  EMPTY,
+  Observable,
+  Subject,
   catchError,
+  defer,
   filter,
   finalize,
   map,
+  of,
   shareReplay,
   tap
-} from "rxjs/operators"
+} from "rxjs"
 
-import { setSourceFacts, setSourceState } from "~/actions"
+import { getElement } from "~/browser"
 import { renderSourceFacts } from "~/templates"
 
 import { Component } from "../../_"
-import { SourceFacts, fetchSourceFacts } from "../facts"
+import {
+  SourceFacts,
+  fetchSourceFacts
+} from "../facts"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -84,7 +91,7 @@ export function watchSource(
         )
   })
     .pipe(
-      catchError(() => NEVER),
+      catchError(() => EMPTY),
       filter(facts => Object.keys(facts).length > 0),
       map(facts => ({ facts })),
       shareReplay(1)
@@ -101,17 +108,20 @@ export function watchSource(
 export function mountSource(
   el: HTMLAnchorElement
 ): Observable<Component<Source>> {
-  const internal$ = new Subject<Source>()
-  internal$.subscribe(({ facts }) => {
-    setSourceFacts(el, renderSourceFacts(facts))
-    setSourceState(el, "done")
-  })
+  const inner = getElement(":scope > :last-child", el)
+  return defer(() => {
+    const push$ = new Subject<Source>()
+    push$.subscribe(({ facts }) => {
+      inner.appendChild(renderSourceFacts(facts))
+      inner.setAttribute("data-md-state", "done")
+    })
 
-  /* Create and return component */
-  return watchSource(el)
-    .pipe(
-      tap(state => internal$.next(state)),
-      finalize(() => internal$.complete()),
-      map(state => ({ ref: el, ...state }))
-    )
+    /* Create and return component */
+    return watchSource(el)
+      .pipe(
+        tap(state => push$.next(state)),
+        finalize(() => push$.complete()),
+        map(state => ({ ref: el, ...state }))
+      )
+  })
 }

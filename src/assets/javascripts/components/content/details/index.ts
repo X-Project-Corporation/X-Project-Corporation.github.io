@@ -20,14 +20,17 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, Subject, merge } from "rxjs"
 import {
+  Observable,
+  Subject,
+  defer,
   filter,
   finalize,
   map,
   mapTo,
+  merge,
   tap
-} from "rxjs/operators"
+} from "rxjs"
 
 import { Component } from "../../_"
 
@@ -39,7 +42,7 @@ import { Component } from "../../_"
  * Details
  */
 export interface Details {
-  action: "open" | "close"             /* Action */
+  action: "open" | "close"             /* Details state */
   scroll?: boolean                     /* Scroll into view */
 }
 
@@ -52,7 +55,7 @@ export interface Details {
  */
 interface WatchOptions {
   target$: Observable<HTMLElement>     /* Location target observable */
-  print$: Observable<boolean>          /* Print mode observable */
+  print$: Observable<boolean>          /* Media print observable */
 }
 
 /**
@@ -60,7 +63,7 @@ interface WatchOptions {
  */
 interface MountOptions {
   target$: Observable<HTMLElement>     /* Location target observable */
-  print$: Observable<boolean>          /* Print mode observable */
+  print$: Observable<boolean>          /* Media print observable */
 }
 
 /* ----------------------------------------------------------------------------
@@ -115,21 +118,23 @@ export function watchDetails(
 export function mountDetails(
   el: HTMLDetailsElement, options: MountOptions
 ): Observable<Component<Details>> {
-  const internal$ = new Subject<Details>()
-  internal$.subscribe(({ action, scroll }) => {
-    if (action === "open")
-      el.setAttribute("open", "")
-    else
-      el.removeAttribute("open")
-    if (scroll)
-      el.scrollIntoView()
-  })
+  return defer(() => {
+    const push$ = new Subject<Details>()
+    push$.subscribe(({ action, scroll }) => {
+      if (action === "open")
+        el.setAttribute("open", "")
+      else
+        el.removeAttribute("open")
+      if (scroll)
+        el.scrollIntoView()
+    })
 
-  /* Create and return component */
-  return watchDetails(el, options)
-    .pipe(
-      tap(state => internal$.next(state)),
-      finalize(() => internal$.complete()),
-      map(state => ({ ref: el, ...state }))
-    )
+    /* Create and return component */
+    return watchDetails(el, options)
+      .pipe(
+        tap(state => push$.next(state)),
+        finalize(() => push$.complete()),
+        map(state => ({ ref: el, ...state }))
+      )
+  })
 }

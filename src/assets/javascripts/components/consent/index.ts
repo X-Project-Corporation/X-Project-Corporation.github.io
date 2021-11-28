@@ -23,14 +23,12 @@
 import {
   Observable,
   Subject,
-  animationFrameScheduler
-} from "rxjs"
-import {
+  animationFrameScheduler,
   finalize,
   map,
   observeOn,
   tap
-} from "rxjs/operators"
+} from "rxjs"
 
 import { Component } from "../_"
 

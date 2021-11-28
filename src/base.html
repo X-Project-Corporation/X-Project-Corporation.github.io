@@ -38,13 +38,6 @@
         <meta name="description" content="{{ config.site_description }}" />
       {% endif %}
 
-      <!-- Page keywords -->
-      {% if page and page.meta and page.meta.keywords %}
-        <meta name="keywords" content="{{ page.meta.keywords }}" />
-      {% elif config.site_keywords %}
-        <meta name="keywords" content="{{ config.site_keywords }}" />
-      {% endif %}
-
       <!-- Page author -->
       {% if page and page.meta and page.meta.author %}
         <meta name="author" content="{{ page.meta.author }}" />
@@ -140,21 +133,12 @@
         />
         <style>
           :root {
-            --md-text-font-family: "{{ font.text }}";
-            --md-code-font-family: "{{ font.code }}";
+            --md-text-font: "{{ font.text }}";
+            --md-code-font: "{{ font.code }}";
           }
         </style>
       {% endif %}
     {% endblock %}
-
-    <!-- Progressive Web App Manifest -->
-    {% if config.extra.manifest %}
-      <link
-        rel="manifest"
-        href="{{ config.extra.manifest | url }}"
-        crossorigin="use-credentials"
-      />
-    {% endif %}
 
     <!-- Custom style sheets -->
     {% for path in config["extra_css"] %}
@@ -333,56 +317,11 @@
             {% endif %}
           {% endblock %}
 
-          <!-- Article -->
+          <!-- Page content -->
           <div class="md-content" data-md-component="content">
             <article class="md-content__inner md-typeset">
-
-              <!-- Content -->
               {% block content %}
-
-                <!-- Edit button -->
-                {% if page.edit_url %}
-                  <a
-                    href="{{ page.edit_url }}"
-                    title="{{ lang.t('edit.link.title') }}"
-                    class="md-content__button md-icon"
-                  >
-                    {% include ".icons/material/pencil.svg" %}
-                  </a>
-                {% endif %}
-
-                <!-- Tags -->
-                {% if "tags" in config.plugins %}
-                  {% include "partials/tags.html" %}
-                {% endif %}
-
-                <!--
-                  Hack: check whether the content contains a h1 headline. If it
-                  doesn't, the page title (or respectively site name) is used
-                  as the main headline.
-                -->
-                {% if not "\x3ch1" in page.content %}
-                  <h1>{{ page.title | d(config.site_name, true)}}</h1>
-                {% endif %}
-
-                <!-- Markdown content -->
-                {{ page.content }}
-
-                <!-- Was this page helpful? -->
-                {% include "partials/feedback.html" %}
-
-                <!-- Last update of source file -->
-                {% if page and page.meta and (
-                  page.meta.git_revision_date_localized or
-                  page.meta.revision_date
-                ) %}
-                  {% include "partials/source-file.html" %}
-                {% endif %}
-              {% endblock %}
-
-              <!-- Disqus integration -->
-              {% block disqus %}
-                {% include "partials/integrations/disqus.html" %}
+                {% include "partials/content.html" %}
               {% endblock %}
             </article>
 
@@ -437,9 +376,13 @@
         "base": base_url,
         "features": features,
         "translations": {},
-        "search": "assets/javascripts/workers/search.js" | url,
-        "version": config.extra.version or None
+        "search": "assets/javascripts/workers/search.js" | url
       } -%}
+
+      <!-- Versioning -->
+      {%- if config.extra.version -%}
+        {%- set _ = app.update({ "version": config.extra.version }) -%}
+      {%- endif -%}
 
       <!-- Translations -->
       {%- set translations = app.translations -%}

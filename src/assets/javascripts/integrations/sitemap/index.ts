@@ -20,8 +20,13 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, of } from "rxjs"
-import { defaultIfEmpty, map, tap } from "rxjs/operators"
+import {
+  Observable,
+  defaultIfEmpty,
+  map,
+  of,
+  tap
+} from "rxjs"
 
 import { configuration } from "~/_"
 import { getElements, requestXML } from "~/browser"

@@ -24,33 +24,25 @@ import {
   Observable,
   Subject,
   animationFrameScheduler,
-  merge,
-  of
-} from "rxjs"
-import {
   bufferCount,
   filter,
   finalize,
   map,
+  merge,
   observeOn,
+  of,
   skipUntil,
   switchMap,
   take,
   tap,
   withLatestFrom,
   zipWith
-} from "rxjs/operators"
+} from "rxjs"
 
-import {
-  addToSearchResultList,
-  resetSearchResultList,
-  resetSearchResultMeta,
-  setSearchResultMeta
-} from "~/actions"
+import { translation } from "~/_"
 import {
   getElement,
-  getElementOrThrow,
-  watchElementThreshold
+  watchElementBoundary
 } from "~/browser"
 import {
   SearchResult,
@@ -59,6 +51,7 @@ import {
   isSearchResultMessage
 } from "~/integrations"
 import { renderSearchResultItem } from "~/templates"
+import { round } from "~/utilities"
 
 import { Component } from "../../_"
 import { SearchQuery } from "../query"
@@ -93,15 +86,15 @@ interface MountOptions {
 export function mountSearchResult(
   el: HTMLElement, { rx$ }: SearchWorker, { query$ }: MountOptions
 ): Observable<Component<SearchResult>> {
-  const internal$ = new Subject<SearchResult>()
-  const boundary$ = watchElementThreshold(el.parentElement!)
+  const push$ = new Subject<SearchResult>()
+  const boundary$ = watchElementBoundary(el.parentElement!)
     .pipe(
       filter(Boolean)
     )
 
   /* Retrieve nested components */
-  const meta = getElementOrThrow(":scope > :first-child", el)
-  const list = getElementOrThrow(":scope > :last-child", el)
+  const meta = getElement(":scope > :first-child", el)
+  const list = getElement(":scope > :last-child", el)
 
   /* Wait until search is ready */
   const ready$ = rx$
@@ -111,24 +104,43 @@ export function mountSearchResult(
     )
 
   /* Update search result metadata */
-  internal$
+  push$
     .pipe(
       observeOn(animationFrameScheduler),
       withLatestFrom(query$),
       skipUntil(ready$)
     )
       .subscribe(([{ items }, { value }]) => {
-        if (value)
-          setSearchResultMeta(meta, items.length)
-        else
-          resetSearchResultMeta(meta)
+        if (value) {
+          switch (items.length) {
+
+            /* No results */
+            case 0:
+              meta.textContent = translation("search.result.none")
+              break
+
+            /* One result */
+            case 1:
+              meta.textContent = translation("search.result.one")
+              break
+
+            /* Multiple result */
+            default:
+              meta.textContent = translation(
+                "search.result.other",
+                round(items.length)
+              )
+          }
+        } else {
+          meta.textContent = translation("search.result.placeholder")
+        }
       })
 
   /* Update search result list */
-  internal$
+  push$
     .pipe(
       observeOn(animationFrameScheduler),
-      tap(() => resetSearchResultList(list)),
+      tap(() => list.innerHTML = ""),
       switchMap(({ items }) => merge(
         of(...items.slice(0, 10)),
         of(...items.slice(10))
@@ -141,7 +153,7 @@ export function mountSearchResult(
       // TODO: memleak, refactor into distinct chain
       map(result => {
         const item = renderSearchResultItem(result)
-        addToSearchResultList(list, item)
+        list.appendChild(item)
         return getElement("details", item)
       })
     )
@@ -165,8 +177,8 @@ export function mountSearchResult(
   /* Create and return component */
   return result$
     .pipe(
-      tap(state => internal$.next(state)),
-      finalize(() => internal$.complete()),
+      tap(state => push$.next(state)),
+      finalize(() => push$.complete()),
       map(state => ({ ref: el, ...state }))
     )
 }

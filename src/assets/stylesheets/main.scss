@@ -36,7 +36,7 @@
 
 @import "config";
 
-@import "main/reset";
+@import "main/resets";
 @import "main/colors";
 @import "main/icons";
 @import "main/typeset";
@@ -48,9 +48,9 @@
 @import "main/layout/content";
 @import "main/layout/dialog";
 @import "main/layout/feedback";
+@import "main/layout/footer";
 @import "main/layout/form";
 @import "main/layout/header";
-@import "main/layout/footer";
 @import "main/layout/nav";
 @import "main/layout/search";
 @import "main/layout/select";
@@ -78,4 +78,3 @@
 @import "main/integrations/mermaid";
 
 @import "main/modifiers";
-@import "main/shame";

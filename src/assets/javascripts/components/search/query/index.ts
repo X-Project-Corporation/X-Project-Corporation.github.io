@@ -25,16 +25,14 @@ import {
   ObservableInput,
   Subject,
   combineLatest,
-  fromEvent,
-  merge
-} from "rxjs"
-import {
   delay,
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   finalize,
+  fromEvent,
   map,
+  merge,
   share,
   shareReplay,
   switchMapTo,
@@ -42,15 +40,11 @@ import {
   takeLast,
   takeUntil,
   tap
-} from "rxjs/operators"
+} from "rxjs"
 
-import {
-  resetSearchQueryPlaceholder,
-  setSearchQueryPlaceholder
-} from "~/actions"
+import { translation } from "~/_"
 import {
   getLocation,
-  setElementFocus,
   setToggle,
   watchElementFocus
 } from "~/browser"
@@ -175,10 +169,10 @@ export function watchSearchQuery(
 export function mountSearchQuery(
   el: HTMLInputElement, { tx$, rx$ }: SearchWorker, options: MountOptions
 ): Observable<Component<SearchQuery, HTMLInputElement>> {
-  const internal$ = new Subject<SearchQuery>()
+  const push$ = new Subject<SearchQuery>()
 
   /* Handle value changes */
-  internal$
+  push$
     .pipe(
       distinctUntilKeyChanged("value"),
       map(({ value }): SearchQueryMessage => ({
@@ -189,31 +183,31 @@ export function mountSearchQuery(
       .subscribe(tx$.next.bind(tx$))
 
   /* Handle focus changes */
-  internal$
+  push$
     .pipe(
       distinctUntilKeyChanged("focus")
     )
       .subscribe(({ focus }) => {
         if (focus) {
           setToggle("search", focus)
-          setSearchQueryPlaceholder(el, "")
+          el.placeholder = ""
         } else {
-          resetSearchQueryPlaceholder(el)
+          el.placeholder = translation("search.placeholder")
         }
       })
 
   /* Handle reset */
   fromEvent(el.form!, "reset")
     .pipe(
-      takeUntil(internal$.pipe(takeLast(1)))
+      takeUntil(push$.pipe(takeLast(1)))
     )
-      .subscribe(() => setElementFocus(el))
+      .subscribe(() => el.focus())
 
   /* Create and return component */
   return watchSearchQuery(el, { tx$, rx$ }, options)
     .pipe(
-      tap(state => internal$.next(state)),
-      finalize(() => internal$.complete()),
+      tap(state => push$.next(state)),
+      finalize(() => push$.complete()),
       map(state => ({ ref: el, ...state })),
       share()
     )

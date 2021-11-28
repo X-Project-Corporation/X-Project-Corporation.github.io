@@ -20,16 +20,18 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, of, zip } from "rxjs"
 import {
+  Observable,
   mapTo,
+  of,
   shareReplay,
   switchMap,
-  tap
-} from "rxjs/operators"
+  tap,
+  zip
+} from "rxjs"
 
 import {
-  getElementOrThrow,
+  getElement,
   request,
   watchScript
 } from "~/browser"
@@ -42,9 +44,9 @@ import { Component } from "../../../_"
  * ------------------------------------------------------------------------- */
 
 /**
- * Mermaid code block
+ * Mermaid diagram
  */
-export interface MermaidCodeBlock {}
+export interface Mermaid {}
 
 /* ----------------------------------------------------------------------------
  * Data
@@ -83,7 +85,7 @@ function fetchScripts(): Observable<void> {
  * @returns Mermaid styles observable
  */
 function fetchStyles(): Observable<string> {
-  const style = getElementOrThrow<HTMLLinkElement>(
+  const style = getElement<HTMLLinkElement>(
     "[rel=preload][href*=mermaid]"
   )
   return request(style.href)
@@ -97,15 +99,15 @@ function fetchStyles(): Observable<string> {
  * ------------------------------------------------------------------------- */
 
 /**
- * Mount Mermaid code block
+ * Mount Mermaid diagram
  *
  * @param el - Code block element
  *
- * @returns Mermaid code block component observable
+ * @returns Mermaid diagram component observable
  */
-export function mountMermaidCodeBlock(
+export function mountMermaid(
   el: HTMLElement
-): Observable<Component<MermaidCodeBlock>> {
+): Observable<Component<Mermaid>> {
   el.classList.remove("mermaid") // Hack: mitigate https://bit.ly/3CiN6Du
   mermaid$ ||= zip([fetchScripts(), fetchStyles()])
     .pipe(

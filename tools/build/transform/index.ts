@@ -25,18 +25,16 @@ import { build as esbuild } from "esbuild"
 import * as path from "path"
 import postcss from "postcss"
 import {
-  NEVER,
+  EMPTY,
   Observable,
+  catchError,
   concat,
   defer,
-  of
-} from "rxjs"
-import {
-  catchError,
   endWith,
   ignoreElements,
+  of,
   switchMap
-} from "rxjs/operators"
+} from "rxjs"
 import { render as sass } from "sass"
 import { promisify } from "util"
 
@@ -118,7 +116,7 @@ export function transformStyle(
       ),
       catchError(err => {
         console.log(err.formatted || err.message)
-        return NEVER
+        return EMPTY
       }),
       switchMap(({ css }) => {
         const file = digest(options.to, css)
@@ -163,7 +161,7 @@ export function transformScript(
           map: null
         })
       }),
-      catchError(() => NEVER),
+      catchError(() => EMPTY),
       switchMap(({ js }) => {
         const file = digest(options.to, js)
         return concat(

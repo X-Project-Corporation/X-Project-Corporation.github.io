@@ -22,43 +22,33 @@
 
 import ClipboardJS from "clipboard"
 import {
-  NEVER,
+  EMPTY,
   Observable,
   Subject,
-  fromEvent,
-  merge,
-  of
-} from "rxjs"
-import {
-  combineLatestWith,
+  defer,
   distinctUntilKeyChanged,
   finalize,
   map,
   mergeWith,
   switchMap,
-  take,
-  takeWhile,
+  takeLast,
+  takeUntil,
   tap,
   withLatestFrom
-} from "rxjs/operators"
+} from "rxjs"
 
 import { feature } from "~/_"
-import { resetFocusable, setFocusable } from "~/actions"
 import {
-  Viewport,
-  getElement,
   getElementContentSize,
-  getElementOrThrow,
-  getElementSize,
-  getElements,
-  watchMedia
+  watchElementSize
 } from "~/browser"
-import {
-  renderAnnotation,
-  renderClipboardButton
-} from "~/templates"
+import { renderClipboardButton } from "~/templates"
 
 import { Component } from "../../../_"
+import {
+  Annotation,
+  mountAnnotationList
+} from "../annotation"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -68,8 +58,7 @@ import { Component } from "../../../_"
  * Code block
  */
 export interface CodeBlock {
-  scroll: boolean                      /* Code block overflows */
-  annotations?: HTMLElement[]          /* Code block annotations */
+  scrollable: boolean                  /* Code block overflows */
 }
 
 /* ----------------------------------------------------------------------------
@@ -77,19 +66,11 @@ export interface CodeBlock {
  * ------------------------------------------------------------------------- */
 
 /**
- * Watch options
- */
-interface WatchOptions {
-  viewport$: Observable<Viewport>      /* Viewport observable */
-  print$: Observable<boolean>          /* Print mode observable */
-}
-
-/**
  * Mount options
  */
 interface MountOptions {
-  viewport$: Observable<Viewport>      /* Viewport observable */
-  print$: Observable<boolean>          /* Print mode observable */
+  hover$: Observable<boolean>          /* Media hover observable */
+  print$: Observable<boolean>          /* Media print observable */
 }
 
 /* ----------------------------------------------------------------------------
@@ -97,9 +78,35 @@ interface MountOptions {
  * ------------------------------------------------------------------------- */
 
 /**
- * Global index for Clipboard.js integration
+ * Global sequence number for Clipboard.js integration
  */
-let index = 0
+let sequence = 0
+
+/* ----------------------------------------------------------------------------
+ * Helper functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Find the code annotations belonging to a code block
+ *
+ * @param el - Code block element
+ *
+ * @returns Code annotation list or nothing
+ */
+function findAnnotationList(el: HTMLElement): HTMLElement | undefined {
+  if (el.nextElementSibling) {
+    const sibling = el.nextElementSibling as HTMLElement
+    if (sibling.tagName === "OL")
+      return sibling
+
+    /* Skip empty paragraphs - see https://bit.ly/3r4ZJ2O */
+    else if (sibling.tagName === "P" && !sibling.children.length)
+      return findAnnotationList(sibling)
+  }
+
+  /* Everything else */
+  return undefined
+}
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -112,100 +119,21 @@ let index = 0
  * content tabs with embedded code blocks, as both may trigger overflow.
  *
  * @param el - Code block element
- * @param options - Options
  *
  * @returns Code block observable
  */
 export function watchCodeBlock(
-  el: HTMLElement, { viewport$, print$ }: WatchOptions
+  el: HTMLElement
 ): Observable<CodeBlock> {
-  const container$ = of(el)
+  return watchElementSize(el)
     .pipe(
-      switchMap(child => {
-        const container = child.closest("[data-tabs]")
-        if (container instanceof HTMLElement) {
-          return merge(
-            ...getElements(":scope > input", container)
-              .map(input => fromEvent(input, "change"))
-          )
-        }
-        return NEVER
-      })
-    )
-
-  /* Transform annotations */
-  const annotations: HTMLElement[] = []
-  const container =
-    el.closest(".highlighttable") ||
-    el.closest(".highlight")
-  if (container) {
-    const list = container.nextElementSibling
-    if (list instanceof HTMLOListElement && (
-      container.classList.contains("annotate") ||
-      feature("content.code.annotate")
-    )) {
-      const items = Array.from(list.children)
-      list.remove()
-
-      /* Replace comments with annotations */
-      for (const comment of getElements(".c, .c1, .cm", el)) {
-
-        /* Split comment at annotations */ // TODO: refactor when revisiting annotations
-        let match: RegExpExecArray | null
-        let text = comment.firstChild as Text
-        do {
-          match = /\((\d+)\)/.exec(text.textContent!)
-          if (match && match.index) {
-            const bubble = text.splitText(match.index)
-            text = bubble.splitText(match[0].length) // complete match length
-
-            const [, j = -1] = match
-            const content = items[+j - 1]
-            if (typeof content !== "undefined") {
-              const annotation = renderAnnotation(+j, content.childNodes)
-              bubble.replaceWith(annotation)
-              annotations.push(annotation)
-            }
-          }
-        } while (match)
-      }
-
-      /* Move elements back on print */ // TODO: refactor memleak (instant loading)
-      print$.subscribe(active => {
-        if (active) {
-          container.insertAdjacentElement("afterend", list)
-          for (const annotation of annotations) {
-            const id = parseInt(annotation.getAttribute("data-index")!, 10)
-            const typeset = getElement(":scope .md-typeset", annotation)!
-            items[id - 1].append(...Array.from(typeset.childNodes))
-          }
-        } else {
-          list.remove()
-          for (const annotation of annotations) {
-            const id = parseInt(annotation.getAttribute("data-index")!, 10)
-            const nodes = items[id - 1].childNodes
-            getElementOrThrow(":scope .md-typeset", annotation)
-              .append(...Array.from(nodes))
-          }
-        }
-      })
-    }
-  }
-
-  /* Check overflow on resize and tab change */
-  return viewport$
-    .pipe(
-      distinctUntilKeyChanged("size"),
-      mergeWith(container$),
-      map(() => {
-        const visible = getElementSize(el)
+      map(({ width }) => {
         const content = getElementContentSize(el)
         return {
-          scroll: content.width > visible.width,
-          ...annotations.length && { annotations }
+          scrollable: content.width > width
         }
       }),
-      distinctUntilKeyChanged("scroll")
+      distinctUntilKeyChanged("scrollable")
     )
 }
 
@@ -214,66 +142,78 @@ export function watchCodeBlock(
  *
  * This function ensures that an overflowing code block is focusable through
  * keyboard, so it can be scrolled without a mouse to improve on accessibility.
+ * Furthermore, if code annotations are enabled, they are mounted if and only
+ * if the code block is currently visible, e.g., not in a hidden content tab.
  *
  * @param el - Code block element
  * @param options - Options
  *
- * @returns Code block component observable
+ * @returns Code block and annotation component observable
  */
 export function mountCodeBlock(
-  el: HTMLElement, options: MountOptions
-): Observable<Component<CodeBlock>> {
-  const internal$ = new Subject<CodeBlock>()
-  internal$
-    .pipe(
-      withLatestFrom(watchMedia("(hover)"))
-    )
-      .subscribe(([{ scroll }, hover]) => {
-        if (scroll && hover)
-          setFocusable(el)
-        else
-          resetFocusable(el)
-      })
-
-  /* Compute annotation position */
-  internal$
-    .pipe(
-      take(1),
-      takeWhile(({ annotations }) => !!annotations?.length),
-      map(({ annotations }) => annotations!
-        .map(annotation => getElementOrThrow(".md-tooltip", annotation))
-      ),
-      combineLatestWith(viewport$
-        .pipe(
-          distinctUntilKeyChanged("size")
-        )
+  el: HTMLElement, { hover$, ...options }: MountOptions
+): Observable<Component<CodeBlock | Annotation>> {
+  return defer(() => {
+    const push$ = new Subject<CodeBlock>()
+    push$
+      .pipe(
+        withLatestFrom(hover$)
       )
-    )
-      .subscribe(([tooltips, { size }]) => {
-        for (const tooltip of tooltips) {
-          const { x, width } = tooltip.getBoundingClientRect()
-          if (x + width > size.width)
-            tooltip.classList.add("md-tooltip--end")
+        .subscribe(([{ scrollable: scroll }, hover]) => {
+          if (scroll && hover)
+            el.setAttribute("tabindex", "0")
           else
-            tooltip.classList.remove("md-tooltip--end")
-        }
-      })
+            el.removeAttribute("tabindex")
+        })
 
-  /* Render button for Clipboard.js integration */
-  if (ClipboardJS.isSupported()) {
-    const parent = el.closest("pre")!
-    parent.id = `__code_${++index}`
-    parent.insertBefore(
-      renderClipboardButton(parent.id),
-      el
-    )
-  }
+    /* Render button for Clipboard.js integration */
+    if (ClipboardJS.isSupported()) {
+      const parent = el.closest("pre")!
+      parent.id = `__code_${++sequence}`
+      parent.insertBefore(
+        renderClipboardButton(parent.id),
+        el
+      )
+    }
 
-  /* Create and return component */
-  return watchCodeBlock(el, options)
-    .pipe(
-      tap(state => internal$.next(state)),
-      finalize(() => internal$.complete()),
-      map(state => ({ ref: el, ...state }))
-    )
+    /* Handle code annotations */
+    const container =
+      el.closest(".highlighttable") ||
+      el.closest(".highlight")
+    if (container instanceof HTMLElement) {
+      const list = findAnnotationList(container)
+
+      /* Mount code annotations, if enabled */
+      if (typeof list !== "undefined" && (
+        container.classList.contains("annotate") ||
+        feature("content.code.annotate")
+      )) {
+        const annotations$ = mountAnnotationList(list, el, options)
+
+        /* Create and return component */
+        return watchCodeBlock(el)
+          .pipe(
+            tap(state => push$.next(state)),
+            finalize(() => push$.complete()),
+            map(state => ({ ref: el, ...state })),
+            mergeWith(watchElementSize(container)
+              .pipe(
+                takeUntil(push$.pipe(takeLast(1))),
+                switchMap(({ width, height }) => width && height
+                  ? annotations$
+                  : EMPTY
+                )
+              ))
+          )
+      }
+    }
+
+    /* Create and return component */
+    return watchCodeBlock(el)
+      .pipe(
+        tap(state => push$.next(state)),
+        finalize(() => push$.complete()),
+        map(state => ({ ref: el, ...state }))
+      )
+  })
 }

@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import { getElementOrThrow, getLocation } from "~/browser"
+import { getElement, getLocation } from "~/browser"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -30,12 +30,12 @@ import { getElementOrThrow, getLocation } from "~/browser"
  * Feature flag
  */
 export type Flag =
-  | "content.code.annotate"            /* Annotate code blocks */
+  | "content.code.annotate"            /* Code annotations */
   | "content.tabs.link"                /* Link content tabs */
   | "header.autohide"                  /* Hide header */
   | "navigation.expand"                /* Automatic expansion */
-  | "navigation.instant"               /* Instant loading */
   | "navigation.indexes"               /* Section pages */
+  | "navigation.instant"               /* Instant loading */
   | "navigation.sections"              /* Section navigation */
   | "navigation.tabs"                  /* Tabs navigation */
   | "navigation.tabs.sticky"           /* Tabs navigation (sticky) */
@@ -100,7 +100,7 @@ export interface Config {
 /**
  * Retrieve global configuration and make base URL absolute
  */
-const script = getElementOrThrow("#__config")
+const script = getElement("#__config")
 const config: Config = JSON.parse(script.textContent!)
 config.base = `${new URL(config.base, getLocation())}`
 

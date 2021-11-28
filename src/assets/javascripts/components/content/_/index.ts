@@ -22,14 +22,15 @@
 
 import { Observable, merge } from "rxjs"
 
-import { Viewport, getElements } from "~/browser"
+import { getElements } from "~/browser"
 
 import { Component } from "../../_"
 import {
+  Annotation,
   CodeBlock,
-  MermaidCodeBlock,
+  Mermaid,
   mountCodeBlock,
-  mountMermaidCodeBlock
+  mountMermaid
 } from "../code"
 import { Details, mountDetails } from "../details"
 import { DataTable, mountDataTable } from "../table"
@@ -43,9 +44,10 @@ import { ContentTabs, mountContentTabs } from "../tabs"
  * Content
  */
 export type Content =
+  | Annotation
   | ContentTabs
   | CodeBlock
-  | MermaidCodeBlock
+  | Mermaid
   | DataTable
   | Details
 
@@ -58,8 +60,8 @@ export type Content =
  */
 interface MountOptions {
   target$: Observable<HTMLElement>     /* Location target observable */
-  viewport$: Observable<Viewport>      /* Viewport observable */
-  print$: Observable<boolean>          /* Print mode observable */
+  hover$: Observable<boolean>          /* Media hover observable */
+  print$: Observable<boolean>          /* Media print observable */
 }
 
 /* ----------------------------------------------------------------------------
@@ -78,17 +80,17 @@ interface MountOptions {
  * @returns Content component observable
  */
 export function mountContent(
-  el: HTMLElement, { target$, viewport$, print$ }: MountOptions
+  el: HTMLElement, { target$, hover$, print$ }: MountOptions
 ): Observable<Component<Content>> {
   return merge(
 
     /* Code blocks */
     ...getElements("pre:not(.mermaid) > code", el)
-      .map(child => mountCodeBlock(child, { viewport$, print$ })),
+      .map(child => mountCodeBlock(child, { hover$, print$ })),
 
-    /* Mermaid code blocks */
+    /* Mermaid diagrams */
     ...getElements("pre.mermaid", el)
-      .map(child => mountMermaidCodeBlock(child)),
+      .map(child => mountMermaid(child)),
 
     /* Data tables */
     ...getElements("table:not([class])", el)

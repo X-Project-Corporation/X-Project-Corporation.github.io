@@ -21,17 +21,15 @@
  */
 
 import {
-  NEVER,
+  EMPTY,
   Observable,
   fromEvent,
   fromEventPattern,
-  merge
-} from "rxjs"
-import {
   mapTo,
+  merge,
   startWith,
   switchMap
-} from "rxjs/operators"
+} from "rxjs"
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -62,7 +60,7 @@ export function watchMedia(query: string): Observable<boolean> {
 /**
  * Watch print mode
  *
- * @returns Print mode observable
+ * @returns Print observable
  */
 export function watchPrint(): Observable<boolean> {
   return merge(
@@ -88,6 +86,6 @@ export function at<T>(
 ): Observable<T> {
   return query$
     .pipe(
-      switchMap(active => active ? factory() : NEVER)
+      switchMap(active => active ? factory() : EMPTY)
     )
 }

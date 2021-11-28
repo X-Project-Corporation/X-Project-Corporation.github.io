@@ -21,4 +21,5 @@
  */
 
 export * from "./_"
+export * from "./annotation"
 export * from "./mermaid"

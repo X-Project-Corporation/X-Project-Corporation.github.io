@@ -27,22 +27,17 @@ import { h } from "~/utilities"
  * ------------------------------------------------------------------------- */
 
 /**
- * Render a 'copy-to-clipboard' button
+ * Render an empty code annotation
  *
- * @param id - Unique identifier
- * @param content - Annotation content
+ * @param id - Annotation identifier
  *
  * @returns Element
  */
-export function renderAnnotation(
-  id: number, content: NodeListOf<ChildNode>
-): HTMLElement {
+export function renderAnnotation(id: number): HTMLElement {
   return (
-    <aside class="md-annotation" data-index={id} tabIndex={0}>
-      <div class="md-tooltip">
-        <div class="md-tooltip__inner md-typeset">
-          {...Array.from(content)}
-        </div>
+    <aside class="md-annotation" tabIndex={0}>
+      <div class="md-annotation__inner md-tooltip">
+        <div class="md-tooltip__inner md-typeset"></div>
       </div>
       <span class="md-annotation__index">{id}</span>
     </aside>

@@ -20,18 +20,28 @@
  * IN THE SOFTWARE.
  */
 
-import { NEVER, combineLatest, fromEvent, of } from "rxjs"
-import { filter, map, switchMap } from "rxjs/operators"
+import {
+  EMPTY,
+  combineLatest,
+  filter,
+  fromEvent,
+  map,
+  of,
+  switchMap
+} from "rxjs"
 
 import { configuration } from "~/_"
 import {
-  getElementOrThrow,
+  getElement,
   getLocation,
   requestJSON,
   setLocation
 } from "~/browser"
 import { getComponentElements } from "~/components"
-import { Version, renderVersionSelector } from "~/templates"
+import {
+  Version,
+  renderVersionSelector
+} from "~/templates"
 
 import { fetchSitemap } from "../sitemap"
 
@@ -80,7 +90,7 @@ export function setupVersionSelector(): void {
                 return of(el.href)
               }
             }
-            return NEVER
+            return EMPTY
           }),
           switchMap(url => {
             const { version } = urls.get(url)!
@@ -103,7 +113,7 @@ export function setupVersionSelector(): void {
   /* Render version selector and warning */
   combineLatest([versions$, current$])
     .subscribe(([versions, current]) => {
-      const topic = getElementOrThrow(".md-header__topic")
+      const topic = getElement(".md-header__topic")
       topic.appendChild(renderVersionSelector(versions, current))
 
       /* Check if version state was already determined */

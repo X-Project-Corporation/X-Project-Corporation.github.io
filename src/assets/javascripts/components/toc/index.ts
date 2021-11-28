@@ -23,36 +23,30 @@
 import {
   Observable,
   Subject,
-  animationFrameScheduler,
-  combineLatest,
-  defer,
-  of
-} from "rxjs"
-import {
   bufferCount,
+  combineLatest,
+  debounceTime,
+  defer,
   distinctUntilChanged,
   distinctUntilKeyChanged,
   finalize,
   map,
-  observeOn,
+  of,
   scan,
   startWith,
   switchMap,
-  tap
-} from "rxjs/operators"
+  takeLast,
+  takeUntil,
+  tap,
+  withLatestFrom
+} from "rxjs"
 
 import { feature } from "~/_"
 import {
-  resetAnchorActive,
-  resetAnchorState,
-  setAnchorActive,
-  setAnchorState
-} from "~/actions"
-import {
   Viewport,
-  getElement,
   getElements,
   getLocation,
+  getOptionalElement,
   watchElementSize
 } from "~/browser"
 
@@ -124,7 +118,7 @@ export function watchTableOfContents(
   const anchors = getElements<HTMLAnchorElement>("[href^=\\#]", el)
   for (const anchor of anchors) {
     const id = decodeURIComponent(anchor.hash.substring(1))
-    const target = getElement(`[id="${id}"]`)
+    const target = getOptionalElement(`[id="${id}"]`)
     if (typeof target !== "undefined")
       table.set(anchor, target)
   }
@@ -253,54 +247,65 @@ export function watchTableOfContents(
  * @returns Table of contents component observable
  */
 export function mountTableOfContents(
-  el: HTMLElement, options: MountOptions
+  el: HTMLElement, { viewport$, header$ }: MountOptions
 ): Observable<Component<TableOfContents>> {
-  const internal$ = new Subject<TableOfContents>()
-  internal$
-    .pipe(
-      observeOn(animationFrameScheduler),
-    )
-      .subscribe(({ prev, next }) => {
+  return defer(() => {
+    const push$ = new Subject<TableOfContents>()
+    push$.subscribe(({ prev, next }) => {
 
-        /* Look forward */
-        for (const [anchor] of next) {
-          resetAnchorActive(anchor)
-          resetAnchorState(anchor)
-        }
+      /* Look forward */
+      for (const [anchor] of next) {
+        anchor.removeAttribute("data-md-state")
+        anchor.classList.remove(
+          "md-nav__link--active"
+        )
+      }
 
-        /* Look backward */
-        for (const [index, [anchor]] of prev.entries()) {
-          setAnchorActive(anchor, index === prev.length - 1)
-          setAnchorState(anchor, "blur")
-        }
+      /* Look backward */
+      for (const [index, [anchor]] of prev.entries()) {
+        anchor.setAttribute("data-md-state", "blur")
+        anchor.classList.toggle(
+          "md-nav__link--active",
+          index === prev.length - 1
+        )
+      }
+    })
 
-        /* Set up anchor tracking, if enabled */
-        if (feature("navigation.tracking")) {
-          const url = getLocation()
+    /* Set up anchor tracking, if enabled */
+    if (feature("navigation.tracking"))
+      viewport$
+        .pipe(
+          takeUntil(push$.pipe(takeLast(1))),
+          debounceTime(250),
+          distinctUntilKeyChanged("offset"),
+          withLatestFrom(push$)
+        )
+          .subscribe(([, { prev }]) => {
+            const url = getLocation()
 
-          /* Set hash fragment to active anchor */
-          const anchor = prev[prev.length - 1]
-          if (anchor && anchor.length) {
-            const [active] = anchor
-            const { hash } = new URL(active.href)
-            if (url.hash !== hash) {
-              url.hash = hash
+            /* Set hash fragment to active anchor */
+            const anchor = prev[prev.length - 1]
+            if (anchor && anchor.length) {
+              const [active] = anchor
+              const { hash } = new URL(active.href)
+              if (url.hash !== hash) {
+                url.hash = hash
+                history.replaceState({}, "", `${url}`)
+              }
+
+            /* Reset anchor when at the top */
+            } else {
+              url.hash = ""
               history.replaceState({}, "", `${url}`)
             }
+          })
 
-          /* Reset anchor when at the top */
-          } else {
-            url.hash = ""
-            history.replaceState({}, "", `${url}`)
-          }
-        }
-      })
-
-  /* Create and return component */
-  return watchTableOfContents(el, options)
-    .pipe(
-      tap(state => internal$.next(state)),
-      finalize(() => internal$.complete()),
-      map(state => ({ ref: el, ...state }))
-    )
+    /* Create and return component */
+    return watchTableOfContents(el, { viewport$, header$ })
+      .pipe(
+        tap(state => push$.next(state)),
+        finalize(() => push$.complete()),
+        map(state => ({ ref: el, ...state }))
+      )
+  })
 }

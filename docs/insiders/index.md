@@ -17,7 +17,7 @@ that new features are first exclusively released to sponsors as part of
   </div>
   <figcaption markdown>
 
-The official documentation is built with Insiders
+This documentation is built with Insiders
 [squidfunk.github.io/mkdocs-material][Material for MkDocs]
 
   </figcaption>
@@ -222,7 +222,7 @@ are released for general availability.
 
 - [x] [Social cards]
 - [ ] Stay on page when switching languages
-- [ ] Table of contents follows active anchor
+- [ ] Sidebars automatically scroll to active item
 
   [Social cards]: ../setup/setting-up-social-cards.md
 

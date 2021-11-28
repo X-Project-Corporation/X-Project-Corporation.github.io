@@ -23,16 +23,14 @@
 import {
   Observable,
   defer,
+  finalize,
   fromEvent,
+  mapTo,
   merge,
+  switchMap,
+  take,
   throwError
 } from "rxjs"
-import {
-  finalize,
-  mapTo,
-  switchMap,
-  take
-} from "rxjs/operators"
 
 import { h } from "~/utilities"
 
