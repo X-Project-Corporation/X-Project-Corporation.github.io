@@ -30,19 +30,19 @@ import {
   distinctUntilChanged,
   finalize,
   map,
-  tap,
-  withLatestFrom,
   observeOn,
-  take
+  take,
+  tap,
+  withLatestFrom
 } from "rxjs"
 
 import {
   Viewport,
   getElement,
-  getElementOffset,
-  getElements,
   getElementContainer,
-  getElementSize
+  getElementOffset,
+  getElementSize,
+  getElements
 } from "~/browser"
 
 import { Component } from "../_"

@@ -32,12 +32,12 @@ import {
   tap
 } from "rxjs"
 
+import { feature } from "~/_"
 import {
   getElement,
   getElementOffset,
   getElements
 } from "~/browser"
-import { feature } from "~/_"
 
 import { Component } from "../../_"
 
