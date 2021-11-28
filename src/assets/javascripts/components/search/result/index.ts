@@ -42,6 +42,7 @@ import {
 import { translation } from "~/_"
 import {
   getElement,
+  getOptionalElement,
   watchElementBoundary
 } from "~/browser"
 import {
@@ -154,7 +155,7 @@ export function mountSearchResult(
       map(result => {
         const item = renderSearchResultItem(result)
         list.appendChild(item)
-        return getElement("details", item)
+        return getOptionalElement("details", item)
       })
     )
       // TODO: memleak, refactor into distinct chain
