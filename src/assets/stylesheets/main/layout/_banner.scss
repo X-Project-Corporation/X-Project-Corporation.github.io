@@ -53,5 +53,11 @@
     float: right;
     color: inherit;
     cursor: pointer;
+    transition: opacity 250ms;
+
+    // Button on hover
+    &:hover {
+      opacity: 0.7;
+    }
   }
 }
