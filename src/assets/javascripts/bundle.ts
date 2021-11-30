@@ -52,6 +52,7 @@ import {
 import {
   getComponentElement,
   getComponentElements,
+  mountAnnounce,
   mountBackToTop,
   mountConsent,
   mountContent,
@@ -201,6 +202,10 @@ const control$ = merge(
 
 /* Set up content component observables */
 const content$ = defer(() => merge(
+
+  /* Announcement bar */
+  ...getComponentElements("announce")
+    .map(el => mountAnnounce(el)),
 
   /* Content */
   ...getComponentElements("content")

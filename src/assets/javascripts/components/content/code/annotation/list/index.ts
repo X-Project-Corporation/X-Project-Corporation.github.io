@@ -120,7 +120,7 @@ export function mountAnnotationList(
 
   /* Create and return component */
   return defer(() => {
-    const done$ = new Subject<void>()
+    const done$ = new Subject()
 
     /* Handle print mode - see https://bit.ly/3rgPdpt */
     print$

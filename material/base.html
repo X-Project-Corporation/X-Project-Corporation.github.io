@@ -39,7 +39,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.c296cc61.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.d3fce5cb.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.fe799546.min.css' | url }}">
@@ -112,21 +112,29 @@
       {% if self.announce() %}
         <aside class="md-banner">
           <div class="md-banner__inner md-grid md-typeset">
+            {% if "announce.dismiss" in features %}
+              <button class="md-banner__button md-icon" aria-label="{{ lang.t('announce.dismiss') }}">
+                {% include ".icons/material/close.svg" %}
+              </button>
+            {% endif %}
             {% block announce %}{% endblock %}
           </div>
+          {% if "announce.dismiss" in features %}
+            {% include "partials/javascripts/announce.html" %}
+          {% endif %}
         </aside>
       {% endif %}
     </div>
     {% if config.extra.version %}
       <div data-md-component="outdated" hidden>
-        <aside class="md-banner md-banner--warning">
-          {% if self.outdated() %}
+        {% if self.outdated() %}
+          <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               {% block outdated %}{% endblock %}
             </div>
             {% include "partials/javascripts/outdated.html" %}
-          {% endif %}
-        </aside>
+          </aside>
+        {% endif %}
       </div>
     {% endif %}
     {% block header %}
@@ -237,7 +245,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.29331951.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.e995565c.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
