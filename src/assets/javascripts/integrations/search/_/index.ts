@@ -181,7 +181,7 @@ export class Search {
 
       /* Set up custom tokenizer (after language setup) */
       this.tokenizer = tokenizer as typeof lunr.tokenizer
-      this.tokenizer.separator = new RegExp(config.separator)
+      lunr.tokenizer.separator = new RegExp(config.separator)
 
       /* Compute functions to be removed from the pipeline */
       const fns = difference([
