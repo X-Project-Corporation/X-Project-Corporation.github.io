@@ -63,7 +63,13 @@
           {% for rating in feedback.ratings %}
             <div data-md-value="{{ rating.data }}" hidden>
               {% set url = "/" ~ page.url %}
-              {% set title = page.title | urlencode %}
+
+              <!-- Determine title -->
+              {% if page and page.meta and page.meta.title %}
+                {% set title = page.meta.title | urlencode %}
+              {% else %}
+                {% set title = page.title | urlencode %}
+              {% endif %}
 
               <!-- Legacy, deprecated, removed in next major version -->
               {% if "{}" in rating.note %}
