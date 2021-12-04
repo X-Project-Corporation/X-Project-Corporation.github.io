@@ -60,7 +60,6 @@ export type Content =
  */
 interface MountOptions {
   target$: Observable<HTMLElement>     /* Location target observable */
-  hover$: Observable<boolean>          /* Media hover observable */
   print$: Observable<boolean>          /* Media print observable */
 }
 
@@ -80,13 +79,13 @@ interface MountOptions {
  * @returns Content component observable
  */
 export function mountContent(
-  el: HTMLElement, { target$, hover$, print$ }: MountOptions
+  el: HTMLElement, { target$, print$ }: MountOptions
 ): Observable<Component<Content>> {
   return merge(
 
     /* Code blocks */
     ...getElements("pre:not(.mermaid) > code", el)
-      .map(child => mountCodeBlock(child, { hover$, print$ })),
+      .map(child => mountCodeBlock(child, { print$ })),
 
     /* Mermaid diagrams */
     ...getElements("pre.mermaid", el)

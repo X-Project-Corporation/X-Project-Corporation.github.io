@@ -23,13 +23,11 @@
 import {
   Observable,
   Subject,
-  animationFrameScheduler,
   bufferCount,
   filter,
   finalize,
   map,
   merge,
-  observeOn,
   of,
   skipUntil,
   switchMap,
@@ -107,7 +105,6 @@ export function mountSearchResult(
   /* Update search result metadata */
   push$
     .pipe(
-      observeOn(animationFrameScheduler),
       withLatestFrom(query$),
       skipUntil(ready$)
     )
@@ -140,7 +137,6 @@ export function mountSearchResult(
   /* Update search result list */
   push$
     .pipe(
-      observeOn(animationFrameScheduler),
       tap(() => list.innerHTML = ""),
       switchMap(({ items }) => merge(
         of(...items.slice(0, 10)),
