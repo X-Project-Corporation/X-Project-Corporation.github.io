@@ -44,7 +44,8 @@ class SocialPlugin(BasePlugin):
     config_scheme = (
         ("cards", Type(bool, default = True)),
         ("cards_directory", Type(str, default = "assets/images/social")),
-        ("cards_color", Type(dict, default = {}))
+        ("cards_color", Type(dict, default = {})),
+        ("cards_font", Type(str, default = None))
     )
 
     # Initialize plugin
@@ -140,21 +141,21 @@ class SocialPlugin(BasePlugin):
         )
 
         # Render site name
-        font = ImageFont.truetype(self.font.get("Bold"), 36)
+        font = ImageFont.truetype(self.font["Bold"], 36)
         image.alpha_composite(
             self.__render_text((826, 48), font, site_name, 1, 20),
             (64 + 4, 64)
         )
 
         # Render page title
-        font = ImageFont.truetype(self.font.get("Bold"), 92)
+        font = ImageFont.truetype(self.font["Bold"], 92)
         image.alpha_composite(
             self.__render_text((826, 328), font, title, 3, 30),
             (64, 160)
         )
 
         # Render page description
-        font = ImageFont.truetype(self.font.get("Regular"), 28)
+        font = ImageFont.truetype(self.font["Regular"], 28)
         image.alpha_composite(
             self.__render_text((826, 80), font, description, 2, 14),
             (64 + 4, 512)
@@ -317,12 +318,15 @@ class SocialPlugin(BasePlugin):
 
     # Retrieve font
     def __load_font(self, config):
-        theme = config.get("theme")
+        name = self.config.get("cards_font")
+        if not name:
 
-        # Retrieve font name (default: Roboto)
-        name = "Roboto"
-        if theme["font"]:
-            name = theme["font"]["text"]
+            # Retrieve from theme (default: Roboto)
+            theme = config.get("theme")
+            if theme["font"]:
+                name = theme["font"]["text"]
+            else:
+                name = "Roboto"
 
         # Retrieve font files, if not already done
         files = os.listdir(self.cache)
@@ -334,7 +338,8 @@ class SocialPlugin(BasePlugin):
         font = dict()
         for file in files:
             match = re.search("-(\w+)\.ttf$", file)
-            font[match.group(1)] = os.path.join(self.cache, file)
+            if match:
+                font[match.group(1)] = os.path.join(self.cache, file)
 
         # Return available font weights with fallback
         return defaultdict(lambda: font["Regular"], font)
