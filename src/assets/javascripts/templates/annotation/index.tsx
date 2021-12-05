@@ -20,10 +20,26 @@
  * IN THE SOFTWARE.
  */
 
-export * from "./annotation"
-export * from "./clipboard"
-export * from "./search"
-export * from "./source"
-export * from "./table"
-export * from "./tooltip"
-export * from "./version"
+import { h } from "~/utilities"
+
+import { renderTooltip } from "../tooltip"
+
+/* ----------------------------------------------------------------------------
+ * Functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Render an annotation
+ *
+ * @param id - Annotation identifier
+ *
+ * @returns Element
+ */
+export function renderAnnotation(id: number): HTMLElement {
+  return (
+    <aside class="md-annotation" tabIndex={0}>
+      {renderTooltip()}
+      <span class="md-annotation__index">{id}</span>
+    </aside>
+  )
+}

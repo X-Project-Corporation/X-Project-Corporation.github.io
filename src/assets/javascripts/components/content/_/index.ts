@@ -25,8 +25,8 @@ import { Observable, merge } from "rxjs"
 import { getElements } from "~/browser"
 
 import { Component } from "../../_"
+import { Annotation } from "../annotation"
 import {
-  Annotation,
   CodeBlock,
   Mermaid,
   mountCodeBlock,

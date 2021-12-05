@@ -48,7 +48,7 @@ import { Component } from "../../../_"
 import {
   Annotation,
   mountAnnotationList
-} from "../annotation"
+} from "../../annotation"
 
 /* ----------------------------------------------------------------------------
  * Types

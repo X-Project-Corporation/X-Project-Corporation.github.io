@@ -23,10 +23,8 @@
 import {
   Observable,
   Subject,
-  animationFrameScheduler,
   finalize,
   map,
-  observeOn,
   tap
 } from "rxjs"
 
@@ -98,13 +96,9 @@ export function mountConsent(
   el: HTMLElement, options: MountOptions
 ): Observable<Component<Consent>> {
   const internal$ = new Subject<Consent>()
-  internal$
-    .pipe(
-      observeOn(animationFrameScheduler)
-    )
-      .subscribe(({ hidden }) => {
-        el.hidden = hidden
-      })
+  internal$.subscribe(({ hidden }) => {
+    el.hidden = hidden
+  })
 
   /* Create and return component */
   return watchConsent(el, options)
