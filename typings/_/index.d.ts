@@ -52,7 +52,7 @@ declare global {
   const __search: GlobalSearchConfig | undefined
 
   /**
-   * Compute a hash from the given string
+   * Compute hash from the given string
    *
    * @param value - String value
    *
@@ -75,7 +75,7 @@ declare global {
    * @return Value or nothing
    */
   function __md_get<T>(
-    key: string, storage?: Storage, base?: string
+    key: string, storage?: Storage, base?: URL
   ): T | null
 
   /**
@@ -92,7 +92,7 @@ declare global {
    * @param base - Base URL (default: current base)
    */
   function __md_set<T>(
-    key: string, value: T, storage?: Storage, base?: string
+    key: string, value: T, storage?: Storage, base?: URL
   ): void
 }
 

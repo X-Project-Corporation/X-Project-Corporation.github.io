@@ -86,7 +86,7 @@ function preprocess(urls: Sitemap): Sitemap {
  *
  * @returns Sitemap observable
  */
-export function fetchSitemap(base?: string): Observable<Sitemap> {
+export function fetchSitemap(base?: URL): Observable<Sitemap> {
   const cached = __md_get<Sitemap>("__sitemap", sessionStorage, base)
   if (cached) {
     return of(cached)

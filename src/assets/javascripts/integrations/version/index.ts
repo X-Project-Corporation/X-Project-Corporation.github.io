@@ -94,7 +94,7 @@ export function setupVersionSelector(): void {
           }),
           switchMap(url => {
             const { version } = urls.get(url)!
-            return fetchSitemap(url)
+            return fetchSitemap(new URL(url))
               .pipe(
                 map(sitemap => {
                   const location = getLocation()

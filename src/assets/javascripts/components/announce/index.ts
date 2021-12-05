@@ -21,12 +21,16 @@
  */
 
 import {
+  EMPTY,
   Observable,
+  Subject,
   defer,
+  finalize,
   fromEvent,
   map,
   mapTo,
-  of
+  startWith,
+  tap
 } from "rxjs"
 
 import { feature } from "~/_"
@@ -41,11 +45,32 @@ import { Component } from "../_"
 /**
  * Announcement bar
  */
-export interface Announce {}
+export interface Announce {
+  hash: number                        /* TBD */
+}
 
 /* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
+
+/**
+ * Watch announcement bar
+ *
+ * @param el - Announcement bar element
+ *
+ * @returns Announcement bar observable
+ */
+export function watchAnnounce(
+  el: HTMLElement
+): Observable<Announce> {
+  const button = getElement(".md-typeset > :first-child", el)
+  return fromEvent(button, "click", { once: true })
+    .pipe(
+      mapTo(getElement(".md-typeset", el)),
+      map(content => __md_hash(content.innerHTML)),
+      map(hash => ({ hash }))
+    )
+}
 
 /**
  * Mount announcement bar
@@ -57,32 +82,31 @@ export interface Announce {}
 export function mountAnnounce(
   el: HTMLElement
 ): Observable<Component<Announce>> {
+  if (!feature("announce.dismiss"))
+    return EMPTY
+
+  /*  */
   return defer(() => {
-
-    /* Set up dismissable announcement bar, if enabled */
-    if (feature("announce.dismiss") && !el.hidden) {
-      const button = getElement(".md-typeset > :first-child", el)
-
-      /* Dismiss announcement bar */
-      fromEvent(button, "click", { once: true })
-        .pipe(
-          mapTo(getElement(".md-typeset", el)),
-          map(inner => [...inner.innerHTML].reduce((hash, char) => (
-            (hash << 5) - hash + char.charCodeAt(0)
-          ), 0))
-        )
-          .subscribe(hash => {
+    const push$ = new Subject<Announce>()
+    push$
+      .pipe(
+        startWith({ hash: __md_get<number>("__announce") })
+      )
+        .subscribe(({ hash }) => {
+          if (hash && hash === (__md_get<number>("__announce") ?? hash)) {
             el.hidden = true
 
             /* Persist preference in local storage */
             __md_set<number>("__announce", hash)
-          })
-    }
+          }
+        })
 
     /* Create and return component */
-    return of({})
+    return watchAnnounce(el)
       .pipe(
-        mapTo({ ref: el })
+        tap(state => push$.next(state)),
+        finalize(() => push$.complete()),
+        map(state => ({ ref: el, ...state }))
       )
   })
 }
