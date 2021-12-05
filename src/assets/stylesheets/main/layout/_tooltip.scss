@@ -114,7 +114,8 @@
     }
   }
 
-  // Show outline for keyboard devices
+  // Show outline on parent target and for keyboard devices
+  :target &,
   .focus-visible > & {
     outline: var(--md-accent-fg-color) auto;
   }
