@@ -135,6 +135,7 @@
 
 // Annotation
 .md-annotation {
+  font-weight: 400;
   white-space: normal;
   outline: none;
 
@@ -145,12 +146,17 @@
 
   // Annotation tooltip
   .md-tooltip {
-    top: calc(var(--md-tooltip-y) + 1.2ch);
+    top: calc(var(--md-tooltip-y) + 0.8em);
 
     // Annotation tooltip is not active
     &:not(&--active) {
       user-select: none;
       pointer-events: none;
+    }
+
+    // Annotation tooltip in code block
+    code & {
+      top: calc(var(--md-tooltip-y) + 0.65em);
     }
   }
 
@@ -160,7 +166,7 @@
     z-index: 0;
     margin: 0 1ch;
     color: hsla(0, 0%, 100%, 1);
-    font-family: var(--md-code-font-family);
+    font-size: px2em(13.6px, 16px);
     cursor: pointer;
     transition: z-index 250ms;
     user-select: none;
@@ -168,10 +174,10 @@
     // Annotation marker – the marker must be positioned absolutely behind
     // the index, because it shouldn't impact the rendering of a code block.
     // Otherwise, small rounding differences in browsers can sometimes mess up
-    // alignment of text following a Annotation.
+    // alignment of text following an annotation.
     &::after {
       position: absolute;
-      top: 0.025em;
+      top: 0;
       left: -0.126em;
       z-index: -1;
       width: max(2.2ch, 100% + 1.2ch);
@@ -204,6 +210,17 @@
           transition: none;
         }
       }
+
+      // Annotation marker in code block
+      code & {
+        top: 0.025em;
+      }
+    }
+
+    // Annotation index in code block
+    code & {
+      font-size: inherit;
+      font-family: var(--md-code-font-family);
     }
 
     // Annotation index for active tooltip or on hover

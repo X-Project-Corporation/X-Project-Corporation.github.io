@@ -115,11 +115,11 @@ export function mountAnnotationList(
 ): Observable<Component<Annotation>> {
 
   /* Find and replace all markers with empty annotations */
-  const annotations = new Map<number, HTMLElement>()
+  const annotations = new Map<string, HTMLElement>()
   for (const marker of findAnnotationMarkers(container)) {
     const [, id] = marker.textContent!.match(/\((\d+)\)/)!
-    annotations.set(+id, renderAnnotation(+id))
-    marker.replaceWith(annotations.get(+id)!)
+    annotations.set(id, renderAnnotation(id))
+    marker.replaceWith(annotations.get(id)!)
   }
 
   /* Keep list if there are no annotations to render */
