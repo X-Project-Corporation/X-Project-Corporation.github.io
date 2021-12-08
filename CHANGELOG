@@ -1,3 +1,7 @@
+Unreleased (2021-12-08)
+
+  * Fixed #3323: DE cookie consent button translations
+
 mkdocs-material-8.0.5 (2012-12-04)
 
   * Fixed #3302: Footer refactoring induced ellipsis in some browsers
