@@ -198,6 +198,11 @@
         animation: none;
       }
 
+      // Annotation marker in code block
+      code & {
+        top: 0.025em;
+      }
+
       // Annotation marker for active tooltip
       .md-tooltip--active + & {
         transition:
@@ -209,11 +214,6 @@
         @media (prefers-reduced-motion) {
           transition: none;
         }
-      }
-
-      // Annotation marker in code block
-      code & {
-        top: 0.025em;
       }
     }
 
