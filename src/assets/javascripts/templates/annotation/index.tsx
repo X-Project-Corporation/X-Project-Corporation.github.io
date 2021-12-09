@@ -40,12 +40,15 @@ export function renderAnnotation(
   id: string | number, prefix?: string
 ): HTMLElement {
   prefix = prefix ? `${prefix}_annotation_${id}` : undefined
+
+  /* Render tooltip with anchor if given */
+  const anchor = prefix ? `#${prefix}` : undefined
   return (
     <aside class="md-annotation" tabIndex={0}>
       {renderTooltip(prefix)}
-      <span class="md-annotation__index">
+      <a href={anchor} class="md-annotation__index" tabIndex={-1}>
         <span data-md-annotation-id={id}></span>
-      </span>
+      </a>
     </aside>
   )
 }

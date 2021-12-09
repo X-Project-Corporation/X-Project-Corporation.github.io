@@ -172,8 +172,15 @@ export function mountAnnotation(
           }
         })
 
-    /* Close annotation on click of annotation marker */
+    /* Allow to copy link without scrolling to anchor */
     const index = getElement(":scope > :last-child", el)
+    fromEvent(index, "click")
+      .pipe(
+        takeUntil(push$.pipe(takeLast(1)))
+      )
+        .subscribe(ev => ev.preventDefault())
+
+    /* Close annotation on click of annotation marker */
     const blur$ = fromEvent(index, "mousedown", { once: true })
     push$
       .pipe(

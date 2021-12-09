@@ -164,11 +164,20 @@
     position: relative;
     z-index: 0;
     margin: 0 1ch;
-    color: hsla(0, 0%, 100%, 1);
     font-size: px2em(13.6px, 16px);
     cursor: pointer;
-    transition: z-index 250ms;
     user-select: none;
+
+    // Hack: increase specificity to override default for anchors
+    .md-annotation & {
+      color: hsla(0, 0%, 100%, 1);
+      transition: z-index 250ms;
+
+      // Text link on focus/hover
+      &:is(:focus, :hover) {
+        color: hsla(0, 0%, 100%, 1);
+      }
+    }
 
     // Annotation marker – the marker must be positioned absolutely behind
     // the index, because it shouldn't impact the rendering of a code block.
