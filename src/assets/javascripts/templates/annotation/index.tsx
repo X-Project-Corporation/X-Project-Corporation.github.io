@@ -32,15 +32,17 @@ import { renderTooltip } from "../tooltip"
  * Render an annotation
  *
  * @param id - Annotation identifier
+ * @param prefix - Tooltip identifier prefix
  *
  * @returns Element
  */
 export function renderAnnotation(
-  id: string | number
+  id: string | number, prefix?: string
 ): HTMLElement {
+  prefix = prefix ? `${prefix}_annotation_${id}` : undefined
   return (
     <aside class="md-annotation" tabIndex={0}>
-      {renderTooltip()}
+      {renderTooltip(prefix)}
       <span class="md-annotation__index">
         <span data-md-annotation-id={id}></span>
       </span>

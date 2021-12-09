@@ -85,7 +85,7 @@ export function mountAnnounce(
   if (!feature("announce.dismiss"))
     return EMPTY
 
-  /*  */
+  /* Mount component on subscription */
   return defer(() => {
     const push$ = new Subject<Announce>()
     push$

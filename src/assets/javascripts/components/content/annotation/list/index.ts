@@ -124,11 +124,15 @@ export function mountAnnotationList(
   el: HTMLElement, container: HTMLElement, { target$, print$ }: MountOptions
 ): Observable<Component<Annotation>> {
 
+  /* Compute prefix for tooltip anchors */
+  const parent = container.closest("[id]")
+  const prefix = parent?.id || ""
+
   /* Find and replace all markers with empty annotations */
   const annotations = new Map<string, HTMLElement>()
   for (const marker of findAnnotationMarkers(container)) {
     const [, id] = marker.textContent!.match(/\((\d+)\)/)!
-    annotations.set(id, renderAnnotation(id))
+    annotations.set(id, renderAnnotation(id, prefix))
     marker.replaceWith(annotations.get(id)!)
   }
 
@@ -136,7 +140,7 @@ export function mountAnnotationList(
   if (annotations.size === 0)
     return EMPTY
 
-  /* Create and return component */
+  /* Mount component on subscription */
   return defer(() => {
     const done$ = new Subject()
 

@@ -34,12 +34,15 @@ import {
   map,
   switchMap,
   take,
+  takeLast,
+  takeUntil,
   tap,
   throttleTime
 } from "rxjs"
 
 import {
   ElementOffset,
+  getActiveElement,
   getElement,
   getElementSize,
   watchElementContentOffset,
@@ -169,25 +172,22 @@ export function mountAnnotation(
           }
         })
 
-    /* Close open annotation on click */
+    /* Close annotation on click of annotation marker */
     const index = getElement(":scope > :last-child", el)
     const blur$ = fromEvent(index, "mousedown", { once: true })
     push$
       .pipe(
         switchMap(({ active }) => active ? blur$ : EMPTY),
-        tap(ev => ev.preventDefault())
+        tap(ev => ev.preventDefault()),
+        map(getActiveElement)
       )
-        .subscribe(() => el.blur())
+        .subscribe(active => active?.blur())
 
-    // TODO: refactor
-    push$
+    /* Open and focus annotation on location target */
+    target$
       .pipe(
-        take(1),
-        switchMap(() => target$
-          .pipe(
-            filter(target => target === tooltip)
-          )
-        ),
+        takeUntil(push$.pipe(takeLast(1))),
+        filter(target => target === tooltip),
         delay(125)
       )
         .subscribe(() => el.focus())

@@ -29,16 +29,14 @@ import { h } from "~/utilities"
 /**
  * Render a tooltip
  *
- * @param nodes - Child nodes
+ * @param id - Tooltip identifier
  *
  * @returns Element
  */
-export function renderTooltip(nodes: ChildNode[] = []): HTMLElement {
+export function renderTooltip(id?: string): HTMLElement {
   return (
-    <div class="md-tooltip">
-      <div class="md-tooltip__inner md-typeset">
-        {...nodes}
-      </div>
+    <div class="md-tooltip" id={id}>
+      <div class="md-tooltip__inner md-typeset"></div>
     </div>
   )
 }
