@@ -74,10 +74,19 @@ function findAnnotationMarkers(container: HTMLElement): Text[] {
     let text = comment.firstChild as Text
 
     /* Split text at marker and add to list */
-    while ((match = /\((\d+)\)/.exec(text.textContent!))) {
-      const marker = text.splitText(match.index)
-      text = marker.splitText(match[0].length)
-      markers.push(marker)
+    while ((match = /(\(\d+\))(!)?/.exec(text.textContent!))) {
+      const [, id, force] = match
+      if (typeof force === "undefined") {
+        const marker = text.splitText(match.index)
+        text = marker.splitText(id.length)
+        markers.push(marker)
+
+      /* Replace entire text with marker */
+      } else {
+        text.textContent = id
+        markers.push(text)
+        break
+      }
     }
   }
   return markers
@@ -153,7 +162,7 @@ export function mountAnnotationList(
     /* Create and return component */
     return merge(...[...annotations]
       .map(([, annotation]) => (
-        mountAnnotation(annotation, container, { target$, })
+        mountAnnotation(annotation, container, { target$ })
       ))
     )
       .pipe(
