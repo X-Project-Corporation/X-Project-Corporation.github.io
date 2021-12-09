@@ -27,6 +27,8 @@ import {
   animationFrameScheduler,
   combineLatest,
   defer,
+  delay,
+  filter,
   finalize,
   fromEvent,
   map,
@@ -57,6 +59,17 @@ import { Component } from "../../../_"
 export interface Annotation {
   active: boolean                      /* Annotation is active */
   offset: ElementOffset                /* Annotation offset */
+}
+
+/* ----------------------------------------------------------------------------
+ * Helper types
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Mount options
+ */
+interface MountOptions {
+  target$: Observable<HTMLElement>     /* Location target observable */
 }
 
 /* ----------------------------------------------------------------------------
@@ -105,11 +118,12 @@ export function watchAnnotation(
  *
  * @param el - Annotation element
  * @param container - Containing element
+ * @param options - Options
  *
  * @returns Annotation component observable
  */
 export function mountAnnotation(
-  el: HTMLElement, container: HTMLElement
+  el: HTMLElement, container: HTMLElement, { target$ }: MountOptions
 ): Observable<Component<Annotation>> {
   const tooltip = getElement(".md-tooltip", el)
   return defer(() => {
@@ -164,6 +178,19 @@ export function mountAnnotation(
         tap(ev => ev.preventDefault())
       )
         .subscribe(() => el.blur())
+
+    // TODO: refactor
+    push$
+      .pipe(
+        take(1),
+        switchMap(() => target$
+          .pipe(
+            filter(target => target === tooltip)
+          )
+        ),
+        delay(125)
+      )
+        .subscribe(() => el.focus())
 
     /* Create and return component */
     return watchAnnotation(el, container)

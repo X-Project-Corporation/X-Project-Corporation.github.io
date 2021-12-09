@@ -52,6 +52,7 @@ import {
  * Mount options
  */
 interface MountOptions {
+  target$: Observable<HTMLElement>     /* Location target observable */
   print$: Observable<boolean>          /* Media print observable */
 }
 
@@ -111,7 +112,7 @@ function swap(source: HTMLElement, target: HTMLElement): void {
  * @returns Annotation component observable
  */
 export function mountAnnotationList(
-  el: HTMLElement, container: HTMLElement, { print$ }: MountOptions
+  el: HTMLElement, container: HTMLElement, { target$, print$ }: MountOptions
 ): Observable<Component<Annotation>> {
 
   /* Find and replace all markers with empty annotations */
@@ -152,7 +153,7 @@ export function mountAnnotationList(
     /* Create and return component */
     return merge(...[...annotations]
       .map(([, annotation]) => (
-        mountAnnotation(annotation, container)
+        mountAnnotation(annotation, container, { target$, })
       ))
     )
       .pipe(
