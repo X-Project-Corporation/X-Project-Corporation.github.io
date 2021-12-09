@@ -41,7 +41,9 @@ export function renderAnnotation(
   return (
     <aside class="md-annotation" tabIndex={0}>
       {renderTooltip()}
-      <span class="md-annotation__index">{id}</span>
+      <span class="md-annotation__index">
+        <span data-md-annotation-id={id}></span>
+      </span>
     </aside>
   )
 }
