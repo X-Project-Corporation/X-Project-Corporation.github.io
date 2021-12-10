@@ -174,8 +174,9 @@ export function mountAnnotation(
 
     /* Allow to copy link without scrolling to anchor */
     const index = getElement(":scope > :last-child", el)
-    fromEvent(index, "click")
+    fromEvent<MouseEvent>(index, "click")
       .pipe(
+        filter(ev => !(ev.metaKey || ev.ctrlKey)),
         takeUntil(push$.pipe(takeLast(1)))
       )
         .subscribe(ev => ev.preventDefault())
