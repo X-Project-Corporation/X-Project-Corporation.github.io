@@ -232,7 +232,7 @@
     }
 
     // Annotation index for active tooltip or on hover
-    :where(.md-tooltip--active + &, :hover > &) {
+    :is(.md-tooltip--active + &, :hover > &) {
       color: var(--md-accent-bg-color);
 
       // Annotation marker
