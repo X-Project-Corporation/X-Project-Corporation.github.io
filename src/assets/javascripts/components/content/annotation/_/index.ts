@@ -21,7 +21,6 @@
  */
 
 import {
-  EMPTY,
   Observable,
   Subject,
   animationFrameScheduler,
@@ -37,7 +36,8 @@ import {
   takeLast,
   takeUntil,
   tap,
-  throttleTime
+  throttleTime,
+  withLatestFrom
 } from "rxjs"
 
 import {
@@ -181,15 +181,24 @@ export function mountAnnotation(
       )
         .subscribe(ev => ev.preventDefault())
 
-    /* Close annotation on click of annotation marker */
-    const blur$ = fromEvent(index, "mousedown", { once: true })
-    push$
+    /* Allow to open link in new tab or blur on close */
+    fromEvent<MouseEvent>(index, "mousedown")
       .pipe(
-        switchMap(({ active }) => active ? blur$ : EMPTY),
-        tap(ev => ev.preventDefault()),
-        map(getActiveElement)
+        takeUntil(push$.pipe(takeLast(1))),
+        withLatestFrom(push$)
       )
-        .subscribe(active => active?.blur())
+        .subscribe(([ev, { active }]) => {
+
+          /* Open in new tab */
+          if (ev.button !== 0 || ev.metaKey || ev.ctrlKey) {
+            ev.preventDefault()
+
+          /* Close annotation */
+          } else if (active) {
+            ev.preventDefault()
+            getActiveElement()?.blur()
+          }
+        })
 
     /* Open and focus annotation on location target */
     target$
