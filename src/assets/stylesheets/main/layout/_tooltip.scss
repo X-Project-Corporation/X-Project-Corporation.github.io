@@ -109,7 +109,7 @@
   }
 
   // Show outline on target and for keyboard devices
-  :is(.focus-visible > &, &:target) {
+  :where(.focus-visible > &, &:target) {
     outline: var(--md-accent-fg-color) auto;
   }
 
@@ -174,7 +174,7 @@
       transition: z-index 250ms;
 
       // Text link on focus/hover
-      &:is(:focus, :hover) {
+      &:where(:focus, :hover) {
         color: hsla(0, 0%, 100%, 1);
       }
     }
@@ -232,7 +232,7 @@
     }
 
     // Annotation index for active tooltip or on hover
-    :is(.md-tooltip--active + &, :hover > &) {
+    :where(.md-tooltip--active + &, :hover > &) {
       color: var(--md-accent-bg-color);
 
       // Annotation marker
