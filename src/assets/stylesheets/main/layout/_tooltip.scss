@@ -109,7 +109,7 @@
   }
 
   // Show outline on target and for keyboard devices
-  :where(.focus-visible > &, &:target) {
+  :is(.focus-visible > &, &:target) {
     outline: var(--md-accent-fg-color) auto;
   }
 
