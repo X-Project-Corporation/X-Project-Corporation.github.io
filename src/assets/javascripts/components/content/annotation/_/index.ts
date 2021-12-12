@@ -176,8 +176,8 @@ export function mountAnnotation(
     const index = getElement(":scope > :last-child", el)
     fromEvent<MouseEvent>(index, "click")
       .pipe(
-        filter(ev => !(ev.metaKey || ev.ctrlKey)),
-        takeUntil(push$.pipe(takeLast(1)))
+        takeUntil(push$.pipe(takeLast(1))),
+        filter(ev => !(ev.metaKey || ev.ctrlKey))
       )
         .subscribe(ev => ev.preventDefault())
 
@@ -196,7 +196,13 @@ export function mountAnnotation(
           /* Close annotation */
           } else if (active) {
             ev.preventDefault()
-            getActiveElement()?.blur()
+
+            /* Focus parent annotation, if any */
+            const parent = el.parentElement!.closest(".md-annotation")
+            if (parent instanceof HTMLElement)
+              parent.focus()
+            else
+              getActiveElement()?.blur()
           }
         })
 
