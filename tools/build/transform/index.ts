@@ -35,8 +35,7 @@ import {
   of,
   switchMap
 } from "rxjs"
-import { render as sass } from "sass"
-import { promisify } from "util"
+import { compile } from "sass"
 
 import { base, mkdir, write } from "../_"
 
@@ -87,16 +86,14 @@ function digest(file: string, data: string): string {
 export function transformStyle(
   options: TransformOptions
 ): Observable<string> {
-  return defer(() => promisify(sass)({
-    file: options.from,
-    outFile: options.to,
-    includePaths: [
+  return defer(() => of(compile(options.from, {
+    loadPaths: [
       "src/assets/stylesheets",
       "node_modules/modularscale-sass/stylesheets",
       "node_modules/material-design-color",
       "node_modules/material-shadows"
     ]
-  }))
+  })))
     .pipe(
       switchMap(({ css }) => postcss([
         require("autoprefixer"),
