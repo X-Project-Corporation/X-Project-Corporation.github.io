@@ -38,7 +38,7 @@ import { Component } from "../_"
  * Consent
  */
 export interface Consent {
-  hidden: boolean                      /* User accepted consent */
+  hidden: boolean                      /* Consent is hidden */
 }
 
 /* ----------------------------------------------------------------------------
@@ -76,9 +76,7 @@ export function watchConsent(
 ): Observable<Consent> {
   return target$
     .pipe(
-      map(target => ({
-        hidden: target !== el
-      }))
+      map(target => ({ hidden: target !== el }))
     )
 }
 

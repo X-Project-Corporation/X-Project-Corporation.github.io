@@ -255,15 +255,13 @@ export function mountTableOfContents(
 
       /* Look forward */
       for (const [anchor] of next) {
-        anchor.removeAttribute("data-md-state")
-        anchor.classList.remove(
-          "md-nav__link--active"
-        )
+        anchor.classList.remove("md-nav__link--passed")
+        anchor.classList.remove("md-nav__link--active")
       }
 
       /* Look backward */
       for (const [index, [anchor]] of prev.entries()) {
-        anchor.setAttribute("data-md-state", "blur")
+        anchor.classList.add("md-nav__link--passed")
         anchor.classList.toggle(
           "md-nav__link--active",
           index === prev.length - 1

@@ -46,7 +46,7 @@ import { Component } from "../_"
  * Announcement bar
  */
 export interface Announce {
-  hash: number                        /* TBD */
+  hash: number                        /* Content hash */
 }
 
 /* ----------------------------------------------------------------------------
@@ -67,8 +67,7 @@ export function watchAnnounce(
   return fromEvent(button, "click", { once: true })
     .pipe(
       mapTo(getElement(".md-typeset", el)),
-      map(content => __md_hash(content.innerHTML)),
-      map(hash => ({ hash }))
+      map(content => ({ hash: __md_hash(content.innerHTML) }))
     )
 }
 

@@ -32,9 +32,18 @@ import {
   mountCodeBlock,
   mountMermaid
 } from "../code"
-import { Details, mountDetails } from "../details"
-import { DataTable, mountDataTable } from "../table"
-import { ContentTabs, mountContentTabs } from "../tabs"
+import {
+  Details,
+  mountDetails
+} from "../details"
+import {
+  DataTable,
+  mountDataTable
+} from "../table"
+import {
+  ContentTabs,
+  mountContentTabs
+} from "../tabs"
 
 /* ----------------------------------------------------------------------------
  * Types

@@ -41,8 +41,8 @@
     display: none;
   }
 
-  // Tabs in hidden state, i.e. when scrolling down
-  &[data-md-state="hidden"] {
+  // Hidden navigation tabs
+  &--hidden {
     pointer-events: none;
   }
 
@@ -101,7 +101,7 @@
 
     // Hide tabs upon scrolling - disable transition to minimizes repaints
     // while scrolling down, while scrolling up seems to be okay
-    .md-tabs[data-md-state="hidden"] & {
+    .md-tabs.md-tabs--hidden & {
       transform: translateY(50%);
       opacity: 0;
       transition:

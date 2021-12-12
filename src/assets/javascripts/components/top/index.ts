@@ -135,12 +135,11 @@ export function mountBackToTop(
 
     /* Handle emission */
     next({ hidden }) {
+      el.classList.toggle("md-top--hidden", hidden)
       if (hidden) {
-        el.setAttribute("data-md-state", "hidden")
         el.setAttribute("tabindex", "-1")
         el.blur()
       } else {
-        el.removeAttribute("data-md-state")
         el.removeAttribute("tabindex")
       }
     },
@@ -148,7 +147,7 @@ export function mountBackToTop(
     /* Handle complete */
     complete() {
       el.style.top = ""
-      el.removeAttribute("data-md-state")
+      el.classList.remove("md-top--hidden")
       el.removeAttribute("tabindex")
     }
   })
