@@ -128,7 +128,10 @@ export function watchAnnotation(
 export function mountAnnotation(
   el: HTMLElement, container: HTMLElement, { target$ }: MountOptions
 ): Observable<Component<Annotation>> {
-  const tooltip = getElement(".md-tooltip", el)
+  const index   = getElement(":scope > .md-annotation__index", el)
+  const tooltip = getElement(":scope > .md-tooltip", el)
+
+  /* Mount component on subscription */
   return defer(() => {
     const push$ = new Subject<Annotation>()
     push$.subscribe({
@@ -173,7 +176,6 @@ export function mountAnnotation(
         })
 
     /* Allow to copy link without scrolling to anchor */
-    const index = getElement(":scope > :last-child", el)
     fromEvent<MouseEvent>(index, "click")
       .pipe(
         takeUntil(push$.pipe(takeLast(1))),
