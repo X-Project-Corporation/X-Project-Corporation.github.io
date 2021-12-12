@@ -56,6 +56,17 @@ declare global {
     function multiLanguage(...lang: string[]): Builder.Plugin
 
     /**
+     * Stopword filter
+     *
+     * @template T - Token type
+     *
+     * @param token - Token or string
+     *
+     * @returns Token or nothing
+     */
+    function stopWordFilter<T>(token: T): T | undefined;
+
+    /**
      * Segmenter for Japanese
      */
     class TinySegmenter {

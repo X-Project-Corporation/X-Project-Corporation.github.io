@@ -105,9 +105,10 @@ export function getSearchQueryTerms(
         clauses.delete(clause)
       }
 
-  /* Annotate unmatched query clauses */
+  /* Annotate unmatched non-stopword query clauses */
   for (const clause of clauses)
-    result[clause.term] = false
+    if (lunr.stopWordFilter?.(clause.term))
+      result[clause.term] = false
 
   /* Return query terms */
   return result
