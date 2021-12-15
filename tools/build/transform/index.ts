@@ -97,6 +97,8 @@ export function transformStyle(
     .pipe(
       switchMap(({ css }) => postcss([
         require("autoprefixer"),
+        require("postcss-logical"),
+        require("postcss-dir-pseudo-class"),
         require("postcss-inline-svg")({
           paths: [
             `${base}/.icons`

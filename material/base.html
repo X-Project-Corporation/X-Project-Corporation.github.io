@@ -27,7 +27,7 @@
         {% endfor %}
       {% endif %}
       <link rel="icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-8.1.1+insiders-4.4.0">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-8.1.2+insiders-4.4.0">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -39,10 +39,10 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.9d9d8b72.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
-        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.e6a45f82.min.css' | url }}">
+        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.css' | url }}">
         {% if palette.primary %}
           {% import "partials/palette.html" as map %}
           {% set primary = map.primary(
@@ -51,7 +51,7 @@
           <meta name="theme-color" content="{{ primary }}">
         {% endif %}
       {% endif %}
-      <link rel="preload" as="style" href="{{ 'assets/stylesheets/vendor/mermaid.9c0dc1da.min.css' | url }}">
+      <link rel="preload" as="style" href="{{ 'assets/stylesheets/vendor/mermaid.css' | url }}">
       {% include "partials/icons.html" %}
     {% endblock %}
     {% block libs %}{% endblock %}
