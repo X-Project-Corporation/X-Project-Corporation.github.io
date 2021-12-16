@@ -551,7 +551,7 @@
     scroll-snap-align: start;
 
     // Search result link on focus/hover
-    &:where(:focus, :hover) {
+    &:is(:focus, :hover) {
       background-color: var(--md-accent-fg-color--transparent);
     }
 
@@ -593,7 +593,7 @@
     }
 
     // Search result more link on focus/hover
-    &:where(:focus, :hover) > div {
+    &:is(:focus, :hover) > div {
       color: var(--md-accent-fg-color);
       background-color: var(--md-accent-fg-color--transparent);
     }

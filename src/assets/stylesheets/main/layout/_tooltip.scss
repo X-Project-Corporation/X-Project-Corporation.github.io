@@ -179,7 +179,7 @@
       transition: z-index 250ms;
 
       // Text link on focus/hover
-      &:where(:focus, :hover) {
+      &:is(:focus, :hover) {
         color: hsla(0, 0%, 100%, 1);
       }
     }
