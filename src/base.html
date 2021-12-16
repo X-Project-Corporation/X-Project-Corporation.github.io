@@ -189,6 +189,12 @@
   {% endif %}
     {% set features = config.theme.features or [] %}
 
+    <!-- Retrieve metadata for all pages -->
+    {% set meta = {} %}
+    {% for file in pages %}
+      {% set _ = meta.update({ file.url: file.page.meta }) %}
+    {% endfor %}
+
     <!-- User preference: color palette -->
     {% if not config.theme.palette is mapping %}
       {% include "partials/javascripts/palette.html" %}

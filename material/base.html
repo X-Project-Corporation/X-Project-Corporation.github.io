@@ -39,7 +39,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.bdb7debb.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.ad283078.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.e6a45f82.min.css' | url }}">
@@ -94,6 +94,10 @@
     <body dir="{{ direction }}">
   {% endif %}
     {% set features = config.theme.features or [] %}
+    {% set meta = {} %}
+    {% for file in pages %}
+      {% set _ = meta.update({ file.url: file.page.meta }) %}
+    {% endfor %}
     {% if not config.theme.palette is mapping %}
       {% include "partials/javascripts/palette.html" %}
     {% endif %}

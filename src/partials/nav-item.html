@@ -20,7 +20,21 @@
   IN THE SOFTWARE.
 -->
 
-<!-- Wrap everything with a macro to reduce file roundtrips (see #2213) -->
+<!-- Render navigation link content -->
+{% macro render_content(nav_item) %}
+
+  <!-- Navigation link icon -->
+  {% if "icon" in meta[nav_item.url] %}
+    {% include ".icons/" ~ meta[nav_item.url]["icon"] ~ ".svg" %}
+  {% endif %}
+
+  <!-- Navigation link title -->
+  <span class="md-ellipsis">
+    {{ nav_item.title }}
+  </span>
+{% endmacro %}
+
+<!-- Render navigation item -->
 {% macro render(nav_item, path, level) %}
 
   <!-- Determine class according to state -->
@@ -75,7 +89,7 @@
       <!-- Render toggle to expand nested items -->
       {% if not indexes %}
         <label class="md-nav__link" for="{{ path }}">
-          {{ nav_item.title }}
+          {{ render_content(nav_item) }}
           <span class="md-nav__icon md-icon"></span>
         </label>
 
@@ -83,12 +97,17 @@
       {% else %}
         {% set index = indexes | first %}
         {% set class = "md-nav__link--active" if index == page %}
-        <div class="md-nav__link md-nav__link--index {{ class }}">
-          <a href="{{ index.url | url }}">{{ nav_item.title }}</a>
+        <div class="md-nav__link md-nav__container">
+          <a
+            href="{{ index.url | url }}"
+            class="md-nav__link {{ class }}"
+          >
+            {{ render_content(index) }}
+          </a>
 
           <!-- Only render toggle if there's at least one more page -->
           {% if nav_item.children | length > 1 %}
-            <label for="{{ path }}">
+            <label class="md-nav__link {{ class }}" for="{{ path }}">
               <span class="md-nav__icon md-icon"></span>
             </label>
           {% endif %}
@@ -141,7 +160,7 @@
       <!-- Render table of contents, if not empty -->
       {% if toc %}
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          {{ nav_item.title }}
+          {{ render_content(nav_item) }}
           <span class="md-nav__icon md-icon"></span>
         </label>
       {% endif %}
@@ -149,7 +168,7 @@
         href="{{ nav_item.url | url }}"
         class="md-nav__link md-nav__link--active"
       >
-        {{ nav_item.title }}
+        {{ render_content(nav_item) }}
       </a>
 
       <!-- Show table of contents -->
@@ -162,7 +181,7 @@
   {% else %}
     <li class="{{ class }}">
       <a href="{{ nav_item.url | url }}" class="md-nav__link">
-        {{ nav_item.title }}
+        {{ render_content(nav_item) }}
       </a>
     </li>
   {% endif %}

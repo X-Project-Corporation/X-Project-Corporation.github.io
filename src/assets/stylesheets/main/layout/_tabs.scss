@@ -29,6 +29,7 @@
   width: 100%;
   overflow: auto;
   color: var(--md-primary-bg-color);
+  line-height: 1.3;
   background-color: var(--md-primary-fg-color);
 
   // [print]: Hide tabs
@@ -48,11 +49,11 @@
 
   // Navigation tabs list
   &__list {
+    display: flex;
     margin: 0;
     margin-inline-start: px2rem(4px);
     padding: 0;
     white-space: nowrap;
-    list-style: none;
     contain: content;
   }
 
@@ -66,7 +67,7 @@
   // Navigation tabs link - could be defined as block elements and aligned via
   // line height, but this would imply more repaints when scrolling
   &__link {
-    display: block;
+    display: flex;
     margin-top: px2rem(16px);
     font-size: px2rem(14px);
     outline-color: var(--md-accent-fg-color);
@@ -83,6 +84,13 @@
     &:where(:focus, :hover) {
       color: inherit;
       opacity: 1;
+    }
+
+    // Navigation tabs link icon
+    svg {
+      height: 1.3em;
+      margin-right: px2rem(8px);
+      fill: currentColor;
     }
 
     // Delay transitions by a small amount

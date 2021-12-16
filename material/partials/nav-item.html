@@ -1,6 +1,14 @@
 {#-
   This file was automatically generated - do not edit
 -#}
+{% macro render_content(nav_item) %}
+  {% if "icon" in meta[nav_item.url] %}
+    {% include ".icons/" ~ meta[nav_item.url]["icon"] ~ ".svg" %}
+  {% endif %}
+  <span class="md-ellipsis">
+    {{ nav_item.title }}
+  </span>
+{% endmacro %}
 {% macro render(nav_item, path, level) %}
   {% set class = "md-nav__item" %}
   {% if nav_item.active %}
@@ -29,16 +37,18 @@
       {% endif %}
       {% if not indexes %}
         <label class="md-nav__link" for="{{ path }}">
-          {{ nav_item.title }}
+          {{ render_content(nav_item) }}
           <span class="md-nav__icon md-icon"></span>
         </label>
       {% else %}
         {% set index = indexes | first %}
         {% set class = "md-nav__link--active" if index == page %}
-        <div class="md-nav__link md-nav__link--index {{ class }}">
-          <a href="{{ index.url | url }}">{{ nav_item.title }}</a>
+        <div class="md-nav__link md-nav__container">
+          <a href="{{ index.url | url }}" class="md-nav__link {{ class }}">
+            {{ render_content(index) }}
+          </a>
           {% if nav_item.children | length > 1 %}
-            <label for="{{ path }}">
+            <label class="md-nav__link {{ class }}" for="{{ path }}">
               <span class="md-nav__icon md-icon"></span>
             </label>
           {% endif %}
@@ -69,12 +79,12 @@
       {% endif %}
       {% if toc %}
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          {{ nav_item.title }}
+          {{ render_content(nav_item) }}
           <span class="md-nav__icon md-icon"></span>
         </label>
       {% endif %}
       <a href="{{ nav_item.url | url }}" class="md-nav__link md-nav__link--active">
-        {{ nav_item.title }}
+        {{ render_content(nav_item) }}
       </a>
       {% if toc %}
         {% include "partials/toc.html" %}
@@ -83,7 +93,7 @@
   {% else %}
     <li class="{{ class }}">
       <a href="{{ nav_item.url | url }}" class="md-nav__link">
-        {{ nav_item.title }}
+        {{ render_content(nav_item) }}
       </a>
     </li>
   {% endif %}
