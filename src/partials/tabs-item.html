@@ -20,6 +20,20 @@
   IN THE SOFTWARE.
 -->
 
+<!-- Render navigation link content -->
+{% macro render_content(nav_item, title) %}
+
+  <!-- Navigation link icon -->
+  {% if title and nav_item.is_index %}
+    {% if "icon" in meta[nav_item.url] %}
+      {% include ".icons/" ~ meta[nav_item.url]["icon"] ~ ".svg" %}
+    {% endif %}
+  {% endif %}
+
+  <!-- Navigation link title -->
+  {{ title or nav_item.title }}
+{% endmacro %}
+
 <!-- Render navigation item -->
 {% macro render(nav_item) %}
 
@@ -44,7 +58,7 @@
     {% else %}
       <li class="md-tabs__item">
         <a href="{{ nav_item.url | url }}" class="{{ class }}">
-          {{ title }}
+          {{ render_content(nav_item, title) }}
         </a>
       </li>
     {% endif %}
@@ -53,14 +67,7 @@
   {% else %}
     <li class="md-tabs__item">
       <a href="{{ nav_item.url | url }}" class="{{ class }}">
-
-        <!-- Navigation link icon -->
-        {% if "icon" in meta[nav_item.url] %}
-          {% include ".icons/" ~ meta[nav_item.url]["icon"] ~ ".svg" %}
-        {% endif %}
-
-        <!-- Navigation link title -->
-        {{ nav_item.title }}
+        {{ render_content(nav_item) }}
       </a>
     </li>
   {% endif %}
@@ -68,4 +75,3 @@
 
 <!-- Render current and nested navigation items -->
 {{ render(nav_item) }}
-
