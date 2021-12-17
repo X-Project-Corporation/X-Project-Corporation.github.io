@@ -90,6 +90,7 @@
   // Navigation link
   &__link {
     display: flex;
+    align-items: center;
     margin-top: 0.625em;
     cursor: pointer;
     transition: color 125ms;
