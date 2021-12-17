@@ -29,6 +29,7 @@ import {
   map,
   mapTo,
   merge,
+  startWith,
   tap
 } from "rxjs"
 
@@ -36,6 +37,7 @@ import { feature } from "~/_"
 import {
   getElement,
   getElementOffset,
+  getElementSize,
   getElements
 } from "~/browser"
 
@@ -66,15 +68,19 @@ export interface ContentTabs {
 export function watchContentTabs(
   el: HTMLElement
 ): Observable<ContentTabs> {
-  return merge(...getElements(":scope > input", el)
-    .map(input => fromEvent(input, "change")
-      .pipe(
-        mapTo<ContentTabs>({
-          active: getElement(`label[for=${input.id}]`)
-        })
-      )
+  const inputs = getElements(":scope > input", el)
+  return merge(...inputs.map(input => fromEvent(input, "change")
+    .pipe(
+      mapTo<ContentTabs>({
+        active: getElement(`label[for=${input.id}]`)
+      })
     )
-  )
+  ))
+    .pipe(
+      startWith({
+        active: getElement(`label[for=${inputs[0].id}]`)
+      } as ContentTabs)
+    )
 }
 
 /**
@@ -95,31 +101,48 @@ export function mountContentTabs(
   const container = getElement(".tabbed-labels", el)
   return defer(() => {
     const push$ = new Subject<ContentTabs>()
-    push$.subscribe(({ active }) => {
-      const { x } = getElementOffset(active)
-      container.scrollTo({
-        behavior: "smooth",
-        left: x
-      })
+    push$.subscribe({
 
-    /* Set up linking of content tabs, if enabled */
-    if (feature("content.tabs.link")) {
-      const tab = active.innerText.trim()
-      for (const set of getElements("[data-tabs]"))
-        for (const input of getElements<HTMLInputElement>(
-          ":scope > input", set
-        )) {
-          const label = getElement(`label[for=${input.id}]`)
-          if (label.innerText.trim() === tab) {
-            input.checked = true
-            break
-          }
+      /* Handle emission */
+      next({ active }) {
+        const offset = getElementOffset(active)
+        const { width } = getElementSize(active)
+
+        /* Set tab indicator offset and width */
+        el.style.setProperty("--md-indicator-x", `${offset.x}px`)
+        el.style.setProperty("--md-indicator-width", `${width}px`)
+
+        /* Smoothly scroll container */
+        container.scrollTo({
+          behavior: "smooth",
+          left: offset.x
+        })
+
+        /* Set up linking of content tabs, if enabled */
+        if (feature("content.tabs.link")) {
+          const tab = active.innerText.trim()
+          for (const set of getElements("[data-tabs]"))
+            for (const input of getElements<HTMLInputElement>(
+              ":scope > input", set
+            )) {
+              const label = getElement(`label[for=${input.id}]`)
+              if (label.innerText.trim() === tab) {
+                input.checked = true
+                break
+              }
+            }
+
+          /* Persist active tabs in local storage */
+          const tabs = __md_get<string[]>("__tabs") || []
+          __md_set("__tabs", [...new Set([tab, ...tabs])])
         }
+      },
 
-      /* Persist active tabs in local storage */
-      const tabs = __md_get<string[]>("__tabs") || []
-      __md_set("__tabs", [...new Set([tab, ...tabs])])
-    }
+      /* Handle complete */
+      complete() {
+        el.style.removeProperty("--md-indicator-x")
+        el.style.removeProperty("--md-indicator-width")
+      }
   })
 
     /* Create and return component */
