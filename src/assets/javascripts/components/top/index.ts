@@ -147,7 +147,7 @@ export function mountBackToTop(
     /* Handle complete */
     complete() {
       el.style.top = ""
-      el.classList.remove("md-top--hidden")
+      el.classList.add("md-top--hidden")
       el.removeAttribute("tabindex")
     }
   })
