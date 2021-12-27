@@ -44,13 +44,13 @@ contents:
           - run: mkdocs gh-deploy --force
     ```
 
-    1. You can change the name to your liking.
+    1.  You can change the name to your liking. 
 
-    2. At some point, GitHub renamed `master` to `main`. If your default branch
-       is named `master`, you can safely remove `main`, vice versa.
+    2.  At some point, GitHub renamed `master` to `main`. If your default branch
+        is named `master`, you can safely remove `main`, vice versa.
 
-    3. This is the place to install further [MkDocs plugins] or Markdown
-       extensions with `pip` to be used during the build:
+    3.  This is the place to install further [MkDocs plugins] or Markdown
+        extensions with `pip` to be used during the build:
 
         ``` sh
         pip install \
@@ -126,8 +126,9 @@ contents:
     image: python:latest
     pages:
       stage: deploy
-      only:
+      only: # (1)!
         - master
+        - main
       script:
         - pip install mkdocs-material
         - mkdocs build --site-dir public
@@ -135,6 +136,9 @@ contents:
         paths:
           - public
     ```
+
+    1.  At some point, GitLab renamed `master` to `main`. If your default branch
+        is named `master`, you can safely remove `main`, vice versa.
 
 === "Insiders"
 
@@ -144,6 +148,7 @@ contents:
       stage: deploy
       only:
         - master
+        - main
       script: # (1)!
         - pip install git+https://${GH_TOKEN}@github.com/squidfunk/mkdocs-material-insiders.git
         - mkdocs build --site-dir public
