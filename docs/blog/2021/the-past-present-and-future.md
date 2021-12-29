@@ -146,17 +146,17 @@ are still exclusively available to sponsors as part of [Insiders]:
 - Latest release tag
 - [Mermaid.js integration]
 - [Navigation icons]
-- [Stay on page when switching versions]
-- [Tags with search integration]
 - [Remove generator notice]
 - [Rich search previews]
-- [Search suggestions]
+- [Stay on page when switching versions]
 - [Search highlighting]
 - [Search sharing]
+- [Search suggestions]
 - [Section index pages]
 - [Site language selection]
 - [Social cards]
 - [Sticky navigation tabs]
+- [Tags with search integration]
 - [Tokenizer with lookahead]
 - [Versioning]
 - [Version warning]
@@ -194,9 +194,9 @@ __55__ times, `mkdocs-material-insiders` was shipped __72__ times.
   [Navigation icons]: ../../reference/index.md#setting-the-page-icon
   [Remove generator notice]: ../../setup/setting-up-the-footer.md#generator-notice
   [Rich search previews]: search-better-faster-smaller.md#rich-search-previews
-  [Search suggestions]: ../../setup/setting-up-site-search.md#search-suggestions
   [Search highlighting]: ../../setup/setting-up-site-search.md#search-highlighting
   [Search sharing]: ../../setup/setting-up-site-search.md#search-sharing
+  [Search suggestions]: ../../setup/setting-up-site-search.md#search-suggestions
   [Section index pages]: ../../setup/setting-up-navigation.md#section-index-pages
   [Site language selection]: ../../setup/changing-the-language.md#site-language-selector
   [Social cards]: ../../setup/setting-up-social-cards.md
@@ -256,10 +256,10 @@ features that will see the light of day in 2022:
   :material-alert-decagram: __new__ or :material-trash-can: __deprecated__.
   Custom status types will also be supported.
 
-- __Hover cards__: as a further component in the toolkit of technical writing,
-  [hover cards] will allow arranging content in grids, which is especially
-  useful for overview pages. They will allow to arrange arbitrary content in
-  grids, including code blocks, admonitions, etc.
+- __Card grids__: as a further component in the toolkit of technical writing,
+  [card grids] will allow arranging content in grids, which is especially
+  useful for overview pages. They will allow to arrange arbitrary content,
+  including code blocks, admonitions, etc.
 
 - __Blog support__: blogging support is still [under investigation] and expected
   to be one of the major additions in 2022. Blogging will perfectly integrate
@@ -273,6 +273,6 @@ updated.
 __Happy new year!__ :tada:
 
   [Instant previews]: https://twitter.com/squidfunk/status/1466794654213492743
-  [hover cards]: https://github.com/squidfunk/mkdocs-material/issues/3018
+  [card grids]: https://github.com/squidfunk/mkdocs-material/issues/3018
   [under investigation]: https://github.com/squidfunk/mkdocs-material/issues/3353
   [@squidfunk on Twitter]: https://twitter.com/squidfunk
