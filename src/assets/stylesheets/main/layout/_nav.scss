@@ -109,6 +109,10 @@
     // Navigation link title
     .md-ellipsis {
       flex-grow: 1;
+      // Hack: Safari exhibits a bug where the text will sometimes disappear
+      // and the element will become unclickable. Promoting it to a separate
+      // layer seems to fix the issue, see https://bit.ly/3HljM1T
+      transform: translateZ(0);
     }
 
     // Navigation link icon
@@ -548,7 +552,6 @@
 
     // Navigation icon
     &__icon {
-      float: right;
       width: px2rem(18px);
       height: px2rem(18px);
       border-radius: 100%;
@@ -558,7 +561,6 @@
 
       // Adjust for right-to-left languages
       [dir="rtl"] & {
-        float: left;
         transform: rotate(180deg);
       }
 
