@@ -81,7 +81,7 @@ export function watchAnnounce(
 export function mountAnnounce(
   el: HTMLElement
 ): Observable<Component<Announce>> {
-  if (!feature("announce.dismiss"))
+  if (!feature("announce.dismiss") || !el.childElementCount)
     return EMPTY
 
   /* Mount component on subscription */
