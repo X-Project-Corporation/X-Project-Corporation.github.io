@@ -32,6 +32,7 @@ import {
   map,
   mapTo,
   merge,
+  skip,
   startWith,
   takeLast,
   takeUntil,
@@ -74,7 +75,8 @@ export interface ContentTabs {
 export function watchContentTabs(
   el: HTMLElement
 ): Observable<ContentTabs> {
-  const inputs = getElements(":scope > input", el)
+  const inputs = getElements<HTMLInputElement>(":scope > input", el)
+  const active = inputs.find(input => input.checked)!
   return merge(...inputs.map(input => fromEvent(input, "change")
     .pipe(
       mapTo<ContentTabs>({
@@ -84,7 +86,7 @@ export function watchContentTabs(
   ))
     .pipe(
       startWith({
-        active: getElement(`label[for=${inputs[0].id}]`)
+        active: getElement(`label[for=${active.id}]`)
       } as ContentTabs)
     )
 }
@@ -123,25 +125,6 @@ export function mountContentTabs(
             el.style.setProperty("--md-indicator-x", `${offset.x}px`)
             el.style.setProperty("--md-indicator-width", `${width}px`)
 
-            /* Set up linking of content tabs, if enabled */
-            if (feature("content.tabs.link")) {
-              const tab = active.innerText.trim()
-              for (const set of getElements("[data-tabs]"))
-                for (const input of getElements<HTMLInputElement>(
-                  ":scope > input", set
-                )) {
-                  const label = getElement(`label[for=${input.id}]`)
-                  if (label.innerText.trim() === tab) {
-                    input.checked = true
-                    break
-                  }
-                }
-
-              /* Persist active tabs in local storage */
-              const tabs = __md_get<string[]>("__tabs") || []
-              __md_set("__tabs", [...new Set([tab, ...tabs])])
-            }
-
             /* Smoothly scroll container */
             container.scrollTo({
               behavior: "smooth",
@@ -154,6 +137,27 @@ export function mountContentTabs(
             el.style.removeProperty("--md-indicator-x")
             el.style.removeProperty("--md-indicator-width")
           }
+        })
+
+    /* Set up linking of content tabs, if enabled */
+    if (feature("content.tabs.link"))
+      push$.pipe(skip(1))
+        .subscribe(({ active }) => {
+          const tab = active.innerText.trim()
+          for (const set of getElements("[data-tabs]"))
+            for (const input of getElements<HTMLInputElement>(
+              ":scope > input", set
+            )) {
+              const label = getElement(`label[for=${input.id}]`)
+              if (label.innerText.trim() === tab) {
+                input.click()
+                break
+              }
+            }
+
+          /* Persist active tabs in local storage */
+          const tabs = __md_get<string[]>("__tabs") || []
+          __md_set("__tabs", [...new Set([tab, ...tabs])])
         })
 
     /* Create and return component */
