@@ -31,6 +31,7 @@ import {
   finalize,
   fromEvent,
   map,
+  merge,
   switchMap,
   take,
   takeLast,
@@ -43,7 +44,6 @@ import {
 import {
   ElementOffset,
   getActiveElement,
-  getElement,
   getElementSize,
   watchElementContentOffset,
   watchElementFocus,
@@ -128,8 +128,7 @@ export function watchAnnotation(
 export function mountAnnotation(
   el: HTMLElement, container: HTMLElement, { target$ }: MountOptions
 ): Observable<Component<Annotation>> {
-  const index   = getElement(":scope > .md-annotation__index", el)
-  const tooltip = getElement(":scope > .md-tooltip", el)
+  const [tooltip, index] = Array.from(el.children)
 
   /* Mount component on subscription */
   return defer(() => {
@@ -151,6 +150,17 @@ export function mountAnnotation(
         el.style.removeProperty("--md-tooltip-y")
       }
     })
+
+    /* Toggle presence of content to mitigate empty lines when copying */
+    const inner = tooltip.firstElementChild!
+    merge(
+      push$.pipe(filter(({ active }) => active)),
+      push$.pipe(filter(({ active }) => !active), delay(250))
+    )
+      .subscribe(({ active }) => active
+        ? tooltip.appendChild(inner)
+        : inner.remove()
+      )
 
     /* Track relative origin of tooltip */
     push$
