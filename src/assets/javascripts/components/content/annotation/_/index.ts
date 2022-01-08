@@ -135,29 +135,31 @@ export function mountAnnotation(
   /* Mount component on subscription */
   return defer(() => {
     const push$ = new Subject<Annotation>()
+    push$.subscribe({
+
+      /* Handle emission */
+      next({ offset }) {
+        el.style.setProperty("--md-tooltip-x", `${offset.x}px`)
+        el.style.setProperty("--md-tooltip-y", `${offset.y}px`)
+      },
+
+      /* Handle complete */
+      complete() {
+        el.style.removeProperty("--md-tooltip-x")
+        el.style.removeProperty("--md-tooltip-y")
+      }
+    })
+
+    /* Toggle tooltip visibility */
     push$
       .pipe(
         auditTime(0, animationFrameScheduler)
       )
-        .subscribe({
-
-          /* Handle emission */
-          next({ active, offset }) {
-            el.style.setProperty("--md-tooltip-x", `${offset.x}px`)
-            el.style.setProperty("--md-tooltip-y", `${offset.y}px`)
-
-            /* Toggle visibility of tooltip */
-            tooltip.classList.toggle("md-tooltip--active", active)
-          },
-
-          /* Handle complete */
-          complete() {
-            el.style.removeProperty("--md-tooltip-x")
-            el.style.removeProperty("--md-tooltip-y")
-          }
+        .subscribe(({ active }) => {
+          tooltip.classList.toggle("md-tooltip--active", active)
         })
 
-    /* Toggle presence of tooltip to mitigate empty lines when copying */
+    /* Toggle tooltip presence to mitigate empty lines when copying */
     merge(
       push$.pipe(filter(({ active }) => active)),
       push$.pipe(debounceTime(250), filter(({ active }) => !active)),
