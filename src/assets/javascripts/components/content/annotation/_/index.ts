@@ -24,7 +24,9 @@ import {
   Observable,
   Subject,
   animationFrameScheduler,
+  auditTime,
   combineLatest,
+  debounceTime,
   defer,
   delay,
   filter,
@@ -133,33 +135,36 @@ export function mountAnnotation(
   /* Mount component on subscription */
   return defer(() => {
     const push$ = new Subject<Annotation>()
-    push$.subscribe({
+    push$
+      .pipe(
+        auditTime(0, animationFrameScheduler)
+      )
+        .subscribe({
 
-      /* Handle emission */
-      next({ active, offset }) {
-        el.style.setProperty("--md-tooltip-x", `${offset.x}px`)
-        el.style.setProperty("--md-tooltip-y", `${offset.y}px`)
+          /* Handle emission */
+          next({ active, offset }) {
+            el.style.setProperty("--md-tooltip-x", `${offset.x}px`)
+            el.style.setProperty("--md-tooltip-y", `${offset.y}px`)
 
-        /* Toggle visibility of tooltip */
-        tooltip.classList.toggle("md-tooltip--active", active)
-      },
+            /* Toggle visibility of tooltip */
+            tooltip.classList.toggle("md-tooltip--active", active)
+          },
 
-      /* Handle complete */
-      complete() {
-        el.style.removeProperty("--md-tooltip-x")
-        el.style.removeProperty("--md-tooltip-y")
-      }
-    })
+          /* Handle complete */
+          complete() {
+            el.style.removeProperty("--md-tooltip-x")
+            el.style.removeProperty("--md-tooltip-y")
+          }
+        })
 
-    /* Toggle presence of content to mitigate empty lines when copying */
-    const inner = tooltip.firstElementChild!
+    /* Toggle presence of tooltip to mitigate empty lines when copying */
     merge(
       push$.pipe(filter(({ active }) => active)),
-      push$.pipe(filter(({ active }) => !active), delay(250))
+      push$.pipe(debounceTime(250), filter(({ active }) => !active)),
     )
       .subscribe(({ active }) => active
-        ? tooltip.appendChild(inner)
-        : inner.remove()
+        ? el.prepend(tooltip)
+        : tooltip.remove()
       )
 
     /* Track relative origin of tooltip */

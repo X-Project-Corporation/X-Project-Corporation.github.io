@@ -144,6 +144,14 @@ export function mountAnnotationList(
   return defer(() => {
     const done$ = new Subject()
 
+    /* Retrieve container pairs for swapping */
+    const pairs: [HTMLElement, HTMLElement][] = []
+    for (const [id, annotation] of annotations)
+      pairs.push([
+        getElement(".md-typeset", annotation),
+        getElement(`li:nth-child(${id})`, el)
+      ])
+
     /* Handle print mode - see https://bit.ly/3rgPdpt */
     print$
       .pipe(
@@ -153,9 +161,7 @@ export function mountAnnotationList(
           el.hidden = !active
 
           /* Show annotations in code block or list (print) */
-          for (const [id, annotation] of annotations) {
-            const inner = getElement(".md-typeset", annotation)
-            const child = getElement(`li:nth-child(${id})`, el)
+          for (const [inner, child] of pairs) {
             if (!active)
               swap(child, inner)
             else
