@@ -150,6 +150,27 @@ export function mountAnnotation(
       }
     })
 
+    /* Toggle tooltip presence to mitigate empty lines when copying */
+    merge(
+      push$.pipe(filter(({ active }) => active)),
+      push$.pipe(debounceTime(250), filter(({ active }) => !active)),
+    )
+      .subscribe({
+
+        /* Handle emission */
+        next({ active }) {
+          if (active)
+            el.prepend(tooltip)
+          else
+            tooltip.remove()
+        },
+
+        /* Handle complete */
+        complete() {
+          el.prepend(tooltip)
+        }
+      })
+
     /* Toggle tooltip visibility */
     push$
       .pipe(
@@ -158,16 +179,6 @@ export function mountAnnotation(
         .subscribe(({ active }) => {
           tooltip.classList.toggle("md-tooltip--active", active)
         })
-
-    /* Toggle tooltip presence to mitigate empty lines when copying */
-    merge(
-      push$.pipe(filter(({ active }) => active)),
-      push$.pipe(debounceTime(250), filter(({ active }) => !active)),
-    )
-      .subscribe(({ active }) => active
-        ? el.prepend(tooltip)
-        : tooltip.remove()
-      )
 
     /* Track relative origin of tooltip */
     push$
