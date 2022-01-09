@@ -572,7 +572,12 @@
     scroll-snap-align: start;
 
     // Hide native details marker
-    &::marker,
+    &::marker {
+      display: none;
+    }
+
+    // Hide native details marker - legacy, must be split into a seprate rule,
+    // so older browsers don't consider the selector list as invalid
     &::-webkit-details-marker {
       display: none;
     }

@@ -27,7 +27,7 @@
         {% endfor %}
       {% endif %}
       <link rel="icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-8.1.4+insiders-4.5.1">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-8.1.5+insiders-4.5.2">
     {% endblock %}
     {% block htmltitle %}
       {% if page and page.meta and page.meta.title %}
@@ -39,7 +39,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.f8ad3a65.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.542428a3.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.e6a45f82.min.css' | url }}">
@@ -220,7 +220,7 @@
         "base": base_url,
         "features": features,
         "translations": {},
-        "search": "assets/javascripts/workers/search.e72f9a50.min.js" | url
+        "search": "assets/javascripts/workers/search.f7fe2898.min.js" | url
       } -%}
       {%- if config.extra.version -%}
         {%- set _ = app.update({ "version": config.extra.version }) -%}
@@ -249,7 +249,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.fb7a9cd0.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.3f0124df.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
