@@ -25,7 +25,10 @@ import { Observable, merge } from "rxjs"
 import { getElements } from "~/browser"
 
 import { Component } from "../../_"
-import { Annotation } from "../annotation"
+import {
+  Annotation,
+  mountAnnotationBlock
+} from "../annotation"
 import {
   CodeBlock,
   Mermaid,
@@ -91,6 +94,10 @@ export function mountContent(
   el: HTMLElement, { target$, print$ }: MountOptions
 ): Observable<Component<Content>> {
   return merge(
+
+    /* Annotations */
+    ...getElements(".annotate:not(.highlight, .highlighttable)", el)
+      .map(child => mountAnnotationBlock(child, { target$, print$ })),
 
     /* Code blocks */
     ...getElements("pre:not(.mermaid) > code", el)

@@ -98,10 +98,10 @@ export function watchAnnotation(
   ]))
     .pipe(
       map(([{ x, y }, scroll]) => {
-        const { width } = getElementSize(el)
+        const { width, height } = getElementSize(el)
         return ({
           x: x - scroll.x + width / 2,
-          y: y - scroll.y
+          y: y - scroll.y + height / 2
         })
       })
     )
@@ -184,7 +184,7 @@ export function mountAnnotation(
     push$
       .pipe(
         throttleTime(500, animationFrameScheduler),
-        map(() => container.getBoundingClientRect()),
+        map(() => el.offsetParent!.getBoundingClientRect()),
         map(({ x }) => x)
       )
         .subscribe({

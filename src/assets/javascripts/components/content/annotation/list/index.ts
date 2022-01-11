@@ -62,7 +62,7 @@ interface MountOptions {
  * ------------------------------------------------------------------------- */
 
 /**
- * Find all annotation markers in the given code block
+ * Find all annotation markers in the containing element
  *
  * @param container - Containing element
  *
@@ -70,23 +70,35 @@ interface MountOptions {
  */
 function findAnnotationMarkers(container: HTMLElement): Text[] {
   const markers: Text[] = []
-  for (const comment of getElements(".c, .c1, .cm", container)) {
-    let match: RegExpExecArray | null
-    let text = comment.firstChild as Text
+  for (const el of container.tagName === "CODE"
+    ? getElements(".c, .c1, .cm", container)
+    : [container]
+  ) {
+    const nodes: Text[] = []
 
-    /* Split text at marker and add to list */
-    while ((match = /(\(\d+\))(!)?/.exec(text.textContent!))) {
-      const [, id, force] = match
-      if (typeof force === "undefined") {
-        const marker = text.splitText(match.index)
-        text = marker.splitText(id.length)
-        markers.push(marker)
+    /* Find all text nodes in current element */
+    const it = document.createNodeIterator(el, NodeFilter.SHOW_TEXT)
+    for (let node = it.nextNode(); node; node = it.nextNode())
+      nodes.push(node as Text)
 
-      /* Replace entire text with marker */
-      } else {
-        text.textContent = id
-        markers.push(text)
-        break
+    /* Find all markers in each text node */
+    for (let text of nodes) {
+      let match: RegExpExecArray | null
+
+      /* Split text at marker and add to list */
+      while ((match = /(\(\d+\))(!)?/.exec(text.textContent!))) {
+        const [, id, force] = match
+        if (typeof force === "undefined") {
+          const marker = text.splitText(match.index)
+          text = marker.splitText(id.length)
+          markers.push(marker)
+
+        /* Replace entire text with marker */
+        } else {
+          text.textContent = id
+          markers.push(text)
+          break
+        }
       }
     }
   }
@@ -127,7 +139,7 @@ export function mountAnnotationList(
 
   /* Compute prefix for tooltip anchors */
   const parent = container.closest("[id]")
-  const prefix = parent?.id || ""
+  const prefix = parent?.id
 
   /* Find and replace all markers with empty annotations */
   const annotations = new Map<string, HTMLElement>()

@@ -41,7 +41,7 @@ export function renderAnnotation(
 ): HTMLElement {
   prefix = prefix ? `${prefix}_annotation_${id}` : undefined
 
-  /* Render tooltip with anchor if given */
+  /* Render tooltip with anchor, if given */
   const anchor = prefix ? `#${prefix}` : undefined
   return (
     <aside class="md-annotation" tabIndex={0}>
