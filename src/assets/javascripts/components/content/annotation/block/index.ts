@@ -20,17 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import {
-  EMPTY,
-  Observable,
-  Subject,
-  defer,
-  finalize,
-  merge,
-  share,
-  takeLast,
-  takeUntil
-} from "rxjs"
+import { EMPTY, Observable, defer } from "rxjs"
 
 import { Component } from "../../../_"
 import { Annotation } from "../_"
