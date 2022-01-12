@@ -31,12 +31,13 @@ import { fromEvent } from "rxjs"
  */
 export function setupAnalytics(): void {
   const { origin } = new URL(location.href)
-  fromEvent(document.body, "click")
-    .subscribe(ev => {
-      if (ev.target instanceof HTMLElement) {
-        const el = ev.target.closest("a")
-        if (el && el.origin !== origin)
-          ga("send", "event", "outbound", "click", el.href)
-      }
-    })
+  if (typeof ga !== "undefined")
+    fromEvent(document.body, "click")
+      .subscribe(ev => {
+        if (ev.target instanceof HTMLElement) {
+          const el = ev.target.closest("a")
+          if (el && el.origin !== origin)
+            ga("send", "event", "outbound", "click", el.href)
+        }
+      })
 }

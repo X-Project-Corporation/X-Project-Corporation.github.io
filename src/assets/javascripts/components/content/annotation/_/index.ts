@@ -184,6 +184,7 @@ export function mountAnnotation(
     push$
       .pipe(
         throttleTime(500, animationFrameScheduler),
+        filter(() => !!el.offsetParent),
         map(() => el.offsetParent!.getBoundingClientRect()),
         map(({ x }) => x)
       )
