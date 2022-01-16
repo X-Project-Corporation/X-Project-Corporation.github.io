@@ -36,7 +36,7 @@
       gtag("js", new Date())
       gtag("config", "{{ property }}")
 
-      /* Register virtual event handlers */
+      /* Register event handlers after documented loaded */
       document.addEventListener("DOMContentLoaded", function() {
 
         /* Set up search tracking */
@@ -108,7 +108,7 @@
       ga("set", "anonymizeIp", true)
       ga("send", "pageview")
 
-      /* Register virtual event handlers */
+      /* Register event handlers after documented loaded */
       document.addEventListener("DOMContentLoaded", function() {
 
         /* Set up search tracking */
