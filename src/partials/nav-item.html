@@ -21,7 +21,7 @@
 -->
 
 <!-- Render navigation link content -->
-{% macro render_content(nav_item) %}
+{% macro render_content(nav_item, title) %}
 
   <!-- Navigation link icon -->
   {% if "icon" in meta[nav_item.url] %}
@@ -30,7 +30,7 @@
 
   <!-- Navigation link title -->
   <span class="md-ellipsis">
-    {{ nav_item.title }}
+    {{ title or nav_item.title }}
   </span>
 {% endmacro %}
 
@@ -102,7 +102,7 @@
             href="{{ index.url | url }}"
             class="md-nav__link {{ class }}"
           >
-            {{ render_content(index) }}
+            {{ render_content(index, nav_item.title) }}
           </a>
 
           <!-- Only render toggle if there's at least one more page -->
