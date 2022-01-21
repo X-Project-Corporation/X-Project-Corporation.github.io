@@ -65,7 +65,7 @@ __Challenges__
 
 ## Sphinx
 
-[Sphinx] is an alternative static site generator specifically greared towards
+[Sphinx] is an alternative static site generator specifically geared towards
 generating reference documentation, offering powerful capabilities that are
 lacking in MkDocs. It uses [reStructured text], a format similar to Markdown,
 which some users find harder to use.
@@ -84,7 +84,7 @@ __Challenges__
 
 [Sphinx Immaterial] is a great port of Material for MkDocs to Sphinx, as it
 follows the upstream repository closely. [Furo] is another great theme.
-Alternatively, [mkdocstrings] builds on top of Material for MkDocs to allow
+Alternatively, [mkdocstrings] builds on top of MkDocs to allow
 the generation of reference documentation.
 
   [Sphinx]: https://www.sphinx-doc.org/
