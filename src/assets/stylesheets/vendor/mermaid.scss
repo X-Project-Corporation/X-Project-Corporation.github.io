@@ -66,12 +66,14 @@ marker {
   // Flowchart edge label
   div .edgeLabel {
     color: var(--md-mermaid-label-fg-color);
+    background-color: var(--md-mermaid-label-bg-color);
   }
 }
 
 // Flowchart edge label
 .edgeLabel,
 .edgeLabel rect {
+  color: var(--md-mermaid-edge-color);
   background-color: var(--md-mermaid-label-bg-color);
   fill: var(--md-mermaid-label-bg-color);
 }
@@ -130,6 +132,11 @@ g.classGroup {
     font-family: var(--md-mermaid-font-family);
     fill: var(--md-mermaid-label-fg-color);
   }
+}
+
+// Class group divider
+.node .divider {
+  stroke: var(--md-mermaid-node-fg-color);
 }
 
 // Class relation
@@ -318,8 +325,12 @@ text.actor > tspan {
   fill: var(--md-mermaid-label-fg-color);
 }
 
-// Sequence line and message
-.actor-line,
+// Sequence actor line
+line {
+  stroke: var(--md-default-fg-color--lighter);
+}
+
+// Sequence message line
 .messageLine0,
 .messageLine1 {
   stroke: var(--md-mermaid-edge-color);
