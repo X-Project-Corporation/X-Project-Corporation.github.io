@@ -102,12 +102,12 @@ function setupSearchIndex({ config, docs }: SearchIndex): SearchIndex {
  * enable hacks like _localsearch_ via search index embedding as JSON.
  *
  * @param url - Worker URL
- * @param index - Search index observable input
+ * @param index$ - Search index observable input
  *
  * @returns Search worker
  */
 export function setupSearchWorker(
-  url: string, index: ObservableInput<SearchIndex>
+  url: string, index$: ObservableInput<SearchIndex>
 ): SearchWorker {
   const config = configuration()
   const worker = new Worker(url)
@@ -128,7 +128,7 @@ export function setupSearchWorker(
     )
 
   /* Set up search index */
-  from(index)
+  from(index$)
     .pipe(
       map(data => ({
         type: SearchMessageType.SETUP,

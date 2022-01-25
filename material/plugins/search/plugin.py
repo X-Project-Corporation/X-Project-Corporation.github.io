@@ -19,10 +19,12 @@
 # IN THE SOFTWARE.
 
 import logging
+import os
 import re
 
 from html import escape
 from html.parser import HTMLParser
+from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
 from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
@@ -46,6 +48,18 @@ class SearchPlugin(BasePlugin):
 
             # Set to false, just to be sure
             self.config["prebuild_index"] = False
+
+    # Override: support offline search
+    def on_post_build(self, config, **kwargs):
+        output_base_path = os.path.join(config["site_dir"], "search")
+
+        # Generate search index bootstrapping code
+        index = self.search_index.generate_search_index()
+        template = "var __index = Promise.resolve({})"
+        utils.write_file(
+            template.format(index).encode("utf-8"),
+            os.path.join(output_base_path, "search_index.js")
+        )
 
     # Override: remove search pragmas after indexing
     def on_page_context(self, context, page, **kwargs):

@@ -22,6 +22,7 @@
 
 import "array-flat-polyfill"
 import "focus-visible"
+import "iframe-worker/polyfill"
 import "unfetch/polyfill"
 import "url-polyfill"
 
@@ -43,7 +44,6 @@ import { configuration, feature } from "./_"
 import {
   at,
   getOptionalElement,
-  requestJSON,
   setToggle,
   watchDocument,
   watchKeyboard,
@@ -51,6 +51,7 @@ import {
   watchLocationTarget,
   watchMedia,
   watchPrint,
+  watchScript,
   watchViewport
 } from "./browser"
 import {
@@ -74,7 +75,6 @@ import {
   watchMain
 } from "./components"
 import {
-  SearchIndex,
   setupClipboardJS,
   setupInstantLoading,
   setupVersionSelector
@@ -109,9 +109,11 @@ const print$    = watchPrint()
 /* Retrieve search index, if search is enabled */
 const config = configuration()
 const index$ = document.forms.namedItem("search")
-  ? __search?.index || requestJSON<SearchIndex>(
-    new URL("search/search_index.json", config.base)
-  )
+  ? watchScript(`${new URL("search/search_index.js", config.base)}`)
+      .pipe(
+        switchMap(() => __index),
+        shareReplay(1)
+      )
   : NEVER
 
 /* Set up Clipboard.js integration */

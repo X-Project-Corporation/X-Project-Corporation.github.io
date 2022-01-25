@@ -38,7 +38,6 @@ import {
  */
 export interface GlobalSearchConfig {
   transform?: SearchTransformFn        /* Transformation function */
-  index?: Promise<SearchIndex>         /* Alternate index */
   worker?: string                      /* Alternate worker URL */
 }
 
@@ -50,6 +49,11 @@ declare global {
    * Global search configuration
    */
   const __search: GlobalSearchConfig | undefined
+
+  /**
+   * Promise resolving with search index
+   */
+  const __index: Promise<SearchIndex>
 
   /**
    * Compute hash from the given string
