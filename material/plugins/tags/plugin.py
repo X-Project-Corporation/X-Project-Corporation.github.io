@@ -99,7 +99,10 @@ class TagsPlugin(BasePlugin):
                 page.file.src_path,
                 self.tags_file.src_path
             )
-            content.append("- [{}]({})".format(page.title, url))
+            content.append("- [{}]({})".format(
+                page.meta.get("title", page.title),
+                url
+            ))
 
         # Return rendered tag links
         return "\n".join(content)
