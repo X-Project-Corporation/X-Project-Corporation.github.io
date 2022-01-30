@@ -20,7 +20,6 @@
  * IN THE SOFTWARE.
  */
 
-import fonts from "google-fonts-complete"
 import { minify as minhtml } from "html-minifier"
 import * as path from "path"
 import {
@@ -297,31 +296,54 @@ const index$ = zip(icons$, emojis$)
 
 /* ------------------------------------------------------------------------- */
 
-/* Compute font schema */
-const fonts$ = of(Object.keys(fonts))
-  .pipe(
-    map(items => ({
-      "$schema": "https://json-schema.org/draft-07/schema",
-      "title": "Google Fonts",
-      "markdownDescription": "https://fonts.google.com/",
-      "oneOf": items.map(item => ({
-        "title": item,
-        "markdownDescription": `https://fonts.google.com/specimen/${
-          item.replace(/\s+/g, "+")
-        }`,
-        "enum": [
-          item
-        ],
-      }))
-    })),
-    switchMap(data => write(
-      "docs/schema/assets/fonts.json",
-      JSON.stringify(data, undefined, 2)
-    ))
-  )
-
 /* Build schema */
-const schema$ = merge(fonts$)
+const schema$ = merge(
+
+  /* Compute fonts schema */
+  defer(() => import("google-fonts-complete"))
+    .pipe(
+      map(({ default: fonts }) => Object.keys(fonts)),
+      map(fonts => ({
+        "$schema": "https://json-schema.org/draft-07/schema",
+        "title": "Google Fonts",
+        "markdownDescription": "https://fonts.google.com/",
+        "type": "string",
+        "oneOf": fonts.map(font => ({
+          "title": font,
+          "markdownDescription": `https://fonts.google.com/specimen/${
+            font.replace(/\s+/g, "+")
+          }`,
+          "enum": [
+            font
+          ],
+        }))
+      })),
+      switchMap(data => write(
+        "docs/schema/assets/fonts.json",
+        JSON.stringify(data, undefined, 2)
+      ))
+    ),
+
+  /* Compute icons schema */
+  icons$
+    .pipe(
+      map(icons => [...icons.values()]),
+      map(icons => ({
+        "$schema": "https://json-schema.org/draft-07/schema",
+        "title": "Icon",
+        "markdownDescription": [
+          "https://squidfunk.github.io/mkdocs-material",
+          "reference/icons-emojis/#search"
+        ].join("/"),
+        "type": "string",
+        "enum": icons.map(icon => icon.replace(".svg", ""))
+      })),
+      switchMap(data => write(
+        "docs/schema/assets/icons.json",
+        JSON.stringify(data, undefined, 2)
+      ))
+    )
+)
 
 /* ----------------------------------------------------------------------------
  * Program
