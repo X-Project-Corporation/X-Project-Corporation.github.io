@@ -108,11 +108,11 @@
 
     // Navigation link title
     .md-ellipsis {
-      flex-grow: 1;
       // Hack: Safari exhibits a bug where the text will sometimes disappear
-      // and the element will become unclickable. Promoting it to a separate
-      // layer seems to fix the issue, see https://bit.ly/3HljM1T
-      transform: translateZ(0);
+      // and the element will become unclickable. Setting `position: relative`
+      // seems to fix the issue, see https://bit.ly/3HljM1T
+      position: relative;
+      flex-grow: 1;
     }
 
     // Navigation link icon
@@ -485,6 +485,9 @@
     &--primary &__title {
       position: sticky;
       top: 0;
+      // Hack: because of the hack that we need to make .md-ellipsis work in
+      // Safari, we need to set `z-index` here as, see https://bit.ly/3s5M2jm
+      z-index: 1;
       background: var(--md-default-bg-color);
       box-shadow: 0 0 px2rem(8px) px2rem(8px) var(--md-default-bg-color);
 
