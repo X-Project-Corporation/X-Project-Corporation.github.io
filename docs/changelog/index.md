@@ -6,6 +6,10 @@ template: overrides/main.html
 
 ## Material for MkDocs
 
+### 8.1.10 <small>_ February 6, 2022</small> { id="8.1.10" }
+
+- Fixed cutoff of very wide logos in the sidebar on mobile
+
 ### 8.1.9 <small>_ January 30, 2022</small> { id="8.1.9" }
 
 - [Added support for `mkdocs.yml` validation and auto-complete][validation]
@@ -709,7 +713,7 @@ template: overrides/main.html
 
 ### 4.6.0 <small>_ December 11, 2019</small> { id="4.6.0" }
 
-- Added support for [git-revision-date-localized-plugin][1]
+- Added support for [git-revision-date-localized-plugin]
 - Fixed invalid character in Google Fonts URL
 
   [git-revision-date-localized-plugin]: https://github.com/timvink/mkdocs-git-revision-date-localized-plugin
