@@ -291,16 +291,18 @@ export function mountTableOfContents(
         )
           .subscribe(([{ prev }, behavior]) => {
             const [anchor] = prev[prev.length - 1]
+            if (anchor.offsetHeight) {
 
-            /* Retrieve overflowing container and scroll */
-            const container = getElementContainer(anchor)
-            if (typeof container !== "undefined") {
-              const offset = anchor.offsetTop - container.offsetTop
-              const { height } = getElementSize(container)
-              container.scrollTo({
-                top: offset - height / 2,
-                behavior
-              })
+              /* Retrieve overflowing container and scroll */
+              const container = getElementContainer(anchor)
+              if (typeof container !== "undefined") {
+                const offset = anchor.offsetTop - container.offsetTop
+                const { height } = getElementSize(container)
+                container.scrollTo({
+                  top: offset - height / 2,
+                  behavior
+                })
+              }
             }
           })
     }
