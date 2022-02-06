@@ -174,7 +174,7 @@ export function mountSidebar(
           }
         })
 
-    // TODO: generalize this, so we can also use it in the table of contents
+    /* Bring active item into view on initial load */
     push$
       .pipe(
         observeOn(animationFrameScheduler),
@@ -186,8 +186,9 @@ export function mountSidebar(
             if (typeof container !== "undefined") {
               const offset = item.offsetTop - container.offsetTop
               const { height } = getElementSize(container)
-              if (offset - height + item.offsetHeight > 0)
-                container.scrollTo(0, offset - height / 2)
+              container.scrollTo({
+                top: offset - height / 2
+              })
             }
           }
         })

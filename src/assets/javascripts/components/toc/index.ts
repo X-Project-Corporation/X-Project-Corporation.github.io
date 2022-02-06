@@ -29,8 +29,11 @@ import {
   defer,
   distinctUntilChanged,
   distinctUntilKeyChanged,
+  filter,
   finalize,
   map,
+  mapTo,
+  merge,
   of,
   scan,
   startWith,
@@ -44,6 +47,8 @@ import {
 import { feature } from "~/_"
 import {
   Viewport,
+  getElementContainer,
+  getElementSize,
   getElements,
   getLocation,
   getOptionalElement,
@@ -268,6 +273,37 @@ export function mountTableOfContents(
         )
       }
     })
+
+    /* Set up following, if enabled */
+    if (feature("toc.follow")) {
+
+      /* Toggle smooth scrolling only for anchor clicks */
+      const smooth$ = merge(
+        viewport$.pipe(debounceTime(1), mapTo(undefined)),
+        viewport$.pipe(debounceTime(250), mapTo("smooth" as const))
+      )
+
+      /* Bring active anchor into view */
+      push$
+        .pipe(
+          filter(({ prev }) => prev.length > 0),
+          withLatestFrom(smooth$)
+        )
+          .subscribe(([{ prev }, behavior]) => {
+            const [anchor] = prev[prev.length - 1]
+
+            /* Retrieve overflowing container and scroll */
+            const container = getElementContainer(anchor)
+            if (typeof container !== "undefined") {
+              const offset = anchor.offsetTop - container.offsetTop
+              const { height } = getElementSize(container)
+              container.scrollTo({
+                top: offset - height / 2,
+                behavior
+              })
+            }
+          })
+    }
 
     /* Set up anchor tracking, if enabled */
     if (feature("navigation.tracking"))

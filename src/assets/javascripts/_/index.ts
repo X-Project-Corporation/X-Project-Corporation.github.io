@@ -45,6 +45,7 @@ export type Flag =
   | "search.highlight"                 /* Search highlighting */
   | "search.share"                     /* Search sharing */
   | "search.suggest"                   /* Search suggestions */
+  | "toc.follow"                       /* Following table of contents */
   | "toc.integrate"                    /* Integrated table of contents */
 
 /* ------------------------------------------------------------------------- */
