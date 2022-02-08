@@ -124,7 +124,7 @@ export function mountMermaid(
     el.classList.add("mermaid") // Hack: mitigate https://bit.ly/3CiN6Du
     const id = `__mermaid_${index++}`
     const host = h("div", { class: "mermaid" })
-    mermaid.mermaidAPI.render(id, el.innerText, (svg: string) => {
+    mermaid.mermaidAPI.render(id, el.textContent, (svg: string) => {
 
       /* Create a shadow root and inject diagram */
       const shadow = host.attachShadow({ mode: "closed" })
