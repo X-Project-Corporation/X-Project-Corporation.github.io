@@ -51,7 +51,6 @@
           <meta name="theme-color" content="{{ primary }}">
         {% endif %}
       {% endif %}
-      <link rel="preload" as="style" href="{{ 'assets/stylesheets/vendor/mermaid.53552a32.min.css' | url }}">
       {% include "partials/icons.html" %}
     {% endblock %}
     {% block libs %}{% endblock %}
@@ -249,7 +248,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.af85c085.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.25f1df3e.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}

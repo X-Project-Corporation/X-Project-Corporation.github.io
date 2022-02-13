@@ -22,6 +22,7 @@
 
 import { createHash } from "crypto"
 import { build as esbuild } from "esbuild"
+import * as fs from "fs/promises"
 import * as path from "path"
 import postcss, { Plugin, Rule } from "postcss"
 import {
@@ -182,7 +183,29 @@ export function transformScript(
     bundle: true,
     sourcemap: false,
     legalComments: "none",
-    minify: process.argv.includes("--optimize")
+    minify: process.argv.includes("--optimize"),
+    plugins: [
+
+      /* Plugin to minify inlined CSS (e.g. for Mermaid.js) */
+      {
+        name: "mkdocs-material/inline",
+        setup(build) {
+          build.onLoad({ filter: /\.css/ }, async args => {
+            const content = await fs.readFile(args.path, "utf8")
+            const { css } = await postcss([require("cssnano")])
+              .process(content, {
+                from: undefined
+              })
+
+            /* Return minified CSS */
+            return {
+              contents: css,
+              loader: "text"
+            }
+          });
+        }
+      }
+    ]
   }))
     .pipe(
       switchMap(({ outputFiles: [file] }) => {

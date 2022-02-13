@@ -25,19 +25,15 @@ import {
   mapTo,
   of,
   shareReplay,
-  switchMap,
-  tap,
-  zip
+  tap
 } from "rxjs"
 
-import {
-  getElement,
-  request,
-  watchScript
-} from "~/browser"
+import { watchScript } from "~/browser"
 import { h } from "~/utilities"
 
 import { Component } from "../../../_"
+
+import themeCSS from "./index.css"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -72,26 +68,9 @@ let index = 0
  * @returns Mermaid scripts observable
  */
 function fetchScripts(): Observable<void> {
-  return typeof mermaid !== "undefined"
-    ? of(undefined)
-    : watchScript(
-      "https://unpkg.com/mermaid@8.13.3/dist/mermaid.min.js"
-    )
-}
-
-/**
- * Fetch Mermaid styles
- *
- * @returns Mermaid styles observable
- */
-function fetchStyles(): Observable<string> {
-  const style = getElement<HTMLLinkElement>(
-    "[rel=preload][href*=mermaid]"
-  )
-  return request(style.href)
-    .pipe(
-      switchMap(res => res.text())
-    )
+  return typeof mermaid === "undefined"
+    ? watchScript("https://unpkg.com/mermaid@8.13.3/dist/mermaid.min.js")
+    : of(undefined)
 }
 
 /* ----------------------------------------------------------------------------
@@ -109,9 +88,9 @@ export function mountMermaid(
   el: HTMLElement
 ): Observable<Component<Mermaid>> {
   el.classList.remove("mermaid") // Hack: mitigate https://bit.ly/3CiN6Du
-  mermaid$ ||= zip([fetchScripts(), fetchStyles()])
+  mermaid$ ||= fetchScripts()
     .pipe(
-      tap(([, themeCSS]) => mermaid.initialize({
+      tap(() => mermaid.initialize({
         startOnLoad: false,
         themeCSS
       })),
