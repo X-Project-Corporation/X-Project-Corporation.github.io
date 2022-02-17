@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 # Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
-=======
-# Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
->>>>>>> upstream/master
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to
@@ -22,7 +18,6 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-<<<<<<< HEAD
 import logging
 import os
 import re
@@ -31,8 +26,6 @@ from html import escape
 from html.parser import HTMLParser
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
-=======
->>>>>>> upstream/master
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
 from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
 
