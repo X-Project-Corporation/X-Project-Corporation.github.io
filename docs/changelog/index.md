@@ -6,11 +6,23 @@ template: overrides/main.html
 
 ## Material for MkDocs
 
+### 8.2.1 <small>_ February 17, 2022</small> { id="8.2.1" }
+
+- Fixed module `material.plugins` not being found (8.2.0 regression)
+
+### 8.2.0 <small>_ February 17, 2022</small> { id="8.2.0" }
+
+- Added native support for Mermaid.js diagrams
+- Added native support for tags (with search integration)
+- Added support for staying on page when switching versions
+
 ### 8.1.11 <small>_ February 10, 2022</small> { id="8.1.11" }
 
 - Added Portuguese (Brasilian) translations
-- Updated FontAwesome to v5 (might lead to missing icons)
+- Updated FontAwesome to v6 – [check which icons were renamed here]
 - Fixed #3545: Color palette toggle and search overlaying version selector
+
+  [check which icons were renamed here]: https://fontawesome.com/docs/web/setup/upgrade/whats-changed#icons-renamed-in-version-6
 
 ### 8.1.10 <small>_ February 6, 2022</small> { id="8.1.10" }
 

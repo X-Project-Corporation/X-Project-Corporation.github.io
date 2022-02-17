@@ -1,3 +1,17 @@
+mkdocs-material-8.2.1 (2022-02-17)
+
+  * Fixed module 'material.plugins' not being found (8.2.0 regression)
+
+mkdocs-material-8.2.0 (2022-02-17)
+
+  * Added native support for Mermaid.js diagrams
+  * Added native support for tags (with search integration)
+  * Added support for staying on page when switching versions
+
+mkdocs-material-8.1.11+insiders-4.8.3 (2022-02-13)
+
+  * Fixed #3560: Mermaid diagrams don't render for file:// locations
+
 mkdocs-material-8.1.11+insiders-4.8.2 (2022-02-10)
 
   * Fixed #3559: Mermaid diagrams don't render inside closed details
@@ -5,7 +19,7 @@ mkdocs-material-8.1.11+insiders-4.8.2 (2022-02-10)
 mkdocs-material-8.1.11 (2022-02-10)
 
   * Added Portuguese (Brasilian) translations
-  * Updated FontAwesome to v5 (might lead to missing icons)
+  * Updated FontAwesome to v6 (might lead to missing icons)
   * Fixed #3545: Color palette toggle and search overlaying version selector
 
 mkdocs-material-8.1.10+insiders-4.8.1 (2022-02-06)
