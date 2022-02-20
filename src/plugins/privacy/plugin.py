@@ -130,7 +130,7 @@ class PrivacyPlugin(BasePlugin):
             # Compute path name after cleaning up URL
             data = url._replace(scheme = "", query = "", fragment = "")
             file = os.path.join(
-                self.config.get("selfhost_directory"),
+                self.config.get("download_directory"),
                 data.geturl()[2:]
             )
 
@@ -190,7 +190,7 @@ class PrivacyPlugin(BasePlugin):
 
             # Compute final path relative to output directory
             path = os.path.join(
-                self.config.get("selfhost_directory"),
+                self.config.get("download_directory"),
                 data.geturl()[2:]
             )
 
