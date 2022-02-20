@@ -11,7 +11,7 @@ that new features are first exclusively released to sponsors as part of
 [how to become a sponsor] to get access to Insiders, and
 [what's in for you][available features]!
 
-<figure class="mdx-video" markdown>
+<!-- <figure class="mdx-video" markdown>
   <div class="mdx-video__inner">
     <iframe src="https://streamable.com/e/ihhxw0" allowfullscreen></iframe>
   </div>
@@ -21,7 +21,7 @@ This documentation is built with Insiders
 [squidfunk.github.io/mkdocs-material][Material for MkDocs]
 
   </figcaption>
-</figure>
+</figure> -->
 
   [Insiders]: #what-is-insiders
   [what sponsorships achieve]: #what-sponsorships-achieve
@@ -166,8 +166,9 @@ The following features are solely available via Material for MkDocs Insiders:
 
 <div class="mdx-columns" markdown>
 
+- [x] [Privacy plugin] :material-new-box:
 - [x] [Table of contents anchor following] :material-new-box:
-- [x] [Offline search] :material-new-box:
+- [x] [Offline search]
 - [x] [Annotations]
 - [x] [Navigation icons]
 - [x] [Code annotations: anchor links]
@@ -183,9 +184,7 @@ The following features are solely available via Material for MkDocs Insiders:
 - [x] [Cookie consent]
 - [x] [Linking content tabs]
 - [x] [Boosting pages in search]
-- [x] [Tags with search integration]
 - [x] [Custom admonition icons]
-- [x] [Mermaid.js integration]
 
 </div>
 
@@ -259,6 +258,13 @@ are released for general availability.
 
   [Annotations]: ../reference/annotations.md
   [Navigation icons]: ../reference/index.md#setting-the-page-icon
+
+#### $ 14,000 – Goat's Horn
+
+- [x] [Privacy plugin]
+- [ ] and much more, to be announced ...
+
+  [Privacy plugin]: ../setup/ensuring-data-privacy.md
 
 ### Goals completed
 
