@@ -50,6 +50,10 @@ class PrivacyPlugin(BasePlugin):
 
     # Parse, fetch and store external assets
     def on_post_page(self, output, page, config):
+        if not self.config.get("download"):
+            return
+
+        # Find all external scripts and style sheets
         expr = re.compile(
             r'<(?:link[^>]+href?|script[^>]+src)=[\'"]?http[^>]+>',
             re.IGNORECASE | re.MULTILINE
