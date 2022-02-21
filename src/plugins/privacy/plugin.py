@@ -139,7 +139,7 @@ class PrivacyPlugin(BasePlugin):
             )
 
             # Compute and ensure presence of file extension
-            name, _ = res.headers["content-type"].split("; ")
+            name = re.findall(r'^[^;]+', res.headers["content-type"])[0]
             extension = extensions[name]
             if not file.endswith(extension):
                 file += extension
