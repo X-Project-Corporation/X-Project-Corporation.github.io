@@ -51,11 +51,6 @@ declare global {
   const __search: GlobalSearchConfig | undefined
 
   /**
-   * Promise resolving with search index
-   */
-  const __index: Promise<SearchIndex>
-
-  /**
    * Compute hash from the given string
    *
    * @param value - String value

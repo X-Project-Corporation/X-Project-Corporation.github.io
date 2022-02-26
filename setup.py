@@ -67,6 +67,7 @@ setup(
             "material = material",
         ],
         "mkdocs.plugins": [
+            "offline = material.plugins.offline.plugin:OfflinePlugin",
             "privacy = material.plugins.privacy.plugin:PrivacyPlugin",
             "search = material.plugins.search.plugin:SearchPlugin",
             "social = material.plugins.social.plugin:SocialPlugin",
