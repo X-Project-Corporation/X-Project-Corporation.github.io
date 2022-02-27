@@ -169,8 +169,8 @@
     // alignment of text following an annotation.
     &::after {
       position: absolute;
-      top: 0;
-      left: -0.125em;
+      top: px2em(0.5px, 13.6px);
+      left: px2em(-2px);
       z-index: -1;
       // Hack: the first property is used as a fallback for older browsers
       // which don't support the min/max/clamp math functions.
