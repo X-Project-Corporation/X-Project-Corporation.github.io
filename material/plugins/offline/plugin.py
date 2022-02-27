@@ -21,6 +21,7 @@
 import os
 
 from mkdocs import utils
+from mkdocs.config.config_options import Type
 from mkdocs.plugins import BasePlugin
 
 # -----------------------------------------------------------------------------
@@ -30,15 +31,26 @@ from mkdocs.plugins import BasePlugin
 # Offline plugin
 class OfflinePlugin(BasePlugin):
 
+    # Configuration scheme
+    config_scheme = (
+        ("enabled", Type(bool, default = True)),
+    )
+
     # Set necessary configuration
     def on_config(self, config):
+        if not self.config.get("enabled"):
+            return
+
+        # Ensure correct resolution of links
         config["use_directory_urls"] = False
 
     # Support offline search
     def on_post_build(self, config, **kwargs):
-        base = os.path.join(config.get("site_dir"), "search")
+        if not self.config.get("enabled"):
+            return
 
         # Check for existence of search index
+        base = os.path.join(config.get("site_dir"), "search")
         path = os.path.join(base, "search_index.json")
         if not os.path.exists(path):
             return
@@ -47,7 +59,7 @@ class OfflinePlugin(BasePlugin):
         with open(path, "r") as data:
             index = data.read()
 
-            # Generate search index bootstrapping code
+            # Inline search index into script
             template = "var __index = {}"
             utils.write_file(
                 template.format(index).encode("utf-8"),
