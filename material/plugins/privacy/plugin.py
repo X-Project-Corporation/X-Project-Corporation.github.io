@@ -18,13 +18,16 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import logging
 import os
+import posixpath
 import re
 import requests
 
 from lxml import html
 from mkdocs import utils
-from mkdocs.config.config_options import Type
+from mkdocs.commands.build import DuplicateFilter
+from mkdocs.config.config_options import Choice, Deprecated, Type
 from mkdocs.plugins import BasePlugin
 from shutil import copyfile
 from urllib.parse import urlparse
@@ -38,8 +41,15 @@ class PrivacyPlugin(BasePlugin):
 
     # Configuration scheme
     config_scheme = (
-        ("download", Type(bool, default = True)),
-        ("download_directory", Type(str, default = "assets/externals"))
+        ("enabled", Type(bool, default = True)),
+
+        # Options for external assets
+        ("externals", Choice(("bundle", "report"), default = "bundle")),
+        ("externals_directory", Type(str, default = "assets/externals")),
+
+        # Deprecated options
+        ("download", Deprecated(moved_to = "enabled")),
+        ("download_directory", Deprecated(moved_to = "externals_directory")),
     )
 
     # Determine base and initialize resource mappings
@@ -47,10 +57,22 @@ class PrivacyPlugin(BasePlugin):
         self.base_url = urlparse(config.get("site_url"))
         self.base_dir = config.get("site_dir")
         self.resource = dict()
+        self.files = []
 
-    # Parse, fetch and store external assets
+    # Determine files that need to be post-processed
+    def on_files(self, files, config):
+        if not self.config.get("enabled"):
+            return
+
+        # Filter relevant files, short-circuit lunr.js
+        for file in files:
+            if file.url.endswith(".js") or file.url.endswith(".css"):
+                if not "assets/javascripts/lunr" in file.url:
+                    self.files.append(file)
+
+    # Parse, fetch and store external assets in pages
     def on_post_page(self, output, page, config):
-        if not self.config.get("download"):
+        if not self.config.get("enabled"):
             return
 
         # Find all external scripts and style sheets
@@ -72,7 +94,7 @@ class PrivacyPlugin(BasePlugin):
             if el.tag == "link":
                 raw = el.get("href", "")
 
-                # Check if resource is external
+                # Check if external
                 url = urlparse(raw)
                 if not self.__is_external(url):
                     continue
@@ -94,7 +116,7 @@ class PrivacyPlugin(BasePlugin):
             if el.tag == "script":
                 raw = el.get("src", "")
 
-                # Check if resource is external
+                # Check if external
                 url = urlparse(raw)
                 if not self.__is_external(url):
                     continue
@@ -109,14 +131,42 @@ class PrivacyPlugin(BasePlugin):
         # Return output with replaced occurrences
         return output
 
+    # Parse, fetch and store external assets in assets
+    def on_post_build(self, config):
+        if not self.config.get("enabled"):
+            return
+
+        # Check all files that are part of the build
+        for file in self.files:
+            path = os.path.join(self.base_dir, file.dest_path)
+            if not os.path.isfile(path):
+                continue
+
+            # Handle internal style sheet or script
+            if path.endswith(".css") or path.endswith(".js"):
+                with open(path) as f:
+                    utils.write_file(
+                        self.__fetch_dependents(f.read(), file.dest_path),
+                        path
+                    )
+
     # -------------------------------------------------------------------------
 
     # Check if the given URL must be considered external
     def __is_external(self, url):
         return url.hostname != self.base_url.hostname
 
-    # Fetch external resource included in given page
+    # Fetch external resource in given page
     def __fetch(self, url, page):
+        if self.config.get("externals") == "report":
+            log.warning("External asset in '{}': {}".format(
+                page.file.dest_path, url.geturl()
+            ))
+
+            # Return URL unchanged
+            return url.geturl()
+
+        # Fetch external asset for bundling
         if not url in self.resource:
             res = requests.get(url.geturl(), headers = {
 
@@ -134,7 +184,7 @@ class PrivacyPlugin(BasePlugin):
             # Compute path name after cleaning up URL
             data = url._replace(scheme = "", query = "", fragment = "")
             file = os.path.join(
-                self.config.get("download_directory"),
+                self.config.get("externals_directory"),
                 data.geturl()[2:]
             )
 
@@ -146,8 +196,8 @@ class PrivacyPlugin(BasePlugin):
 
             # Compute and post-process content
             content = res.content
-            if extension == ".css":
-                content = self.__fetch_css_urls(res.text, file)
+            if extension == ".css" or extension == ".js":
+                content = self.__fetch_dependents(res.text, file)
 
             # Write content to file
             utils.write_file(content, os.path.join(
@@ -164,12 +214,22 @@ class PrivacyPlugin(BasePlugin):
             page.url
         )
 
-    # Fetch external assets from style sheet
-    def __fetch_css_urls(self, output, base):
-        expr = re.compile(
-            r'url\((\s*http?[^)]+)\)',
-            re.IGNORECASE | re.MULTILINE
-        )
+    # Fetch dependent resources in external assets
+    def __fetch_dependents(self, output, base):
+
+        # Fetch external assets in style sheet
+        if base.endswith(".css"):
+            expr = re.compile(
+                r'url\((\s*http?[^)]+)\)',
+                re.IGNORECASE | re.MULTILINE
+            )
+
+        # Fetch external assets in script
+        elif base.endswith(".js"):
+            expr = re.compile(
+                r'["\'](http[^"\']+\.js)["\']',
+                re.IGNORECASE | re.MULTILINE
+            )
 
         # Parse occurrences and replace in reverse
         for match in reversed(list(expr.finditer(output))):
@@ -180,9 +240,16 @@ class PrivacyPlugin(BasePlugin):
             l = match.start()
             r = l + len(value)
 
-            # Check if resource is external
+            # Check if external
             url = urlparse(raw)
             if not self.__is_external(url):
+                continue
+
+            # Report external asset if bundling is not enabled
+            if self.config.get("externals") == "report":
+                log.warning("External asset in '{}': {}".format(
+                    base, url.geturl()
+                ))
                 continue
 
             # Download file if it's not contained in the cache
@@ -194,14 +261,22 @@ class PrivacyPlugin(BasePlugin):
 
             # Compute final path relative to output directory
             path = os.path.join(
-                self.config.get("download_directory"),
+                self.config.get("externals_directory"),
                 data.geturl()[2:]
             )
 
-            # Replace external resource in output
+            # Create relative URL for asset in style sheet
+            if base.endswith(".css"):
+                url = utils.get_relative_url(path, base)
+
+            # Create absolute URL for asset in script
+            elif base.endswith(".js"):
+                url = posixpath.join(self.base_url.geturl(), path)
+
+            # Replace external asset in output
             output = "".join([
                 output[:l],
-                value.replace(raw, utils.get_relative_url(path, base)),
+                value.replace(raw, url),
                 output[r:]
             ])
 
@@ -220,6 +295,10 @@ class PrivacyPlugin(BasePlugin):
 # -----------------------------------------------------------------------------
 # Data
 # -----------------------------------------------------------------------------
+
+# Set up logging
+log = logging.getLogger("mkdocs")
+log.addFilter(DuplicateFilter())
 
 # Expected file extensions
 extensions = dict({

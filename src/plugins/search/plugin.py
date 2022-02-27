@@ -19,12 +19,10 @@
 # IN THE SOFTWARE.
 
 import logging
-import os
 import re
 
 from html import escape
 from html.parser import HTMLParser
-from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
 from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
