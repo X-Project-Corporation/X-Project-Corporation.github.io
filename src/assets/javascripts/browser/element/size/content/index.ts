@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import { ElementSize, getElementSize } from "../_"
+import { ElementSize } from "../_"
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -52,16 +52,13 @@ export function getElementContentSize(
 export function getElementContainer(
   el: HTMLElement
 ): HTMLElement | undefined {
-  let container = el.parentElement
-  while (container && container !== el.offsetParent) {
-    const visible = getElementSize(container)
-    const content = getElementContentSize(container)
-
-    /* Check if container overflows */
-    if (content.height > visible.height)
-      return container
+  let parent = el.parentElement
+  while (parent)
+    if (el.scrollHeight <= parent.scrollHeight)
+      parent = (el = parent).parentElement
     else
-      container = container.parentElement
-  }
-  return undefined
+      break
+
+  /* Return overflowing container */
+  return parent ? el : undefined
 }
