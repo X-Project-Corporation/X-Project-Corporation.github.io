@@ -144,7 +144,7 @@ class PrivacyPlugin(BasePlugin):
 
             # Handle internal style sheet or script
             if path.endswith(".css") or path.endswith(".js"):
-                with open(path) as f:
+                with open(path, encoding = "utf-8") as f:
                     utils.write_file(
                         self.__fetch_dependents(f.read(), file.dest_path),
                         path
