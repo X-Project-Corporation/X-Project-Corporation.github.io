@@ -24,6 +24,7 @@ import posixpath
 import re
 import requests
 
+from fnmatch import fnmatch
 from lxml import html
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
@@ -46,6 +47,7 @@ class PrivacyPlugin(BasePlugin):
         # Options for external assets
         ("externals", Choice(("bundle", "report"), default = "bundle")),
         ("externals_directory", Type(str, default = "assets/externals")),
+        ("externals_exclude", Type(list, default = [])),
 
         # Deprecated options
         ("download", Deprecated(moved_to = "enabled")),
@@ -94,7 +96,7 @@ class PrivacyPlugin(BasePlugin):
             if el.tag == "link":
                 raw = el.get("href", "")
 
-                # Check if external
+                # Check if URL is external
                 url = urlparse(raw)
                 if not self.__is_external(url):
                     continue
@@ -116,7 +118,7 @@ class PrivacyPlugin(BasePlugin):
             if el.tag == "script":
                 raw = el.get("src", "")
 
-                # Check if external
+                # Check if URL is external
                 url = urlparse(raw)
                 if not self.__is_external(url):
                     continue
@@ -152,23 +154,34 @@ class PrivacyPlugin(BasePlugin):
 
     # -------------------------------------------------------------------------
 
-    # Check if the given URL must be considered external
+    # Check if the given URL is external
     def __is_external(self, url):
         return url.hostname != self.base_url.hostname
 
+    # Check if the given URL is excluded
+    def __is_excluded(self, url, base):
+        url = re.sub(r'^https?:\/\/', "", url)
+        for pattern in self.config.get("externals_exclude"):
+            if fnmatch(url, pattern):
+                log.debug("Excluded asset in '{}': {}".format(base, url))
+                return True
+
+        # Exclude all external assets if bundling is not enabled
+        if self.config.get("externals") == "report":
+            log.warning("External asset in '{}': {}".format(base, url))
+            return True
+
     # Fetch external resource in given page
     def __fetch(self, url, page):
-        if self.config.get("externals") == "report":
-            log.warning("External asset in '{}': {}".format(
-                page.file.dest_path, url.geturl()
-            ))
+        raw = url.geturl()
 
-            # Return URL unchanged
-            return url.geturl()
+        # Check if URL is excluded
+        if self.__is_excluded(raw, page.file.dest_path):
+            return raw
 
         # Fetch external asset for bundling
         if not url in self.resource:
-            res = requests.get(url.geturl(), headers = {
+            res = requests.get(raw, headers = {
 
                 # Set user agent explicitly, so Google Fonts gives us *.woff2
                 # files, which according to caniuse.com is the only format we
@@ -240,16 +253,13 @@ class PrivacyPlugin(BasePlugin):
             l = match.start()
             r = l + len(value)
 
-            # Check if external
+            # Check if URL is external
             url = urlparse(raw)
             if not self.__is_external(url):
                 continue
 
-            # Report external asset if bundling is not enabled
-            if self.config.get("externals") == "report":
-                log.warning("External asset in '{}': {}".format(
-                    base, url.geturl()
-                ))
+            # Check if URL is excluded
+            if self.__is_excluded(raw, base):
                 continue
 
             # Download file if it's not contained in the cache
