@@ -144,7 +144,7 @@ export function mountSearchResult(
           .pipe(
             bufferCount(4),
             zipWith(boundary$),
-            switchMap(([chunk]) => of(...chunk))
+            switchMap(([chunk]) => chunk)
           )
       )),
       // TODO: memleak, refactor into distinct chain

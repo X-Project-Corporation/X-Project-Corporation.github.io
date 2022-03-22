@@ -25,7 +25,6 @@ import {
   fromEvent,
   mapTo,
   mergeMap,
-  of,
   switchMap,
   takeWhile,
   tap,
@@ -63,10 +62,10 @@ export function patchIndeterminate(
 ): void {
   document$
     .pipe(
-      switchMap(() => of(...getElements<HTMLInputElement>(
+      switchMap(() => getElements<HTMLInputElement>(
         // TODO: `data-md-state` is deprecated and removed in v9
         ".md-toggle--indeterminate, [data-md-state=indeterminate]"
-      ))),
+      )),
       tap(el => {
         el.indeterminate = true
         el.checked = false

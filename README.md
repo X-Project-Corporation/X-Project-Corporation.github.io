@@ -92,6 +92,9 @@
   <a href="https://www.elli.eco/en/home" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-elli.png" height="65"
   /></a>
+  <a href=" https://solutions.rstudio.com" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-rstudio.png" height="65"
+  /></a>
 </p>
 <p>&nbsp;</p>
 
@@ -195,6 +198,7 @@ For other installation methods, configuration options, and a demo, visit
 [Knative](https://knative.dev/docs/),
 [Kubernetes](https://kops.sigs.k8s.io/),
 [kSQL](https://docs.ksqldb.io/),
+[MindsDB](https://docs.mindsdb.com/),
 [Nokogiri](https://nokogiri.org/),
 [OpenFaaS](https://docs.openfaas.com/),
 [Pi-Hole](https://docs.pi-hole.net/),
