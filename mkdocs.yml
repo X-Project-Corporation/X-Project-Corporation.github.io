@@ -101,10 +101,6 @@ plugins:
         upgrading.md: upgrade.md
   - minify:
       minify_html: true
-  - privacy:
-      externals_exclude:
-        - cdn.jsdelivr.net/npm/mathjax@3/*
-        - giscus.app/*
 
 # Customization
 extra:
