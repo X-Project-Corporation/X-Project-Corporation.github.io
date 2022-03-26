@@ -72,6 +72,15 @@ class PrivacyPlugin(BasePlugin):
                 if not "assets/javascripts/lunr" in file.url:
                     self.files.append(file)
 
+        # If site URL is not given, add Mermaid.js - see https://bit.ly/36tZXsA
+        # This is a special case, as Material for MkDocs automatically loads
+        # Mermaid.js when a Mermaid diagram is found in the page.
+        if not config.get("site_url"):
+            if not any("mermaid" in js for js in config["extra_javascript"]):
+                config["extra_javascript"].append(
+                    "https://unpkg.com/mermaid@8.13.3/dist/mermaid.min.js"
+                )
+
     # Parse, fetch and store external assets in pages
     def on_post_page(self, output, page, config):
         if not self.config.get("enabled"):
