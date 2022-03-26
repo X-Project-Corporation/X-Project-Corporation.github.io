@@ -148,6 +148,11 @@ export function watchCodeBlock(
  * Furthermore, if code annotations are enabled, they are mounted if and only
  * if the code block is currently visible, e.g., not in a hidden content tab.
  *
+ * Note that code blocks may be mounted eagerly or lazily. If they're mounted
+ * lazily (on first visibility), code annotation anchor links will not work,
+ * as they are evaluated on initial page load, and code annotations in general
+ * might feel a little bumpier.
+ *
  * @param el - Code block element
  * @param options - Options
  *
@@ -220,11 +225,15 @@ export function mountCodeBlock(
       )
   })
 
-  /* Mount code block on first sight */
-  return watchElementVisibility(el)
-    .pipe(
-      filter(visible => visible),
-      take(1),
-      switchMap(() => factory$)
-    )
+  /* Mount code block lazily */
+  if (feature("content.lazy"))
+    return watchElementVisibility(el)
+      .pipe(
+        filter(visible => visible),
+        take(1),
+        switchMap(() => factory$)
+      )
+
+  /* Mount code block */
+  return factory$
 }
