@@ -28,7 +28,6 @@ import {
   finalize,
   fromEvent,
   map,
-  mapTo,
   startWith,
   tap
 } from "rxjs"
@@ -66,7 +65,7 @@ export function watchAnnounce(
   const button = getElement(".md-typeset > :first-child", el)
   return fromEvent(button, "click", { once: true })
     .pipe(
-      mapTo(getElement(".md-typeset", el)),
+      map(() => getElement(".md-typeset", el)),
       map(content => ({ hash: __md_hash(content.innerHTML) }))
     )
 }

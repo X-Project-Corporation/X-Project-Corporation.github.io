@@ -32,7 +32,6 @@ import {
   filter,
   finalize,
   map,
-  mapTo,
   merge,
   of,
   repeat,
@@ -297,8 +296,8 @@ export function mountTableOfContents(
 
       /* Toggle smooth scrolling only for anchor clicks */
       const smooth$ = merge(
-        viewport$.pipe(debounceTime(1), mapTo(undefined)),
-        viewport$.pipe(debounceTime(250), mapTo("smooth" as const))
+        viewport$.pipe(debounceTime(1), map(() => undefined)),
+        viewport$.pipe(debounceTime(250), map(() => "smooth" as const))
       )
 
       /* Bring active anchor into view */

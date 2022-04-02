@@ -23,7 +23,7 @@
 import {
   Observable,
   fromEvent,
-  mapTo,
+  map,
   mergeMap,
   switchMap,
   takeWhile,
@@ -73,7 +73,7 @@ export function patchIndeterminate(
       mergeMap(el => fromEvent(el, "change")
         .pipe(
           takeWhile(() => el.classList.contains("md-toggle--indeterminate")),
-          mapTo(el)
+          map(() => el)
         )
       ),
       withLatestFrom(tablet$)

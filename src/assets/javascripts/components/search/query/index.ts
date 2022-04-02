@@ -35,7 +35,7 @@ import {
   merge,
   share,
   shareReplay,
-  switchMapTo,
+  switchMap,
   take,
   takeLast,
   takeUntil,
@@ -153,7 +153,7 @@ export function watchSearchQuery(
     param$
   )
     .pipe(
-      switchMapTo(index$),
+      switchMap(() => index$),
       map(({ config }) => fn(el.value, term => {
         const terms: string[] = []
         split(term, config.separator, range => {
