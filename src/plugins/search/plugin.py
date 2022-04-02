@@ -83,7 +83,7 @@ class SearchIndex(BaseIndex):
         if item:
             url = url + item.url
         elif section.id:
-            url = url + "#{}".format(section.id)
+            url = url + f"#{section.id}"
 
         # Compute title and text
         title = "".join(section.title or page.title).strip()
@@ -262,7 +262,7 @@ class Parser(HTMLParser):
                     data = self.section.title
 
                 # Append to section title or text
-                data.append("<{}>".format(tag))
+                data.append(f"<{tag}>")
 
     # Called at the end of every HTML tag
     def handle_endtag(self, tag):
@@ -283,7 +283,7 @@ class Parser(HTMLParser):
                     data = self.section.title
 
                 # Append to section title or text
-                data.append("</{}>".format(tag))
+                data.append(f"</{tag}>")
 
     # Called for the text contents of each tag
     def handle_data(self, data):

@@ -172,12 +172,12 @@ class PrivacyPlugin(BasePlugin):
         url = re.sub(r'^https?:\/\/', "", url)
         for pattern in self.config.get("externals_exclude"):
             if fnmatch(url, pattern):
-                log.debug("Excluded asset in '{}': {}".format(base, url))
+                log.debug(f"Excluded asset in '{base}': {url}")
                 return True
 
         # Exclude all external assets if bundling is not enabled
         if self.config.get("externals") == "report":
-            log.warning("External asset in '{}': {}".format(base, url))
+            log.warning(f"External asset in '{base}': {url}")
             return True
 
     # Fetch external resource in given page

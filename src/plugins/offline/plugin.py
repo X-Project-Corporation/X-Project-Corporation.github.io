@@ -60,8 +60,7 @@ class OfflinePlugin(BasePlugin):
             index = data.read()
 
             # Inline search index into script
-            template = "var __index = {}"
             utils.write_file(
-                template.format(index).encode("utf-8"),
+                f"var __index = {index}".encode("utf-8"),
                 os.path.join(base, "search_index.js")
             )

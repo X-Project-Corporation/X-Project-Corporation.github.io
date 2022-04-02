@@ -115,7 +115,7 @@ class SocialPlugin(BasePlugin):
 
         # Generate social card if not in cache - TODO: values from mkdocs.yml
         hash = md5("".join([site_name, title, description]).encode("utf-8"))
-        file = os.path.join(self.cache, "{}.png".format(hash.hexdigest()))
+        file = os.path.join(self.cache, f"{hash.hexdigest()}.png")
         if not os.path.isfile(file):
             image = self.__render_card(site_name, title, description)
             image.save(file)
@@ -229,7 +229,7 @@ class SocialPlugin(BasePlugin):
         # Compute page title
         title = page.meta.get("title", page.title)
         if not page.is_homepage:
-            title = "{} - {}".format(title, config.get("site_name"))
+            title = f"{title} - {config.get('site_name')}"
 
         # Compute page description
         description = config.get("site_description")
@@ -297,7 +297,7 @@ class SocialPlugin(BasePlugin):
         ))
 
         # Load icon data and fill with color
-        path = "{}/.icons/{}.svg".format(base, logo)
+        path = f"{base}/.icons/{logo}.svg"
         return self.__load_logo_svg(path, self.color["text"])
 
     # Load SVG file and convert to PNG
@@ -307,10 +307,7 @@ class SocialPlugin(BasePlugin):
 
         # Fill with color, if given
         if fill:
-            data = data.replace(
-                "<svg",
-                "<svg fill=\"{}\"".format(fill)
-            )
+            data = data.replace("<svg", f"<svg fill=\"{fill}\"")
 
         # Convert to PNG and return image
         svg2png(bytestring = data, write_to = file, scale = 10)
