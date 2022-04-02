@@ -129,7 +129,7 @@ class Element:
     """
 
     # Initialize HTML element
-    def __init__(self, tag, attrs = {}):
+    def __init__(self, tag, attrs = dict()):
         self.tag   = tag
         self.attrs = attrs
 
@@ -146,9 +146,8 @@ class Element:
 
     # Check whether the element should be excluded
     def is_excluded(self):
-        for key, _ in self.attrs:
-            if key == "data-search-exclude":
-                return True
+        if "data-search-exclude" in self.attrs:
+            return True
 
         # Element is not excluded
         return False
@@ -211,9 +210,10 @@ class Parser(HTMLParser):
 
     # Called at the start of every HTML tag
     def handle_starttag(self, tag, attrs):
-        el = Element(tag, attrs)
+        attrs = dict(attrs)
 
         # Ignore self-closing tags
+        el = Element(tag, attrs)
         if not tag in void:
             self.context.append(el)
         else:
@@ -221,9 +221,7 @@ class Parser(HTMLParser):
 
         # Handle headings
         if tag in ([f"h{x}" for x in range(1, 7)]):
-            for key, value in attrs:
-                if key != "id":
-                    continue
+            if "id" in attrs:
 
                 # Ensure top-level section
                 if tag != "h1" and not self.data:
@@ -233,7 +231,7 @@ class Parser(HTMLParser):
                 # Set identifier, if not first section
                 self.section = Section(el)
                 if self.data:
-                    self.section.id = value
+                    self.section.id = attrs["id"]
 
                 # Append section to list
                 self.data.append(self.section)
@@ -244,7 +242,7 @@ class Parser(HTMLParser):
             self.data.append(self.section)
 
         # Handle special cases to skip
-        for key, value in attrs:
+        for key, value in attrs.items():
 
             # Skip block if explicitly excluded from search
             if key == "data-search-exclude":
@@ -308,11 +306,8 @@ class Parser(HTMLParser):
         if self.section.el in reversed(self.context):
             permalink = False
             for el in self.context:
-                if el.tag == "a":
-                    for (key, value) in el.attrs:
-                        if key == "class" and "headerlink" in value:
-                            permalink = True
-                            break
+                if el.tag == "a" and el.attrs["class"] == "headerlink":
+                    permalink = True
 
             # Ignore permalinks
             if not permalink:
