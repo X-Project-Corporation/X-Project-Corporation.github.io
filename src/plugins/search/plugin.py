@@ -306,7 +306,7 @@ class Parser(HTMLParser):
         if self.section.el in reversed(self.context):
             permalink = False
             for el in self.context:
-                if el.tag == "a" and el.attrs["class"] == "headerlink":
+                if el.tag == "a" and el.attrs.get("class") == "headerlink":
                     permalink = True
 
             # Ignore permalinks
