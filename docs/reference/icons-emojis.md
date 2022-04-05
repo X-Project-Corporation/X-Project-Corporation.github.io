@@ -39,6 +39,7 @@ lines to `mkdocs.yml`:
 
 ``` yaml
 markdown_extensions:
+  - attr_list
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
@@ -52,12 +53,14 @@ The following icon sets are bundled with Material for MkDocs:
 
 See additional configuration options:
 
+- [Attribute Lists]
 - [Emoji]
 - [Emoji with custom icons]
 
   [Material Design]: https://materialdesignicons.com/
   [FontAwesome]: https://fontawesome.com/search?m=free
   [Octicons]: https://octicons.github.com/
+  [Attribute Lists]: ../setup/extensions/python-markdown.md#attribute-lists
   [Emoji]: ../setup/extensions/python-markdown-extensions.md#emoji
   [Emoji with custom icons]: ../setup/extensions/python-markdown-extensions.md#custom-icons
 
@@ -102,10 +105,10 @@ a valid path to any icon bundled with the theme, which are located in the
 
 #### with colors
 
-Custom CSS classes can be added to icons by suffixing the icon with a special
-syntax. While HTML allows to use [inline styles], it's always recommended to
-add an [additional style sheet] and move declarations into dedicated CSS
-classes:
+When [Attribute Lists] is enabled, custom CSS classes can be added to icons by
+suffixing the icon with a special syntax. While HTML allows to use [inline
+styles], it's always recommended to add an [additional style sheet] and move
+declarations into dedicated CSS classes:
 
 <style>
   .twitter {
