@@ -2,8 +2,13 @@
   This file was automatically generated - do not edit
 -#}
 {% if page.edit_url %}
+  {% set edit = "https://github.com/squidfunk/mkdocs-material/edit" %}
+  {% set view = "https://raw.githubusercontent.com/squidfunk/mkdocs-material" %}
   <a href="{{ page.edit_url }}" title="{{ lang.t('edit.link.title') }}" class="md-content__button md-icon">
-    {% include ".icons/material/pencil.svg" %}
+    {% include ".icons/material/file-edit-outline.svg" %}
+  </a>
+  <a href="{{ page.edit_url | replace(edit, view) }}" title="View source of this page" class="md-content__button md-icon">
+    {% include ".icons/material/file-eye-outline.svg" %}
   </a>
 {% endif %}
 {% if "tags" in config.plugins %}
@@ -13,7 +18,6 @@
   <h1>{{ page.title | d(config.site_name, true)}}</h1>
 {% endif %}
 {{ page.content }}
-{% include "partials/feedback.html" %}
 {% if page and page.meta and (
   page.meta.git_revision_date_localized or
   page.meta.revision_date

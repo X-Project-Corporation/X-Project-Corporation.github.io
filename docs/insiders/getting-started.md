@@ -185,4 +185,29 @@ pipeline), you can build your documentation project with the following lines:
 mkdocs build --config-file mkdocs.insiders.yml
 ```
 
+!!! tip "Sharing plugin and extension configuration"
+
+    If you want to share `plugins` or `markdown_extensions` between both
+    configuration files `mkdocs.insiders.yml` and `mkdocs.yml`, you can use
+    the alternative key-value syntax in both files. The above example would
+    then look like:
+
+    === ":octicons-file-code-16: mkdocs.insiders.yml"
+
+        ``` yaml
+        INHERIT: mkdocs.yml
+        plugins:
+          social: {}
+        ```
+
+    === ":octicons-file-code-16: mkdocs.yml"
+
+        ``` yaml
+        # Additional configuration above
+        plugins:
+          search: {}
+          tags: {}
+        ```
+
+
   [configuration inheritance]: https://www.mkdocs.org/user-guide/configuration/#configuration-inheritance
