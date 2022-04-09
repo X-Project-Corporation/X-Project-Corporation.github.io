@@ -28,6 +28,9 @@ on:
 env:
   PYTHON_VERSION: 3.x
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     name: Build and push Docker image
