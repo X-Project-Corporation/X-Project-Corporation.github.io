@@ -202,19 +202,19 @@ export function transformScript(
               contents: css,
               loader: "text"
             }
-          });
+          })
         }
       }
     ]
   }))
     .pipe(
+      catchError(() => EMPTY),
       switchMap(({ outputFiles: [file] }) => {
         return of({
           js:  file.text,
           map: null
         })
       }),
-      catchError(() => EMPTY),
       switchMap(({ js }) => {
         const file = digest(options.to, js)
         return concat(
