@@ -59,12 +59,14 @@
       // element size, as noted in https://bit.ly/3LRC25r. Unfortunately, we
       // can't use the technique laid out in this StackOverflow answer, because
       // using the bottom as perspective origin totally messes up positioning,
-      // but setting `contain` seems to solve the issue at hand. Of course, how
-      // could it be otherwise, Safari only supports this property as of 15.4,
-      // so older versions are still susceptible to this problem. However, as
-      // Safari is pretty fast when rendering and is primarily used on macOS,
-      // this issue doesn't manifest quite as often. Browsers, eh?
+      // but setting `contain` seems to solve the issue at hand.
       contain: strict;
+
+      // Of course, how could it be otherwise, Safari doesn't properly support
+      // this property, so we must disable it via JavaScript. Browsers, eh?
+      .safari & {
+        contain: none;
+      }
 
       // Hack: we can't use `vw` and `vh` in division, but we have to ensure a
       // correct aspect ratio for the wrapper. Don't mind the magic numbers.
