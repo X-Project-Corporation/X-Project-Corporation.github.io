@@ -19,7 +19,7 @@
       {% for type in ["avif", "webp"] %}
         <source type="image/{{ type }}" srcset="{{ image ~    '.' ~ type }} 1280w, {{ image ~ '@2x.' ~ type }} 1920w, {{ image ~ '@3x.' ~ type }} 2560w, {{ image ~ '@4x.' ~ type }} 3840w">
       {% endfor %}
-      <img class="mdx-parallax__image" srcset="{{ image ~    '.png' }} 1280w, {{ image ~ '@2x.png' }} 1920w, {{ image ~ '@3x.png' }} 2560w, {{ image ~ '@4x.png' }} 3840w" src="{{ image ~ '.png' }}">
+      <img srcset="{{ image ~    '.png' }} 1280w, {{ image ~ '@2x.png' }} 1920w, {{ image ~ '@3x.png' }} 2560w, {{ image ~ '@4x.png' }} 3840w" src="{{ image ~ '.png' }}" alt="" class="mdx-parallax__image">
     </picture>
   {% endfor %}
   <div class="mdx-parallax__layer mdx-parallax__blend"></div>
