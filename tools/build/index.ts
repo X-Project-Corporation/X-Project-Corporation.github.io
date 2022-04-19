@@ -21,11 +21,11 @@
  */
 
 import { minify as minhtml } from "html-minifier"
+import * as fs from "fs/promises"
 import * as path from "path"
 import {
   EMPTY,
   concat,
-  concatMap,
   defer,
   map,
   merge,
@@ -35,8 +35,10 @@ import {
   startWith,
   switchMap,
   toArray,
-  zip
+  zip,
+  mergeMap
 } from "rxjs"
+import sharp from "sharp"
 import { optimize } from "svgo"
 
 import { IconSearchIndex } from "_/components"
@@ -135,7 +137,7 @@ const assets$ = concat(
     })),
 
   /* Copy images and configurations */
-  ...[".icons/*.svg", "assets/images/*", "**/*.yml"]
+  ...["**/*.svg", "**/images/**/*.*", "**/*.yml"]
     .map(pattern => copyAll(pattern, {
       from: "src",
       to: base
@@ -154,7 +156,7 @@ const sources$ = copyAll("**/*.py", {
 /* Transform styles */
 const stylesheets$ = resolve("**/[!_]*.scss", { cwd: "src" })
   .pipe(
-    concatMap(file => zip(
+    mergeMap(file => zip(
       of(ext(file, ".css")),
       transformStyle({
         from: `src/${file}`,
@@ -166,7 +168,7 @@ const stylesheets$ = resolve("**/[!_]*.scss", { cwd: "src" })
 /* Transform scripts */
 const javascripts$ = resolve("**/{bundle,search}.ts", { cwd: "src" })
   .pipe(
-    concatMap(file => zip(
+    mergeMap(file => zip(
       of(ext(file, ".js")),
       transformScript({
         from: `src/${file}`,
@@ -342,10 +344,57 @@ const schema$ = merge(
     )
 )
 
+/* Build landing page graphics */
+const home$ = defer(() => (
+  resolve("overrides/assets/images/layers/*.png", { cwd: "src" }
+)))
+  .pipe(
+    mergeMap(async file => {
+      const sizes = [1280, 1920, 2560, 3840]
+      for (let i = 0; i < sizes.length; i++) {
+        const suffix = i > 0 ? `@${i + 1}x` : ""
+        const image = sharp(`src/${file}`)
+          .resize(sizes[i])
+
+        /* Resize and compress graphics */
+        await Promise.all([
+
+          /* File format: PNG */
+          fs.writeFile(
+            `${base}/${ext(file, `${suffix}.png`)}`,
+            await image
+              .png({
+                quality: 70,
+                compressionLevel: 9,
+                adaptiveFiltering: true,
+              })
+              .toBuffer()
+          ),
+
+          /* File format: WebP */
+          fs.writeFile(
+            `${base}/${ext(file, `${suffix}.webp`)}`,
+            await image
+              .webp({ quality: 70 })
+              .toBuffer()
+          ),
+
+          /* File format: AVIF */
+          fs.writeFile(
+            `${base}/${ext(file, `${suffix}.avif`)}`,
+            await image
+              .avif({ quality: 70 })
+              .toBuffer()
+          )
+        ])
+      }
+    })
+  )
+
 /* Build overrides */
 const overrides$ =
   process.argv.includes("--all")
-    ? merge(index$, schema$)
+    ? merge(index$, schema$, home$)
     : EMPTY
 
 /* ----------------------------------------------------------------------------

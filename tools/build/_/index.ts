@@ -106,7 +106,7 @@ function now() {
 export function resolve(
   pattern: string, options?: ResolveOptions
 ): Observable<string> {
-  return from(glob(pattern, options))
+  return from(glob(pattern, { dot: true, ...options }))
     .pipe(
       catchError(() => EMPTY),
       concatAll(),

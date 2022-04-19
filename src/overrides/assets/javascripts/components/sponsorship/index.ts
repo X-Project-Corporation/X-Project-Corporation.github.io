@@ -24,9 +24,15 @@ import { Observable, map } from "rxjs"
 
 import { getElement, requestJSON } from "~/browser"
 
-import { renderPrivateSponsor, renderPublicSponsor } from "_/templates"
+import {
+  renderPrivateSponsor,
+  renderPublicSponsor
+} from "_/templates"
 
-import { Component, getComponentElement } from "../_"
+import {
+  Component,
+  getComponentElement
+} from "../_"
 
 /* ----------------------------------------------------------------------------
  * Types

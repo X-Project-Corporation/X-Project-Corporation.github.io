@@ -43,6 +43,13 @@
 // Rules
 // ----------------------------------------------------------------------------
 
+// Adjust scheme colors
+[data-md-color-scheme="slate"] {
+  --md-typeset-a-color: #{$clr-indigo-300};
+}
+
+// ----------------------------------------------------------------------------
+
 // Scoped in typesetted content to match specificity of regular content
 .md-typeset {
 

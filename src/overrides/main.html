@@ -22,25 +22,15 @@
 
 {% extends "base.html" %}
 
-<!-- Custom front matter -->
-{% block extrahead %}
+<!-- Theme-related style sheets -->
+{% block styles %}
+  {{ super() }}
 
-  <!-- Extra style sheets (can't be set in mkdocs.yml due to content hash) -->
+  <!-- Extra style sheet (can't be set in mkdocs.yml due to content hash) -->
   <link
     rel="stylesheet"
     href="{{ 'overrides/assets/stylesheets/main.css' | url }}"
   />
-{% endblock %}
-
-<!-- Announcement bar -->
-{% block announce %}
-  <a href="https://twitter.com/squidfunk">
-    For updates follow <strong>@squidfunk</strong> on
-    <span class="twemoji twitter">
-      {% include ".icons/fontawesome/brands/twitter.svg" %}
-    </span>
-    <strong>Twitter</strong>
-  </a>
 {% endblock %}
 
 <!-- Content -->

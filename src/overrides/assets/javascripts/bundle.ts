@@ -25,6 +25,7 @@ import { merge, switchMap } from "rxjs"
 import {
   getComponentElements,
   mountIconSearch,
+  mountParallax,
   mountSponsorship
 } from "./components"
 import { setupAnalytics } from "./integrations"
@@ -44,6 +45,10 @@ const component$ = document$
       /* Icon search */
       ...getComponentElements("iconsearch")
         .map(el => mountIconSearch(el)),
+
+      /* Parallax */
+      ...getComponentElements("parallax")
+        .map(el => mountParallax(el)),
 
       /* Sponsorship */
       ...getComponentElements("sponsorship")
