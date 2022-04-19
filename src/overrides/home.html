@@ -36,7 +36,7 @@
 
   <!-- Hack: detect Safari, so we can hack around problems with containment -->
   <script>
-    if (navigator.userAgent.includes("Safari"))
+    if (navigator.vendor === "Apple Computer, Inc.")
       document.documentElement.classList.add("safari")
   </script>
 {% endblock %}
