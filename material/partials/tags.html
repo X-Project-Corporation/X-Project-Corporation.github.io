@@ -7,12 +7,17 @@
 {% if tags %}
   <nav class="md-tags" {{ hidden }}>
     {% for tag in tags %}
+      {% if config.theme.icon.tag %}
+        {% set icon = "md-tag-icon md-tag-icon--" ~ tag.type %}
+      {% endif %}
       {% if tag.url %}
-        <a href="{{ tag.url | url }}" class="md-tag">
-          {{ tag.name }}
+        <a href="{{ tag.url | url }}" class="md-tag {{ icon }}">
+          {{- tag.name -}}
         </a>
       {% else %}
-        <span class="md-tag">{{ tag.name }}</span>
+        <span class="md-tag {{ icon }}">
+          {{- tag.name -}}
+        </span>
       {% endif %}
     {% endfor %}
   </nav>

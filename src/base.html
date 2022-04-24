@@ -399,6 +399,11 @@
         {%- set _ = app.update({ "version": config.extra.version }) -%}
       {%- endif -%}
 
+      <!-- Tags -->
+      {%- if config.extra.tags -%}
+        {%- set _ = app.update({ "tags": config.extra.tags }) -%}
+      {%- endif -%}
+
       <!-- Translations -->
       {%- set translations = app.translations -%}
       {%- for key in [

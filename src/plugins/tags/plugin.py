@@ -26,7 +26,6 @@ from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config.config_options import Type
-from mkdocs.exceptions import ConfigurationError
 from mkdocs.plugins import BasePlugin
 
 # -----------------------------------------------------------------------------
@@ -58,6 +57,10 @@ class TagsPlugin(BasePlugin):
             self.slugify = lambda value: (
                 toc["slugify"](str(value), toc["separator"])
             )
+
+        # Retrieve tags mapping from configuration
+        if "tags" in config["extra"]:
+            self.tags_mapping = config["extra"]["tags"]
 
     # Hack: 2nd pass for tags index page
     def on_nav(self, nav, files, **kwargs):
@@ -103,7 +106,8 @@ class TagsPlugin(BasePlugin):
 
     # Render the given tag and links to all pages with occurrences
     def __render_tag_links(self, tag, pages):
-        content = [f"## <span class=\"md-tag\">{tag}</span>", ""]
+        icon = f"md-tag-icon md-tag-icon--{self.slugify(tag)}"
+        content = [f"## <span class=\"md-tag {icon}\">{tag}</span>", ""]
         for page in pages:
             url = utils.get_relative_url(
                 page.file.src_path,
@@ -119,12 +123,12 @@ class TagsPlugin(BasePlugin):
 
     # Render the given tag, linking to the tags index (if enabled)
     def __render_tag(self, tag):
+        type = self.tags_mapping.get(tag)
         if not self.tags_file or not self.slugify:
-            return dict(name = tag)
+            return dict(name = tag, type = type)
         else:
-            url = self.tags_file.url
-            url += f"#{self.slugify(tag)}"
-            return dict(name = tag, url = url)
+            url = f"{self.tags_file.url}#{self.slugify(tag)}"
+            return dict(name = tag, type = type, url = url)
 
 # -----------------------------------------------------------------------------
 # Data

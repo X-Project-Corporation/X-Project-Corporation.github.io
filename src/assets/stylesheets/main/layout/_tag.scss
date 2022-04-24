@@ -24,6 +24,13 @@
 // Rules
 // ----------------------------------------------------------------------------
 
+// Tag variables
+:root {
+  --md-tag-icon: svg-load("material/pound.svg");
+}
+
+// ----------------------------------------------------------------------------
+
 // Tag list
 .md-tags {
   margin-bottom: px2em(12px);
@@ -38,8 +45,9 @@
   font-weight: 700;
   font-size: px2rem(12.8px);
   line-height: 1.6;
+  letter-spacing: initial;
   background: var(--md-default-fg-color--lightest);
-  border-radius: px2rem(8px);
+  border-radius: px2rem(48px);
 
   // Linked tag
   &[href] {
@@ -61,5 +69,28 @@
   // Tag inside headline
   [id] > & {
     vertical-align: text-top;
+  }
+}
+
+// Tag icon
+.md-tag-icon {
+
+  // Tag icon content
+  &::before {
+    display: inline-block;
+    width: 1.2em;
+    height: 1.2em;
+    margin-right: 0.4em;
+    vertical-align: text-bottom;
+    background-color: var(--md-default-fg-color--lighter);
+    mask-image: var(--md-tag-icon);
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    content: "";
+  }
+
+  // Linked tag on focus/hover
+  &:is(a:focus, a:hover)::before {
+    background-color: var(--md-accent-bg-color);
   }
 }

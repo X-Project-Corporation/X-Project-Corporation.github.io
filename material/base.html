@@ -39,7 +39,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.9fdd6fe7.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.737ea0aa.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.9647289d.min.css' | url }}">
@@ -225,6 +225,9 @@
       {%- if config.extra.version -%}
         {%- set _ = app.update({ "version": config.extra.version }) -%}
       {%- endif -%}
+      {%- if config.extra.tags -%}
+        {%- set _ = app.update({ "tags": config.extra.tags }) -%}
+      {%- endif -%}
       {%- set translations = app.translations -%}
       {%- for key in [
         "clipboard.copy",
@@ -249,7 +252,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.45be4e9a.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.88faac82.min.js' | url }}"></script>
       {% for path in config["extra_javascript"] %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
