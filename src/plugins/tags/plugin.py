@@ -44,6 +44,7 @@ class TagsPlugin(BasePlugin):
     def __init__(self):
         self.tags = defaultdict(list)
         self.tags_file = None
+        self.tags_mapping = {}
         self.slugify = None
 
     # Retrieve configuration for anchor generation
