@@ -44,8 +44,8 @@ class TagsPlugin(BasePlugin):
     def __init__(self):
         self.tags = defaultdict(list)
         self.tags_file = None
-        self.tags_mapping = {}
         self.slugify = None
+        self.mapping = {}
 
     # Retrieve configuration for anchor generation
     def on_config(self, config):
@@ -61,7 +61,7 @@ class TagsPlugin(BasePlugin):
 
         # Retrieve tags mapping from configuration
         if "tags" in config["extra"]:
-            self.tags_mapping = config["extra"]["tags"]
+            self.mapping = config["extra"]["tags"]
 
     # Hack: 2nd pass for tags index page
     def on_nav(self, nav, files, **kwargs):
@@ -124,7 +124,7 @@ class TagsPlugin(BasePlugin):
 
     # Render the given tag, linking to the tags index (if enabled)
     def __render_tag(self, tag):
-        type = self.tags_mapping.get(tag)
+        type = self.mapping.get(tag)
         if not self.tags_file or not self.slugify:
             return dict(name = tag, type = type)
         else:
