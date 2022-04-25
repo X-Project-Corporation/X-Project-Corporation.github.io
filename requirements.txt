@@ -24,8 +24,7 @@ markdown>=3.2
 mkdocs>=1.3.0
 mkdocs-material-extensions>=1.0.3
 pygments>=2.10,<2.12
-<<<<<<< HEAD
-pymdown-extensions>=9.0
+pymdown-extensions>=9.0,<9.4
 
 # Requirements for social plugin
 cairosvg>=2.5
@@ -34,6 +33,3 @@ requests>=2.26
 
 # Requirements for privacy plugin
 lxml>=4.6
-=======
-pymdown-extensions>=9.0,<9.4
->>>>>>> upstream/master
