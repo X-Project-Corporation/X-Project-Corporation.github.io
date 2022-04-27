@@ -327,14 +327,14 @@ class SocialPlugin(BasePlugin):
 
         # Retrieve font files, if not already done
         files = os.listdir(self.cache)
-        files = [file for file in files if file.endswith(".ttf")] or (
+        files = [file for file in files if file.endswith(".ttf") or file.endswith(".otf")] or (
             self.__load_font_from_google(name)
         )
 
         # Map available font weights to file paths
         font = dict()
         for file in files:
-            match = re.search("-(\w+)\.ttf$", file)
+            match = re.search("-(\w+)\.[ot]tf$", file)
             if match:
                 font[match.group(1)] = os.path.join(self.cache, file)
 
@@ -353,7 +353,7 @@ class SocialPlugin(BasePlugin):
 
         # Unzip fonts from temporary file
         zip = ZipFile(tmp)
-        files = [file for file in zip.namelist() if file.endswith(".ttf")]
+        files = [file for file in zip.namelist() if file.endswith(".ttf") or file.endswith(".otf")]
         zip.extractall(self.cache, files)
 
         # Close and delete temporary file
