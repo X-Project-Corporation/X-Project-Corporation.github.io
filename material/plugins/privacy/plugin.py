@@ -58,7 +58,6 @@ class PrivacyPlugin(BasePlugin):
     def on_config(self, config):
         self.base_url = urlparse(config.get("site_url"))
         self.base_dir = config.get("site_dir")
-        self.resource = dict()
         self.files = []
 
     # Determine files that need to be post-processed
@@ -78,7 +77,7 @@ class PrivacyPlugin(BasePlugin):
         if not config.get("site_url"):
             if not any("mermaid" in js for js in config["extra_javascript"]):
                 config["extra_javascript"].append(
-                    "https://unpkg.com/mermaid@8.13.3/dist/mermaid.min.js"
+                    "https://unpkg.com/mermaid@9.0.1/dist/mermaid.min.js"
                 )
 
     # Parse, fetch and store external assets in pages
@@ -149,16 +148,16 @@ class PrivacyPlugin(BasePlugin):
 
         # Check all files that are part of the build
         for file in self.files:
-            path = os.path.join(self.base_dir, file.dest_path)
-            if not os.path.isfile(path):
+            full = os.path.join(self.base_dir, file.dest_path)
+            if not os.path.isfile(full):
                 continue
 
             # Handle internal style sheet or script
-            if path.endswith(".css") or path.endswith(".js"):
-                with open(path, encoding = "utf-8") as f:
+            if full.endswith(".css") or full.endswith(".js"):
+                with open(full, encoding = "utf-8") as f:
                     utils.write_file(
                         self.__fetch_dependents(f.read(), file.dest_path),
-                        path
+                        full
                     )
 
     # -------------------------------------------------------------------------
@@ -188,8 +187,10 @@ class PrivacyPlugin(BasePlugin):
         if self.__is_excluded(raw, page.file.dest_path):
             return raw
 
-        # Fetch external asset for bundling
-        if not url in self.resource:
+        # Download file if it's not contained in the cache
+        data = url._replace(scheme = "", query = "", fragment = "")
+        path = file = os.path.join(".cache", data.geturl()[2:])
+        if not os.path.isfile(file):
             log.debug(f"Downloading external file: {raw}")
             res = requests.get(raw, headers = {
 
@@ -204,36 +205,42 @@ class PrivacyPlugin(BasePlugin):
                 ])
             })
 
-            # Compute path name after cleaning up URL
-            data = url._replace(scheme = "", query = "", fragment = "")
-            file = os.path.join(
-                self.config.get("externals_directory"),
-                data.geturl()[2:]
-            )
-
             # Compute and ensure presence of file extension
             name = re.findall(r'^[^;]+', res.headers["content-type"])[0]
             extension = extensions.get(name)
             if extension and not file.endswith(extension):
                 file += extension
 
-            # Compute and post-process content
-            content = res.content
+            # Write contents and create symbolic link if necessary
+            utils.write_file(res.content, file)
+            if path != file:
+                os.symlink(os.path.basename(file), path)
+
+        # Append file extension from file after resolving symbolic links
+        _, extension = os.path.splitext(os.path.realpath(file))
+        if not file.endswith(extension):
+            file += extension
+
+        # Compute final path relative to output directory
+        path = file.replace(".cache", self.config.get("externals_directory"))
+        full = os.path.join(self.base_dir, path)
+        if not os.path.exists(full):
+
+            # Open file and patch dependents resources
             if extension == ".css" or extension == ".js":
-                content = self.__fetch_dependents(res.text, file)
+                with open(file, encoding = "utf-8") as f:
+                    utils.write_file(
+                        self.__fetch_dependents(f.read(), path),
+                        full
+                    )
 
-            # Write content to file
-            utils.write_file(content, os.path.join(
-                self.base_dir,
-                file
-            ))
-
-            # Update resource mappings
-            self.resource[url] = file
+            # Copy file from cache to output directory
+            else:
+                utils.copy_file(file, full)
 
         # Return URL relative to current page
         return utils.get_relative_url(
-            utils.normalize_url(self.resource[url]),
+            utils.normalize_url(path),
             page.url
         )
 
@@ -301,14 +308,9 @@ class PrivacyPlugin(BasePlugin):
                 output[r:]
             ])
 
-            # Ensure presence of directory
-            path = os.path.join(self.base_dir, path)
-            directory = os.path.dirname(path)
-            if not os.path.isdir(directory):
-                os.makedirs(directory)
-
-            # Copy file from cache
-            copyfile(file, path)
+            # Copy file from cache to output directory
+            full = os.path.join(self.base_dir, path)
+            utils.copy_file(file, full)
 
         # Return output with replaced occurrences
         return bytes(output, encoding = "utf8")
