@@ -86,9 +86,9 @@ class PrivacyPlugin(BasePlugin):
         if not self.config.get("enabled"):
             return
 
-        # Find all external scripts and style sheets
+        # Find all external resources
         expr = re.compile(
-            r'<(?:link[^>]+href?|script[^>]+src)=[\'"]?http[^>]+>',
+            r'<(?:link[^>]+href?|(?:script|img)[^>]+src)=[\'"]?http[^>]+>',
             re.IGNORECASE | re.MULTILINE
         )
 
@@ -123,8 +123,8 @@ class PrivacyPlugin(BasePlugin):
                         output[r:]
                     ])
 
-            # Handle external scripts
-            if el.tag == "script":
+            # Handle external scripts and images
+            if el.tag == "script" or el.tag == "img":
                 raw = el.get("src", "")
 
                 # Check if URL is external
@@ -132,7 +132,7 @@ class PrivacyPlugin(BasePlugin):
                 if not self.__is_external(url):
                     continue
 
-                # Replace external script in output
+                # Replace external script or image in output
                 output = "".join([
                     output[:l],
                     value.replace(raw, self.__fetch(url, page)),
@@ -172,12 +172,12 @@ class PrivacyPlugin(BasePlugin):
         url = re.sub(r'^https?:\/\/', "", url)
         for pattern in self.config.get("externals_exclude"):
             if fnmatch(url, pattern):
-                log.debug(f"Excluded asset in '{base}': {url}")
+                log.debug(f"Excluding external file in '{base}': {url}")
                 return True
 
         # Exclude all external assets if bundling is not enabled
         if self.config.get("externals") == "report":
-            log.warning(f"External asset in '{base}': {url}")
+            log.warning(f"External file in '{base}': {url}")
             return True
 
     # Fetch external resource in given page
@@ -190,6 +190,7 @@ class PrivacyPlugin(BasePlugin):
 
         # Fetch external asset for bundling
         if not url in self.resource:
+            log.debug(f"Downloading external file: {raw}")
             res = requests.get(raw, headers = {
 
                 # Set user agent explicitly, so Google Fonts gives us *.woff2
@@ -212,8 +213,8 @@ class PrivacyPlugin(BasePlugin):
 
             # Compute and ensure presence of file extension
             name = re.findall(r'^[^;]+', res.headers["content-type"])[0]
-            extension = extensions[name]
-            if not file.endswith(extension):
+            extension = extensions.get(name)
+            if extension and not file.endswith(extension):
                 file += extension
 
             # Compute and post-process content
@@ -275,6 +276,7 @@ class PrivacyPlugin(BasePlugin):
             data = url._replace(scheme = "", query = "", fragment = "")
             file = os.path.join(".cache", data.geturl()[2:])
             if not os.path.isfile(file):
+                log.debug(f"Downloading external file: {raw}")
                 res = requests.get(raw)
                 utils.write_file(res.content, file)
 
@@ -322,6 +324,12 @@ log.addFilter(DuplicateFilter())
 # Expected file extensions
 extensions = dict({
     "application/javascript": ".js",
+    "image/avif": ".avif",
+    "image/gif": ".gif",
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/svg+xml": ".svg",
+    "image/webp": ".webp",
     "text/javascript": ".js",
     "text/css": ".css"
 })
