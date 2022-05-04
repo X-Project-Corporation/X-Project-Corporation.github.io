@@ -19,13 +19,18 @@
 # IN THE SOFTWARE.
 
 import logging
-import re
+import regex as re
 
 from html import escape
 from html.parser import HTMLParser
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
 from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
+
+try:
+    import jieba
+except ImportError:
+    jieba = None
 
 # -----------------------------------------------------------------------------
 # Class
@@ -88,6 +93,11 @@ class SearchIndex(BaseIndex):
         title = "".join(section.title or page.title).strip()
         text  = "".join(section.text).strip()
 
+        # Segment Chinese characters if jieba is available
+        if jieba:
+            title = self.__segment_chinese(title)
+            text  = self.__segment_chinese(text)
+
         # Reset text, if only titles should be indexed
         if self.config["indexing"] == "titles":
             text = ""
@@ -117,6 +127,28 @@ class SearchIndex(BaseIndex):
 
         # Add entry to index
         self._entries.append(entry)
+
+    # Find and segment Chinese characters in string
+    def __segment_chinese(self, data):
+        expr = re.compile(r'(\p{IsHan}+)', re.UNICODE)
+
+        # Parse occurrences and replace in reverse
+        for match in reversed(list(expr.finditer(data))):
+            value = match.group(0)
+
+            # Compute offsets for replacements
+            l = match.start()
+            r = l + len(value)
+
+            # Replace original with segmented version
+            data = "".join([
+                data[:l],
+                "\u200b".join(jieba.cut_for_search(value)),
+                data[r:]
+            ])
+
+        # Return string with segmented occurrences
+        return data
 
 # -----------------------------------------------------------------------------
 
