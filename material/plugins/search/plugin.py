@@ -143,7 +143,7 @@ class SearchIndex(BaseIndex):
             # Replace original with segmented version
             data = "".join([
                 data[:l],
-                "\u200b".join(jieba.cut_for_search(value)),
+                "\u200b".join(jieba.cut(value.encode("utf-8"))),
                 data[r:]
             ])
 
