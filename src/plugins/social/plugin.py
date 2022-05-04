@@ -114,7 +114,11 @@ class SocialPlugin(BasePlugin):
             description = page.meta["description"]
 
         # Generate social card if not in cache - TODO: values from mkdocs.yml
-        hash = md5("".join([site_name, title, description]).encode("utf-8"))
+        hash = md5("".join([
+            site_name,
+            str(title),
+            description
+        ]).encode("utf-8"))
         file = os.path.join(self.cache, f"{hash.hexdigest()}.png")
         if not os.path.isfile(file):
             image = self.__render_card(site_name, title, description)
