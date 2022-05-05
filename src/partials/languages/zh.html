@@ -23,7 +23,6 @@
 <!-- Translations: Chinese (Simplified) -->
 {% macro t(key) %}{{ {
   "language": "zh",
-  "direction": "ltr",
   "clipboard.copy": "复制",
   "clipboard.copied": "已复制",
   "edit.link.title": "编辑此页",
@@ -35,7 +34,7 @@
   "meta.source": "来源",
   "nav.title": "导航栏",
   "search.config.pipeline": "stemmer",
-  "search.config.separator": "[\s\-，。]+",
+  "search.config.separator": "[\\s\\u200b\\u3000\\-、。，．？！；]+",
   "search.placeholder": "搜索",
   "search.share": "分享",
   "search.reset": "清空当前内容",
