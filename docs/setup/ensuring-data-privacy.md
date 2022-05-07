@@ -9,15 +9,15 @@ as it offers a native [cookie consent] solution to seek explicit consent from
 users before setting up [tracking]. Additionally, external assets can be
 automatically downloaded for [self-hosting].
 
-  [cookie consent]: #cookie-consent
+  [cookie consent]: #native-cookie-consent
   [tracking]: setting-up-site-analytics.md
   [self-hosting]: #built-in-privacy-plugin
 
 ## Configuration
 
-### Cookie consent
+### Cookie consent { #native-cookie-consent }
 
-[:octicons-heart-fill-24:{ .mdx-heart } Insiders][Insiders]{ .mdx-insiders } ·
+[:octicons-heart-fill-24:{ .mdx-heart } Sponsors only][Insiders]{ .mdx-insiders } ·
 [:octicons-tag-24: insiders-2.10.0][Insiders] ·
 :octicons-milestone-24: Default: _none_
 
@@ -97,7 +97,7 @@ e.g. your privacy policy:
 
 ### Built-in privacy plugin
 
-[:octicons-heart-fill-24:{ .mdx-heart } Insiders][Insiders]{ .mdx-insiders } ·
+[:octicons-heart-fill-24:{ .mdx-heart } Sponsors only][Insiders]{ .mdx-insiders } ·
 [:octicons-tag-24: insiders-4.9.0][Insiders] ·
 :octicons-cpu-24: Plugin ·
 :octicons-beaker-24: Experimental
