@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,18 +20,37 @@
  * IN THE SOFTWARE.
  */
 
-export * from "./_"
-export * from "./announce"
-export * from "./consent"
-export * from "./content"
-export * from "./dialog"
-export * from "./header"
-export * from "./main"
-export * from "./palette"
-export * from "./search"
-export * from "./sidebar"
-export * from "./source"
-export * from "./tabs"
-export * from "./tooltip"
-export * from "./toc"
-export * from "./top"
+import {
+  Observable,
+  debounceTime,
+  fromEvent,
+  identity,
+  map,
+  merge,
+  startWith
+} from "rxjs"
+
+/* ----------------------------------------------------------------------------
+ * Functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Watch element hover
+ *
+ * @param el - Element
+ * @param duration - Debounce duration
+ *
+ * @returns Element hover observable
+ */
+export function watchElementHover(
+  el: HTMLElement, duration?: number
+): Observable<boolean> {
+  return merge(
+    fromEvent(el, "mouseenter").pipe(map(() => true)),
+    fromEvent(el, "mouseleave").pipe(map(() => false))
+  )
+    .pipe(
+      duration ? debounceTime(duration) : identity,
+      startWith(false)
+    )
+}

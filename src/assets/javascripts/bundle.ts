@@ -83,6 +83,7 @@ import {
   setupVersionSelector
 } from "./integrations"
 import {
+  patchEllipsis,
   patchIndeterminate,
   patchScrollfix,
   patchScrolllock
@@ -190,6 +191,7 @@ keyboard$
     })
 
 /* Set up patches */
+patchEllipsis({ document$, viewport$ })
 patchIndeterminate({ document$, tablet$ })
 patchScrollfix({ document$ })
 patchScrolllock({ viewport$, tablet$ })

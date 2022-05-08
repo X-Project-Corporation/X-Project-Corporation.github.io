@@ -176,12 +176,11 @@ export function mountAnnotationList(
           el.hidden = !active
 
           /* Show annotations in code block or list (print) */
-          for (const [inner, child] of pairs) {
+          for (const [inner, child] of pairs)
             if (!active)
               swap(child, inner)
             else
               swap(inner, child)
-          }
         })
 
     /* Create and return component */

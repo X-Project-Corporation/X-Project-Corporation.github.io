@@ -97,7 +97,7 @@ export function watchAnnotation(
     watchElementContentOffset(container)
   ]))
     .pipe(
-      map(([{ x, y }, scroll]) => {
+      map(([{ x, y }, scroll]): ElementOffset => {
         const { width, height } = getElementSize(el)
         return ({
           x: x - scroll.x + width / 2,
@@ -153,7 +153,7 @@ export function mountAnnotation(
     /* Toggle tooltip presence to mitigate empty lines when copying */
     merge(
       push$.pipe(filter(({ active }) => active)),
-      push$.pipe(debounceTime(250), filter(({ active }) => !active)),
+      push$.pipe(debounceTime(250), filter(({ active }) => !active))
     )
       .subscribe({
 
@@ -174,7 +174,7 @@ export function mountAnnotation(
     /* Toggle tooltip visibility */
     push$
       .pipe(
-        auditTime(0, animationFrameScheduler)
+        auditTime(16, animationFrameScheduler)
       )
         .subscribe(({ active }) => {
           tooltip.classList.toggle("md-tooltip--active", active)
@@ -183,7 +183,7 @@ export function mountAnnotation(
     /* Track relative origin of tooltip */
     push$
       .pipe(
-        throttleTime(500, animationFrameScheduler),
+        throttleTime(125, animationFrameScheduler),
         filter(() => !!el.offsetParent),
         map(() => el.offsetParent!.getBoundingClientRect()),
         map(({ x }) => x)

@@ -49,6 +49,10 @@ import { renderClipboardButton } from "~/templates"
 
 import { Component } from "../../../_"
 import {
+  Tooltip,
+  mountTooltip
+} from "../../../tooltip"
+import {
   Annotation,
   mountAnnotationList
 } from "../../annotation"
@@ -81,7 +85,7 @@ interface MountOptions {
  * ------------------------------------------------------------------------- */
 
 /**
- * Global sequence number for Clipboard.js integration
+ * Global sequence number for code blocks
  */
 let sequence = 0
 
@@ -160,7 +164,7 @@ export function watchCodeBlock(
  */
 export function mountCodeBlock(
   el: HTMLElement, options: MountOptions
-): Observable<Component<CodeBlock | Annotation>> {
+): Observable<Component<CodeBlock | Annotation | Tooltip>> {
   const { matches: hover } = matchMedia("(hover)")
 
   /* Defer mounting of code block - see https://bit.ly/3vHVoVD */
@@ -174,13 +178,16 @@ export function mountCodeBlock(
     })
 
     /* Render button for Clipboard.js integration */
+    let tooltip: Observable<Component<Tooltip>> = EMPTY
     if (ClipboardJS.isSupported()) {
       const parent = el.closest("pre")!
       parent.id = `__code_${++sequence}`
-      parent.insertBefore(
-        renderClipboardButton(parent.id),
-        el
-      )
+
+      /* Mount tooltip, if enabled */
+      const button = renderClipboardButton(parent.id)
+      parent.insertBefore(button, el)
+      if (feature("content.tooltips"))
+        tooltip = mountTooltip(button)
     }
 
     /* Handle code annotations */
@@ -202,6 +209,7 @@ export function mountCodeBlock(
             finalize(() => push$.complete()),
             map(state => ({ ref: el, ...state })),
             mergeWith(
+              tooltip,
               watchElementSize(container)
                 .pipe(
                   takeUntil(push$.pipe(takeLast(1))),
@@ -219,7 +227,8 @@ export function mountCodeBlock(
       .pipe(
         tap(state => push$.next(state)),
         finalize(() => push$.complete()),
-        map(state => ({ ref: el, ...state }))
+        map(state => ({ ref: el, ...state })),
+        mergeWith(tooltip),
       )
   })
 

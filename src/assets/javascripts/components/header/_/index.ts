@@ -30,7 +30,10 @@ import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
+  from,
   map,
+  mergeMap,
+  mergeWith,
   of,
   shareReplay,
   startWith,
@@ -42,12 +45,17 @@ import {
 import { feature } from "~/_"
 import {
   Viewport,
+  getElements,
   watchElementSize,
   watchToggle
 } from "~/browser"
 
 import { Component } from "../../_"
 import { Main } from "../../main"
+import {
+  Tooltip,
+  mountTooltip
+} from "../../tooltip"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -172,7 +180,7 @@ export function watchHeader(
  */
 export function mountHeader(
   el: HTMLElement, { header$, main$ }: MountOptions
-): Observable<Component<Header>> {
+): Observable<Component<Header | Tooltip>> {
   return defer(() => {
     const push$ = new Subject<Main>()
     push$
@@ -185,14 +193,23 @@ export function mountHeader(
           el.classList.toggle("md-header--shadow", active && !hidden)
         })
 
+    /* Mount tooltips, if enabled */
+    const tooltips = from(getElements("[title]", el))
+      .pipe(
+        filter(() => feature("content.tooltips")),
+        mergeMap(child => mountTooltip(child))
+      )
+
     /* Link to main area */
     main$.subscribe(push$)
 
     /* Create and return component */
+    const done$ = push$.pipe(takeLast(1))
     return header$
       .pipe(
-        takeUntil(push$.pipe(takeLast(1))),
-        map(state => ({ ref: el, ...state }))
+        takeUntil(done$),
+        map(state => ({ ref: el, ...state })),
+        mergeWith(tooltips.pipe(takeUntil(done$)))
       )
   })
 }

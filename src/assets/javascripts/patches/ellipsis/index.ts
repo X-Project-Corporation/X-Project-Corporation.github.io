@@ -20,44 +20,62 @@
  * IN THE SOFTWARE.
  */
 
-import { h } from "~/utilities"
+import {
+  Observable,
+  distinctUntilKeyChanged,
+  filter,
+  finalize,
+  mergeMap,
+  skip,
+  switchMap,
+  takeUntil
+} from "rxjs"
+
+import { Viewport, getElements } from "~/browser"
+import { mountTooltip } from "~/components"
 
 /* ----------------------------------------------------------------------------
- * Types
+ * Helper types
  * ------------------------------------------------------------------------- */
 
 /**
- * Tooltip style
+ * Patch options
  */
-export type TooltipStyle =
-  | "inline"
+interface PatchOptions {
+  document$: Observable<Document>      /* Document observable */
+  viewport$: Observable<Viewport>      /* Viewport observable */
+}
 
 /* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
 
 /**
- * Render a tooltip
+ * Patch ellipsis
  *
- * @param id - Tooltip identifier
- * @param style - Tooltip style
- *
- * @returns Element
+ * @param options - Options
  */
-export function renderTooltip(
-  id?: string, style?: TooltipStyle
-): HTMLElement {
-  if (style === "inline") { // @todo refactor control flow
-    return (
-      <div class="md-tooltip md-tooltip--inline" id={id} role="tooltip">
-        <div class="md-tooltip__inner md-typeset"></div>
-      </div>
+export function patchEllipsis(
+  { document$, viewport$ }: PatchOptions
+): void {
+  const poll$ = viewport$.pipe(distinctUntilKeyChanged("size"))
+  document$
+    .pipe(
+      switchMap(() => poll$),
+      switchMap(() => getElements(".md-ellipsis")),
+      filter(el => el.offsetWidth < el.scrollWidth),
+      mergeMap(el => {
+        const text = el.innerText
+        const host = el.closest("a") || el
+        host.title = text
+
+        /* Mount tooltip */
+        return mountTooltip(host)
+          .pipe(
+            finalize(() => host.removeAttribute("title")),
+            takeUntil(poll$.pipe(skip(1)))
+          )
+      })
     )
-  } else {
-    return (
-      <div class="md-tooltip" id={id} role="tooltip">
-        <div class="md-tooltip__inner md-typeset"></div>
-      </div>
-    )
-  }
+      .subscribe()
 }
