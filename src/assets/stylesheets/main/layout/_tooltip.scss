@@ -109,6 +109,12 @@
       padding: px2rem(4px) px2rem(8px);
       font-size: px2rem(10px);
     }
+
+    // Hack: When the host element is hidden, the context for the tooltip is
+    // lost immediately, resulting in invalid and sometimes jumpy positioning.
+    [hidden] + & {
+      display: none;
+    }
   }
 
   // Show outline on target and for keyboard devices
