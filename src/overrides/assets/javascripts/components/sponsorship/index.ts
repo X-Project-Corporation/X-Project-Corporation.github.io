@@ -20,9 +20,10 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, map } from "rxjs"
+import { Observable, map, mergeWith } from "rxjs"
 
 import { getElement, requestJSON } from "~/browser"
+import { Tooltip, mountTooltip } from "~/components"
 
 import {
   renderPrivateSponsor,
@@ -129,8 +130,11 @@ export function mountSponsorship(
     /* Render public sponsors with avatar and links */
     const list = getElement(":scope > :first-child", el)
     for (const sponsor of sponsorship.sponsors)
-      if (sponsor.type === "public")
-        list.appendChild(renderPublicSponsor(sponsor.user))
+      if (sponsor.type === "public") {
+        const child = renderPublicSponsor(sponsor.user)
+        list.appendChild(child)
+        mountTooltip(child).subscribe() // @todo, fix memleak
+      }
 
     /* Render combined private sponsors */
     list.appendChild(renderPrivateSponsor(
@@ -147,7 +151,7 @@ export function mountSponsorship(
     } a month`
   })
 
-  // /* Create and return component */
+  /* Create and return component */
   return sponsorship$
     .pipe(
       map(state => ({ ref: el, ...state }))
