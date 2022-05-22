@@ -95,7 +95,7 @@ class PrivacyPlugin(BasePlugin):
         for match in reversed(list(expr.finditer(output))):
             value = match.group()
 
-            # Compute offsets for replacements
+            # Compute offsets for replacement
             l = match.start()
             r = l + len(value)
 
@@ -266,7 +266,7 @@ class PrivacyPlugin(BasePlugin):
             value = match.group(0)
             raw   = match.group(1)
 
-            # Compute offsets for replacements
+            # Compute offsets for replacement
             l = match.start()
             r = l + len(value)
 

@@ -136,14 +136,17 @@ class SearchIndex(BaseIndex):
         for match in reversed(list(expr.finditer(data))):
             value = match.group(0)
 
-            # Compute offsets for replacements
+            # Compute offsets for replacement
             l = match.start()
             r = l + len(value)
 
-            # Replace original with segmented version
+            # Replace occurrence in original string with segmented version and
+            # surround with zero-width whitespace for efficient segmentation
             data = "".join([
                 data[:l],
+                "\u200b",
                 "\u200b".join(jieba.cut(value.encode("utf-8"))),
+                "\u200b",
                 data[r:]
             ])
 
