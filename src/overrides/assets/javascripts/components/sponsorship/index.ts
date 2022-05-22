@@ -20,10 +20,10 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, map, mergeWith } from "rxjs"
+import { Observable, map } from "rxjs"
 
 import { getElement, requestJSON } from "~/browser"
-import { Tooltip, mountTooltip } from "~/components"
+import { mountTooltip } from "~/components"
 
 import {
   renderPrivateSponsor,
