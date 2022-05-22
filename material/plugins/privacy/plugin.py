@@ -65,7 +65,7 @@ class PrivacyPlugin(BasePlugin):
         if not self.config.get("enabled"):
             return
 
-        # Filter relevant files, short-circuit lunr.js
+        # Filter relevant files, short-circuit Lunr.js
         for file in files:
             if file.url.endswith(".js") or file.url.endswith(".css"):
                 if not "assets/javascripts/lunr" in file.url:

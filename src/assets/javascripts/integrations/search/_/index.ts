@@ -29,14 +29,14 @@ import {
   Position,
   Table,
   highlighter,
-  tokenizer,
-  zhsegmenter
+  tokenizer
 } from "../internal"
 import { SearchOptions } from "../options"
 import {
   SearchQueryTerms,
   getSearchQueryTerms,
-  parseSearchQuery
+  parseSearchQuery,
+  segment
 } from "../query"
 
 /* ----------------------------------------------------------------------------
@@ -257,10 +257,10 @@ export class Search {
       try {
 
         // Experimental Chinese segmentation
-        if (`${lunr.tokenizer.separator}`.includes("\\u200b")) {
-          query = zhsegmenter.cut(query).map(part => `${part}*`).join(" ")
-          // console.log("Segments:", query)
-        }
+        if (`${lunr.tokenizer.separator}`.includes("\\u200b"))
+          query = [...segment(query, this.index.invertedIndex)]
+            .map(part => `${part}*`)
+            .join(" ")
 
         /* Parse query to extract clauses for analysis */
         const clauses = parseSearchQuery(query)

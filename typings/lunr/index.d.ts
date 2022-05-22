@@ -30,6 +30,13 @@ declare global {
   namespace lunr {
 
     /**
+     * Index - expose inverted index
+     */
+    interface Index {
+      invertedIndex: object;
+    }
+
+    /**
      * Query clause - add missing field definitions
      */
     namespace Query {

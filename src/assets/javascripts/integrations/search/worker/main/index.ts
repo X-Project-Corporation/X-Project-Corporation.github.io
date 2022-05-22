@@ -22,6 +22,7 @@
 
 import lunr from "lunr"
 
+import { getElement } from "~/browser/element/_"
 import "~/polyfills"
 
 import { Search, SearchIndexConfig } from "../../_"
@@ -83,7 +84,7 @@ async function setupSearchLanguages(
 
   /* Detect `iframe-worker` and fix base URL */
   if (typeof parent !== "undefined" && "IFrameWorker" in parent) {
-    const worker = document.querySelector<HTMLScriptElement>("script[src]")!
+    const worker = getElement<HTMLScriptElement>("script[src]")!
     const [path] = worker.src.split("/worker")
 
     /* Prefix base with path */

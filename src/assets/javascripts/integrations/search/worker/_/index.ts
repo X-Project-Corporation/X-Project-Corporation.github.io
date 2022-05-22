@@ -25,7 +25,8 @@ import {
   Subject,
   from,
   map,
-  share
+  share,
+  take
 } from "rxjs"
 
 import { configuration, feature, translation } from "~/_"
@@ -130,6 +131,7 @@ export function setupSearchWorker(
   /* Set up search index */
   from(index$)
     .pipe(
+      take(1),
       map(data => ({
         type: SearchMessageType.SETUP,
         data: setupSearchIndex(data)

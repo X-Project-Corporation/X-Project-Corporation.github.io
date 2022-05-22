@@ -22,8 +22,6 @@
 
 import { split } from "~/utilities"
 
-import { Segmenter } from "../segmenter"
-
 /* ----------------------------------------------------------------------------
  * Types
  * ------------------------------------------------------------------------- */
@@ -59,15 +57,6 @@ interface StringLike {
  * Visitor function
  */
 type VisitorFn = (...args: Section) => void
-
-/* ----------------------------------------------------------------------------
- * Data
- * ------------------------------------------------------------------------- */
-
-/**
- * Experimental Chinese segmenter - @todo refactor later
- */
-export const zhsegmenter = new Segmenter()
 
 /* ----------------------------------------------------------------------------
  * Helper functions
@@ -213,10 +202,6 @@ export function tokenizer(
             }
           ))
         })
-
-        // Experimental Chinese segmentation
-        if (`${lunr.tokenizer.separator}`.includes("\\u200b"))
-          zhsegmenter.add(section)
 
       /* Add non-content block to table */
       } else {
