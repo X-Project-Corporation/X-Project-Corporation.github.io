@@ -28,7 +28,6 @@ import {
   asyncScheduler,
   auditTime,
   combineLatest,
-  combineLatestWith,
   debounceTime,
   defer,
   filter,
@@ -45,12 +44,11 @@ import {
   ElementOffset,
   getElement,
   getElementContainer,
+  getElementOffset,
   getElementSize,
   watchElementContentOffset,
   watchElementFocus,
-  watchElementHover,
-  watchElementOffset,
-  watchElementSize
+  watchElementHover
 } from "~/browser"
 import { renderTooltip } from "~/templates"
 
@@ -109,29 +107,26 @@ export function watchTooltip(
       ? watchElementContentOffset(container)
       : of({ x: 0, y: 0 })
 
-  /* Compute tooltip offset */
-  const offset$ = combineLatest([
-    watchElementSize(host),
-    watchElementOffset(host),
-    scroll$
-  ])
-    .pipe(
-      map(([size, { x, y }, scroll]): ElementOffset => {
-        return {
-          x: x - scroll.x + size.width  / 2 - width / 2,
-          y: y - scroll.y + size.height + 8
-        }
-      })
-    )
-
-  /* Actively watch tooltip on focus/hover */
-  return merge(
+  /* Compute tooltip visibility */
+  const active$ = merge(
     watchElementFocus(host),
     watchElementHover(host)
   )
+
+  /* Compute tooltip offset */
+  return combineLatest([active$, scroll$])
     .pipe(
-      combineLatestWith(offset$),
-      map(([active, offset]) => ({ active, offset }))
+      map(([active, scroll]) => {
+        const { x, y } = getElementOffset(host)
+        const size = getElementSize(host)
+        return {
+          active,
+          offset: {
+            x: x - scroll.x + size.width  / 2 - width / 2,
+            y: y - scroll.y + size.height + 8
+          }
+        }
+      })
     )
 }
 
