@@ -25,24 +25,32 @@ import {
   Observable,
   Subject,
   animationFrameScheduler,
+  asyncScheduler,
   auditTime,
   combineLatest,
+  combineLatestWith,
   debounceTime,
   defer,
   filter,
   finalize,
   map,
   merge,
-  tap
+  of,
+  subscribeOn,
+  tap,
+  throttleTime
 } from "rxjs"
 
 import {
   ElementOffset,
   getElement,
-  getElementOffset,
+  getElementContainer,
   getElementSize,
+  watchElementContentOffset,
   watchElementFocus,
-  watchElementHover
+  watchElementHover,
+  watchElementOffset,
+  watchElementSize
 } from "~/browser"
 import { renderTooltip } from "~/templates"
 
@@ -94,24 +102,36 @@ export function watchTooltip(
   el.style.setProperty("--md-tooltip-width", `${width}px`)
   el.remove()
 
-  /* Actively watch tooltip on focus/hover */
-  return combineLatest([
-    watchElementFocus(host),
-    watchElementHover(host)
+  /* Retrieve and watch containing element */
+  const container = getElementContainer(host)
+  const scroll$ =
+    typeof container !== "undefined"
+      ? watchElementContentOffset(container)
+      : of({ x: 0, y: 0 })
+
+  /* Compute tooltip offset */
+  const offset$ = combineLatest([
+    watchElementSize(host),
+    watchElementOffset(host),
+    scroll$
   ])
     .pipe(
-      map(([focus, hover]) => focus || hover),
-      map(active => {
-        const parent = getElementSize(host)
-        const { x, y } = getElementOffset(host)
+      map(([size, { x, y }, scroll]): ElementOffset => {
         return {
-          active,
-          offset: {
-            x: x + parent.width / 2 - width / 2,
-            y: y + parent.height + 8
-          }
+          x: x - scroll.x + size.width  / 2 - width / 2,
+          y: y - scroll.y + size.height + 8
         }
       })
+    )
+
+  /* Actively watch tooltip on focus/hover */
+  return merge(
+    watchElementFocus(host),
+    watchElementHover(host)
+  )
+    .pipe(
+      combineLatestWith(offset$),
+      map(([active, offset]) => ({ active, offset }))
     )
 }
 
@@ -190,6 +210,33 @@ export function mountTooltip(
           tooltip.classList.toggle("md-tooltip--active", active)
         })
 
+    // @todo - refactor positioning together with annotations – there are
+    // several things that overlap and are identical in handling
+
+    /* Track relative origin of tooltip */
+    push$
+      .pipe(
+        throttleTime(125, animationFrameScheduler),
+        filter(() => !!el.offsetParent),
+        map(() => el.offsetParent!.getBoundingClientRect()),
+        map(({ x }) => x)
+      )
+      .subscribe({
+
+        /* Handle emission */
+        next(origin) {
+          if (origin)
+            tooltip.style.setProperty("--md-tooltip-0", `${-origin}px`)
+          else
+            tooltip.style.removeProperty("--md-tooltip-0")
+        },
+
+        /* Handle complete */
+        complete() {
+          tooltip.style.removeProperty("--md-tooltip-0")
+        }
+      })
+
     /* Create and return component */
     return watchTooltip(tooltip, el)
       .pipe(
@@ -198,4 +245,7 @@ export function mountTooltip(
         map(state => ({ ref: el, ...state }))
       )
   })
+    .pipe(
+      subscribeOn(asyncScheduler)
+    )
 }

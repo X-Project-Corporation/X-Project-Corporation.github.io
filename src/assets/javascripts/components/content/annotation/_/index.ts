@@ -205,9 +205,10 @@ export function mountAnnotation(
         })
 
     /* Allow to copy link without scrolling to anchor */
+    const done$ = push$.pipe(takeLast(1))
     fromEvent<MouseEvent>(index, "click")
       .pipe(
-        takeUntil(push$.pipe(takeLast(1))),
+        takeUntil(done$),
         filter(ev => !(ev.metaKey || ev.ctrlKey))
       )
         .subscribe(ev => ev.preventDefault())
@@ -215,7 +216,7 @@ export function mountAnnotation(
     /* Allow to open link in new tab or blur on close */
     fromEvent<MouseEvent>(index, "mousedown")
       .pipe(
-        takeUntil(push$.pipe(takeLast(1))),
+        takeUntil(done$),
         withLatestFrom(push$)
       )
         .subscribe(([ev, { active }]) => {
@@ -240,7 +241,7 @@ export function mountAnnotation(
     /* Open and focus annotation on location target */
     target$
       .pipe(
-        takeUntil(push$.pipe(takeLast(1))),
+        takeUntil(done$),
         filter(target => target === tooltip),
         delay(125)
       )
