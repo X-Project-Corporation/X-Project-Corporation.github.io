@@ -59,11 +59,18 @@ export class Segmenter {
       for (let j = i + 1; j < value.length; j++) {
         const segment = value.slice(i, j)
         if (this.set.has(segment)) {
-          segments.push(segment)
-          cuts.add(j)
+          const prev = segments[segments.length - 1]
+          if (segment.startsWith(prev)) {
+            segments[segments.length - 1] = segment
+            cuts.add(j)
+            // @todo remove indexes from cuts array again
+          } else if (typeof prev === "undefined" || !prev.endsWith(segment)) {
+            segments.push(segment)
+            cuts.add(j)
+          }
         }
       }
     }
-    return segments
+    return segments.length ? segments : [value]
   }
 }
