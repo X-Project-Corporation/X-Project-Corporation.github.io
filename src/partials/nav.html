@@ -20,7 +20,7 @@
   IN THE SOFTWARE.
 -->
 
-<!-- Determine class according to configuration -->
+<!-- Determine base classes -->
 {% set class = "md-nav md-nav--primary" %}
 {% if "navigation.tabs" in features %}
   {% set class = class ~ " md-nav--lifted" %}
@@ -29,7 +29,7 @@
   {% set class = class ~ " md-nav--integrated" %}
 {% endif %}
 
-<!-- Main navigation -->
+<!-- Navigation -->
 <nav
   class="{{ class }}"
   aria-label="{{ lang.t('nav.title') }}"
@@ -57,7 +57,7 @@
     </div>
   {% endif %}
 
-  <!-- Render item list -->
+  <!-- Navigation list -->
   <ul class="md-nav__list" data-md-scrollfix>
     {% for nav_item in nav %}
       {% set path = "__nav_" ~ loop.index %}

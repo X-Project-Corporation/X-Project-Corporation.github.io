@@ -18,13 +18,13 @@
   {% endif %}
   {% if nav_item.children %}
     {% set title = title | d(nav_item.title) %}
-    {% set nav_item = nav_item.children | first %}
-    {% if nav_item.children %}
-      {% include "partials/tabs-item.html" %}
+    {% set first = nav_item.children | first %}
+    {% if first.children %}
+      {{ render(first, title) }}
     {% else %}
       <li class="md-tabs__item">
-        <a href="{{ nav_item.url | url }}" class="{{ class }}">
-          {{ render_content(nav_item, title) }}
+        <a href="{{ first.url | url }}" class="{{ class }}">
+          {{ render_content(first, title) }}
         </a>
       </li>
     {% endif %}
