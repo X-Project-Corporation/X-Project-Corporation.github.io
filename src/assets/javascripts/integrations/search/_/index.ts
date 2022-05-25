@@ -262,6 +262,8 @@ export class Search {
             .join("* ")
         })
 
+        console.log(query)
+
         /* Parse query to extract clauses for analysis */
         const clauses = parseSearchQuery(query)
           .filter(clause => (

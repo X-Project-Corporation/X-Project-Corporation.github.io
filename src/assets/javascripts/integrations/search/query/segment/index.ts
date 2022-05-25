@@ -72,6 +72,10 @@ export function segment(
     segments.add(query.slice(p, q))
   }
 
+  // @todo fix this case in the code block above, this is a hotfix
+  if (segments.has(""))
+    return new Set([query])
+
   /* Return segmented query value */
   return segments
 }
