@@ -257,10 +257,10 @@ export class Search {
       try {
 
         // Experimental Chinese segmentation
-        if (`${lunr.tokenizer.separator}`.includes("\\u200b"))
-          query = [...segment(query, this.index.invertedIndex)]
-            .map(part => `${part}*`)
-            .join(" ")
+        query = query.replace(/\p{sc=Han}+/gu, value => {
+          return [...segment(value, this.index.invertedIndex)]
+            .join("* ")
+        })
 
         /* Parse query to extract clauses for analysis */
         const clauses = parseSearchQuery(query)
