@@ -81,6 +81,10 @@
     // Typeset `table` color shades
     --md-typeset-table-color:          hsla(var(--md-hue), 75%, 95%, 0.12);
 
+    // Admonition color shades
+    --md-admonition-fg-color:          var(--md-default-fg-color);
+    --md-admonition-bg-color:          var(--md-default-bg-color);
+
     // Footer color shades
     --md-footer-bg-color:              hsla(var(--md-hue), 15%, 12%, 0.87);
     --md-footer-bg-color--dark:        hsla(var(--md-hue), 15%, 10%, 1);
