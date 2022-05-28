@@ -134,6 +134,7 @@ export function mountBackToTop(
   el: HTMLElement, { viewport$, header$, main$, target$ }: MountOptions
 ): Observable<Component<BackToTop>> {
   const push$ = new Subject<BackToTop>()
+  const done$ = push$.pipe(takeLast(1))
   push$.subscribe({
 
     /* Handle emission */
@@ -158,7 +159,7 @@ export function mountBackToTop(
   /* Watch header height */
   header$
     .pipe(
-      takeUntil(push$.pipe(endWith(0), takeLast(1))),
+      takeUntil(done$),
       distinctUntilKeyChanged("height")
     )
       .subscribe(({ height }) => {

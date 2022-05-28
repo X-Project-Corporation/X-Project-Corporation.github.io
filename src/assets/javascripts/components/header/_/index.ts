@@ -183,6 +183,7 @@ export function mountHeader(
 ): Observable<Component<Header | Tooltip>> {
   return defer(() => {
     const push$ = new Subject<Main>()
+    const done$ = push$.pipe(takeLast(1))
     push$
       .pipe(
         distinctUntilKeyChanged("active"),
@@ -204,7 +205,6 @@ export function mountHeader(
     main$.subscribe(push$)
 
     /* Create and return component */
-    const done$ = push$.pipe(takeLast(1))
     return header$
       .pipe(
         takeUntil(done$),

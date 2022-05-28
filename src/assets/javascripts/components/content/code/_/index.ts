@@ -170,6 +170,7 @@ export function mountCodeBlock(
   /* Defer mounting of code block - see https://bit.ly/3vHVoVD */
   const factory$ = defer(() => {
     const push$ = new Subject<CodeBlock>()
+    const done$ = push$.pipe(takeLast(1))
     push$.subscribe(({ scrollable }) => {
       if (scrollable && hover)
         el.setAttribute("tabindex", "0")
@@ -212,7 +213,7 @@ export function mountCodeBlock(
               tooltip,
               watchElementSize(container)
                 .pipe(
-                  takeUntil(push$.pipe(takeLast(1))),
+                  takeUntil(done$),
                   map(({ width, height }) => width && height),
                   distinctUntilChanged(),
                   switchMap(active => active ? annotations$ : EMPTY)

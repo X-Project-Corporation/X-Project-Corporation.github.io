@@ -121,10 +121,11 @@ export function mountContentTabs(
   const container = getElement(".tabbed-labels", el)
   return defer(() => {
     const push$ = new Subject<ContentTabs>()
+    const done$ = push$.pipe(takeLast(1))
     combineLatest([push$, watchElementSize(el)])
       .pipe(
         auditTime(1, animationFrameScheduler),
-        takeUntil(push$.pipe(takeLast(1)))
+        takeUntil(done$)
       )
         .subscribe({
 
@@ -158,7 +159,7 @@ export function mountContentTabs(
       watchElementSize(container)
     ])
       .pipe(
-        takeUntil(push$.pipe(takeLast(1)))
+        takeUntil(done$)
       )
         .subscribe(([offset, size]) => {
           const content = getElementContentSize(container)
@@ -172,7 +173,7 @@ export function mountContentTabs(
       fromEvent(next, "click").pipe(map(() => +1))
     )
       .pipe(
-        takeUntil(push$.pipe(takeLast(1)))
+        takeUntil(done$)
       )
         .subscribe(direction => {
           const { width } = getElementSize(container)

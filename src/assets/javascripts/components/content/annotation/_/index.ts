@@ -136,6 +136,7 @@ export function mountAnnotation(
   /* Mount component on subscription */
   return defer(() => {
     const push$ = new Subject<Annotation>()
+    const done$ = push$.pipe(takeLast(1))
     push$.subscribe({
 
       /* Handle emission */
@@ -152,7 +153,6 @@ export function mountAnnotation(
     })
 
     /* Start animation only when annotation is visible */
-    const done$ = push$.pipe(takeLast(1))
     watchElementVisibility(el)
       .pipe(
         takeUntil(done$)

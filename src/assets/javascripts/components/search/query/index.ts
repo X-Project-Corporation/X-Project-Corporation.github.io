@@ -185,6 +185,7 @@ export function mountSearchQuery(
   el: HTMLInputElement, { tx$, rx$ }: SearchWorker, options: MountOptions
 ): Observable<Component<SearchQuery, HTMLInputElement>> {
   const push$ = new Subject<SearchQuery>()
+  const done$ = push$.pipe(takeLast(1))
 
   /* Handle value changes */
   push$
@@ -214,7 +215,7 @@ export function mountSearchQuery(
   /* Handle reset */
   fromEvent(el.form!, "reset")
     .pipe(
-      takeUntil(push$.pipe(takeLast(1)))
+      takeUntil(done$)
     )
       .subscribe(() => el.focus())
 

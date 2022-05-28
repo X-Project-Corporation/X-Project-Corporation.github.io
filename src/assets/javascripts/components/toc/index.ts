@@ -273,6 +273,7 @@ export function mountTableOfContents(
 ): Observable<Component<TableOfContents>> {
   return defer(() => {
     const push$ = new Subject<TableOfContents>()
+    const done$ = push$.pipe(takeLast(1))
     push$.subscribe(({ prev, next }) => {
 
       /* Look forward */
@@ -328,7 +329,7 @@ export function mountTableOfContents(
     if (feature("navigation.tracking"))
       viewport$
         .pipe(
-          takeUntil(push$.pipe(takeLast(1))),
+          takeUntil(done$),
           distinctUntilKeyChanged("offset"),
           debounceTime(250),
           skip(1),
