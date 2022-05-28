@@ -49,7 +49,8 @@ import {
   getElementSize,
   watchElementContentOffset,
   watchElementFocus,
-  watchElementOffset
+  watchElementOffset,
+  watchElementVisibility
 } from "~/browser"
 
 import { Component } from "../../../_"
@@ -150,6 +151,16 @@ export function mountAnnotation(
       }
     })
 
+    /* Start animation only when annotation is visible */
+    const done$ = push$.pipe(takeLast(1))
+    watchElementVisibility(el)
+      .pipe(
+        takeUntil(done$)
+      )
+        .subscribe(visible => {
+          el.toggleAttribute("data-md-visible", visible)
+        })
+
     /* Toggle tooltip presence to mitigate empty lines when copying */
     merge(
       push$.pipe(filter(({ active }) => active)),
@@ -205,7 +216,6 @@ export function mountAnnotation(
         })
 
     /* Allow to copy link without scrolling to anchor */
-    const done$ = push$.pipe(takeLast(1))
     fromEvent<MouseEvent>(index, "click")
       .pipe(
         takeUntil(done$),
