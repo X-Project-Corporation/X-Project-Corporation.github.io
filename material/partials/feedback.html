@@ -18,12 +18,9 @@
       <div class="md-feedback__inner">
         <div class="md-feedback__list">
           {% for rating in feedback.ratings %}
-            <button class="md-feedback__icon md-icon" type="submit" aria-label="{{ rating.name }}" data-md-value="{{ rating.data }}">
+            <button class="md-feedback__icon md-icon" type="submit" title="{{ rating.name }}" data-md-value="{{ rating.data }}">
               {% include ".icons/" ~ rating.icon ~ ".svg" %}
             </button>
-            <span class="md-feedback__name">
-              {{ rating.name }}
-            </span>
           {% endfor %}
         </div>
         <div class="md-feedback__note">

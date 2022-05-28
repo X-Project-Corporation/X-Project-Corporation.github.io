@@ -47,14 +47,11 @@
             <button
               class="md-feedback__icon md-icon"
               type="submit"
-              aria-label="{{ rating.name }}"
+              title="{{ rating.name }}"
               data-md-value="{{ rating.data }}"
             >
               {% include ".icons/" ~ rating.icon ~ ".svg" %}
             </button>
-            <span class="md-feedback__name">
-              {{ rating.name }}
-            </span>
           {% endfor %}
         </div>
 

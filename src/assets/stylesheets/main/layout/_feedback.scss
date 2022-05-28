@@ -54,7 +54,6 @@
     flex-wrap: wrap;
     align-content: baseline;
     justify-content: center;
-    min-height: px2rem(48px);
 
     // Feedback icon on hover
     &:hover .md-icon:not(:disabled) {
@@ -85,31 +84,6 @@
       color: var(--md-default-fg-color--lightest);
       pointer-events: none;
     }
-  }
-
-  // Feedback name
-  &__name {
-    position: absolute;
-    top: px2rem(24px);
-    width: 100%;
-    color: var(--md-default-fg-color--light);
-    font-size: px2rem(13.6px);
-    transform: translateY(px2rem(8px));
-    opacity: 0;
-    transition:
-      transform 400ms cubic-bezier(0.1, 0.7, 0.1, 1),
-      opacity   150ms;
-
-    // Hide after submission
-    :disabled & {
-      display: none;
-    }
-  }
-
-  // Feedback name on icon hover
-  &__icon:hover + &__name {
-    transform: translateX(0);
-    opacity: 1;
   }
 
   // Feedback note
