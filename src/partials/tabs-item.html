@@ -20,6 +20,12 @@
   IN THE SOFTWARE.
 -->
 
+<!-- Determine class according to state -->
+{% set class = "md-tabs__link" %}
+{% if nav_item.active %}
+  {% set class = class ~ " md-tabs__link--active" %}
+{% endif %}
+
 <!-- Render navigation link content -->
 {% macro render_content(nav_item, title) %}
 
@@ -36,14 +42,6 @@
 
 <!-- Render navigation item -->
 {% macro render(nav_item) %}
-
-  <!-- Determine class according to state -->
-  {% if not class %}
-    {% set class = "md-tabs__link" %}
-    {% if nav_item.active %}
-      {% set class = class ~ " md-tabs__link--active" %}
-    {% endif %}
-  {% endif %}
 
   <!-- Navigation item with nested items -->
   {% if nav_item.children %}
