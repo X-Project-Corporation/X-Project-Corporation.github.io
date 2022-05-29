@@ -13,7 +13,7 @@
   {% endif %}
   {{ title or nav_item.title }}
 {% endmacro %}
-{% macro render(nav_item) %}
+{% macro render(nav_item, title) %}
   {% if nav_item.children %}
     {% set title = title | d(nav_item.title) %}
     {% set first = nav_item.children | first %}
