@@ -54,7 +54,7 @@
     transform: translate(50%, 0);
   }
 
-  // Hidden back-to-top button
+  // Back-to-top button is hidden
   &--hidden {
     transform: translate(-50%, px2rem(4px));
     opacity: 0;

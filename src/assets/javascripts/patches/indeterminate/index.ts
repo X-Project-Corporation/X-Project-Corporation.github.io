@@ -63,7 +63,7 @@ export function patchIndeterminate(
   document$
     .pipe(
       switchMap(() => getElements<HTMLInputElement>(
-        // TODO: `data-md-state` is deprecated and removed in v9
+        // @todo `data-md-state` is deprecated and removed in v9
         ".md-toggle--indeterminate, [data-md-state=indeterminate]"
       )),
       tap(el => {

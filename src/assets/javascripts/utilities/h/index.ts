@@ -109,7 +109,6 @@ export function h<T extends h.JSX.Element>(
         el.setAttribute(attr, attributes[attr])
       else
         el.setAttribute(attr, "")
-
     }
 
   /* Append child nodes */

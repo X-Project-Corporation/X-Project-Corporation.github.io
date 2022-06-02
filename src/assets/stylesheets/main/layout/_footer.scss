@@ -36,10 +36,14 @@
 
   // Footer wrapper
   &__inner {
-    display: flex;
     justify-content: space-between;
     padding: px2rem(4px);
     overflow: auto;
+
+    // Footer is visible
+    &:not([hidden]) {
+      display: flex;
+    }
   }
 
   // Footer link to previous and next page
