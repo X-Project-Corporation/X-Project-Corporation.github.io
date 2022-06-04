@@ -33,6 +33,30 @@ See additional configuration options:
   [Attribute Lists]: ../setup/extensions/python-markdown.md#attribute-lists
   [Snippets]: ../setup/extensions/python-markdown-extensions.md#snippets
 
+### Improved tooltips :material-alert-decagram:{ title="Added on May 8, 2022" }
+
+[:octicons-heart-fill-24:{ .mdx-heart } Sponsors only][Insiders]{ .mdx-insiders } ·
+[:octicons-tag-24: insiders-4.15.0][Insiders] ·
+:octicons-beaker-24: Experimental
+
+When improved tooltips are enabled, Material for MkDocs replaces the browser's
+rendering logic for `title` attribute with beautiful little tooltips.
+Add the following lines to `mkdocs.yml`:
+
+``` yaml
+theme:
+  features:
+    - content.tooltips
+```
+
+Now, tooltips will be rendered for the following elements:
+
+- __Content__ – elements with a `title`, permalinks and copy-to-clipboard button
+- __Header__ – home button, header title, color palette switch and repository link
+- __Navigation__ – links that are shortened with ellipsis, i.e. `...`
+
+[Insiders]: ../insiders/index.md
+
 ## Usage
 
 ### Adding tooltips
