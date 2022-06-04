@@ -89,8 +89,15 @@ class SearchIndex(BaseIndex):
         elif section.id:
             url = url + f"#{section.id}"
 
+        # Set page title as section title if none was given, which happens when
+        # the first headline in a Markdown document is not a h1 headline. Also,
+        # if a page title was set via front matter, use that even though a h1
+        # might be given or the page name was specified in nav in mkdocs.yml
+        if not section.title:
+            section.title = page.meta.get("title", page.title)
+
         # Compute title and text
-        title = "".join(section.title or page.title).strip()
+        title = "".join(section.title).strip()
         text  = "".join(section.text).strip()
 
         # Segment Chinese characters if jieba is available
