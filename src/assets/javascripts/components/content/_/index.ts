@@ -120,7 +120,7 @@ export function mountContent(
 
     /* Content tabs */
     ...getElements("[data-tabs]", el)
-      .map(child => mountContentTabs(child)),
+      .map(child => mountContentTabs(child, { target$ })),
 
     /* Tooltips */
     ...getElements("[title]", el)

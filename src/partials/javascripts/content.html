@@ -37,3 +37,12 @@
       }
   </script>
 {% endif %}
+
+<!-- Switch to content tab target -->
+<script>
+  var hash = location.hash.slice(1)
+  if (hash.startsWith("__tabbed_")) {
+    var input = document.getElementById(hash)
+    input.checked = true
+  }
+</script>

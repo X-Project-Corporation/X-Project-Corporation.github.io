@@ -162,6 +162,11 @@
       &:hover {
         color: var(--md-accent-fg-color);
       }
+
+      // Tab label anchor link
+      > [href^="#__tabbed_"] {
+        color: inherit;
+      }
     }
   }
 
