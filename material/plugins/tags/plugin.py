@@ -79,7 +79,7 @@ class TagsPlugin(BasePlugin):
     # Build and render tags index page
     def on_page_markdown(self, markdown, page, **kwargs):
         if page.file == self.tags_file:
-            return self.__render_tag_index(markdown)
+            return self._render_tag_index(markdown)
 
         # Add page to tags index
         for tag in page.meta.get("tags", []):
@@ -89,25 +89,25 @@ class TagsPlugin(BasePlugin):
     def on_page_context(self, context, page, **kwargs):
         if "tags" in page.meta:
             context["tags"] = [
-                self.__render_tag(tag)
+                self._render_tag(tag)
                     for tag in page.meta["tags"]
             ]
 
     # -------------------------------------------------------------------------
 
     # Render tags index
-    def __render_tag_index(self, markdown):
+    def _render_tag_index(self, markdown):
         if not "[TAGS]" in markdown:
             markdown += "\n[TAGS]"
 
         # Replace placeholder in Markdown with rendered tags index
         return markdown.replace("[TAGS]", "\n".join([
-            self.__render_tag_links(*args)
+            self._render_tag_links(*args)
                 for args in sorted(self.tags.items())
         ]))
 
     # Render the given tag and links to all pages with occurrences
-    def __render_tag_links(self, tag, pages):
+    def _render_tag_links(self, tag, pages):
         icon = f"md-tag-icon md-tag-icon--{self.slugify(tag)}"
         content = [f"## <span class=\"md-tag {icon}\">{tag}</span>", ""]
         for page in pages:
@@ -127,7 +127,7 @@ class TagsPlugin(BasePlugin):
         return "\n".join(content)
 
     # Render the given tag, linking to the tags index (if enabled)
-    def __render_tag(self, tag):
+    def _render_tag(self, tag):
         type = self.mapping.get(tag)
         if not self.tags_file or not self.slugify:
             return dict(name = tag, type = type)

@@ -102,8 +102,8 @@ class SearchIndex(BaseIndex):
 
         # Segment Chinese characters if jieba is available
         if jieba:
-            title = self.__segment_chinese(title)
-            text  = self.__segment_chinese(text)
+            title = self._segment_chinese(title)
+            text  = self._segment_chinese(text)
 
         # Reset text, if only titles should be indexed
         if self.config["indexing"] == "titles":
@@ -136,7 +136,7 @@ class SearchIndex(BaseIndex):
         self._entries.append(entry)
 
     # Find and segment Chinese characters in string
-    def __segment_chinese(self, data):
+    def _segment_chinese(self, data):
         expr = re.compile(r'(\p{IsHan}+)', re.UNICODE)
 
         # Parse occurrences and replace in reverse

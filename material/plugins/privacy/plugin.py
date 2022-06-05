@@ -106,7 +106,7 @@ class PrivacyPlugin(BasePlugin):
 
                 # Check if URL is external
                 url = urlparse(raw)
-                if not self.__is_external(url):
+                if not self._is_external(url):
                     continue
 
                 # Replace external preconnect hint in output
@@ -118,7 +118,7 @@ class PrivacyPlugin(BasePlugin):
                 if rel == "stylesheet":
                     output = "".join([
                         output[:l],
-                        value.replace(raw, self.__fetch(url, page)),
+                        value.replace(raw, self._fetch(url, page)),
                         output[r:]
                     ])
 
@@ -128,13 +128,13 @@ class PrivacyPlugin(BasePlugin):
 
                 # Check if URL is external
                 url = urlparse(raw)
-                if not self.__is_external(url):
+                if not self._is_external(url):
                     continue
 
                 # Replace external script or image in output
                 output = "".join([
                     output[:l],
-                    value.replace(raw, self.__fetch(url, page)),
+                    value.replace(raw, self._fetch(url, page)),
                     output[r:]
                 ])
 
@@ -156,18 +156,18 @@ class PrivacyPlugin(BasePlugin):
             if full.endswith(".css") or full.endswith(".js"):
                 with open(full, encoding = "utf-8") as f:
                     utils.write_file(
-                        self.__fetch_dependents(f.read(), file.dest_path),
+                        self._fetch_dependents(f.read(), file.dest_path),
                         full
                     )
 
     # -------------------------------------------------------------------------
 
     # Check if the given URL is external
-    def __is_external(self, url):
+    def _is_external(self, url):
         return url.hostname != self.base_url.hostname
 
     # Check if the given URL is excluded
-    def __is_excluded(self, url, base):
+    def _is_excluded(self, url, base):
         url = re.sub(r'^https?:\/\/', "", url)
         for pattern in self.config.get("externals_exclude"):
             if fnmatch(url, pattern):
@@ -180,11 +180,11 @@ class PrivacyPlugin(BasePlugin):
             return True
 
     # Fetch external resource in given page
-    def __fetch(self, url, page):
+    def _fetch(self, url, page):
         raw = url.geturl()
 
         # Check if URL is excluded
-        if self.__is_excluded(raw, page.file.dest_path):
+        if self._is_excluded(raw, page.file.dest_path):
             return raw
 
         # Download file if it's not contained in the cache
@@ -230,7 +230,7 @@ class PrivacyPlugin(BasePlugin):
             if extension == ".css" or extension == ".js":
                 with open(file, encoding = "utf-8") as f:
                     utils.write_file(
-                        self.__fetch_dependents(f.read(), path),
+                        self._fetch_dependents(f.read(), path),
                         full
                     )
 
@@ -245,7 +245,7 @@ class PrivacyPlugin(BasePlugin):
         )
 
     # Fetch dependent resources in external assets
-    def __fetch_dependents(self, output, base):
+    def _fetch_dependents(self, output, base):
 
         # Fetch external assets in style sheet
         if base.endswith(".css"):
@@ -272,11 +272,11 @@ class PrivacyPlugin(BasePlugin):
 
             # Check if URL is external
             url = urlparse(raw)
-            if not self.__is_external(url):
+            if not self._is_external(url):
                 continue
 
             # Check if URL is excluded
-            if self.__is_excluded(raw, base):
+            if self._is_excluded(raw, base):
                 continue
 
             # Download file if it's not contained in the cache

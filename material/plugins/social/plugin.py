@@ -80,8 +80,8 @@ class SocialPlugin(BasePlugin):
         self.color = { **self.color, **self.config.get("cards_color") }
 
         # Retrieve logo and font
-        self.logo = self.__load_logo(config)
-        self.font = self.__load_font(config)
+        self.logo = self._load_logo(config)
+        self.font = self._load_font(config)
 
     # Create social cards
     def on_page_markdown(self, markdown, page, config, **kwargs):
@@ -121,7 +121,7 @@ class SocialPlugin(BasePlugin):
         ]).encode("utf-8"))
         file = os.path.join(self.cache, f"{hash.hexdigest()}.png")
         if not os.path.isfile(file):
-            image = self.__render_card(site_name, title, description)
+            image = self._render_card(site_name, title, description)
             image.save(file)
 
         # Copy file from cache
@@ -129,16 +129,16 @@ class SocialPlugin(BasePlugin):
 
         # Inject meta tags into page
         meta = page.meta.get("meta", [])
-        page.meta["meta"] = meta + self.__generate_meta(page, config)
+        page.meta["meta"] = meta + self._generate_meta(page, config)
 
     # -------------------------------------------------------------------------
 
     # Render social card
-    def __render_card(self, site_name, title, description):
+    def _render_card(self, site_name, title, description):
         logo = self.logo
 
         # Render background and logo
-        image = self.__render_card_background((1200, 630), self.color["fill"])
+        image = self._render_card_background((1200, 630), self.color["fill"])
         image.alpha_composite(
             logo.resize((144, int(144 * logo.height / logo.width))),
             (1200 - 228, 64 - 4)
@@ -147,21 +147,21 @@ class SocialPlugin(BasePlugin):
         # Render site name
         font = ImageFont.truetype(self.font["Bold"], 36)
         image.alpha_composite(
-            self.__render_text((826, 48), font, site_name, 1, 20),
+            self._render_text((826, 48), font, site_name, 1, 20),
             (64 + 4, 64)
         )
 
         # Render page title
         font = ImageFont.truetype(self.font["Bold"], 92)
         image.alpha_composite(
-            self.__render_text((826, 328), font, title, 3, 30),
+            self._render_text((826, 328), font, title, 3, 30),
             (64, 160)
         )
 
         # Render page description
         font = ImageFont.truetype(self.font["Regular"], 28)
         image.alpha_composite(
-            self.__render_text((826, 80), font, description, 2, 14),
+            self._render_text((826, 80), font, description, 2, 14),
             (64 + 4, 512)
         )
 
@@ -169,11 +169,11 @@ class SocialPlugin(BasePlugin):
         return image
 
     # Render social card background
-    def __render_card_background(self, size, fill):
+    def _render_card_background(self, size, fill):
         return Image.new(mode = "RGBA", size = size, color = fill)
 
     # Render social card text
-    def __render_text(self, size, font, text, lmax, spacing = 0):
+    def _render_text(self, size, font, text, lmax, spacing = 0):
         lines, words = [], []
 
         # Remove remnant HTML tags
@@ -226,7 +226,7 @@ class SocialPlugin(BasePlugin):
     # -------------------------------------------------------------------------
 
     # Generate meta tags
-    def __generate_meta(self, page, config):
+    def _generate_meta(self, page, config):
         directory = self.config.get("cards_directory")
         file, _ = os.path.splitext(page.file.src_path)
 
@@ -273,7 +273,7 @@ class SocialPlugin(BasePlugin):
         ]
 
     # Retrieve logo image or icon
-    def __load_logo(self, config):
+    def _load_logo(self, config):
         theme = config.get("theme")
 
         # Handle images (precedence over icons)
@@ -283,7 +283,7 @@ class SocialPlugin(BasePlugin):
             # Load SVG and convert to PNG
             path = os.path.join(config.get("docs_dir"), theme["logo"])
             if extension == ".svg":
-                return self.__load_logo_svg(path)
+                return self._load_logo_svg(path)
 
             # Load PNG, JPEG, etc.
             return Image.open(path).convert("RGBA")
@@ -302,10 +302,10 @@ class SocialPlugin(BasePlugin):
 
         # Load icon data and fill with color
         path = f"{base}/.icons/{logo}.svg"
-        return self.__load_logo_svg(path, self.color["text"])
+        return self._load_logo_svg(path, self.color["text"])
 
     # Load SVG file and convert to PNG
-    def __load_logo_svg(self, path, fill = None):
+    def _load_logo_svg(self, path, fill = None):
         file = BytesIO()
         data = open(path).read()
 
@@ -318,7 +318,7 @@ class SocialPlugin(BasePlugin):
         return Image.open(file)
 
     # Retrieve font
-    def __load_font(self, config):
+    def _load_font(self, config):
         name = self.config.get("cards_font")
         if not name:
 
@@ -332,7 +332,7 @@ class SocialPlugin(BasePlugin):
         # Retrieve font files, if not already done
         files = os.listdir(self.cache)
         files = [file for file in files if file.endswith(".ttf") or file.endswith(".otf")] or (
-            self.__load_font_from_google(name)
+            self._load_font_from_google(name)
         )
 
         # Map available font weights to file paths
@@ -346,7 +346,7 @@ class SocialPlugin(BasePlugin):
         return defaultdict(lambda: font["Regular"], font)
 
     # Retrieve font from Google Fonts
-    def __load_font_from_google(self, name):
+    def _load_font_from_google(self, name):
         url = "https://fonts.google.com/download?family={}"
         res = requests.get(url.format(name.replace(" ", "+")), stream = True)
 
