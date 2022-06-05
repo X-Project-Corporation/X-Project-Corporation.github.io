@@ -18,6 +18,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import os
 import logging
 import regex as re
 
@@ -26,6 +27,7 @@ from html.parser import HTMLParser
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
 from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
+from mkdocs.config import config_options
 
 try:
     import jieba
@@ -39,8 +41,28 @@ except ImportError:
 # Search plugin with custom search index
 class SearchPlugin(BasePlugin):
 
+    config_scheme = (
+        *BasePlugin.config_scheme,
+        ("jieba_dict", config_options.Type(str, default="")),
+        ("jieba_dict_user", config_options.Type(str, default="")),
+    )
+
     # Override: use custom search index
     def on_pre_build(self, config):
+        # Load Chinese dictionary and user dictionary if jieba is available
+        if jieba:
+            jieba_dict = self.config["jieba_dict"]
+            jieba_dict_user = self.config["jieba_dict_user"]
+            if os.path.exists(jieba_dict):
+                jieba.set_dictionary(jieba_dict)
+                log.info(f"Load jieba dictionary: {jieba_dict}")
+            elif jieba_dict != "":
+                log.warning(f"jieba_dict: {jieba_dict} does not exist.")
+            if os.path.exists(jieba_dict_user):
+                jieba.load_userdict(jieba_dict_user)
+                log.info(f"Load jieba user dictionary: {jieba_dict_user}")
+            elif jieba_dict_user != "":
+                log.warning(f"jieba_dict_user: {jieba_dict_user} does not exist.")
         self.search_index = SearchIndex(**self.config)
         if self.config["prebuild_index"]:
             log.warning(
