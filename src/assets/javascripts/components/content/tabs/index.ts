@@ -205,6 +205,7 @@ export function mountContentTabs(
         .subscribe(input => input.click())
 
     /* Add link to each content tab label */
+    container.classList.add("tabbed-labels--linked")
     for (const input of inputs) {
       const label = getElement<HTMLLabelElement>(`label[for=${input.id}]`)
       label.replaceChildren(h("a", {
@@ -220,7 +221,10 @@ export function mountContentTabs(
           tap(ev => ev.preventDefault())
         )
           // @todo we might need to remove the anchor link on complete
-          .subscribe(() => label.click())
+          .subscribe(() => {
+            history.replaceState({}, "", `#${label.htmlFor}`)
+            label.click()
+          })
     }
 
     /* Set up linking of content tabs, if enabled */
