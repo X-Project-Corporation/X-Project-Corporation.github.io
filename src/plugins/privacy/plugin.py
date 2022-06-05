@@ -54,7 +54,7 @@ class PrivacyPlugin(BasePlugin):
         ("download_directory", Deprecated(moved_to = "externals_directory")),
     )
 
-    # Determine base and initialize resource mappings
+    # Determine base URL and directory
     def on_config(self, config):
         self.base_url = urlparse(config.get("site_url"))
         self.base_dir = config.get("site_dir")

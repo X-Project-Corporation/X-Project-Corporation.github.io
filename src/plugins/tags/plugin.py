@@ -48,7 +48,7 @@ class TagsPlugin(BasePlugin):
         self.slugify = None
         self.mapping = {}
 
-    # Retrieve configuration for anchor generation
+    # Determine slugify function and tag mappings
     def on_config(self, config):
         if "toc" in config["markdown_extensions"]:
             toc = { "slugify": slugify, "separator": "-" }
