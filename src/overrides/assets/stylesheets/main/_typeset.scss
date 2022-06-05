@@ -92,9 +92,8 @@
     animation: heart 1000ms infinite;
   }
 
-  // New
-  .twemoji[title^="Added"],
-  .twemoji[aria-describedby] {
+  // New pulse
+  .mdx-pulse {
     animation: new 2000ms infinite;
 
     // Actual icon
