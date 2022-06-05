@@ -49,7 +49,7 @@ class SearchPlugin(BasePlugin):
         ("jieba_dict_user", config_options.Type(str, default = "")),
     )
 
-    # Override: use custom search index
+    # Override: use custom search index and setup jieba, if available
     def on_pre_build(self, config):
         self.search_index = SearchIndex(**self.config)
         if self.config["prebuild_index"]:
