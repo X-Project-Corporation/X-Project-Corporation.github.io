@@ -28,6 +28,12 @@
   {% set cookies = { "analytics": "Google Analytics" } %}
 {% endif %}
 
+<!-- Determine actions -->
+{% set actions = config.extra.consent.actions %}
+{% if not actions %}
+  {% set actions = ["accept", "manage"] %}
+{% endif %}
+
 <!-- Consent title -->
 <h4>{{ config.extra.consent.title }}</h4>
 <p>{{ config.extra.consent.description }}</p>
@@ -59,10 +65,27 @@
 
 <!-- Consent controls -->
 <div class="md-consent__controls">
-  <label class="md-button" for="__settings">
-    {{- lang.t("consent.manage") -}}
-  </label>
-  <button class="md-button md-button--primary">
-    {{- lang.t("consent.accept") -}}
-  </button>
+  {% for action in actions %}
+
+    <!-- Button to accept cookies -->
+    {% if action == "accept" %}
+      <button class="md-button md-button--primary">
+        {{- lang.t("consent.accept") -}}
+      </button>
+    {% endif %}
+
+    <!-- Button to reject cookies -->
+    {% if action == "reject" %}
+      <button type="reset" class="md-button md-button--primary">
+        {{- lang.t("consent.reject") -}}
+      </button>
+    {% endif %}
+
+    <!-- Button to manage settings -->
+    {% if action == "manage" %}
+      <label class="md-button" for="__settings">
+        {{- lang.t("consent.manage") -}}
+      </label>
+    {% endif %}
+  {% endfor %}
 </div>

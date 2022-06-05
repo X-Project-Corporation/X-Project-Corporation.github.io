@@ -22,33 +22,41 @@
 
 <!-- User-preference: consent -->
 <script>
-  var consent = __md_get("__consent")
+  const consent = __md_get("__consent")
   if (consent) {
-    for (var input of document.forms.consent.elements)
+    for (const input of document.forms.consent.elements)
       if (input.name)
         input.checked = consent[input.name] || false
 
   /* Show consent with a small delay, but not if browsing locally */
   } else if (location.protocol !== "file:") {
     setTimeout(function() {
-      var el = document.querySelector("[data-md-component=consent]")
+      const el = document.querySelector("[data-md-component=consent]")
       el.hidden = false
     }, 250)
   }
 
   /* Intercept submission of consent form */
-  var form = document.forms.consent
-  form.addEventListener("submit", function(ev) {
-    ev.preventDefault()
+  const form = document.forms.consent
+  for (const action of ["submit", "reset"])
+    form.addEventListener(action, function(ev) {
+      ev.preventDefault()
 
-    /* Grab and serialize form data */
-    __md_set("__consent", Object.fromEntries(
-      Array.from(new FormData(form).keys())
-        .map(function(key) { return [key, true] })
-    ))
+      /* Reject all cookies */
+      if (action === "reset")
+        for (const input of document.forms.consent.elements)
+          if (input.name)
+            input.checked = false
 
-    /* Remove anchor to omit consent from reappearing and reload */
-    location.hash = '';
-    location.reload()
-  })
+      /* Grab and serialize form data */
+      console.log(new FormData(form))
+      __md_set("__consent", Object.fromEntries(
+        Array.from(new FormData(form).keys())
+          .map(function(key) { return [key, true] })
+      ))
+
+      /* Remove anchor to omit consent from reappearing and reload */
+      location.hash = '';
+      location.reload()
+    })
 </script>
