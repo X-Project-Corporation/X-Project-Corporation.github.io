@@ -123,7 +123,6 @@ extra:
           note: >-
             Thanks for your feedback! Help us improve this page by
             <a href="https://docs.google.com/forms/d/e/1FAIpQLSe8L5YDggZiVjgvBKfv-XCdbQAEJrseRh8MBh-jS92TU2aqzw/viewform?usp=pp_url&entry.853143515={url}" target=_blank>telling us what you're missing</a>.
-
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/squidfunk
