@@ -39,6 +39,18 @@
   }
 }
 
+// New animation
+@keyframes new {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  50% {
+    transform: scale(1.15) rotate(10deg);
+  }
+}
+
 // ----------------------------------------------------------------------------
 // Rules
 // ----------------------------------------------------------------------------
@@ -78,6 +90,17 @@
   // Pumping heart
   .mdx-heart {
     animation: heart 1000ms infinite;
+  }
+
+  // New
+  .twemoji[title^="Added"],
+  .twemoji[aria-describedby] {
+    animation: new 2000ms infinite;
+
+    // Actual icon
+    svg {
+      fill: var(--md-accent-fg-color);
+    }
   }
 
   // Insiders color (for links, etc.)
