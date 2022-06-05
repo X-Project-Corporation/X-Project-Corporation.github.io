@@ -22,29 +22,29 @@
 
 <!-- User-preference: consent -->
 <script>
-  const consent = __md_get("__consent")
+  var consent = __md_get("__consent")
   if (consent) {
-    for (const input of document.forms.consent.elements)
+    for (var input of document.forms.consent.elements)
       if (input.name)
         input.checked = consent[input.name] || false
 
   /* Show consent with a small delay, but not if browsing locally */
   } else if (location.protocol !== "file:") {
     setTimeout(function() {
-      const el = document.querySelector("[data-md-component=consent]")
+      var el = document.querySelector("[data-md-component=consent]")
       el.hidden = false
     }, 250)
   }
 
   /* Intercept submission of consent form */
-  const form = document.forms.consent
-  for (const action of ["submit", "reset"])
+  var form = document.forms.consent
+  for (var action of ["submit", "reset"])
     form.addEventListener(action, function(ev) {
       ev.preventDefault()
 
       /* Reject all cookies */
-      if (action === "reset")
-        for (const input of document.forms.consent.elements)
+      if (ev.type === "reset")
+        for (var input of document.forms.consent.elements)
           if (input.name)
             input.checked = false
 
