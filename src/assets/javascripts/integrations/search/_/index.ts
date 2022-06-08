@@ -208,6 +208,7 @@ export class Search {
           tables[document.location][field] = []
           if (Array.isArray(document[field])) {
             const values = document[field] as string[]
+            // lunr.tokenizer(
             return values.map(value => ({
               toString() { return value },
               table: tables[document.location][field]
