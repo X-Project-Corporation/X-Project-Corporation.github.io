@@ -131,6 +131,7 @@ export function mountPalette(
         )!
 
         /* Retrieve colors for system preference */
+        palette.color.media   = input.getAttribute("data-md-color-media")!
         palette.color.scheme  = input.getAttribute("data-md-color-scheme")!
         palette.color.primary = input.getAttribute("data-md-color-primary")!
         palette.color.accent  = input.getAttribute("data-md-color-accent")!
