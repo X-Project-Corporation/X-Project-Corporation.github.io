@@ -188,8 +188,7 @@ class PrivacyPlugin(BasePlugin):
             return raw
 
         # Download file if it's not contained in the cache
-        data = url._replace(scheme = "", query = "", fragment = "")
-        path = file = os.path.join(".cache", data.geturl()[2:])
+        path = file = os.path.join(".cache", self._resolve(url))
         if not os.path.isfile(file):
             log.debug(f"Downloading external file: {raw}")
             res = requests.get(raw, headers = {
@@ -280,8 +279,7 @@ class PrivacyPlugin(BasePlugin):
                 continue
 
             # Download file if it's not contained in the cache
-            data = url._replace(scheme = "", query = "", fragment = "")
-            file = os.path.join(".cache", data.geturl()[2:])
+            file = os.path.join(".cache", self._resolve(url))
             if not os.path.isfile(file):
                 log.debug(f"Downloading external file: {raw}")
                 res = requests.get(raw)
@@ -290,7 +288,7 @@ class PrivacyPlugin(BasePlugin):
             # Compute final path relative to output directory
             path = os.path.join(
                 self.config.get("externals_directory"),
-                data.geturl()[2:]
+                self._resolve(url)
             )
 
             # Create relative URL for asset in style sheet
@@ -314,6 +312,11 @@ class PrivacyPlugin(BasePlugin):
 
         # Return output with replaced occurrences
         return bytes(output, encoding = "utf8")
+
+    # Resolve filename with respect to operating system
+    def _resolve(self, url):
+        data = url._replace(scheme = "", query = "", fragment = "")
+        return os.path.sep.join(data.geturl()[2:].split("/"))
 
 # -----------------------------------------------------------------------------
 # Data
