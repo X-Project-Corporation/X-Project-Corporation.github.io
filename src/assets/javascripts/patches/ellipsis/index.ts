@@ -22,16 +22,20 @@
 
 import {
   Observable,
-  distinctUntilKeyChanged,
   filter,
   finalize,
+  map,
   mergeMap,
   skip,
   switchMap,
-  takeUntil
+  take,
+  takeUntil,
 } from "rxjs"
 
-import { Viewport, getElements } from "~/browser"
+import {
+  getElements,
+  watchElementVisibility
+} from "~/browser"
 import { mountTooltip } from "~/components"
 
 /* ----------------------------------------------------------------------------
@@ -43,7 +47,6 @@ import { mountTooltip } from "~/components"
  */
 interface PatchOptions {
   document$: Observable<Document>      /* Document observable */
-  viewport$: Observable<Viewport>      /* Viewport observable */
 }
 
 /* ----------------------------------------------------------------------------
@@ -53,16 +56,27 @@ interface PatchOptions {
 /**
  * Patch ellipsis
  *
+ * This function will fetch all elements that are shortened with ellipsis, and
+ * filter those which are visible. Once they become visible, they stay in that
+ * state, even though they may be hidden again. This optimization is necessary
+ * to reduce pressure on the browser, with elements fading in and out of view.
+ *
  * @param options - Options
  */
 export function patchEllipsis(
-  { document$, viewport$ }: PatchOptions
+  { document$ }: PatchOptions
 ): void {
-  const poll$ = viewport$.pipe(distinctUntilKeyChanged("size"))
   document$
     .pipe(
-      switchMap(() => poll$),
       switchMap(() => getElements(".md-ellipsis")),
+      mergeMap(el => watchElementVisibility(el)
+        .pipe(
+          takeUntil(document$.pipe(skip(1))),
+          filter(visible => visible),
+          map(() => el),
+          take(1)
+        )
+      ),
       filter(el => el.offsetWidth < el.scrollWidth),
       mergeMap(el => {
         const text = el.innerText
@@ -72,8 +86,8 @@ export function patchEllipsis(
         /* Mount tooltip */
         return mountTooltip(host)
           .pipe(
-            finalize(() => host.removeAttribute("title")),
-            takeUntil(poll$.pipe(skip(1)))
+            takeUntil(document$.pipe(skip(1))),
+            finalize(() => host.removeAttribute("title"))
           )
       })
     )

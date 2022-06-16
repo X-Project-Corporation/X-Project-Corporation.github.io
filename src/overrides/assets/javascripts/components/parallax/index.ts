@@ -76,7 +76,7 @@ export function watchParallax(
     ...getElements(":scope [hidden]", el)
       .map(child => watchElementVisibility(child)
         .pipe(
-          filter(active => active),
+          filter(visible => visible),
           take(1),
           map(() => ({ active: child }))
         )

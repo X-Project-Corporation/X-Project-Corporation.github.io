@@ -191,7 +191,7 @@ keyboard$
     })
 
 /* Set up patches */
-patchEllipsis({ document$, viewport$ })
+patchEllipsis({ document$ })
 patchIndeterminate({ document$, tablet$ })
 patchScrollfix({ document$ })
 patchScrolllock({ viewport$, tablet$ })
