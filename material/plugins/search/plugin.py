@@ -249,7 +249,7 @@ class Parser(HTMLParser):
     This parser divides the given string of HTML into a list of sections, each
     of which are preceded by a h1-h6 level heading. A white- and blacklist of
     tags dictates which tags should be preserved as part of the index, and
-    which should be ignored in its entirety.
+    which should be ignored in their entirety.
     """
 
     # Initialize HTML parser
