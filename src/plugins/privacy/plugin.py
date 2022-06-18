@@ -30,7 +30,6 @@ from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config.config_options import Choice, Deprecated, Type
 from mkdocs.plugins import BasePlugin
-from shutil import copyfile
 from urllib.parse import urlparse
 
 # -----------------------------------------------------------------------------

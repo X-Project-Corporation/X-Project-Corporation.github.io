@@ -219,11 +219,7 @@ class Element:
 
     # Check whether the element should be excluded
     def is_excluded(self):
-        if "data-search-exclude" in self.attrs:
-            return True
-
-        # Element is not excluded
-        return False
+        return "data-search-exclude" in self.attrs
 
 # -----------------------------------------------------------------------------
 
