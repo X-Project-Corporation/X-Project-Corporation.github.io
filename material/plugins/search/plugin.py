@@ -44,7 +44,7 @@ class SearchPlugin(BasePlugin):
     config_scheme = (
         *BasePlugin.config_scheme,
 
-        # Chinese segmentation
+        # Options for Chinese segmentation
         ("jieba_dict", config_options.Type(str, default = "")),
         ("jieba_dict_user", config_options.Type(str, default = "")),
     )
@@ -180,7 +180,7 @@ class SearchIndex(BaseIndex):
             r = l + len(value)
 
             # Replace occurrence in original string with segmented version and
-            # surround with zero-width whitespace for efficient segmentation
+            # surround with zero-width whitespace for efficient indexing
             data = "".join([
                 data[:l],
                 "\u200b",
