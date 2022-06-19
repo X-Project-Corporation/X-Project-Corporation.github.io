@@ -355,7 +355,7 @@
     }
 
     // Search option buttons
-    > * {
+    > .md-icon {
       margin-inline-start: px2rem(4px);
       color: var(--md-default-fg-color--light);
       transform: scale(0.75);
@@ -370,7 +370,7 @@
         -webkit-tap-highlight-color: transparent;
       }
 
-      // Show reset button when search is active and input non-empty
+      // Show buttons when search is active and input non-empty
       [data-md-toggle="search"]:checked ~ .md-header
       .md-search__input:valid ~ & {
         transform: scale(1);
