@@ -45,8 +45,8 @@ class SearchPlugin(BasePlugin):
         *BasePlugin.config_scheme,
 
         # Options for Chinese segmentation
-        ("jieba_dict", config_options.Type(str, default = "")),
-        ("jieba_dict_user", config_options.Type(str, default = "")),
+        ("jieba_dict", config_options.Type(str, required = False)),
+        ("jieba_dict_user", config_options.Type(str, required = False)),
     )
 
     # Override: use custom search index and setup jieba, if available
@@ -100,7 +100,7 @@ class SearchIndex(BaseIndex):
     # Override: use custom content parser
     def add_entry_from_context(self, page):
         search = page.meta.get("search", {})
-        if "exclude" in search and search["exclude"]:
+        if search.get("exclude"):
             return
 
         # Divide page content into sections

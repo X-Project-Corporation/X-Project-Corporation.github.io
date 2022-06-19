@@ -46,7 +46,6 @@ class TagsPlugin(BasePlugin):
         self.tags = defaultdict(list)
         self.tags_file = None
         self.slugify = None
-        self.mapping = {}
 
     # Determine slugify function and tag mappings
     def on_config(self, config):
@@ -61,8 +60,7 @@ class TagsPlugin(BasePlugin):
             )
 
         # Retrieve tags mapping from configuration
-        if "tags" in config["extra"]:
-            self.mapping = config["extra"]["tags"]
+        self.mapping = config["extra"].get("tags", {})
 
     # Hack: 2nd pass for tags index page
     def on_nav(self, nav, files, **kwargs):

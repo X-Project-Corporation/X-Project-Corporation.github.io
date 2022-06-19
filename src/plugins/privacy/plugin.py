@@ -58,13 +58,13 @@ class PrivacyPlugin(BasePlugin):
     # Determine base URL and directory
     def on_config(self, config):
         self.base_url = urlparse(config.get("site_url"))
-        self.base_dir = config.get("site_dir")
-        self.cache = self.config.get("cache_dir")
+        self.base_dir = config["site_dir"]
+        self.cache = self.config["cache_dir"]
         self.files = []
 
     # Determine files that need to be post-processed
     def on_files(self, files, config):
-        if not self.config.get("enabled"):
+        if not self.config["enabled"]:
             return
 
         # Filter relevant files, short-circuit Lunr.js
@@ -84,7 +84,7 @@ class PrivacyPlugin(BasePlugin):
 
     # Parse, fetch and store external assets in pages
     def on_post_page(self, output, page, config):
-        if not self.config.get("enabled"):
+        if not self.config["enabled"]:
             return
 
         # Find all external resources
@@ -145,7 +145,7 @@ class PrivacyPlugin(BasePlugin):
 
     # Parse, fetch and store external assets in assets
     def on_post_build(self, config):
-        if not self.config.get("enabled"):
+        if not self.config["enabled"]:
             return
 
         # Check all files that are part of the build
@@ -171,13 +171,13 @@ class PrivacyPlugin(BasePlugin):
     # Check if the given URL is excluded
     def _is_excluded(self, url, base):
         url = re.sub(r'^https?:\/\/', "", url)
-        for pattern in self.config.get("externals_exclude"):
+        for pattern in self.config["externals_exclude"]:
             if fnmatch(url, pattern):
                 log.debug(f"Excluding external file in '{base}': {url}")
                 return True
 
         # Exclude all external assets if bundling is not enabled
-        if self.config.get("externals") == "report":
+        if self.config["externals"] == "report":
             log.warning(f"External file in '{base}': {url}")
             return True
 
@@ -223,7 +223,7 @@ class PrivacyPlugin(BasePlugin):
             file += extension
 
         # Compute final path relative to output directory
-        path = file.replace(self.cache, self.config.get("externals_dir"))
+        path = file.replace(self.cache, self.config["externals_dir"])
         full = os.path.join(self.base_dir, path)
         if not os.path.exists(full):
 
@@ -289,7 +289,7 @@ class PrivacyPlugin(BasePlugin):
 
             # Compute final path relative to output directory
             path = os.path.join(
-                self.config.get("externals_dir"),
+                self.config["externals_dir"],
                 self._resolve(url)
             )
 
