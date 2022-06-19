@@ -92,7 +92,7 @@
   // Navigation link
   &__link {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     margin-top: 0.625em;
     cursor: pointer;
@@ -298,6 +298,11 @@
       .md-nav__link {
         margin-top: 0;
         padding: px2rem(12px) px2rem(16px);
+
+        // Navigation link icon
+        svg {
+          margin-top: 0.1em;
+        }
 
         // Adjust spacing on nested link
         > .md-nav__link {
