@@ -26,7 +26,7 @@ from cairosvg import svg2png
 from collections import defaultdict
 from hashlib import md5
 from io import BytesIO
-from mkdocs.config.config_options import Type
+from mkdocs.config.config_options import Deprecated, Type
 from mkdocs.plugins import BasePlugin
 from PIL import Image, ImageDraw, ImageFont
 from shutil import copyfile
@@ -42,16 +42,22 @@ class SocialPlugin(BasePlugin):
 
     # Configuration scheme
     config_scheme = (
+        ("enabled", Type(bool, default = True)),
+        ("cache_dir", Type(str, default = ".cache/plugin/social")),
+
+        # Options for social cards
         ("cards", Type(bool, default = True)),
-        ("cards_directory", Type(str, default = "assets/images/social")),
+        ("cards_dir", Type(str, default = "assets/images/social")),
         ("cards_color", Type(dict, default = {})),
-        ("cards_font", Type(str, default = None))
+        ("cards_font", Type(str, default = None)),
+
+        # Deprecated options
+        ("cards_directory", Deprecated(moved_to = "cards_dir")),
     )
 
     # Initialize plugin
     def __init__(self):
         self.color = colors.get("indigo")
-        self.cache = ".cache"
 
     # Retrieve configuration for rendering
     def on_config(self, config):
@@ -59,6 +65,7 @@ class SocialPlugin(BasePlugin):
             return
 
         # Ensure presence of cache directory
+        self.cache = self.config.get("cache_dir")
         if not os.path.isdir(self.cache):
             os.makedirs(self.cache)
 
@@ -89,7 +96,7 @@ class SocialPlugin(BasePlugin):
             return
 
         # Resolve image directory
-        directory = self.config.get("cards_directory")
+        directory = self.config.get("cards_dir")
         file, _ = os.path.splitext(page.file.src_path)
 
         # Resolve path of image
@@ -227,7 +234,7 @@ class SocialPlugin(BasePlugin):
 
     # Generate meta tags
     def _generate_meta(self, page, config):
-        directory = self.config.get("cards_directory")
+        directory = self.config.get("cards_dir")
         file, _ = os.path.splitext(page.file.src_path)
 
         # Compute page title

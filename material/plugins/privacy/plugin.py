@@ -42,21 +42,24 @@ class PrivacyPlugin(BasePlugin):
     # Configuration scheme
     config_scheme = (
         ("enabled", Type(bool, default = True)),
+        ("cache_dir", Type(str, default = ".cache/plugin/privacy")),
 
         # Options for external assets
         ("externals", Choice(("bundle", "report"), default = "bundle")),
-        ("externals_directory", Type(str, default = "assets/externals")),
+        ("externals_dir", Type(str, default = "assets/externals")),
         ("externals_exclude", Type(list, default = [])),
 
         # Deprecated options
         ("download", Deprecated(moved_to = "enabled")),
-        ("download_directory", Deprecated(moved_to = "externals_directory")),
+        ("download_directory", Deprecated(moved_to = "externals_dir")),
+        ("externals_directory", Deprecated(moved_to = "externals_dir")),
     )
 
     # Determine base URL and directory
     def on_config(self, config):
         self.base_url = urlparse(config.get("site_url"))
         self.base_dir = config.get("site_dir")
+        self.cache = self.config.get("cache_dir")
         self.files = []
 
     # Determine files that need to be post-processed
@@ -187,7 +190,7 @@ class PrivacyPlugin(BasePlugin):
             return raw
 
         # Download file if it's not contained in the cache
-        path = file = os.path.join(".cache", self._resolve(url))
+        path = file = os.path.join(self.cache, self._resolve(url))
         if not os.path.isfile(file):
             log.debug(f"Downloading external file: {raw}")
             res = requests.get(raw, headers = {
@@ -220,7 +223,7 @@ class PrivacyPlugin(BasePlugin):
             file += extension
 
         # Compute final path relative to output directory
-        path = file.replace(".cache", self.config.get("externals_directory"))
+        path = file.replace(self.cache, self.config.get("externals_dir"))
         full = os.path.join(self.base_dir, path)
         if not os.path.exists(full):
 
@@ -278,7 +281,7 @@ class PrivacyPlugin(BasePlugin):
                 continue
 
             # Download file if it's not contained in the cache
-            file = os.path.join(".cache", self._resolve(url))
+            file = os.path.join(self.cache, self._resolve(url))
             if not os.path.isfile(file):
                 log.debug(f"Downloading external file: {raw}")
                 res = requests.get(raw)
@@ -286,7 +289,7 @@ class PrivacyPlugin(BasePlugin):
 
             # Compute final path relative to output directory
             path = os.path.join(
-                self.config.get("externals_directory"),
+                self.config.get("externals_dir"),
                 self._resolve(url)
             )
 
