@@ -149,7 +149,7 @@ class SearchIndex(BaseIndex):
         }
 
         # Add document tags, if any
-        if "tags" in page.meta:
+        if page.meta.get("tags"):
             if type(page.meta["tags"]) is list:
                 entry["tags"] = page.meta["tags"]
             else:
