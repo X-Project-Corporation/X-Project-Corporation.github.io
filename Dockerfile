@@ -64,6 +64,8 @@ RUN \
 && \
   if [ "${WITH_PLUGINS}" = "true" ]; then \
     pip install --no-cache-dir \
+      "mkdocs-git-committers-plugin-2>=0.4" \
+      "mkdocs-git-revision-date-localized-plugin>=1.0" \
       "mkdocs-minify-plugin>=0.3" \
       "mkdocs-redirects>=1.0"; \
   fi \
