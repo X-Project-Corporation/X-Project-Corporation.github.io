@@ -215,7 +215,13 @@ class PrivacyPlugin(BasePlugin):
             # Write contents and create symbolic link if necessary
             utils.write_file(res.content, file)
             if path != file:
-                os.symlink(os.path.basename(file), path)
+
+                # Creating symbolic links might fail on Windows. Thus, we just
+                # print a warning and continue - see https://bit.ly/3xYFzcZ
+                try:
+                    os.symlink(os.path.basename(file), path)
+                except OSError:
+                    log.warning(f"Couldn't create symbolic link for '{file}'")
 
         # Append file extension from file after resolving symbolic links
         _, extension = os.path.splitext(os.path.realpath(file))
