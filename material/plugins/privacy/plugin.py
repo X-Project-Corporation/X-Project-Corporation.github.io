@@ -30,6 +30,7 @@ from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config.config_options import Choice, Deprecated, Type
 from mkdocs.plugins import BasePlugin
+from pathlib import Path
 from urllib.parse import urlparse
 
 # -----------------------------------------------------------------------------
@@ -210,7 +211,7 @@ class PrivacyPlugin(BasePlugin):
             name = re.findall(r'^[^;]+', res.headers["content-type"])[0]
             extension = extensions.get(name)
             if extension and not file.endswith(extension):
-                file += extension
+                file = str(Path(file).with_suffix(extension))
 
             # Write contents and create symbolic link if necessary
             utils.write_file(res.content, file)
@@ -221,12 +222,12 @@ class PrivacyPlugin(BasePlugin):
                 try:
                     os.symlink(os.path.basename(file), path)
                 except OSError:
-                    log.warning(f"Couldn't create symbolic link for '{file}'")
+                    log.warning(f"Couldn't create symbolic link '{file}'")
 
         # Append file extension from file after resolving symbolic links
         _, extension = os.path.splitext(os.path.realpath(file))
         if not file.endswith(extension):
-            file += extension
+            file = str(Path(file).with_suffix(extension))
 
         # Compute final path relative to output directory
         path = file.replace(self.cache, self.config["externals_dir"])
