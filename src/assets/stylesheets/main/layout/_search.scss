@@ -643,6 +643,7 @@
       height: 100%;
       background-color: currentcolor;
       mask-image: var(--md-search-result-icon);
+      mask-position: center;
       mask-repeat: no-repeat;
       mask-size: contain;
       content: "";

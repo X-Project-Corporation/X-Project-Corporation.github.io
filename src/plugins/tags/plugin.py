@@ -106,7 +106,10 @@ class TagsPlugin(BasePlugin):
 
     # Render the given tag and links to all pages with occurrences
     def _render_tag_links(self, tag, pages):
-        icon = f"md-tag-icon md-tag-icon--{self.slugify(tag)}"
+        type = self.mapping.get(tag)
+        icon = f"md-tag-icon md-tag-icon--{type}"
+
+        # Render section for tag and a link to each page
         content = [f"## <span class=\"md-tag {icon}\">{tag}</span>", ""]
         for page in pages:
 

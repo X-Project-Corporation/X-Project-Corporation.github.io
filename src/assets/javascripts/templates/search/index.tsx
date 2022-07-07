@@ -77,7 +77,7 @@ function renderSearchDocument(
     )
 
   /* Render article or section, depending on flags */
-  const { tags = {} } = configuration()
+  const { tags } = configuration()
   return (
     <a href={`${url}`} class="md-search-result__link" tabIndex={-1}>
       <article
@@ -91,8 +91,10 @@ function renderSearchDocument(
           document.text
         }
         {document.tags && document.tags.map(tag => {
-          const type = tag in tags
-            ? `md-tag-icon md-tag-icon--${tags[tag]}`
+          const type = tags
+            ? tag in tags
+              ? `md-tag-icon md-tag-icon--${tags[tag]}`
+              : "md-tag-icon"
             : ""
           return (
             <span class={`md-tag ${type}`}>{tag}</span>
