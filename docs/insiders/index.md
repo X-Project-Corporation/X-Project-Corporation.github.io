@@ -79,6 +79,45 @@ a handful of them, [thanks to our awesome sponsors]!
   [completed funding goals]: #goals-completed
   [thanks to our awesome sponsors]: #how-to-become-a-sponsor
 
+## What's in for me?
+
+The moment you [become a sponsor][how to become a sponsor], you'll get __immediate
+access to 26 additional features__ that you can start using right away, and
+which are currently exclusively available to sponsors:
+
+<div class="mdx-columns" markdown>
+
+- [x] [Additional tags indexes] :material-alert-decagram:{ .mdx-pulse title="Added on July 7, 2022" }
+- [x] [Document contributors] :material-alert-decagram:{ .mdx-pulse title="Added on June 24, 2022" }
+- [x] [Automatic light / dark mode] :material-alert-decagram:{ .mdx-pulse title="Added on June 11, 2022" }
+- [x] [Content tabs: anchor links]
+- [x] [Navigation pruning]
+- [x] [Tooltips]
+- [x] [Chinese search support]
+- [x] [Tag icons]
+- [x] [Card grids]
+- [x] [Offline plugin]
+- [x] [Privacy plugin]
+- [x] [Table of contents anchor following]
+- [x] [Annotations]
+- [x] [Navigation icons]
+- [x] Sidebars automatically scroll to active item
+- [x] [Code annotations: anchor links]
+- [x] [Code annotations: strip comments]
+- [x] [Dismissable announcement bar]
+- [x] [Was this page helpful?]
+- [x] [Brand new search plugin]
+- [x] [Rich search previews]
+- [x] [Tokenizer with lookahead]
+- [x] [Advanced search highlighting]
+- [x] [Excluding content from search]
+- [x] [Social cards]
+- [x] [Cookie consent]
+
+</div>
+
+New features are added every other week. Be sure to come back.
+
 ## How to become a sponsor
 
 Thanks for your interest in sponsoring! In order to become an eligible sponsor
@@ -139,6 +178,8 @@ You can cancel your sponsorship anytime.[^5]
 [![World Wide Technology]](https://wwt.com){ target=_blank title="World Wide Technology" }
 [![Coda]](https://coda.io){ target=_blank title="Coda" }
 [![Elastic]](https://elastic.co){ target=_blank title="Elastic" }
+[![ConsenSys]](https://consensys.net){ target=_blank title="ConsenSys" }
+[![Hyperledger]](https://www.hyperledger.org){ target=_blank title="Hyperledger Foundation" }
 
 </div>
 
@@ -158,6 +199,8 @@ You can cancel your sponsorship anytime.[^5]
   [World Wide Technology]: https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-wwt.png
   [Coda]: https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-coda.png
   [Elastic]: https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-elastic.png
+  [ConsenSys]: https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-consensys.png
+  [Hyperledger]: https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-hyperledger.png
 
 <hr />
 
@@ -173,44 +216,6 @@ You can cancel your sponsorship anytime.[^5]
 </div>
 
   [squidfunk's sponsor profile]: https://github.com/sponsors/squidfunk
-
-## What's in for me?
-
-The moment you [become a sponsor][how to become a sponsor], you'll get __immediate
-access to 25 additional features__ that you can start using right away, and
-which are currently exclusively available to sponsors:
-
-<div class="mdx-columns" markdown>
-
-- [x] [Document contributors] :material-alert-decagram:{ .mdx-pulse title="Added on June 24, 2022" }
-- [x] [Automatic light / dark mode] :material-alert-decagram:{ .mdx-pulse title="Added on June 11, 2022" }
-- [x] [Content tabs: anchor links] :material-alert-decagram:{ .mdx-pulse title="Added on June 4, 2022" }
-- [x] [Navigation pruning]
-- [x] [Tooltips]
-- [x] [Chinese search support]
-- [x] [Tag icons]
-- [x] [Card grids]
-- [x] [Offline plugin]
-- [x] [Privacy plugin]
-- [x] [Table of contents anchor following]
-- [x] [Annotations]
-- [x] [Navigation icons]
-- [x] Sidebars automatically scroll to active item
-- [x] [Code annotations: anchor links]
-- [x] [Code annotations: strip comments]
-- [x] [Dismissable announcement bar]
-- [x] [Was this page helpful?]
-- [x] [Brand new search plugin]
-- [x] [Rich search previews]
-- [x] [Tokenizer with lookahead]
-- [x] [Advanced search highlighting]
-- [x] [Excluding content from search]
-- [x] [Social cards]
-- [x] [Cookie consent]
-
-</div>
-
-New features are added every other week. Be sure to come back.
 
 ## Funding <span class="mdx-sponsorship-total" data-mdx-component="sponsorship-total"></span>
 
@@ -295,9 +300,11 @@ are released for general availability.
 
 #### $ 16,000 – Chipotle
 
+- [x] [Additional tags indexes]
 - [ ] [Instant previews]
 - [ ] ... more to be announced
 
+  [Additional tags indexes]: ../setup/setting-up-tags.md#tags-extra-files
   [Instant previews]: https://twitter.com/squidfunk/status/1466794654213492743
 
 ### Goals completed
