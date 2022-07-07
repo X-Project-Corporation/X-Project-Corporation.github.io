@@ -70,7 +70,7 @@ class TagsPlugin(BasePlugin):
         self.tags_file = self._get_tags_file(files, file)
 
         # Handle extra tags index pages, if given
-        extra = self.config.get("tags_extra_files")
+        extra = self.config["tags_extra_files"]
         for file, _ in extra.items():
             self.tags_extra_files.append(
                 self._get_tags_file(files, file)
@@ -83,7 +83,7 @@ class TagsPlugin(BasePlugin):
 
         # Render extra tag files
         if page.file in self.tags_extra_files:
-            extra = self.config.get("tags_extra_files")
+            extra = self.config["tags_extra_files"]
             return self._render_tag_index(
                 markdown,
                 extra.get(page.file.src_path)
