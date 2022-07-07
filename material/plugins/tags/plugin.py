@@ -39,12 +39,14 @@ class TagsPlugin(BasePlugin):
     # Configuration scheme
     config_scheme = (
         ("tags_file", Type(str, required = False)),
+        ("tags_extra_files", Type(dict, default = {})),
     )
 
     # Initialize plugin
     def __init__(self):
         self.tags = defaultdict(list)
         self.tags_file = None
+        self.tags_extra_files = []
         self.slugify = None
 
     # Determine slugify function and tag mappings
@@ -62,22 +64,30 @@ class TagsPlugin(BasePlugin):
         # Retrieve tags mapping from configuration
         self.mapping = config["extra"].get("tags", {})
 
-    # Hack: 2nd pass for tags index page
+    # Hack: 2nd pass for tags index page(s)
     def on_nav(self, nav, files, **kwargs):
         file = self.config.get("tags_file")
-        if file:
-            self.tags_file = files.get_file_from_path(file)
-            if not self.tags_file:
-                log.error(f"Configuration error: {file} doesn't exist.")
-                sys.exit()
+        self.tags_file = self._get_tags_file(files, file)
 
-            # Add tags file to files
-            files.append(self.tags_file)
+        # Handle extra tags index pages, if given
+        extra = self.config.get("tags_extra_files")
+        for file, _ in extra.items():
+            self.tags_extra_files.append(
+                self._get_tags_file(files, file)
+            )
 
     # Build and render tags index page
     def on_page_markdown(self, markdown, page, **kwargs):
         if page.file == self.tags_file:
             return self._render_tag_index(markdown)
+
+        # Render extra tag files
+        if page.file in self.tags_extra_files:
+            extra = self.config.get("tags_extra_files")
+            return self._render_tag_index(
+                markdown,
+                extra.get(page.file.src_path)
+            )
 
         # Add page to tags index
         for tag in page.meta.get("tags", []):
@@ -93,15 +103,33 @@ class TagsPlugin(BasePlugin):
 
     # -------------------------------------------------------------------------
 
+    # Obtain tags file (or extra files)
+    def _get_tags_file(self, files, path):
+        file = files.get_file_from_path(path)
+        if not file:
+            log.error(f"Configuration error: {path} doesn't exist.")
+            sys.exit()
+
+        # Add tags file to files
+        files.append(file)
+        return file
+
     # Render tags index
-    def _render_tag_index(self, markdown):
+    def _render_tag_index(self, markdown, whitelist = None):
         if not "[TAGS]" in markdown:
             markdown += "\n[TAGS]"
+
+        # Filter tags against whitelist, if given
+        tags = []
+        if whitelist:
+            for key, value in self.tags.items():
+                if self.mapping.get(key) in whitelist:
+                    tags.append((key, value))
 
         # Replace placeholder in Markdown with rendered tags index
         return markdown.replace("[TAGS]", "\n".join([
             self._render_tag_links(*args)
-                for args in sorted(self.tags.items())
+                for args in sorted(tags or self.tags.items())
         ]))
 
     # Render the given tag and links to all pages with occurrences
