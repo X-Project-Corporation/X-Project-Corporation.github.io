@@ -69,7 +69,8 @@ class SearchPlugin(BasePlugin):
                 log.debug(f"Loading jieba dictionary: {jieba_dict}")
             else:
                 log.warning(
-                    f"jieba_dict: {jieba_dict} does not exist"
+                    f"Configuration error for 'search.jieba_dict': "
+                    f"'{jieba_dict}' does not exist."
                 )
 
         # Set jieba user dictionary, if given
@@ -80,7 +81,8 @@ class SearchPlugin(BasePlugin):
                 log.debug(f"Loading jieba user dictionary: {jieba_dict_user}")
             else:
                 log.warning(
-                    f"jieba_dict_user: {jieba_dict_user} does not exist"
+                    f"Configuration error for 'search.jieba_dict_user': "
+                    f"'{jieba_dict_user}' does not exist."
                 )
 
     # Override: remove search pragmas after indexing

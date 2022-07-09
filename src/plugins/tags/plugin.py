@@ -107,7 +107,7 @@ class TagsPlugin(BasePlugin):
     def _get_tags_file(self, files, path):
         file = files.get_file_from_path(path)
         if not file:
-            log.error(f"Configuration error: {path} doesn't exist.")
+            log.error(f"Configuration error: '{path}' does not exist.")
             sys.exit()
 
         # Add tags file to files

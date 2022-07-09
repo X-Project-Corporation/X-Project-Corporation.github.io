@@ -58,8 +58,8 @@ class PrivacyPlugin(BasePlugin):
 
     # Determine base URL and directory
     def on_config(self, config):
-        self.base_url = urlparse(config.get("site_url"))
-        self.base_dir = config["site_dir"]
+        self.site_url = urlparse(config.get("site_url"))
+        self.site_dir = config["site_dir"]
         self.cache = self.config["cache_dir"]
         self.files = []
 
@@ -151,7 +151,7 @@ class PrivacyPlugin(BasePlugin):
 
         # Check all files that are part of the build
         for file in self.files:
-            full = os.path.join(self.base_dir, file.dest_path)
+            full = os.path.join(self.site_dir, file.dest_path)
             if not os.path.isfile(full):
                 continue
 
@@ -167,7 +167,7 @@ class PrivacyPlugin(BasePlugin):
 
     # Check if the given URL is external
     def _is_external(self, url):
-        return url.hostname != self.base_url.hostname
+        return url.hostname != self.site_url.hostname
 
     # Check if the given URL is excluded
     def _is_excluded(self, url, base):
@@ -231,7 +231,7 @@ class PrivacyPlugin(BasePlugin):
 
         # Compute final path relative to output directory
         path = file.replace(self.cache, self.config["externals_dir"])
-        full = os.path.join(self.base_dir, path)
+        full = os.path.join(self.site_dir, path)
         if not os.path.exists(full):
 
             # Open file and patch dependents resources
@@ -306,7 +306,7 @@ class PrivacyPlugin(BasePlugin):
 
             # Create absolute URL for asset in script
             elif base.endswith(".js"):
-                url = posixpath.join(self.base_url.geturl(), path)
+                url = posixpath.join(self.site_url.geturl(), path)
 
             # Replace external asset in output
             output = "".join([
@@ -316,7 +316,7 @@ class PrivacyPlugin(BasePlugin):
             ])
 
             # Copy file from cache to output directory
-            full = os.path.join(self.base_dir, path)
+            full = os.path.join(self.site_dir, path)
             utils.copy_file(file, full)
 
         # Return output with replaced occurrences
