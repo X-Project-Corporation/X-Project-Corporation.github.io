@@ -67,7 +67,8 @@ class TagsPlugin(BasePlugin):
     # Hack: 2nd pass for tags index page(s)
     def on_nav(self, nav, files, **kwargs):
         file = self.config.get("tags_file")
-        self.tags_file = self._get_tags_file(files, file)
+        if file:
+            self.tags_file = self._get_tags_file(files, file)
 
         # Handle extra tags index pages, if given
         extra = self.config["tags_extra_files"]
