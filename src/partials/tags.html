@@ -29,7 +29,7 @@
 {% if tags %}
   <nav class="md-tags" {{ hidden }}>
     {% for tag in tags %}
-      {% if config.theme.icon.tag %}
+      {% if config.extra.tags %}
         {% set icon = " md-tag-icon" %}
         {% if tag.type %}
           {% set icon = icon ~ " md-tag-icon--" ~ tag.type %}
