@@ -80,13 +80,13 @@ class TagsPlugin(BasePlugin):
     # Build and render tags index page
     def on_page_markdown(self, markdown, page, **kwargs):
         if page.file == self.tags_file:
-            return self._render_tag_index(markdown)
+            return self._render_tag_index(markdown, page)
 
         # Render extra tag files
         if page.file in self.tags_extra_files:
             extra = self.config["tags_extra_files"]
             return self._render_tag_index(
-                markdown,
+                markdown, page,
                 extra.get(page.file.src_path)
             )
 
@@ -116,7 +116,7 @@ class TagsPlugin(BasePlugin):
         return file
 
     # Render tags index
-    def _render_tag_index(self, markdown, whitelist = None):
+    def _render_tag_index(self, markdown, tags_index, whitelist = None):
         if not "[TAGS]" in markdown:
             markdown += "\n[TAGS]"
 
@@ -129,12 +129,12 @@ class TagsPlugin(BasePlugin):
 
         # Replace placeholder in Markdown with rendered tags index
         return markdown.replace("[TAGS]", "\n".join([
-            self._render_tag_links(*args)
+            self._render_tag_links(tags_index, *args)
                 for args in sorted(tags or self.tags.items())
         ]))
 
     # Render the given tag and links to all pages with occurrences
-    def _render_tag_links(self, tag, pages):
+    def _render_tag_links(self, tags_index, tag, pages):
         type = self.mapping.get(tag)
         icon = f"md-tag-icon md-tag-icon--{type}"
 
@@ -146,7 +146,7 @@ class TagsPlugin(BasePlugin):
             # file which contains the operating system's path separator.
             url = utils.get_relative_url(
                 page.file.src_path.replace(os.path.sep, "/"),
-                self.tags_file.src_path.replace(os.path.sep, "/")
+                tags_index.file.src_path.replace(os.path.sep, "/")
             )
 
             # Render link to page
