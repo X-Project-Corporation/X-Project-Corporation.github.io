@@ -96,6 +96,7 @@ theme:
 
 # Plugins
 plugins:
+  - meta
   - search:
       separator: '[\s\u200b\-,:!=\[\]()"/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - social
