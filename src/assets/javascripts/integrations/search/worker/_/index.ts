@@ -23,14 +23,21 @@
 import {
   ObservableInput,
   Subject,
-  from,
+  filter,
   map,
+  merge,
+  of,
   share,
+  switchMap,
   take
 } from "rxjs"
 
 import { configuration, feature, translation } from "~/_"
-import { WorkerHandler, watchWorker } from "~/browser"
+import {
+  WorkerHandler,
+  watchToggle,
+  watchWorker
+} from "~/browser"
 
 import { SearchIndex } from "../../_"
 import {
@@ -128,9 +135,20 @@ export function setupSearchWorker(
       share()
     )
 
-  /* Set up search index */
-  from(index$)
+  /* Defer initialization on `file://` - see https://bit.ly/3C521EO */
+  const toggle$ = merge(
+    of(location.protocol !== "file:"),
+    watchToggle("search")
+  )
     .pipe(
+      filter(active => active),
+      take(1)
+    )
+
+  /* Set up search index */
+  toggle$
+    .pipe(
+      switchMap(() => index$),
       take(1),
       map(data => ({
         type: SearchMessageType.SETUP,
