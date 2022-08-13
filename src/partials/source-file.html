@@ -94,8 +94,9 @@
               class="md-author"
               title="@{{ author.login }}"
             >
+              {% set separator = "&" if "?" in author.avatar else "?" %}
               <img
-                src="{{ author.avatar }}?size=72"
+                src="{{ author.avatar }}{{ separator }}size=72"
                 alt="{{ author.name or 'GitHub user' }}"
               />
             </a>

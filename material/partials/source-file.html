@@ -58,7 +58,8 @@
         <nav>
           {% for author in committers[:4] %}
             <a href="{{ author.url }}" class="md-author" title="@{{ author.login }}">
-              <img src="{{ author.avatar }}?size=72" alt="{{ author.name or 'GitHub user' }}">
+              {% set separator = "&" if "?" in author.avatar else "?" %}
+              <img src="{{ author.avatar }}{{ separator }}size=72" alt="{{ author.name or 'GitHub user' }}">
             </a>
           {% endfor %}
           {% set more = committers[4:] | length %}
