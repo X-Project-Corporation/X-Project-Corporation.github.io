@@ -179,6 +179,12 @@
           ]
         },
         {
+          "title": "Site language: Armenian",
+          "enum": [
+            "hy"
+          ]
+        },
+        {
           "title": "Site language: Indonesian",
           "enum": [
             "id"
@@ -212,6 +218,12 @@
           "title": "Site language: Korean",
           "enum": [
             "kr"
+          ]
+        },
+        {
+          "title": "Site language: Lithuanian",
+          "enum": [
+            "lt"
           ]
         },
         {
@@ -335,6 +347,12 @@
           ]
         },
         {
+          "title": "Site language: Tagalog",
+          "enum": [
+            "tl"
+          ]
+        },
+        {
           "title": "Site language: Turkish",
           "enum": [
             "tr"
@@ -344,6 +362,18 @@
           "title": "Site language: Ukrainian",
           "enum": [
             "uk"
+          ]
+        },
+        {
+          "title": "Site language: Urdu",
+          "enum": [
+            "ur"
+          ]
+        },
+        {
+          "title": "Site language: Uzbek",
+          "enum": [
+            "uz"
           ]
         },
         {

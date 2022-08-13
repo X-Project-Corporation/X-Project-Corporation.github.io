@@ -56,12 +56,14 @@ The following languages are supported:
 - `hi` – Hindi
 - `hr` – Croatian
 - `hu` – Hungarian
+- `hy` – Armenian
 - `id` – Indonesian
 - `is` – Icelandic
 - `it` – Italian
 - `ja` – Japanese
 - `ka` – Georgian
 - `kr` – Korean
+- `lt` – Lithuanian
 - `lv` – Latvian
 - `mk` – Macedonian
 - `mn` – Mongolian
@@ -82,8 +84,10 @@ The following languages are supported:
 - `sr` – Serbian
 - `sv` – Swedish
 - `th` – Thai
+- `tl` – Tagalog
 - `tr` – Turkish
 - `uk` – Ukrainian
+- `ur` – Urdu
 - `uz` – Uzbek
 - `vi` – Vietnamese
 - `zh` – Chinese (Simplified)
@@ -214,7 +218,7 @@ adjust the ones you want to override:
 
     <!-- Re-export translations -->
     {% macro t(key) %}{{
-      override(key) or language(key) or fallback.t(key)
+      override(key) or language.t(key) or fallback.t(key)
     }}{% endmacro %}
     ```
 
