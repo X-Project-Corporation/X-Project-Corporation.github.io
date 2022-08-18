@@ -141,7 +141,7 @@ export function mountTooltip(
   el: HTMLElement
 ): Observable<Component<Tooltip>> {
   const title = el.title
-  if (!title.length)
+  if (!title.length || el.closest("table"))
     return EMPTY
 
   /* Render tooltip and set title from host element */
