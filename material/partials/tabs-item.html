@@ -7,8 +7,8 @@
 {% endif %}
 {% macro render_content(nav_item, title) %}
   {% if title and nav_item.is_index %}
-    {% if "icon" in meta[nav_item.url] %}
-      {% include ".icons/" ~ meta[nav_item.url]["icon"] ~ ".svg" %}
+    {% if nav_item.meta.icon %}
+      {% include ".icons/" ~ nav_item.meta.icon ~ ".svg" %}
     {% endif %}
   {% endif %}
   {{ title or nav_item.title }}

@@ -2,12 +2,22 @@
   This file was automatically generated - do not edit
 -#}
 {% macro render_content(nav_item, title) %}
-  {% if "icon" in meta[nav_item.url] %}
-    {% include ".icons/" ~ meta[nav_item.url]["icon"] ~ ".svg" %}
+  {% if nav_item.is_page and nav_item.meta.icon %}
+    {% include ".icons/" ~ nav_item.meta.icon ~ ".svg" %}
   {% endif %}
   <span class="md-ellipsis">
     {{ title or nav_item.title }}
   </span>
+  {% if nav_item.is_page and nav_item.meta.status %}
+    {% set value = nav_item.meta.status %}
+    {% set class = "md-status md-status--" ~ value %}
+    {% if config.extra.status and config.extra.status[value] %}
+      <span class="{{ class }}" title="{{ config.extra.status[value] }}">
+      </span>
+    {% else %}
+      <span class="{{ class }}"></span>
+    {% endif %}
+  {% endif %}
 {% endmacro %}
 {% macro render_pruned(nav_item, title) %}
   {% set title = title | d(nav_item.title) %}

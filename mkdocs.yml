@@ -120,6 +120,9 @@ plugins:
 
 # Customization
 extra:
+  status:
+    new: Recently added
+    deprecated: Deprecated
   analytics:
     provider: google
     property: !ENV GOOGLE_ANALYTICS_KEY

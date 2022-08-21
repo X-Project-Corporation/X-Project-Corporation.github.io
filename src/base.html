@@ -184,12 +184,6 @@
   {% endif %}
     {% set features = config.theme.features or [] %}
 
-    <!-- Retrieve metadata for all pages -->
-    {% set meta = {} %}
-    {% for file in pages %}
-      {% set _ = meta.update({ file.url: file.page.meta }) %}
-    {% endfor %}
-
     <!--
       State toggles - we need to set autocomplete="off" in order to reset the
       drawer on back button invocation in some browsers
