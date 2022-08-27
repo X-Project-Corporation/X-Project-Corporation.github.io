@@ -153,7 +153,9 @@ class SearchIndex(BaseIndex):
         # Add document tags, if any
         if page.meta.get("tags"):
             if type(page.meta["tags"]) is list:
-                entry["tags"] = page.meta["tags"]
+                entry["tags"] = [
+                    str(tag) for tag in page.meta["tags"]
+                ]
             else:
                 log.warning(
                     "Skipping 'tags' due to invalid syntax [%s]: %s",
