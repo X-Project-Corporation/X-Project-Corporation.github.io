@@ -30,6 +30,7 @@ import {
   combineLatest,
   debounceTime,
   defer,
+  distinctUntilChanged,
   filter,
   finalize,
   map,
@@ -112,6 +113,9 @@ export function watchTooltip(
     watchElementFocus(host),
     watchElementHover(host)
   )
+    .pipe(
+      distinctUntilChanged()
+    )
 
   /* Compute tooltip offset */
   return combineLatest([active$, scroll$])
