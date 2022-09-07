@@ -121,8 +121,22 @@ export function watchTooltip(
   return combineLatest([active$, scroll$])
     .pipe(
       map(([active, scroll]) => {
-        const { x, y } = getElementOffset(host)
+        let { x, y } = getElementOffset(host)
         const size = getElementSize(host)
+
+        /**
+         * Experimental: fix handling of tables - see https://bit.ly/3TQEj5O
+         *
+         * If this proves to be a viable fix, we should refactor tooltip
+         * positioning and somehow streamline the current process. This might
+         * also fix positioning for annotations inside tables, which is another
+         * limitation.
+         */
+        const table = host.closest("table")
+        if (table && host.parentElement) {
+          x += table.offsetLeft + host.parentElement.offsetLeft
+          y += table.offsetTop  + host.parentElement.offsetTop
+        }
         return {
           active,
           offset: {
@@ -145,7 +159,7 @@ export function mountTooltip(
   el: HTMLElement
 ): Observable<Component<Tooltip>> {
   const title = el.title
-  if (!title.length || el.closest("table"))
+  if (!title.length)
     return EMPTY
 
   /* Render tooltip and set title from host element */

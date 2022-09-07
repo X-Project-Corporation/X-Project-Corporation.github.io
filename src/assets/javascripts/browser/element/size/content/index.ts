@@ -54,7 +54,10 @@ export function getElementContainer(
 ): HTMLElement | undefined {
   let parent = el.parentElement
   while (parent)
-    if (el.scrollHeight <= parent.scrollHeight)
+    if (
+      el.scrollWidth  <= parent.scrollWidth &&
+      el.scrollHeight <= parent.scrollHeight
+    )
       parent = (el = parent).parentElement
     else
       break
