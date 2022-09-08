@@ -1,6 +1,10 @@
+mkdocs-material-8.4.3+insiders-4.22.1 (2022-09-07)
+
+  * Fixed #4217: Tooltips in data tables render in wrong position
+
 mkdocs-material-8.4.3 (2022-09-07)
 
-  * Added Simple Icons to bundled icons (+2,3k icons)
+  * Added Simple Icons to bundled icons (+2,300 icons)
   * Added support for changing edit icon
   * Moved page actions to separate partial (actions.html)
   * Fixed #4291: Version switching doesn't stay on page when anchors are used
