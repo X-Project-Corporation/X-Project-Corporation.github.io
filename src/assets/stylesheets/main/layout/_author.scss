@@ -35,10 +35,41 @@
     height: px2rem(32px);
     overflow: hidden;
     border-radius: 100%;
-    transform: scale(1);
     transition:
       color 125ms,
       transform 125ms;
+
+    // Author image
+    img {
+      display: block;
+    }
+
+    // More authors
+    &--more {
+      color: var(--md-default-fg-color--lighter);
+      font-weight: 700;
+      font-size: px2rem(12px);
+      line-height: px2rem(32px);
+      text-align: center;
+      background: var(--md-default-fg-color--lightest);
+    }
+
+    // Enlarge image
+    &--long {
+      width: px2rem(48px);
+      height: px2rem(48px);
+    }
+  }
+
+  // Author link
+  a.md-author {
+    transform: scale(1);
+
+    // Author image
+    img {
+      filter: grayscale(100%) opacity(75%);
+      transition: filter 125ms;
+    }
 
     // Author on focus/hover
     &:focus,
@@ -50,23 +81,6 @@
       img {
         filter: grayscale(0%);
       }
-    }
-
-    // Author image
-    img {
-      display: block;
-      filter: grayscale(100%) opacity(75%);
-      transition: filter 125ms;
-    }
-
-    // More authors
-    &--more {
-      color: var(--md-default-fg-color--lighter);
-      font-weight: 700;
-      font-size: px2rem(12px);
-      line-height: px2rem(32px);
-      text-align: center;
-      background: var(--md-default-fg-color--lightest);
     }
   }
 }

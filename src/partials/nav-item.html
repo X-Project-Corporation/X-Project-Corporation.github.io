@@ -31,6 +31,12 @@
   <!-- Navigation link title -->
   <span class="md-ellipsis">
     {{ title or nav_item.title }}
+
+    <!-- Navigation link subtitle -->
+    {% if nav_item.meta and nav_item.meta.subtitle %}
+      <br />
+      <small>{{ nav_item.meta.subtitle }}</small>
+    {% endif %}
   </span>
 
   <!-- Navigation link status -->
@@ -159,7 +165,6 @@
           </div>
         {% endif %}
 
-
         <!-- Nested navigation -->
         <nav
           class="md-nav"
@@ -235,6 +240,3 @@
     </li>
   {% endif %}
 {% endmacro %}
-
-<!-- Render current and nested navigation items -->
-{{ render(nav_item, path, level) }}

@@ -36,7 +36,7 @@ class OfflinePlugin(BasePlugin):
         ("enabled", Type(bool, default = True)),
     )
 
-    # Set necessary configuration
+    # Initialize plugin
     def on_config(self, config):
         if not self.config["enabled"]:
             return
@@ -45,7 +45,7 @@ class OfflinePlugin(BasePlugin):
         config["use_directory_urls"] = False
 
     # Support offline search
-    def on_post_build(self, config, **kwargs):
+    def on_post_build(self, config):
         if not self.config["enabled"]:
             return
 

@@ -70,6 +70,7 @@ setup(
             "material = material",
         ],
         "mkdocs.plugins": [
+            "blog = material.plugins.blog.plugin:BlogPlugin",
             "meta = material.plugins.meta.plugin:MetaPlugin",
             "offline = material.plugins.offline.plugin:OfflinePlugin",
             "privacy = material.plugins.privacy.plugin:PrivacyPlugin",

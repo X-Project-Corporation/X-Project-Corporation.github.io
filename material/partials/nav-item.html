@@ -7,6 +7,10 @@
   {% endif %}
   <span class="md-ellipsis">
     {{ title or nav_item.title }}
+    {% if nav_item.meta and nav_item.meta.subtitle %}
+      <br>
+      <small>{{ nav_item.meta.subtitle }}</small>
+    {% endif %}
   </span>
   {% if nav_item.is_page and nav_item.meta.status %}
     {% set value = nav_item.meta.status %}
@@ -128,4 +132,3 @@
     </li>
   {% endif %}
 {% endmacro %}
-{{ render(nav_item, path, level) }}

@@ -56,7 +56,7 @@ class PrivacyPlugin(BasePlugin):
         ("externals_directory", Deprecated(moved_to = "externals_dir")),
     )
 
-    # Determine base URL and directory
+    # Initialize plugin
     def on_config(self, config):
         self.site_url = urlparse(config.get("site_url"))
         self.site_dir = config["site_dir"]
@@ -90,7 +90,7 @@ class PrivacyPlugin(BasePlugin):
 
         # Find all external resources
         expr = re.compile(
-            r'<(?:link[^>]+href?|(?:script|img)[^>]+src)=[\'"]?http[^>]+>',
+            r"<(?:link[^>]+href|(?:script|img)[^>]+src)=['\"]?http[^>]+>",
             re.IGNORECASE | re.MULTILINE
         )
 
@@ -151,16 +151,16 @@ class PrivacyPlugin(BasePlugin):
 
         # Check all files that are part of the build
         for file in self.files:
-            full = os.path.join(self.site_dir, file.dest_path)
-            if not os.path.isfile(full):
+            path = file.abs_dest_path
+            if not os.path.isfile(path):
                 continue
 
             # Handle internal style sheet or script
-            if full.endswith(".css") or full.endswith(".js"):
-                with open(full, encoding = "utf-8") as f:
+            if path.endswith(".css") or path.endswith(".js"):
+                with open(path, encoding = "utf-8") as f:
                     utils.write_file(
                         self._fetch_dependents(f.read(), file.dest_path),
-                        full
+                        path
                     )
 
     # -------------------------------------------------------------------------
@@ -171,13 +171,13 @@ class PrivacyPlugin(BasePlugin):
 
     # Check if the given URL is excluded
     def _is_excluded(self, url, base):
-        url = re.sub(r'^https?:\/\/', "", url)
+        url = re.sub(r"^https?:\/\/", "", url)
         for pattern in self.config["externals_exclude"]:
             if fnmatch(url, pattern):
                 log.debug(f"Excluding external file in '{base}': {url}")
                 return True
 
-        # Exclude all external assets if bundling is not enabled
+        # Report external assets if bundling is not enabled
         if self.config["externals"] == "report":
             log.warning(f"External file in '{base}': {url}")
             return True
@@ -208,7 +208,7 @@ class PrivacyPlugin(BasePlugin):
             })
 
             # Compute and ensure presence of file extension
-            name = re.findall(r'^[^;]+', res.headers["content-type"])[0]
+            name = re.findall(r"^[^;]+", res.headers["content-type"])[0]
             extension = extensions.get(name)
             if extension and not file.endswith(extension):
                 file = str(Path(file).with_suffix(extension))
@@ -234,7 +234,7 @@ class PrivacyPlugin(BasePlugin):
         full = os.path.join(self.site_dir, path)
         if not os.path.exists(full):
 
-            # Open file and patch dependents resources
+            # Open file and patch dependent resources
             if extension == ".css" or extension == ".js":
                 with open(file, encoding = "utf-8") as f:
                     utils.write_file(
@@ -258,14 +258,14 @@ class PrivacyPlugin(BasePlugin):
         # Fetch external assets in style sheet
         if base.endswith(".css"):
             expr = re.compile(
-                r'url\((\s*http?[^)]+)\)',
+                r"url\((\s*http?[^)]+)\)",
                 re.IGNORECASE | re.MULTILINE
             )
 
         # Fetch external assets in script
         elif base.endswith(".js"):
             expr = re.compile(
-                r'["\'](http[^"\']+\.js)["\']',
+                r"[\"'](http[^\"']+\.js)[\"']",
                 re.IGNORECASE | re.MULTILINE
             )
 
@@ -322,7 +322,7 @@ class PrivacyPlugin(BasePlugin):
         # Return output with replaced occurrences
         return bytes(output, encoding = "utf8")
 
-    # Resolve filename with respect to operating system
+    # Resolve file name with respect to operating system
     def _resolve(self, url):
         data = url._replace(scheme = "", query = "", fragment = "")
         return os.path.sep.join(data.geturl()[2:].split("/"))

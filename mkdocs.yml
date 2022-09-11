@@ -96,7 +96,16 @@ theme:
 
 # Plugins
 plugins:
+  - blog:
+      blog_custom_dir: overrides
   - meta
+  - rss:
+      match_path: blog/posts/.*
+      date_from_meta:
+        as_creation: date
+      categories:
+        - categories
+        - tags
   - search:
       separator: '[\s\u200b\-,:!=\[\]()"/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - social
@@ -109,14 +118,17 @@ plugins:
         reference/variables.md: https://mkdocs-macros-plugin.readthedocs.io/
         sponsorship.md: insiders/index.md
         upgrading.md: upgrade.md
-  - minify:
-      minify_html: true
   - git-revision-date-localized:
       enable_creation_date: true
       type: timeago
+      exclude:
+        - blog/archive/*
+        - blog/category/*
   - git-committers:
       repository: squidfunk/mkdocs-material
       token: !ENV GH_TOKEN
+  - minify:
+      minify_html: true
 
 # Customization
 extra:
@@ -216,6 +228,7 @@ nav:
     - Setting up site search: setup/setting-up-site-search.md
     - Setting up site analytics: setup/setting-up-site-analytics.md
     - Setting up social cards: setup/setting-up-social-cards.md
+    - Setting up a blog: setup/setting-up-a-blog.md
     - Setting up tags: setup/setting-up-tags.md
     - Setting up versioning: setup/setting-up-versioning.md
     - Setting up the header: setup/setting-up-the-header.md
@@ -251,9 +264,3 @@ nav:
       - Changelog: insiders/changelog.md
   - Blog:
     - blog/index.md
-    - 2022:
-      - blog/2022/chinese-search-support.md
-    - 2021:
-      - blog/2021/the-past-present-and-future.md
-      - blog/2021/excluding-content-from-search.md
-      - blog/2021/search-better-faster-smaller.md

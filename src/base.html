@@ -61,6 +61,22 @@
         {% endfor %}
       {% endif %}
 
+      <!-- RSS feed -->
+      {% if "rss" in config.plugins %}
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="{{ lang.t('rss.created') }}"
+          href="{{ 'feed_rss_created.xml' | url }}"
+        />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="{{ lang.t('rss.updated') }}"
+          href="{{ 'feed_rss_updated.xml' | url }}"
+        />
+      {% endif %}
+
       <!-- Favicon -->
       <link rel="icon" href="{{ config.theme.favicon | url }}" />
 
@@ -136,7 +152,7 @@
     {% endblock %}
 
     <!-- Custom style sheets -->
-    {% for path in config["extra_css"] %}
+    {% for path in config.extra_css %}
       <link rel="stylesheet" href="{{ path | url }}" />
     {% endfor %}
 
@@ -323,16 +339,18 @@
           {% endblock %}
 
           <!-- Page content -->
-          <div class="md-content" data-md-component="content">
-            <article class="md-content__inner md-typeset">
-              {% block content %}
-                {% include "partials/content.html" %}
-              {% endblock %}
-            </article>
+          {% block container %}
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                {% block content %}
+                  {% include "partials/content.html" %}
+                {% endblock %}
+              </article>
+            </div>
+          {% endblock %}
 
-            <!-- User preference: content -->
-            {% include "partials/javascripts/content.html" %}
-          </div>
+          <!-- User preference: content -->
+          {% include "partials/javascripts/content.html" %}
         </div>
 
         <!-- Back-to-top button -->
@@ -426,7 +444,7 @@
       <script src="{{ 'assets/javascripts/bundle.js' | url }}"></script>
 
       <!-- Custom JavaScript -->
-      {% for path in config["extra_javascript"] %}
+      {% for path in config.extra_javascript %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
     {% endblock %}

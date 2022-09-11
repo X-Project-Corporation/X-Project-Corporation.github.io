@@ -43,29 +43,26 @@ class TagsPlugin(BasePlugin):
     )
 
     # Initialize plugin
-    def __init__(self):
+    def on_config(self, config):
         self.tags = defaultdict(list)
         self.tags_file = None
         self.tags_extra_files = []
-        self.slugify = None
-
-    # Determine slugify function and tag mappings
-    def on_config(self, config):
-        if "toc" in config["markdown_extensions"]:
-            toc = { "slugify": slugify, "separator": "-" }
-            if "toc" in config["mdx_configs"]:
-                toc = { **toc, **config["mdx_configs"]["toc"] }
-
-            # Partially apply slugify function
-            self.slugify = lambda value: (
-                toc["slugify"](str(value), toc["separator"])
-            )
 
         # Retrieve tags mapping from configuration
-        self.mapping = config["extra"].get("tags", {})
+        self.tags_map = config["extra"].get("tags", {})
+
+        # Use override of slugify function
+        toc = { "slugify": slugify, "separator": "-" }
+        if "toc" in config["mdx_configs"]:
+            toc = { **toc, **config["mdx_configs"]["toc"] }
+
+        # Partially apply slugify function
+        self.slugify = lambda value: (
+            toc["slugify"](str(value), toc["separator"])
+        )
 
     # Hack: 2nd pass for tags index page(s)
-    def on_nav(self, nav, files, **kwargs):
+    def on_nav(self, nav, config, files):
         file = self.config.get("tags_file")
         if file:
             self.tags_file = self._get_tags_file(files, file)
@@ -78,7 +75,7 @@ class TagsPlugin(BasePlugin):
             )
 
     # Build and render tags index page
-    def on_page_markdown(self, markdown, page, **kwargs):
+    def on_page_markdown(self, markdown, page, config, files):
         if page.file == self.tags_file:
             return self._render_tag_index(markdown, page)
 
@@ -95,7 +92,7 @@ class TagsPlugin(BasePlugin):
             self.tags[tag].append(page)
 
     # Inject tags into page (after search and before minification)
-    def on_page_context(self, context, page, **kwargs):
+    def on_page_context(self, context, page, config, nav):
         if "tags" in page.meta:
             context["tags"] = [
                 self._render_tag(tag)
@@ -108,7 +105,7 @@ class TagsPlugin(BasePlugin):
     def _get_tags_file(self, files, path):
         file = files.get_file_from_path(path)
         if not file:
-            log.error(f"Configuration error: '{path}' does not exist.")
+            log.error(f"Tags file '{path}' does not exist.")
             sys.exit()
 
         # Add tags file to files
@@ -116,15 +113,15 @@ class TagsPlugin(BasePlugin):
         return file
 
     # Render tags index
-    def _render_tag_index(self, markdown, tags_index, whitelist = None):
+    def _render_tag_index(self, markdown, tags_index, allowed = None):
         if not "[TAGS]" in markdown:
             markdown += "\n[TAGS]"
 
-        # Filter tags against whitelist, if given
+        # Filter tags against allow list, if given
         tags = []
-        if whitelist:
+        if allowed:
             for key, value in self.tags.items():
-                if self.mapping.get(key) in whitelist:
+                if self.tags_map.get(key) in allowed:
                     tags.append((key, value))
 
         # Replace placeholder in Markdown with rendered tags index
@@ -135,7 +132,7 @@ class TagsPlugin(BasePlugin):
 
     # Render the given tag and links to all pages with occurrences
     def _render_tag_links(self, tags_index, tag, pages):
-        type = self.mapping.get(tag)
+        type = self.tags_map.get(tag)
         icon = f"md-tag-icon md-tag-icon--{type}"
 
         # Render section for tag and a link to each page
@@ -150,17 +147,15 @@ class TagsPlugin(BasePlugin):
             )
 
             # Render link to page
-            content.append("- [{}]({})".format(
-                page.meta.get("title", page.title),
-                url
-            ))
+            title = page.meta.get("title", page.title)
+            content.append(f"- [{title}]({url})")
 
         # Return rendered tag links
         return "\n".join(content)
 
     # Render the given tag, linking to the tags index (if enabled)
     def _render_tag(self, tag):
-        type = self.mapping.get(tag)
+        type = self.tags_map.get(tag)
         if not self.tags_file or not self.slugify:
             return dict(name = tag, type = type)
         else:

@@ -39,38 +39,38 @@ class MetaPlugin(BasePlugin):
         ("meta_file", Type(str, default = "**/.meta.yml")),
     )
 
-    # Initialize meta mapping
+    # Initialize plugin
     def on_config(self, config):
-        self.meta = {}
+        self.meta = dict()
 
     # Find all meta files and add to mapping
-    def on_pre_build(self, config, **kwargs):
+    def on_pre_build(self, config):
         path = os.path.join(config["docs_dir"], self.config["meta_file"])
         for file in glob(path, recursive = True):
             with open(file, encoding = "utf-8") as f:
                 self.meta[file] = load(f, SafeLoader) or {}
 
     # Set defaults for file, if applicable
-    def on_page_markdown(self, markdown, page, config, **kwargs):
+    def on_page_markdown(self, markdown, page, config, files):
         path = os.path.join(config["docs_dir"], page.file.src_path)
         for file, defaults in self.meta.items():
             if path.startswith(os.path.dirname(file)):
                 file = file[len(config["docs_dir"]) + 1:]
-                merge(page.meta, defaults, file)
+                _merge(page.meta, defaults, file)
 
 # -----------------------------------------------------------------------------
-# Functions
+# Helper functions
 # -----------------------------------------------------------------------------
 
 # Recursively merge a dictionary
-def merge(meta, defaults, file):
+def _merge(meta, defaults, file):
     for key, value in defaults.items():
         if key in meta:
 
             # Merge dictionaries
             if isinstance(meta[key], dict):
                 if isinstance(value, dict):
-                    merge(meta[key], value, file)
+                    _merge(meta[key], value, file)
                 else:
                     log.warning(
                         f"Format error in metadata of '{file}': "

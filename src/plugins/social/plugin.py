@@ -55,22 +55,19 @@ class SocialPlugin(BasePlugin):
         ("cards_directory", Deprecated(moved_to = "cards_dir")),
     )
 
-    # Initialize plugin
-    def __init__(self):
-        self.color = colors.get("indigo")
-
-    # Retrieve configuration for rendering
+    # Retrieve configuration
     def on_config(self, config):
-        if not self.config.get("cards"):
+        self.color = colors.get("indigo")
+        if not self.config["cards"]:
             return
 
         # Ensure presence of cache directory
-        self.cache = self.config.get("cache_dir")
+        self.cache = self.config["cache_dir"]
         if not os.path.isdir(self.cache):
             os.makedirs(self.cache)
 
         # Retrieve palette from theme configuration
-        theme = config.get("theme")
+        theme = config["theme"]
         if "palette" in theme:
             palette = theme["palette"]
 
@@ -84,24 +81,24 @@ class SocialPlugin(BasePlugin):
                 self.color = colors.get(primary, self.color)
 
         # Retrieve color overrides
-        self.color = { **self.color, **self.config.get("cards_color") }
+        self.color = { **self.color, **self.config["cards_color"] }
 
         # Retrieve logo and font
         self.logo = self._load_logo(config)
         self.font = self._load_font(config)
 
     # Create social cards
-    def on_page_markdown(self, markdown, page, config, **kwargs):
-        if not self.config.get("cards"):
+    def on_page_markdown(self, markdown, page, config, files):
+        if not self.config["cards"]:
             return
 
         # Resolve image directory
-        directory = self.config.get("cards_dir")
+        directory = self.config["cards_dir"]
         file, _ = os.path.splitext(page.file.src_path)
 
         # Resolve path of image
         path = "{}.png".format(os.path.join(
-            config.get("site_dir"),
+            config["site_dir"],
             directory,
             file
         ))
@@ -234,7 +231,7 @@ class SocialPlugin(BasePlugin):
 
     # Generate meta tags
     def _generate_meta(self, page, config):
-        directory = self.config.get("cards_dir")
+        directory = self.config["cards_dir"]
         file, _ = os.path.splitext(page.file.src_path)
 
         # Compute page title
@@ -288,7 +285,7 @@ class SocialPlugin(BasePlugin):
             _, extension = os.path.splitext(theme["logo"])
 
             # Load SVG and convert to PNG
-            path = os.path.join(config.get("docs_dir"), theme["logo"])
+            path = os.path.join(config["docs_dir"], theme["logo"])
             if extension == ".svg":
                 return self._load_logo_svg(path)
 
@@ -330,7 +327,7 @@ class SocialPlugin(BasePlugin):
         if not name:
 
             # Retrieve from theme (default: Roboto)
-            theme = config.get("theme")
+            theme = config["theme"]
             if theme["font"]:
                 name = theme["font"]["text"]
             else:

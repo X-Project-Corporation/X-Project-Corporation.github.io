@@ -140,7 +140,7 @@ export function watchKeyboard(): Observable<Keyboard> {
       share()
     )
 
-  /* Don't emit during composition events, see https://bit.ly/3te3Wl8 */
+  /* Don't emit during composition events - see https://bit.ly/3te3Wl8 */
   return watchComposition()
     .pipe(
       switchMap(active => !active ? keyboard$ : EMPTY)

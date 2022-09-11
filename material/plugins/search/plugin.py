@@ -25,7 +25,7 @@ import regex as re
 from html import escape
 from html.parser import HTMLParser
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config import config_options
+from mkdocs.config.config_options import Type
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
 from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
 
@@ -41,12 +41,13 @@ except ImportError:
 # Search plugin with custom search index
 class SearchPlugin(BasePlugin):
 
+    # Configuration scheme
     config_scheme = (
         *BasePlugin.config_scheme,
 
         # Options for Chinese segmentation
-        ("jieba_dict", config_options.Type(str, required = False)),
-        ("jieba_dict_user", config_options.Type(str, required = False)),
+        ("jieba_dict", Type(str, required = False)),
+        ("jieba_dict_user", Type(str, required = False)),
     )
 
     # Override: use custom search index and setup jieba, if available
@@ -86,10 +87,10 @@ class SearchPlugin(BasePlugin):
                 )
 
     # Override: remove search pragmas after indexing
-    def on_page_context(self, context, page, **kwargs):
-        self.search_index.add_entry_from_context(context["page"])
+    def on_page_context(self, context, page, config, nav):
+        self.search_index.add_entry_from_context(page)
         page.content = re.sub(
-            r'\s?data-search-\w+="[^"]+"',
+            r"\s?data-search-\w+=\"[^\"]+\"",
             "",
             page.content
         )
@@ -163,7 +164,7 @@ class SearchIndex(BaseIndex):
                     page.meta["tags"]
                 )
 
-        # Add document boost for search, if any
+        # Set document boost
         search = page.meta.get("search", {})
         if "boost" in search:
             entry["boost"] = search["boost"]
@@ -171,9 +172,11 @@ class SearchIndex(BaseIndex):
         # Add entry to index
         self._entries.append(entry)
 
+    # -------------------------------------------------------------------------
+
     # Find and segment Chinese characters in string
     def _segment_chinese(self, data):
-        expr = re.compile(r'(\p{IsHan}+)', re.UNICODE)
+        expr = re.compile(r"(\p{IsHan}+)", re.UNICODE)
 
         # Parse occurrences and replace in reverse
         for match in reversed(list(expr.finditer(data))):
@@ -322,7 +325,7 @@ class Parser(HTMLParser):
                 self.skip.add(el)
                 return
 
-            # Skip line numbers, see https://bit.ly/3GvubZx
+            # Skip line numbers - see https://bit.ly/3GvubZx
             if key == "class" and value == "linenodiv":
                 self.skip.add(el)
                 return

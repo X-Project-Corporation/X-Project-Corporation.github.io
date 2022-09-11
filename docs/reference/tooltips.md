@@ -142,14 +142,14 @@ pages with the following configuration:
     `includes` is used), as MkDocs might otherwise complain about an
     unreferenced file.
 
-=== ":octicons-file-code-16: includes/abbreviations.md"
+=== ":octicons-file-code-16: `includes/abbreviations.md`"
 
     ```` markdown
     *[HTML]: Hyper Text Markup Language
     *[W3C]: World Wide Web Consortium
     ````
 
-=== ":octicons-file-code-16: mkdocs.yml"
+=== ":octicons-file-code-16: `mkdocs.yml`"
 
     ```` yaml
     markdown_extensions:

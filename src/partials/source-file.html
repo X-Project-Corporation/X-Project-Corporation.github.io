@@ -38,7 +38,7 @@
 {% if updated or created or git_info or committers %}
   <aside class="md-source-file">
 
-    <!-- Render date of last update -->
+    <!-- Date of last update -->
     {% if updated %}
       <span class="md-source-file__fact">
         <span class="md-icon" title="{{ lang.t('source.file.date.updated') }}">
@@ -48,7 +48,7 @@
       </span>
     {% endif %}
 
-    <!-- Render date of creation -->
+    <!-- Date of creation -->
     {% if created %}
       <span class="md-source-file__fact">
         <span class="md-icon" title="{{ lang.t('source.file.date.created') }}">
@@ -58,7 +58,7 @@
       </span>
     {% endif %}
 
-    <!-- Render authors (git-authors plugin) -->
+    <!-- Authors (git-authors plugin) -->
     {% if git_info %}
       {% set authors = git_info.get("page_authors") %}
       <span class="md-source-file__fact">
@@ -80,7 +80,7 @@
       </span>
     {% endif %}
 
-    <!-- Render authors (git-committers plugin) -->
+    <!-- Authors (git-committers plugin) -->
     {% if committers %}
       <span class="md-source-file__fact">
         <span class="md-icon" title="{{ lang.t('source.file.contributors') }}">

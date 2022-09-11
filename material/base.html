@@ -26,6 +26,10 @@
           <link rel="alternate" href="{{ alt.link | url }}" hreflang="{{ alt.lang | d(lang.t('language')) }}">
         {% endfor %}
       {% endif %}
+      {% if "rss" in config.plugins %}
+        <link rel="alternate" type="application/rss+xml" title="{{ lang.t('rss.created') }}" href="{{ 'feed_rss_created.xml' | url }}">
+        <link rel="alternate" type="application/rss+xml" title="{{ lang.t('rss.updated') }}" href="{{ 'feed_rss_updated.xml' | url }}">
+      {% endif %}
       <link rel="icon" href="{{ config.theme.favicon | url }}">
       <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-8.4.3+insiders-4.22.1">
     {% endblock %}
@@ -39,7 +43,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.7b316022.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.6148a559.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.cbb835fc.min.css' | url }}">
@@ -66,7 +70,7 @@
         <style>:root{--md-text-font:"{{ text }}";--md-code-font:"{{ code }}"}</style>
       {% endif %}
     {% endblock %}
-    {% for path in config["extra_css"] %}
+    {% for path in config.extra_css %}
       <link rel="stylesheet" href="{{ path | url }}">
     {% endfor %}
     {% include "partials/javascripts/base.html" %}
@@ -174,14 +178,16 @@
               </div>
             {% endif %}
           {% endblock %}
-          <div class="md-content" data-md-component="content">
-            <article class="md-content__inner md-typeset">
-              {% block content %}
-                {% include "partials/content.html" %}
-              {% endblock %}
-            </article>
-            {% include "partials/javascripts/content.html" %}
-          </div>
+          {% block container %}
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                {% block content %}
+                  {% include "partials/content.html" %}
+                {% endblock %}
+              </article>
+            </div>
+          {% endblock %}
+          {% include "partials/javascripts/content.html" %}
         </div>
         {% if "navigation.top" in features %}
           <a href="#" class="md-top md-icon" data-md-component="top" hidden>
@@ -245,8 +251,8 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.3b7001d3.min.js' | url }}"></script>
-      {% for path in config["extra_javascript"] %}
+      <script src="{{ 'assets/javascripts/bundle.d36b1844.min.js' | url }}"></script>
+      {% for path in config.extra_javascript %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
     {% endblock %}
