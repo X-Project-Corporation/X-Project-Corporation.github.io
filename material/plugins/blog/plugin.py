@@ -55,7 +55,7 @@ class BlogPlugin(BasePlugin):
 
         # Options for blog
         ("blog_dir", Type(str, default = "blog")),
-        ("blog_custom_dir", Type(str, default = None)),
+        ("blog_custom_dir", Type(str)),
 
         # Options for posts
         ("post_date_format", Type(str, default = "long")),
@@ -326,12 +326,7 @@ class BlogPlugin(BasePlugin):
 
         # Ensure a template is set or use default
         if "template" not in page.meta:
-            page.meta["template"] = os.path.normpath(
-                os.path.join(
-                    self.config.get("blog_custom_dir", "."),
-                    "blog-post.html"
-                )
-            )
+            page.meta["template"] = self._template("blog-post.html")
 
         # Ensure navigation is hidden
         page.meta["hide"] = page.meta.get("hide", [])
@@ -423,12 +418,7 @@ class BlogPlugin(BasePlugin):
                     )
 
         # Ensure a template is set
-        self.main.meta["template"] = os.path.normpath(
-            os.path.join(
-                self.config.get("blog_custom_dir", "."),
-                "blog.html"
-            )
-        )
+        self.main.meta["template"] = self._template("blog.html")
 
         # Resolve and convert path to file system path
         curr = os.path.join(self.config["blog_dir"], "index.md")
@@ -626,6 +616,14 @@ class BlogPlugin(BasePlugin):
         # Post is not a draft
         return False
 
+    # Resolve custom directory, if set (for internal use only)
+    def _template(self, path):
+        if self.config.get("blog_custom_dir"):
+            path = os.path.join(self.config["blog_custom_dir"], path)
+            return os.path.normpath(path)
+        else:
+            return path
+
     # Generate a post excerpt relative to base
     def _generate_excerpt(self, file, base, config, files):
         page = file.page
@@ -669,12 +667,7 @@ class BlogPlugin(BasePlugin):
 
     # Generate a file with the given template and name
     def _generate_file(self, path, template, name):
-        template = os.path.normpath(
-            os.path.join(
-                self.config.get("blog_custom_dir", "."),
-                f"{template}.html"
-            )
-        )
+        template = self._template(f"{template}.html")
 
         # Generate front matter
         yaml = "\n".join([
