@@ -22,7 +22,7 @@ __Check out our [blog], which is created with the new [built-in blog plugin]!__
 
 ## Configuration
 
-### Built-in blog plugin
+### Built-in blog plugin :material-alert-decagram:{ .mdx-pulse title="Added on September 12, 2022" }
 
 [:octicons-heart-fill-24:{ .mdx-heart } Sponsors only][Insiders]{ .mdx-insiders } ·
 [:octicons-tag-24: insiders-4.23.0][Insiders] ·
@@ -750,7 +750,7 @@ The following configuration options are available for drafts:
 ### RSS
 
 [:octicons-heart-fill-24:{ .mdx-heart } Sponsors only][Insiders]{ .mdx-insiders } ·
-[:octicons-tag-24: insiders+4.23.1][Insiders] ·
+[:octicons-tag-24: insiders-4.23.0][Insiders] ·
 [:octicons-cpu-24: Plugin][rss]
 
 The [built-in blog plugin] integrates seamlessly with the [RSS plugin][rss],
@@ -1164,6 +1164,16 @@ authors, and add a `.meta.yml` file to set common properties:
       - Hello
       - World
     ```
+
+Note that order matters – the [built-in meta plugin] must be defined before the
+blog plugin in `mkdocs.yml`, so that all set defaults are correctly picked up
+by the [built-in blog plugin]:
+
+``` yaml
+plugins:
+  - meta
+  - blog
+```
 
 Lists and dictionaries in `.meta.yml` files are merged and deduplicated with the
 values defined for a post, which means you can define common properties in

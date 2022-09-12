@@ -87,11 +87,11 @@ which are currently exclusively available to sponsors:
 
 <div class="mdx-columns" markdown>
 
-- [x] [Blog plugin]  :material-alert-decagram:{ .mdx-pulse title="Added on September 12, 2022" }
-- [x] [Blog plugin: related links]  :material-alert-decagram:{ .mdx-pulse title="Added on September 12, 2022" }
+- [x] [Blog plugin] :material-alert-decagram:{ .mdx-pulse title="Added on September 12, 2022" }
+- [x] [Blog plugin: related links] :material-alert-decagram:{ .mdx-pulse title="Added on September 12, 2022" }
 - [x] [Navigation status] :material-alert-decagram:{ .mdx-pulse title="Added on August 21, 2022" }
 - [x] [Meta plugin] :material-alert-decagram:{ .mdx-pulse title="Added on July 17, 2022" }
-- [x] [Additional tags indexes]
+- [x] [Tags plugin: additional indexes]
 - [x] [Document contributors]
 - [x] [Automatic light / dark mode]
 - [x] [Content tabs: anchor links]
@@ -269,19 +269,19 @@ are released for general availability.
 
 #### $ 12,000 – Piri Piri
 
-- [x] [Annotations]
+- [x] [Blog plugin]
 - [x] [Chinese search support]
+- [x] [Annotations]
 - [x] [Navigation icons]
 - [x] [Navigation pruning]
 - [x] [Navigation status]
-- [x] [Blog plugin]
 
-  [Annotations]: ../reference/annotations.md
+  [Blog plugin]: ../setup/setting-up-a-blog.md
   [Chinese search support]: ../blog/posts/chinese-search-support.md
+  [Annotations]: ../reference/annotations.md
   [Navigation icons]: ../reference/index.md#setting-the-page-icon
   [Navigation pruning]: ../setup/setting-up-navigation.md#navigation-pruning
   [Navigation status]: ../reference/index.md#setting-the-page-status
-  [Blog plugin]: ../setup/setting-up-a-blog.md
 
 #### $ 14,000 – Goat's Horn
 
@@ -301,15 +301,15 @@ are released for general availability.
 
 #### $ 16,000 – Chipotle
 
-- [x] [Blog plugin: related links]
 - [x] [Meta plugin]
-- [x] [Additional tags indexes]
-- [ ] [Navigation subtitles]
+- [x] [Blog plugin: related links]
+- [x] [Tags plugin: additional indexes]
 - [ ] [Instant previews]
+- [ ] Navigation subtitles
 - [ ] ... more to be announced
 
   [Meta plugin]: ../reference/index.md#built-in-meta-plugin
-  [Additional tags indexes]: ../setup/setting-up-tags.md#tags-extra-files
+  [Tags plugin: additional indexes]: ../setup/setting-up-tags.md#+tags.tags_extra_files
   [Instant previews]: https://twitter.com/squidfunk/status/1466794654213492743
   [Blog plugin: related links]: ../setup/setting-up-a-blog.md#adding-related-links
 
