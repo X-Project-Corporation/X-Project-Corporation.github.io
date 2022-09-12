@@ -55,7 +55,7 @@ class BlogPlugin(BasePlugin):
 
         # Options for blog
         ("blog_dir", Type(str, default = "blog")),
-        ("blog_custom_dir", Type(str)),
+        ("blog_custom_dir", Type(str)), # Do not use, internal option
 
         # Options for posts
         ("post_date_format", Type(str, default = "long")),
@@ -616,7 +616,7 @@ class BlogPlugin(BasePlugin):
         # Post is not a draft
         return False
 
-    # Resolve custom directory, if set (for internal use only)
+    # Resolve template
     def _template(self, path):
         if self.config.get("blog_custom_dir"):
             path = os.path.join(self.config["blog_custom_dir"], path)
