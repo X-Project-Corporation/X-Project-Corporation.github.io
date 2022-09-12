@@ -43,7 +43,14 @@ import { optimize } from "svgo"
 
 import { IconSearchIndex } from "_/components"
 
-import { base, read, resolve, watch, write } from "./_"
+import {
+  base,
+  mkdir,
+  read,
+  resolve,
+  watch,
+  write
+} from "./_"
 import { copyAll } from "./copy"
 import {
   transformScript,
@@ -271,10 +278,11 @@ const templates$ = manifest$
               "overrides/partials/content.html"
             )
           ),
-          switchMap(data => write(
-            file.replace(base, `${base}/overrides`),
-            data
-          ))
+          mergeMap(data => concat(
+            mkdir(`${base}/overrides`),
+            write(file.replace(base, `${base}/overrides`), data)
+          )),
+          map(() => file)
         )
     })
   )
@@ -379,8 +387,8 @@ const schema$ = merge(
 
 /* Build landing page graphics */
 const home$ = defer(() => (
-  resolve("overrides/assets/images/layers/*.png", { cwd: "src" }
-)))
+  resolve("overrides/assets/images/layers/*.png", { cwd: "src" })
+))
   .pipe(
     mergeMap(async file => {
       const sizes = [1280, 1920, 2560, 3840]
