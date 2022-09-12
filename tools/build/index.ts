@@ -29,14 +29,14 @@ import {
   defer,
   map,
   merge,
+  mergeMap,
   of,
   reduce,
   scan,
   startWith,
   switchMap,
   toArray,
-  zip,
-  mergeMap
+  zip
 } from "rxjs"
 import sharp from "sharp"
 import { optimize } from "svgo"
