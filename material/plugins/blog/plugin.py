@@ -324,6 +324,10 @@ class BlogPlugin(BasePlugin):
         if self.post_dir not in page.file.src_path:
             return
 
+        # Skip processing of drafts
+        if self._is_draft(page.file.src_path):
+            return
+
         # Ensure a template is set or use default
         if "template" not in page.meta:
             page.meta["template"] = self._template("blog-post.html")
