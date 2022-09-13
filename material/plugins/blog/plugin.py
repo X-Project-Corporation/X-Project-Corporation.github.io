@@ -304,8 +304,20 @@ class BlogPlugin(BasePlugin):
 
             # Detach previous and next links of posts
             if item.children:
-                item.children[+0].previous_page = None
-                item.children[-1].next_page     = None
+                head = item.children[+0]
+                tail = item.children[-1]
+
+                # Link page prior to posts to page after posts
+                if head.previous_page:
+                    head.previous_page.next_page = tail.next_page
+
+                # Link page after posts to page prior to posts
+                if tail.next_page:
+                    tail.next_page.previous_page = head.previous_page
+
+                # Contain previous and next links inside posts
+                head.previous_page = None
+                tail.next_page     = None
 
             # Set blog as parent page
             for page in item.children:
@@ -370,6 +382,18 @@ class BlogPlugin(BasePlugin):
 
                 # Add author to page
                 page.authors.append(self.authors_map[name])
+
+        # Fix stale link if previous post is a draft
+        prev = page.previous_page
+        while prev and self._is_draft(prev.file.src_path):
+            page.previous_page = prev.previous_page
+            prev = prev.previous_page
+
+        # Fix stale link if next post is a draft
+        next = page.next_page
+        while next and self._is_draft(next.file.src_path):
+            page.next_page = next.next_page
+            next = next.next_page
 
     # Filter posts and generate excerpts for generated pages
     def on_env(self, env, config, files):
