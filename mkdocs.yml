@@ -122,17 +122,17 @@ plugins:
         reference/variables.md: https://mkdocs-macros-plugin.readthedocs.io/
         sponsorship.md: insiders/index.md
         upgrading.md: upgrade.md
-  # - git-revision-date-localized:
-  #     enable_creation_date: true
-  #     type: timeago
-  #     exclude:
-  #       - blog/archive/*
-  #       - blog/category/*
-  # - git-committers:
-  #     repository: squidfunk/mkdocs-material
-  #     token: !ENV GH_TOKEN
-  # - minify:
-  #     minify_html: true
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+      exclude:
+        - blog/archive/*
+        - blog/category/*
+  - git-committers:
+      repository: squidfunk/mkdocs-material
+      token: !ENV GH_TOKEN
+  - minify:
+      minify_html: true
 
 # Customization
 extra:
