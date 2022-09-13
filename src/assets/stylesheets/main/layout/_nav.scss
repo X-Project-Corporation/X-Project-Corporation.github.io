@@ -475,6 +475,8 @@
     &--secondary &__title {
       position: sticky;
       top: 0;
+      // Hack: because of the hack that we need to make .md-ellipsis work in
+      // Safari, we need to set `z-index` here as - see https://bit.ly/3s5M2jm
       z-index: 1;
       background: var(--md-default-bg-color);
       box-shadow: 0 0 px2rem(8px) px2rem(8px) var(--md-default-bg-color);

@@ -49,7 +49,7 @@ class TagsPlugin(BasePlugin):
         self.tags_extra_files = []
 
         # Retrieve tags mapping from configuration
-        self.tags_map = config["extra"].get("tags", {})
+        self.tags_map = config["extra"].get("tags")
 
         # Use override of slugify function
         toc = { "slugify": slugify, "separator": "-" }
@@ -132,11 +132,16 @@ class TagsPlugin(BasePlugin):
 
     # Render the given tag and links to all pages with occurrences
     def _render_tag_links(self, tags_index, tag, pages):
-        type = self.tags_map.get(tag)
-        icon = f"md-tag-icon md-tag-icon--{type}"
+        classes = ["md-tag"]
+        if isinstance(self.tags_map, dict):
+            classes.append("md-tag-icon")
+            type = self.tags_map.get(tag)
+            if type:
+                classes.append(f"md-tag-icon--{type}")
 
         # Render section for tag and a link to each page
-        content = [f"## <span class=\"md-tag {icon}\">{tag}</span>", ""]
+        classes = " ".join(classes)
+        content = [f"## <span class=\"{classes}\">{tag}</span>", ""]
         for page in pages:
 
             # Ensure forward slashes, as we have to use the path of the source
@@ -155,7 +160,7 @@ class TagsPlugin(BasePlugin):
 
     # Render the given tag, linking to the tags index (if enabled)
     def _render_tag(self, tag):
-        type = self.tags_map.get(tag)
+        type = self.tags_map.get(tag) if self.tags_map else None
         if not self.tags_file or not self.slugify:
             return dict(name = tag, type = type)
         else:

@@ -165,7 +165,7 @@
     {% endblock %}
 
     <!-- Meta tags from front matter or plugins -->
-    {% if page and page.meta and page.meta.meta %}
+    {% if page.meta and page.meta.meta %}
       {% for tag in page.meta.meta %}
         <meta
           {% for key, value in tag.items() %}
