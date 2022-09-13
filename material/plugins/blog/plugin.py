@@ -734,9 +734,13 @@ def _host(nav, path):
 
         # Search each list item
         for item in nav:
-            result = _host(item, path)
-            if result:
-                return result
+            if isinstance(item, dict) and path in item.values():
+                if path in item.values():
+                    return nav
+            else:
+                result = _host(item, path)
+                if result:
+                    return result
 
 # Copied and adapted from MkDocs, because we need to return existing pages and
 # support anchor names as subtitles, which is pretty fucking cool.
