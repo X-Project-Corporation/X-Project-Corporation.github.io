@@ -38,11 +38,13 @@ import {
   subscribeOn,
   takeLast,
   takeUntil,
-  tap
+  tap,
+  withLatestFrom
 } from "rxjs"
 
 import { feature } from "~/_"
 import {
+  Viewport,
   getElement,
   getElementContentOffset,
   getElementContentSize,
@@ -76,6 +78,7 @@ export interface ContentTabs {
  * Mount options
  */
 interface MountOptions {
+  viewport$: Observable<Viewport>      /* Viewport observable */
   target$: Observable<HTMLElement>     /* Location target observable */
 }
 
@@ -114,7 +117,7 @@ export function watchContentTabs(
  * @returns Content tabs component observable
  */
 export function mountContentTabs(
-  el: HTMLElement, { target$ }: MountOptions
+  el: HTMLElement, { viewport$, target$ }: MountOptions
 ): Observable<Component<ContentTabs>> {
   const container = getElement(".tabbed-labels", el)
   const inputs = getElements<HTMLInputElement>(":scope > input", el)
@@ -229,23 +232,44 @@ export function mountContentTabs(
 
     /* Set up linking of content tabs, if enabled */
     if (feature("content.tabs.link"))
-      push$.pipe(skip(1))
-        .subscribe(({ active }) => {
+      push$.pipe(
+        skip(1),
+        withLatestFrom(viewport$)
+      )
+        .subscribe(([{ active }, { offset }]) => {
           const tab = active.innerText.trim()
-          for (const set of getElements("[data-tabs]"))
-            for (const input of getElements<HTMLInputElement>(
-              ":scope > input", set
-            )) {
-              const label = getElement(`label[for="${input.id}"]`)
-              if (label.innerText.trim() === tab) {
-                input.click()
-                break
-              }
-            }
+          if (active.hasAttribute("data-md-switching")) {
+            active.removeAttribute("data-md-switching")
 
-          /* Persist active tabs in local storage */
-          const tabs = __md_get<string[]>("__tabs") || []
-          __md_set("__tabs", [...new Set([tab, ...tabs])])
+          /* Determine viewport offset of active tab */
+          } else {
+            const y = el.offsetTop - offset.y
+
+            /* Passively activate other tabs */
+            for (const set of getElements("[data-tabs]"))
+              for (const input of getElements<HTMLInputElement>(
+                ":scope > input", set
+              )) {
+                const label = getElement(`label[for="${input.id}"]`)
+                if (
+                  label !== active &&
+                  label.innerText.trim() === tab
+                ) {
+                  label.setAttribute("data-md-switching", "")
+                  input.click()
+                  break
+                }
+              }
+
+            /* Bring active tab into view */
+            window.scrollTo({
+              top: el.offsetTop - y
+            })
+
+            /* Persist active tabs in local storage */
+            const tabs = __md_get<string[]>("__tabs") || []
+            __md_set("__tabs", [...new Set([tab, ...tabs])])
+          }
         })
 
     /* Create and return component */

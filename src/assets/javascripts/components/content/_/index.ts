@@ -23,7 +23,7 @@
 import { Observable, merge } from "rxjs"
 
 import { feature } from "~/_"
-import { getElements } from "~/browser"
+import { Viewport, getElements } from "~/browser"
 
 import { Component } from "../../_"
 import { Tooltip, mountTooltip } from "../../tooltip"
@@ -74,6 +74,7 @@ export type Content =
  * Mount options
  */
 interface MountOptions {
+  viewport$: Observable<Viewport>      /* Viewport observable */
   target$: Observable<HTMLElement>     /* Location target observable */
   print$: Observable<boolean>          /* Media print observable */
 }
@@ -94,7 +95,7 @@ interface MountOptions {
  * @returns Content component observable
  */
 export function mountContent(
-  el: HTMLElement, { target$, print$ }: MountOptions
+  el: HTMLElement, { viewport$, target$, print$ }: MountOptions
 ): Observable<Component<Content>> {
   return merge(
 
@@ -120,7 +121,7 @@ export function mountContent(
 
     /* Content tabs */
     ...getElements("[data-tabs]", el)
-      .map(child => mountContentTabs(child, { target$ })),
+      .map(child => mountContentTabs(child, { viewport$, target$ })),
 
     /* Tooltips */
     ...getElements("[title]", el)
