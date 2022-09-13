@@ -68,7 +68,7 @@ RUN \
       "mkdocs-git-revision-date-localized-plugin==1.1.0" \
       "mkdocs-minify-plugin==0.5.0" \
       "mkdocs-redirects==1.1.0" \
-      "mkdocs-rss-plugin==1.1.0";
+      "mkdocs-rss-plugin==1.1.0"; \
   fi \
 && \
   apk del .build \
