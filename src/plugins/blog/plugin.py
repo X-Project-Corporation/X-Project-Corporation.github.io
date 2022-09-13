@@ -449,7 +449,7 @@ class BlogPlugin(BasePlugin):
                 curr = os.path.normpath(curr + ".md")
 
                 # Generate and register file and page
-                self._generate_file(curr, "blog", base.page.title)
+                self._generate_file(curr, "blog", self.main.content)
                 base = self._register_file(curr, config, files, True)
                 page = self._register_page(base, config, files)
 
@@ -539,7 +539,7 @@ class BlogPlugin(BasePlugin):
                 self.archive_map[path] = []
 
                 # Generate and register file for archive
-                self._generate_file(path, "blog-archive", name),
+                self._generate_file(path, "blog-archive", f"# {name}"),
                 self._register_file(path, config, files, True)
 
             # Assign current post to archive
@@ -583,7 +583,7 @@ class BlogPlugin(BasePlugin):
                     self.category_map[path] = []
 
                     # Generate and register file for category
-                    self._generate_file(path, "blog-category", name),
+                    self._generate_file(path, "blog-category", f"# {name}"),
                     self._register_file(path, config, files, True)
 
                     # Link category path to name
@@ -665,8 +665,8 @@ class BlogPlugin(BasePlugin):
         # Return post excerpt
         return excerpt
 
-    # Generate a file with the given template and name
-    def _generate_file(self, path, template, name):
+    # Generate a file with the given template and content
+    def _generate_file(self, path, template, content):
         template = self._template(f"{template}.html")
 
         # Generate front matter
@@ -676,7 +676,7 @@ class BlogPlugin(BasePlugin):
         ])
 
         # Generate and write template
-        content = f"---\n{yaml}\n---\n\n# {name}"
+        content = f"---\n{yaml}\n---\n\n{content}"
         utils.write_file(
             bytes(content, "utf-8"),
             os.path.join(self.temp_dir, path)
