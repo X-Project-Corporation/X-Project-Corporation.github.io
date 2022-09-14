@@ -27,7 +27,6 @@ import readtime
 import sys
 
 from babel.dates import format_date
-from copy import deepcopy
 from datetime import date
 from markdown.extensions.toc import slugify
 from mkdocs import utils
@@ -405,7 +404,8 @@ class BlogPlugin(BasePlugin):
             return
 
         # Remove 'toc' to disable permalinks for post excerpts
-        config = deepcopy(config)
+        key = "markdown_extensions"
+        config = { **config, key: [*config[key]] }
         if "toc" in config["markdown_extensions"]:
             config["markdown_extensions"].remove("toc")
 
