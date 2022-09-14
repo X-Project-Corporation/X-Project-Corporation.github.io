@@ -255,13 +255,13 @@ class BlogPlugin(BasePlugin):
         ))
 
         # Find and extract the section hosting the blog
-        path = os.path.join(self.config["blog_dir"], "index.md")
-        root = _host(config["nav"], os.path.normpath(path))
+        path = posixpath.join(self.config["blog_dir"], "index.md")
+        root = _host(config["nav"], path)
 
         # Ensure blog root exists
         file = files.get_file_from_path(path)
         if not file:
-            log.error(f"Blog root '{path}' does not exist.")
+            log.error(f"Blog root '{os.path.normpath(path)}' does not exist.")
             sys.exit()
 
         # Generate and register files for archive
@@ -287,7 +287,7 @@ class BlogPlugin(BasePlugin):
             return
 
         # Find and resolve index for cleanup
-        path = os.path.join(self.config["blog_dir"], "index.md")
+        path = posixpath.join(self.config["blog_dir"], "index.md")
         file = files.get_file_from_path(path)
 
         # Determine blog root section
