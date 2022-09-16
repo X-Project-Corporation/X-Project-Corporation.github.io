@@ -104,6 +104,9 @@ class _PluginConfig(base.Config):
 # Blog plugin
 class BlogPlugin(BasePlugin[_PluginConfig]):
 
+    def on_startup(self, command, dirty: bool, **kwargs):
+        self.dirtyreload = dirty
+
     # Initialize plugin
     def on_config(self, config):
         if not self.config.enabled:
@@ -421,7 +424,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
             return
 
         # Skip post excerpts on dirty reload to save time
-        if dirtyreload:
+        if self.dirtyreload:
             return
 
         # Remove 'toc' to disable permalinks for post excerpts
@@ -572,11 +575,6 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
         if self.config.categories:
             if path in self.category_post_map:
                 context["posts"] = self.category_post_map[path]
-
-    # Determine whether we're running under dirty reload
-    def on_serve(self, server, config, builder):
-        global dirtyreload
-        dirtyreload = "--dirtyreload" in sys.argv
 
     # -------------------------------------------------------------------------
 
@@ -879,7 +877,3 @@ def _data_to_navigation(nav, config, files):
 # Set up logging
 log = logging.getLogger("mkdocs")
 log.addFilter(DuplicateFilter())
-
-# Reload state, must be global, as there's no way to detect whether the plugin
-# performs its initial run, or a repeated build. If there's a better way, PR!
-dirtyreload = False
