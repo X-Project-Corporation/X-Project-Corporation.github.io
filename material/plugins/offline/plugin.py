@@ -22,7 +22,7 @@ import os
 
 from mkdocs import utils
 from mkdocs.config.config_options import Type
-from mkdocs.plugins import BasePlugin
+from mkdocs.plugins import BasePlugin, event_priority
 
 # -----------------------------------------------------------------------------
 # Class
@@ -45,6 +45,7 @@ class OfflinePlugin(BasePlugin):
         config["use_directory_urls"] = False
 
     # Support offline search
+    @event_priority(-100)  # Run among the last
     def on_post_build(self, config):
         if not self.config["enabled"]:
             return

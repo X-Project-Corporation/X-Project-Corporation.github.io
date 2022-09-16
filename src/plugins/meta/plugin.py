@@ -24,7 +24,7 @@ import os
 from glob import glob
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config.config_options import Type
-from mkdocs.plugins import BasePlugin
+from mkdocs.plugins import BasePlugin, event_priority
 from yaml import SafeLoader, load
 
 # -----------------------------------------------------------------------------
@@ -51,6 +51,7 @@ class MetaPlugin(BasePlugin):
                 self.meta[file] = load(f, SafeLoader) or {}
 
     # Set defaults for file, if applicable
+    @event_priority(90) # Want to run among the first events
     def on_page_markdown(self, markdown, page, config, files):
         path = os.path.join(config["docs_dir"], page.file.src_path)
         for file, defaults in self.meta.items():
