@@ -38,20 +38,20 @@ class OfflinePlugin(BasePlugin[_PluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
-        if not self.config["enabled"]:
+        if not self.config.enabled:
             return
 
         # Ensure correct resolution of links
-        config["use_directory_urls"] = False
+        config.use_directory_urls = False
 
     # Support offline search
     @event_priority(-100)  # Run among the last
     def on_post_build(self, config):
-        if not self.config["enabled"]:
+        if not self.config.enabled:
             return
 
         # Check for existence of search index
-        base = os.path.join(config["site_dir"], "search")
+        base = os.path.join(config.site_dir, "search")
         path = os.path.join(base, "search_index.json")
         if not os.path.exists(path):
             return

@@ -44,7 +44,7 @@ class MetaPlugin(BasePlugin[_PluginConfig]):
 
     # Find all meta files and add to mapping
     def on_pre_build(self, config):
-        path = os.path.join(config["docs_dir"], self.config["meta_file"])
+        path = os.path.join(config.docs_dir, self.config.meta_file)
         for file in glob(path, recursive = True):
             with open(file, encoding = "utf-8") as f:
                 self.meta[file] = load(f, SafeLoader) or {}
@@ -52,10 +52,10 @@ class MetaPlugin(BasePlugin[_PluginConfig]):
     # Set defaults for file, if applicable
     @event_priority(90) # Want to run among the first events
     def on_page_markdown(self, markdown, page, config, files):
-        path = os.path.join(config["docs_dir"], page.file.src_path)
+        path = os.path.join(config.docs_dir, page.file.src_path)
         for file, defaults in self.meta.items():
             if path.startswith(os.path.dirname(file)):
-                file = file[len(config["docs_dir"]) + 1:]
+                file = file[len(config.docs_dir) + 1:]
                 _merge(page.meta, defaults, file)
 
 # -----------------------------------------------------------------------------

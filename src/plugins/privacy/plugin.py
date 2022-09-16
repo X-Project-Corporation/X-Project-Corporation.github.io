@@ -58,14 +58,14 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
-        self.site_url = urlparse(config.get("site_url"))
-        self.site_dir = config["site_dir"]
-        self.cache = self.config["cache_dir"]
+        self.site_url = urlparse(config.site_url)
+        self.site_dir = config.site_dir
+        self.cache = self.config.cache_dir
         self.files = []
 
     # Determine files that need to be post-processed
     def on_files(self, files, config):
-        if not self.config["enabled"]:
+        if not self.config.enabled:
             return
 
         # Filter relevant files, short-circuit Lunr.js
@@ -77,15 +77,15 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
         # If site URL is not given, add Mermaid.js - see https://bit.ly/36tZXsA
         # This is a special case, as Material for MkDocs automatically loads
         # Mermaid.js when a Mermaid diagram is found in the page.
-        if not config.get("site_url"):
-            if not any("mermaid" in js for js in config["extra_javascript"]):
-                config["extra_javascript"].append(
+        if not config.site_url:
+            if not any("mermaid" in js for js in config.extra_javascript):
+                config.extra_javascript.append(
                     "https://unpkg.com/mermaid@9.0.1/dist/mermaid.min.js"
                 )
 
     # Parse, fetch and store external assets in pages
     def on_post_page(self, output, page, config):
-        if not self.config["enabled"]:
+        if not self.config.enabled:
             return
 
         # Find all external resources
@@ -146,7 +146,7 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
 
     # Parse, fetch and store external assets in assets
     def on_post_build(self, config):
-        if not self.config["enabled"]:
+        if not self.config.enabled:
             return
 
         # Check all files that are part of the build
@@ -172,13 +172,13 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
     # Check if the given URL is excluded
     def _is_excluded(self, url, base):
         url = re.sub(r"^https?:\/\/", "", url)
-        for pattern in self.config["externals_exclude"]:
+        for pattern in self.config.externals_exclude:
             if fnmatch(url, pattern):
                 log.debug(f"Excluding external file in '{base}': {url}")
                 return True
 
         # Report external assets if bundling is not enabled
-        if self.config["externals"] == "report":
+        if self.config.externals == "report":
             log.warning(f"External file in '{base}': {url}")
             return True
 
@@ -230,7 +230,7 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
             file = str(Path(file).with_suffix(extension))
 
         # Compute final path relative to output directory
-        path = file.replace(self.cache, self.config["externals_dir"])
+        path = file.replace(self.cache, self.config.externals_dir)
         full = os.path.join(self.site_dir, path)
         if not os.path.exists(full):
 
@@ -296,7 +296,7 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
 
             # Compute final path relative to output directory
             path = os.path.join(
-                self.config["externals_dir"],
+                self.config.externals_dir,
                 self._resolve(url)
             )
 
