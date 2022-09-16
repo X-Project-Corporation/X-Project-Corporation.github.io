@@ -27,7 +27,11 @@ from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config import base, config_options as c
+from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin
+from mkdocs.structure.files import Files
+from mkdocs.structure.nav import Navigation
+from mkdocs.structure.pages import Page
 
 # -----------------------------------------------------------------------------
 # Class
@@ -43,7 +47,7 @@ class _PluginConfig(base.Config):
 class TagsPlugin(BasePlugin[_PluginConfig]):
 
     # Initialize plugin
-    def on_config(self, config):
+    def on_config(self, config: MkDocsConfig):
         self.tags = defaultdict(list)
         self.tags_file = None
         self.tags_extra_files = []
@@ -62,7 +66,7 @@ class TagsPlugin(BasePlugin[_PluginConfig]):
         )
 
     # Hack: 2nd pass for tags index page(s)
-    def on_nav(self, nav, config, files):
+    def on_nav(self, nav: Navigation, config: MkDocsConfig, files, Files):
         file = self.config.tags_file
         if file:
             self.tags_file = self._get_tags_file(files, file)
@@ -75,7 +79,7 @@ class TagsPlugin(BasePlugin[_PluginConfig]):
             )
 
     # Build and render tags index page
-    def on_page_markdown(self, markdown, page, config, files):
+    def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files):
         if page.file == self.tags_file:
             return self._render_tag_index(markdown, page)
 
@@ -92,7 +96,7 @@ class TagsPlugin(BasePlugin[_PluginConfig]):
             self.tags[tag].append(page)
 
     # Inject tags into page (after search and before minification)
-    def on_page_context(self, context, page, config, nav):
+    def on_page_context(self, context: dict, page: Page, config: MkDocsConfig, nav: Navigation):
         if "tags" in page.meta:
             context["tags"] = [
                 self._render_tag(tag)

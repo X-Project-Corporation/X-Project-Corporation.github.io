@@ -22,6 +22,7 @@ import os
 
 from mkdocs import utils
 from mkdocs.config import base, config_options as c
+from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin, event_priority
 
 # -----------------------------------------------------------------------------
@@ -37,7 +38,7 @@ class _PluginConfig(base.Config):
 class OfflinePlugin(BasePlugin[_PluginConfig]):
 
     # Initialize plugin
-    def on_config(self, config):
+    def on_config(self, config: MkDocsConfig):
         if not self.config.enabled:
             return
 
@@ -46,7 +47,7 @@ class OfflinePlugin(BasePlugin[_PluginConfig]):
 
     # Support offline search
     @event_priority(-100)  # Run among the last
-    def on_post_build(self, config):
+    def on_post_build(self, config: MkDocsConfig):
         if not self.config.enabled:
             return
 
