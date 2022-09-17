@@ -255,7 +255,7 @@ class BlogPlugin(BasePlugin):
 
         # Find and extract the section hosting the blog
         path = posixpath.join(self.config["blog_dir"], "index.md")
-        root = _host(config["nav"], path)
+        root = _host(config["nav"], posixpath.normpath(path))
 
         # Ensure blog root exists
         file = files.get_file_from_path(path)
