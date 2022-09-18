@@ -810,13 +810,18 @@ def _data_to_navigation(nav, config, files):
         temp = File(path, base, config["site_dir"], config["use_directory_urls"])
         page = Page(title or file.page.title, temp, config)
 
+        # Set destination file system path and URL from original file
+        temp.dest_path     = file.dest_path
+        temp.abs_dest_path = file.abs_dest_path
+        temp.url           = file.url
+
         # Retrieve name of anchor by misusing the search index
         if anchor:
             item = SearchIndex()._find_toc_by_id(file.page.toc, anchor)
 
             # Set anchor name as subtitle
             page.meta["subtitle"] = item.title
-            page.file.url += f"#{anchor}"
+            temp.url += f"#{anchor}"
 
         # Return navigation item
         return page
