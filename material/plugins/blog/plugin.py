@@ -807,13 +807,13 @@ def _data_to_navigation(nav, config, files):
     # Generate temporary file as for post excerpts
     else:
         base = config["docs_dir"]
-        temp = File(path, base, config["site_dir"], config["use_directory_urls"])
-        page = Page(title or file.page.title, temp, config)
+        link = File(path, base, config["site_dir"], config["use_directory_urls"])
+        page = Page(title or file.page.title, link, config)
 
         # Set destination file system path and URL from original file
-        temp.dest_path     = file.dest_path
-        temp.abs_dest_path = file.abs_dest_path
-        temp.url           = file.url
+        link.dest_path     = file.dest_path
+        link.abs_dest_path = file.abs_dest_path
+        link.url           = file.url
 
         # Retrieve name of anchor by misusing the search index
         if anchor:
@@ -821,7 +821,7 @@ def _data_to_navigation(nav, config, files):
 
             # Set anchor name as subtitle
             page.meta["subtitle"] = item.title
-            temp.url += f"#{anchor}"
+            link.url += f"#{anchor}"
 
         # Return navigation item
         return page
