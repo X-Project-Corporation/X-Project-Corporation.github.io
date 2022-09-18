@@ -219,6 +219,15 @@ class BlogPlugin(BasePlugin):
                 headline = utils.get_markdown_title(markdown)
                 slug = meta.get("title", headline or file.name)
 
+                # Front matter can be defind in YAML, guarded by two lines with
+                # `---` markers, or MultiMarkdown, separated by an empty line.
+                # If the author chooses to use MultiMarkdown syntax, date is
+                # returned as a string, which is different from YAML behavior,
+                # which returns a date. Thus, we must check for its type, and
+                # parse the date as ISO format for normalization purposes.
+                if isinstance(meta["date"], str):
+                    meta["date"] = date.fromisoformat(meta["date"])
+
                 # Compute path from format string
                 date_format = self.config["post_url_date_format"]
                 path = self.config["post_url_format"].format(
@@ -342,6 +351,10 @@ class BlogPlugin(BasePlugin):
         # Ensure a template is set or use default
         if "template" not in page.meta:
             page.meta["template"] = self._template("blog-post.html")
+
+        # Ensure use of previously normalized value
+        if isinstance(page.meta["date"], str):
+            page.meta["date"] = self.post_meta_map[page.file.src_path]["date"]
 
         # Ensure navigation is hidden
         page.meta["hide"] = page.meta.get("hide", [])
