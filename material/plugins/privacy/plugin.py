@@ -30,7 +30,6 @@ from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config import base, config_options as c
 from mkdocs.plugins import BasePlugin
-from pathlib import Path
 from urllib.parse import urlparse
 
 # -----------------------------------------------------------------------------
@@ -187,7 +186,7 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
         raw = url.geturl()
 
         # Check if URL is excluded
-        if self._is_excluded(raw, page.file.dest_path):
+        if self._is_excluded(raw, page.file.dest_uri):
             return raw
 
         # Download file if it's not contained in the cache
@@ -211,7 +210,7 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
             name = re.findall(r"^[^;]+", res.headers["content-type"])[0]
             extension = extensions.get(name)
             if extension and not file.endswith(extension):
-                file = str(Path(file).with_suffix(extension))
+                file = posixpath.splitext(file)[0] + extension
 
             # Write contents and create symbolic link if necessary
             utils.write_file(res.content, file)
@@ -248,7 +247,7 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
 
         # Return URL relative to current page
         return utils.get_relative_url(
-            utils.normalize_url(path),
+            path,
             page.url
         )
 
@@ -295,7 +294,7 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
                 utils.write_file(res.content, file)
 
             # Compute final path relative to output directory
-            path = os.path.join(
+            path = posixpath.join(
                 self.config.externals_dir,
                 self._resolve(url)
             )
@@ -325,7 +324,7 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
     # Resolve file name with respect to operating system
     def _resolve(self, url):
         data = url._replace(scheme = "", query = "", fragment = "")
-        return os.path.sep.join(data.geturl()[2:].split("/"))
+        return data.geturl()[2:]
 
 # -----------------------------------------------------------------------------
 # Data

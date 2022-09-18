@@ -30,6 +30,7 @@ from io import BytesIO
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config import base, config_options as c
 from mkdocs.plugins import BasePlugin
+import posixpath
 from shutil import copyfile
 from tempfile import TemporaryFile
 from zipfile import ZipFile
@@ -244,7 +245,7 @@ class SocialPlugin(BasePlugin[_PluginConfig]):
     # Generate meta tags
     def _generate_meta(self, page, config):
         directory = self.config.cards_dir
-        file, _ = os.path.splitext(page.file.src_path)
+        file, _ = os.path.splitext(page.file.src_uri)
 
         # Compute page title
         title = page.meta.get("title", page.title)
@@ -257,7 +258,7 @@ class SocialPlugin(BasePlugin[_PluginConfig]):
             description = page.meta["description"]
 
         # Resolve image URL
-        url = "{}.png".format(os.path.join(
+        url = "{}.png".format(posixpath.join(
             config.site_url,
             directory,
             file

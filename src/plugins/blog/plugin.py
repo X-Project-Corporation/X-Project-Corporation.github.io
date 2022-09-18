@@ -110,8 +110,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
             return
 
         # Resolve and convert path to file system path
-        self.post_dir = os.path.join(self.config.blog_dir, "posts")
-        self.post_dir = os.path.normpath(self.post_dir)
+        self.post_dir = posixpath.join(self.config.blog_dir, "posts")
 
         # Initialize posts
         self.post_map = dict()
@@ -135,7 +134,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
         if self.config.authors:
             self.authors_map = {}
 
-            # Resolve and convert path to file system path
+            # Resolve and convert from file system path
             path = os.path.normpath(os.path.join(
                 config.docs_dir,
                 self.config.authors_file.format(
@@ -181,15 +180,14 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
 
         # Adjust destination paths for assets
         for file in files.media_files():
-            if self.post_dir not in file.src_path:
+            if self.post_dir not in file.src_uri:
                 continue
 
             # Resolve and convert path to file system path
-            path = os.path.join(self.config.blog_dir, "assets")
-            path = os.path.normpath(path)
+            path = posixpath.join(self.config.blog_dir, "assets")
 
             # Compute destination file system path
-            file.dest_path = file.dest_path.replace(self.post_dir, path)
+            file.dest_uri = file.dest_uri.replace(self.post_dir, path)
             file.abs_dest_path = os.path.join(
                 config.site_dir,
                 file.dest_path
@@ -197,7 +195,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
 
             # Compute destination URL
             file.url = file.url.replace(
-                self.post_dir.replace(os.path.sep, "/"),
+                self.post_dir,
                 posixpath.join(self.config.blog_dir, "assets")
             )
 
@@ -210,7 +208,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
         # the post metadata on our hands. This ensures that we can safely link
         # from anywhere to all pages that are generated as part of the blog.
         for file in files.documentation_pages():
-            if self.post_dir not in file.src_path:
+            if self.post_dir not in file.src_uri:
                 continue
 
             # Read and preprocess post
@@ -219,7 +217,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
 
                 # Ensure post has a date set
                 if not meta.get("date"):
-                    log.error(f"Blog post '{file.src_path}' has no date set.")
+                    log.error(f"Blog post '{file.src_uri}' has no date set.")
                     sys.exit()
 
                 # Compute slug from metadata, content or file name
@@ -249,19 +247,17 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
                 if not config.use_directory_urls:
                     file.url = re.sub(r"\/$", ".html", file.url)
 
-                # Resolve and convert path to file system path
                 path = re.sub(r"(?<=\/)$", "index.html", file.url)
-                path = os.path.normpath(path)
 
                 # Compute destination file system path
-                file.dest_path = path
+                file.dest_uri = path
                 file.abs_dest_path = os.path.join(
                     config.site_dir,
                     file.dest_path
                 )
 
                 # Add post metadata
-                self.post_meta_map[file.src_path] = meta
+                self.post_meta_map[file.src_uri] = meta
 
         # Sort post metadata by date (descending)
         self.post_meta_map = dict(sorted(
@@ -276,7 +272,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
         # Ensure blog root exists
         file = files.get_file_from_path(path)
         if not file:
-            log.error(f"Blog root '{os.path.normpath(path)}' does not exist.")
+            log.error(f"Blog root '{path}' does not exist.")
             sys.exit()
 
         # Generate and register files for archive
@@ -353,11 +349,11 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
             return
 
         # Only process posts
-        if self.post_dir not in page.file.src_path:
+        if self.post_dir not in page.file.src_uri:
             return
 
         # Skip processing of drafts
-        if self._is_draft(page.file.src_path):
+        if self._is_draft(page.file.src_uri):
             return
 
         # Ensure a template is set or use default
@@ -366,7 +362,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
 
         # Ensure use of previously normalized value
         if isinstance(page.meta["date"], str):
-            page.meta["date"] = self.post_meta_map[page.file.src_path]["date"]
+            page.meta["date"] = self.post_meta_map[page.file.src_uri]["date"]
 
         # Ensure navigation is hidden
         page.meta["hide"] = page.meta.get("hide", [])
@@ -399,7 +395,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
             for name in page.meta.get("authors", []):
                 if name not in self.authors_map:
                     log.error(
-                        f"Blog post '{page.file.src_path}' author '{name}' "
+                        f"Blog post '{page.file.src_uri}' author '{name}' "
                         f"unknown, not listed in .authors.yml"
                     )
                     sys.exit()
@@ -409,13 +405,13 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
 
         # Fix stale link if previous post is a draft
         prev = page.previous_page
-        while prev and self._is_draft(prev.file.src_path):
+        while prev and self._is_draft(prev.file.src_uri):
             page.previous_page = prev.previous_page
             prev = prev.previous_page
 
         # Fix stale link if next post is a draft
         next = page.next_page
-        while next and self._is_draft(next.file.src_path):
+        while next and self._is_draft(next.file.src_uri):
             page.next_page = next.next_page
             next = next.next_page
 
@@ -436,8 +432,8 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
 
         # Filter posts that should not be published
         for file in files.documentation_pages():
-            if self.post_dir in file.src_path:
-                if self._is_draft(file.src_path):
+            if self.post_dir in file.src_uri:
+                if self._is_draft(file.src_uri):
                     files.remove(file)
 
                 # Compute navigation for post links
@@ -484,9 +480,8 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
                 if "template" not in page.meta:
                     page.meta["template"] = self._template("blog-category.html")
 
-        # Resolve and convert path to file system path
-        curr = os.path.join(self.config.blog_dir, "index.md")
-        curr = os.path.normpath(curr)
+        # Resolve path
+        curr = posixpath.join(self.config.blog_dir, "index.md")
 
         # Initialize index
         self.post_map[curr] = []
@@ -509,8 +504,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
                 )
 
                 # Convert path to file system path
-                curr = os.path.join(self.config.blog_dir, curr)
-                curr = os.path.normpath(curr + ".md")
+                curr = posixpath.join(self.config.blog_dir, curr + ".md")
 
                 # Generate file if it doesn't exist
                 if not files.get_file_from_path(curr):
@@ -547,7 +541,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
             return
 
         # Provide post excerpts for index
-        path = page.file.src_path
+        path = page.file.src_uri
         if path in self.post_map:
             context["posts"] = self.post_map[path]
 
@@ -604,8 +598,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
             )
 
             # Resolve and convert path to file system path
-            path = os.path.join(self.config.blog_dir, path)
-            path = os.path.normpath(path + ".md")
+            path = posixpath.join(self.config.blog_dir, path + ".md")
 
             # Create file for archive if it doesn't exist
             if path not in self.archive_map:
@@ -637,7 +630,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
             if allowed:
                 for name in categories - allowed:
                     log.error(
-                        f"Blog post '{file.src_path}' uses category '{name}' "
+                        f"Blog post '{file.src_uri}' uses category '{name}' "
                         f"which is not in allow list."
                     )
                     sys.exit()
@@ -651,8 +644,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
                 )
 
                 # Resolve and convert path to file system path
-                path = os.path.join(self.config.blog_dir, path)
-                path = os.path.normpath(path + ".md")
+                path = posixpath.join(self.config.blog_dir, path + ".md")
 
                 # Create file for category if it doesn't exist
                 if path not in self.category_map:
@@ -698,8 +690,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
     # Resolve template
     def _template(self, path):
         if self.config.blog_custom_dir:
-            path = os.path.join(self.config.blog_custom_dir, path)
-            return os.path.normpath(path)
+            return posixpath.join(self.config.blog_custom_dir, path)
         else:
             return path
 
@@ -708,18 +699,18 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
         page = file.page
 
         # Check if we already generated the post excerpt
-        if file.src_path in self.post_excerpt_map:
-            return self.post_excerpt_map[file.src_path]
+        if file.src_uri in self.post_excerpt_map:
+            return self.post_excerpt_map[file.src_uri]
 
         # Generate temporary file and page for post excerpt
-        temp = self._register_file(file.src_path, config)
+        temp = self._register_file(file.src_uri, config)
         excerpt = Page(page.title, temp, config)
 
         # Check for separator, if post excerpt is required
         separator = self.config.post_excerpt_separator
         if self.config.post_excerpt == "required":
             if separator not in page.markdown:
-                log.error(f"Blog post '{temp.src_path}' has no excerpt.")
+                log.error(f"Blog post '{temp.src_uri}' has no excerpt.")
                 sys.exit()
 
         # Increase level of h1-h5 headlines for excerpts
@@ -750,10 +741,10 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
         excerpt.categories = page.categories[:max_categories]
 
         # Return post excerpt after caching
-        self.post_excerpt_map[file.src_path] = excerpt
+        self.post_excerpt_map[file.src_uri] = excerpt
         return excerpt
 
-    # Generate a file with the given template and content
+    # Generate a file with the given template and contentF
     def _generate_file(self, path, content):
         content = f"---\nsearch:\n  exclude: true\n---\n\n{content}"
         utils.write_file(
@@ -866,7 +857,7 @@ def _data_to_navigation(nav, config, files):
         page = Page(title or file.page.title, link, config)
 
         # Set destination file system path and URL from original file
-        link.dest_path     = file.dest_path
+        link.dest_uri      = file.dest_uri
         link.abs_dest_path = file.abs_dest_path
         link.url           = file.url
 

@@ -84,7 +84,7 @@ class TagsPlugin(BasePlugin[_PluginConfig]):
             extra = self.config.tags_extra_files
             return self._render_tag_index(
                 markdown, page,
-                extra.get(page.file.src_path)
+                extra.get(page.file.src_uri)
             )
 
         # Add page to tags index
@@ -144,11 +144,9 @@ class TagsPlugin(BasePlugin[_PluginConfig]):
         content = [f"## <span class=\"{classes}\">{tag}</span>", ""]
         for page in pages:
 
-            # Ensure forward slashes, as we have to use the path of the source
-            # file which contains the operating system's path separator.
             url = utils.get_relative_url(
-                page.file.src_path.replace(os.path.sep, "/"),
-                tags_index.file.src_path.replace(os.path.sep, "/")
+                page.file.src_uri,
+                tags_index.file.src_uri
             )
 
             # Render link to page
