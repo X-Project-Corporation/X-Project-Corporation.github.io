@@ -164,7 +164,7 @@
       }
 
       // Tab label anchor link
-      > [href^="#__tabbed_"] {
+      > [href]:first-child {
         color: inherit;
       }
     }

@@ -210,7 +210,7 @@ export function mountContentTabs(
     /* Add link to each content tab label */
     container.classList.add("tabbed-labels--linked")
     for (const input of inputs) {
-      const label = getElement<HTMLLabelElement>(`label[for=${input.id}]`)
+      const label = getElement<HTMLLabelElement>(`label[for="${input.id}"]`)
       label.replaceChildren(h("a", {
         href: `#${label.htmlFor}`,
         tabIndex: -1

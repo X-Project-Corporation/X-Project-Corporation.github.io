@@ -40,9 +40,7 @@
 
 <!-- Switch to content tab target -->
 <script>
-  var hash = location.hash.slice(1)
-  if (hash.startsWith("__tabbed_")) {
-    var input = document.getElementById(hash)
-    input.checked = true
-  }
+  var target = document.getElementById(location.hash.slice(1))
+  if (target && target.name)
+    target.checked = target.name.startsWith("__tabbed_")
 </script>
