@@ -132,7 +132,7 @@ plugins:
   - git-committers:
       enabled: !ENV [CI, false]
       repository: squidfunk/mkdocs-material
-      token: !ENV GH_TOKEN
+      # token: !ENV GH_TOKEN
   - minify:
       minify_html: true
 
