@@ -224,7 +224,7 @@ class BlogPlugin(BasePlugin):
                 # If the author chooses to use MultiMarkdown syntax, date is
                 # returned as a string, which is different from YAML behavior,
                 # which returns a date. Thus, we must check for its type, and
-                # parse the date as ISO format for normalization purposes.
+                # parse the date for normalization purposes.
                 if isinstance(meta["date"], str):
                     meta["date"] = date.fromisoformat(meta["date"])
 
