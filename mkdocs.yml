@@ -111,10 +111,10 @@ plugins:
   - social
   - redirects:
       redirect_maps:
-        blog/2022/chinese-search-support.md: https://squidfunk.github.io/mkdocs-material/blog/2022/05/05/chinese-search-support/
-        blog/2021/the-past-present-and-future.md: https://squidfunk.github.io/mkdocs-material/blog/2021/12/27/the-past-present-and-future/
-        blog/2021/excluding-content-from-search.md: https://squidfunk.github.io/mkdocs-material/blog/2021/09/26/excluding-content-from-search/
-        blog/2021/search-better-faster-smaller.md: https://squidfunk.github.io/mkdocs-material/blog/2021/09/13/search-better-faster-smaller/
+        blog/2022/chinese-search-support.md: blog/posts/chinese-search-support.md
+        blog/2021/the-past-present-and-future.md: blog/posts/the-past-present-and-future.md
+        blog/2021/excluding-content-from-search.md: blog/posts/excluding-content-from-search.md
+        blog/2021/search-better-faster-smaller.md: blog/posts/search-better-faster-smaller.md
         changelog/insiders.md: insiders/changelog.md
         conventions.md: philosophy.md
         reference/abbreviations.md: reference/tooltips.md
