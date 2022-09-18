@@ -73,8 +73,8 @@ def _merge(meta, defaults, file):
                     _merge(meta[key], value, file)
                 else:
                     log.warning(
-                        f"Format error in metadata of '{file}': "
-                        f"'{key}' is not a dictionary. Skipped."
+                        f"Format error in front matter of '{file}': "
+                        f"'{key}' is not a dictionary. Skipped merge."
                     )
 
             # Merge lists
@@ -85,8 +85,8 @@ def _merge(meta, defaults, file):
                             meta[key].append(item)
                 else:
                     log.warning(
-                        f"Format error in metadata of '{file}': "
-                        f"'{key}' is not a list. Skipped."
+                        f"Format error in front matter of '{file}': "
+                        f"'{key}' is not a list. Skipped merge."
                     )
 
         # Set scalar value
