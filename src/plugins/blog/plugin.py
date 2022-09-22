@@ -330,6 +330,11 @@ class BlogPlugin(BasePlugin):
             # Set blog as parent page
             for page in item.children:
                 page.parent = self.main
+                next = page.next_page
+
+                # Switch previous and next links
+                page.next_page = page.previous_page
+                page.previous_page = next
 
             # Remove posts from navigation
             root.remove(item)
