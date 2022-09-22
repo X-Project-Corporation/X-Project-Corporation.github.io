@@ -58,7 +58,7 @@ class BlogPlugin(BasePlugin):
 
         # Options for posts
         ("post_date_format", Type(str, default = "long")),
-        ("post_url_date_format", Type(str, default = "YYYY/MM/dd")),
+        ("post_url_date_format", Type(str, default = "yyyy/MM/dd")),
         ("post_url_format", Type(str, default = "{date}/{slug}")),
         ("post_slugify", Type(type(slugify), default = slugify)),
         ("post_slugify_separator", Type(str, default = "-")),
@@ -70,8 +70,8 @@ class BlogPlugin(BasePlugin):
         # Options for archive
         ("archive", Type(bool, default = True)),
         ("archive_name", Type(str, default = "blog.archive")),
-        ("archive_date_format", Type(str, default = "YYYY")),
-        ("archive_url_date_format", Type(str, default = "YYYY")),
+        ("archive_date_format", Type(str, default = "yyyy")),
+        ("archive_url_date_format", Type(str, default = "yyyy")),
         ("archive_url_format", Type(str, default = "archive/{date}")),
 
         # Options for categories
