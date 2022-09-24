@@ -23,7 +23,7 @@ import os
 
 from glob import glob
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config.config_options import Type
+from mkdocs.config import base, config_options as c
 from mkdocs.plugins import BasePlugin, event_priority
 from yaml import SafeLoader, load
 
@@ -31,13 +31,12 @@ from yaml import SafeLoader, load
 # Class
 # -----------------------------------------------------------------------------
 
-# Meta plugin
-class MetaPlugin(BasePlugin):
+# Configuration scheme
+class _PluginConfig(base.Config):
+    meta_file = c.Type(str, default = "**/.meta.yml")
 
-    # Configuration scheme
-    config_scheme = (
-        ("meta_file", Type(str, default = "**/.meta.yml")),
-    )
+# Meta plugin
+class MetaPlugin(BasePlugin[_PluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):

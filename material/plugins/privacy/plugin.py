@@ -28,7 +28,7 @@ from fnmatch import fnmatch
 from lxml import html
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config.config_options import Choice, Deprecated, Type
+from mkdocs.config import base, config_options as c
 from mkdocs.plugins import BasePlugin
 from pathlib import Path
 from urllib.parse import urlparse
@@ -37,24 +37,24 @@ from urllib.parse import urlparse
 # Class
 # -----------------------------------------------------------------------------
 
+# Configuration scheme
+class _PluginConfig(base.Config):
+    enabled = c.Type(bool, default = True)
+    cache_dir = c.Type(str, default = ".cache/plugin/privacy")
+
+    # Options for external assets
+    externals = c.Choice(("bundle", "report"), default = "bundle")
+    externals_dir = c.Type(str, default = "assets/externals")
+    externals_exclude = c.Type(list, default = [])
+
+    # Deprecated options
+    download = c.Deprecated(moved_to = "enabled")
+    download_directory = c.Deprecated(moved_to = "externals_dir")
+    externals_directory = c.Deprecated(moved_to = "externals_dir")
+
+
 # Privacy plugin
-class PrivacyPlugin(BasePlugin):
-
-    # Configuration scheme
-    config_scheme = (
-        ("enabled", Type(bool, default = True)),
-        ("cache_dir", Type(str, default = ".cache/plugin/privacy")),
-
-        # Options for external assets
-        ("externals", Choice(("bundle", "report"), default = "bundle")),
-        ("externals_dir", Type(str, default = "assets/externals")),
-        ("externals_exclude", Type(list, default = [])),
-
-        # Deprecated options
-        ("download", Deprecated(moved_to = "enabled")),
-        ("download_directory", Deprecated(moved_to = "externals_dir")),
-        ("externals_directory", Deprecated(moved_to = "externals_dir")),
-    )
+class PrivacyPlugin(BasePlugin[_PluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):

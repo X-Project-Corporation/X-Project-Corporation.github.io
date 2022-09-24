@@ -21,20 +21,20 @@
 import os
 
 from mkdocs import utils
-from mkdocs.config.config_options import Type
+from mkdocs.config import base, config_options as c
 from mkdocs.plugins import BasePlugin, event_priority
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Offline plugin
-class OfflinePlugin(BasePlugin):
+# Configuration scheme
+class _PluginConfig(base.Config):
+    enabled = c.Type(bool, default = True)
 
-    # Configuration scheme
-    config_scheme = (
-        ("enabled", Type(bool, default = True)),
-    )
+
+# Offline plugin
+class OfflinePlugin(BasePlugin[_PluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):

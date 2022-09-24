@@ -25,7 +25,7 @@ import regex as re
 from html import escape
 from html.parser import HTMLParser
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config.config_options import Type
+from mkdocs.config import base, config_options as c
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
 from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
 
@@ -38,17 +38,15 @@ except ImportError:
 # Class
 # -----------------------------------------------------------------------------
 
+# Configuration scheme
+class _PluginConfig(BasePlugin.config_class):
+    # Options for Chinese segmentation
+    jieba_dict = c.Optional(c.Type(str))
+    jieba_dict_user = c.Optional(c.Type(str))
+
+
 # Search plugin with custom search index
-class SearchPlugin(BasePlugin):
-
-    # Configuration scheme
-    config_scheme = (
-        *BasePlugin.config_scheme,
-
-        # Options for Chinese segmentation
-        ("jieba_dict", Type(str, required = False)),
-        ("jieba_dict_user", Type(str, required = False)),
-    )
+class SearchPlugin(BasePlugin[_PluginConfig]):
 
     # Override: use custom search index and setup jieba, if available
     def on_pre_build(self, config):

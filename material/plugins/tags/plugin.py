@@ -26,21 +26,21 @@ from collections import defaultdict
 from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config.config_options import Type
+from mkdocs.config import base, config_options as c
 from mkdocs.plugins import BasePlugin
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Tags plugin
-class TagsPlugin(BasePlugin):
+# Configuration scheme
+class _PluginConfig(base.Config):
+    tags_file = c.Optional(c.Type(str))
+    tags_extra_files = c.Type(dict, default = {})
 
-    # Configuration scheme
-    config_scheme = (
-        ("tags_file", Type(str, required = False)),
-        ("tags_extra_files", Type(dict, default = {})),
-    )
+
+# Tags plugin
+class TagsPlugin(BasePlugin[_PluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
