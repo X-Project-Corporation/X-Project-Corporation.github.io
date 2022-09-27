@@ -20,6 +20,24 @@
   IN THE SOFTWARE.
 -->
 
+<!-- Render navigation link status -->
+{% macro render_status(nav_item, type) %}
+  {% set class = "md-status md-status--" ~ type %}
+
+  <!-- Render icon with title (or tooltip), if given -->
+  {% if config.extra.status and config.extra.status[type] %}
+    <span
+      class="{{ class }}"
+      title="{{ config.extra.status[type] }}"
+    >
+    </span>
+
+  <!-- Render icon only -->
+  {% else %}
+    <span class="{{ class }}"></span>
+  {% endif %}
+{% endmacro %}
+
 <!-- Render navigation link content -->
 {% macro render_content(nav_item, title) %}
 
@@ -39,21 +57,14 @@
     {% endif %}
   </span>
 
+  <!-- Navigation link to encrypted content -->
+  {% if nav_item.is_page and nav_item.encrypted %}
+    {{ render_status(nav_item, "encrypted") }}
+  {% endif %}
+
   <!-- Navigation link status -->
   {% if nav_item.is_page and nav_item.meta.status %}
-    {% set value = nav_item.meta.status %}
-    {% set class = "md-status md-status--" ~ value %}
-
-    <!-- Render with title (or tooltip), if given -->
-    {% if config.extra.status and config.extra.status[value] %}
-      <span
-        class="{{ class }}"
-        title="{{ config.extra.status[value] }}"
-      >
-      </span>
-    {% else %}
-      <span class="{{ class }}"></span>
-    {% endif %}
+    {{ render_status(nav_item, nav_item.meta.status) }}
   {% endif %}
 {% endmacro %}
 

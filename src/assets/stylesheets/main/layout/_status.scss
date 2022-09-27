@@ -29,6 +29,7 @@
   --md-status: svg-load("material/information-outline.svg");
   --md-status--new: svg-load("material/alert-decagram.svg");
   --md-status--deprecated: svg-load("material/trash-can.svg");
+  --md-status--encrypted: svg-load("material/shield-lock.svg");
 }
 
 // ----------------------------------------------------------------------------
@@ -64,5 +65,10 @@
   // Status: deprecated
   &--deprecated::after {
     mask-image: var(--md-status--deprecated);
+  }
+
+  // Status: encrypted
+  &--encrypted::after {
+    mask-image: var(--md-status--encrypted);
   }
 }
