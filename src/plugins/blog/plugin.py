@@ -32,10 +32,10 @@ from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.utils.meta import get_data
 from mkdocs.commands.build import DuplicateFilter, _populate_page
-from mkdocs.config.config_options import Choice, Type
+from mkdocs.config.config_options import Choice, Deprecated, Type
 from mkdocs.contrib.search import SearchIndex
 from mkdocs.plugins import BasePlugin
-from mkdocs.structure.files import File
+from mkdocs.structure.files import File, Files
 from mkdocs.structure.nav import Link, Section
 from mkdocs.structure.pages import Page
 from tempfile import gettempdir
@@ -63,6 +63,8 @@ class BlogPlugin(BasePlugin):
         ("post_slugify", Type(type(slugify), default = slugify)),
         ("post_slugify_separator", Type(str, default = "-")),
         ("post_excerpt", Choice(["optional", "required"], default = "optional")),
+        ("post_excerpt_max_authors", Type(int, default = 1)),
+        ("post_excerpt_max_categories", Type(int, default = 5)),
         ("post_excerpt_separator", Type(str, default = "<!-- more -->")),
         ("post_readtime", Type(bool, default = True)),
         ("post_readtime_words_per_minute", Type(int, default = 265)),
@@ -87,16 +89,19 @@ class BlogPlugin(BasePlugin):
         ("pagination_per_page", Type(int, default = 10)),
         ("pagination_url_format", Type(str, default = "page/{page}")),
         ("pagination_template", Type(str, default = "~2~")),
+        ("pagination_keep_content", Type(bool, default = False)),
 
         # Options for authors
         ("authors", Type(bool, default = True)),
-        ("authors_file", Type(str, default = ".authors.yml")),
-        ("authors_in_excerpt", Type(int, default = 1)),
+        ("authors_file", Type(str, default = "{blog}/.authors.yml")),
 
         # Options for drafts
         ("draft", Type(bool, default = False)),
         ("draft_on_serve", Type(bool, default = True)),
         ("draft_if_future_date", Type(bool, default = False)),
+
+        # Deprecated options
+        ("authors_in_excerpt", Deprecated(moved_to = "post_excerpt_max_authors")),
     )
 
     # Initialize plugin
@@ -113,6 +118,7 @@ class BlogPlugin(BasePlugin):
         self.post_meta_map = dict()
         self.post_pages = []
         self.post_pager_pages = []
+        self.post_excerpt_map = dict()
 
         # Initialize archive
         if self.config["archive"]:
@@ -132,8 +138,9 @@ class BlogPlugin(BasePlugin):
             # Resolve and convert path to file system path
             path = os.path.normpath(os.path.join(
                 config["docs_dir"],
-                self.config["blog_dir"],
-                self.config["authors_file"]
+                self.config["authors_file"].format(
+                    blog = self.config["blog_dir"]
+                )
             ))
 
             # Load authors map, if it exists
@@ -439,6 +446,10 @@ class BlogPlugin(BasePlugin):
                     config, files
                 )
 
+        # Ensure a template is set
+        if "template" not in self.main.meta:
+            self.main.meta["template"] = self._template("blog.html")
+
         # Populate archive
         if self.config["archive"]:
             for path in self.archive_map:
@@ -450,6 +461,11 @@ class BlogPlugin(BasePlugin):
                     self.archive_post_map[path].append(
                         self._generate_excerpt(file, base, config, files)
                     )
+
+                # Ensure a template is set
+                page = base.page
+                if "template" not in page.meta:
+                    page.meta["template"] = self._template("blog-archive.html")
 
         # Populate categories
         if self.config["categories"]:
@@ -463,8 +479,10 @@ class BlogPlugin(BasePlugin):
                         self._generate_excerpt(file, base, config, files)
                     )
 
-        # Ensure a template is set
-        self.main.meta["template"] = self._template("blog.html")
+                # Ensure a template is set
+                page = base.page
+                if "template" not in page.meta:
+                    page.meta["template"] = self._template("blog-category.html")
 
         # Resolve and convert path to file system path
         curr = os.path.join(self.config["blog_dir"], "index.md")
@@ -494,10 +512,22 @@ class BlogPlugin(BasePlugin):
                 curr = os.path.join(self.config["blog_dir"], curr)
                 curr = os.path.normpath(curr + ".md")
 
-                # Generate and register file and page
-                self._generate_file(curr, "blog", self.main.content)
-                base = self._register_file(curr, config, files, True)
+                # Generate file if it doesn't exist
+                if not files.get_file_from_path(curr):
+                    content = f"# {self.main.title}"
+                    if self.config["pagination_keep_content"]:
+                        content = self.main.content
+
+                    # Generate file with content
+                    self._generate_file(curr, content)
+
+                # Register file and page
+                base = self._register_file(curr, config, files)
                 page = self._register_page(base, config, files)
+
+                # Ensure a template is set
+                if "template" not in page.meta:
+                    page.meta["template"] = self._template("blog.html")
 
                 # Inherit page title and position
                 page.title         = self.main.title
@@ -519,7 +549,7 @@ class BlogPlugin(BasePlugin):
         if not self.config["enabled"]:
             return
 
-        # Provide posts excerpts for index
+        # Provide post excerpts for index
         path = page.file.src_path
         if path in self.post_map:
             context["posts"] = self.post_map[path]
@@ -584,9 +614,12 @@ class BlogPlugin(BasePlugin):
             if path not in self.archive_map:
                 self.archive_map[path] = []
 
-                # Generate and register file for archive
-                self._generate_file(path, "blog-archive", f"# {name}"),
-                self._register_file(path, config, files, True)
+                # Generate file for archive if it doesn't exist
+                if not files.get_file_from_path(path):
+                    self._generate_file(path, f"# {name}")
+
+                # Register file for archive
+                self._register_file(path, config, files)
 
             # Assign current post to archive
             self.archive_map[path].append(file)
@@ -628,9 +661,12 @@ class BlogPlugin(BasePlugin):
                 if path not in self.category_map:
                     self.category_map[path] = []
 
-                    # Generate and register file for category
-                    self._generate_file(path, "blog-category", f"# {name}"),
-                    self._register_file(path, config, files, True)
+                    # Generate file for category if it doesn't exist
+                    if not files.get_file_from_path(path):
+                        self._generate_file(path, f"# {name}")
+
+                    # Register file for category
+                    self._register_file(path, config, files)
 
                     # Link category path to name
                     self.category_name_map[name] = path
@@ -674,8 +710,12 @@ class BlogPlugin(BasePlugin):
     def _generate_excerpt(self, file, base, config, files):
         page = file.page
 
+        # Check if we already generated the post excerpt
+        if file.src_path in self.post_excerpt_map:
+            return self.post_excerpt_map[file.src_path]
+
         # Generate temporary file and page for post excerpt
-        temp = self._register_file(file.src_path, config, [])
+        temp = self._register_file(file.src_path, config)
         excerpt = Page(page.title, temp, config)
 
         # Check for separator, if post excerpt is required
@@ -704,35 +744,35 @@ class BlogPlugin(BasePlugin):
         excerpt.file.url = page.url
         excerpt.content  = excerpt.content.split(separator)[0]
 
-        # Obtain computed metadata from original post
-        excerpt.categories = page.categories
-        excerpt.authors    = page.authors[:self.config["authors_in_excerpt"]]
+        # Determine maximum number of authors and categories
+        max_authors    = self.config["post_excerpt_max_authors"]
+        max_categories = self.config["post_excerpt_max_categories"]
 
-        # Return post excerpt
+        # Obtain computed metadata from original post
+        excerpt.authors    = page.authors[:max_authors]
+        excerpt.categories = page.categories[:max_categories]
+
+        # Return post excerpt after caching
+        self.post_excerpt_map[file.src_path] = excerpt
         return excerpt
 
     # Generate a file with the given template and content
-    def _generate_file(self, path, template, content):
-        template = self._template(f"{template}.html")
-
-        # Generate front matter
-        yaml = "\n".join([
-            f"template: {template}",
-            f"search:\n  exclude: true"
-        ])
-
-        # Generate and write template
-        content = f"---\n{yaml}\n---\n\n{content}"
+    def _generate_file(self, path, content):
+        content = f"---\nsearch:\n  exclude: true\n---\n\n{content}"
         utils.write_file(
             bytes(content, "utf-8"),
             os.path.join(self.temp_dir, path)
         )
 
     # Register a file
-    def _register_file(self, path, config, files, temp = False):
-        base = self.temp_dir if temp else config["docs_dir"]
-        file = File(path, base, config["site_dir"], config["use_directory_urls"])
-        files.append(file)
+    def _register_file(self, path, config, files = Files([])):
+        file = files.get_file_from_path(path)
+        if not file:
+            urls = config["use_directory_urls"]
+            file = File(path, self.temp_dir, config["site_dir"], urls)
+            files.append(file)
+
+        # Return file
         return file
 
     # Register and populate a page
@@ -824,8 +864,8 @@ def _data_to_navigation(nav, config, files):
 
     # Generate temporary file as for post excerpts
     else:
-        base = config["docs_dir"]
-        link = File(path, base, config["site_dir"], config["use_directory_urls"])
+        urls = config["use_directory_urls"]
+        link = File(path, config["docs_dir"], config["site_dir"], urls)
         page = Page(title or file.page.title, link, config)
 
         # Set destination file system path and URL from original file
