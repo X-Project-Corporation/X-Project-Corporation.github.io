@@ -525,11 +525,8 @@ class BlogPlugin(BasePlugin):
                 base = self._register_file(curr, config, files)
                 page = self._register_page(base, config, files)
 
-                # Ensure a template is set
-                if "template" not in page.meta:
-                    page.meta["template"] = self._template("blog.html")
-
-                # Inherit page title and position
+                # Inherit page metadata, title and position
+                page.meta          = self.main.meta
                 page.title         = self.main.title
                 page.parent        = self.main
                 page.previous_page = self.main.previous_page
