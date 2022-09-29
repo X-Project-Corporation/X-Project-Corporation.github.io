@@ -18,6 +18,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import copy
 import logging
 import os
 import paginate
@@ -429,10 +430,10 @@ class BlogPlugin(BasePlugin):
             return
 
         # Remove 'toc' to disable permalinks for post excerpts
-        key = "markdown_extensions"
-        config = { **config, key: [*config[key]] }
-        if "toc" in config["markdown_extensions"]:
-            config["markdown_extensions"].remove("toc")
+        config = copy.copy(config)
+        config["markdown_extensions"] = [
+            e for e in config["markdown_extensions"] if e != "toc"
+        ]
 
         # Filter posts that should not be published
         for file in files.documentation_pages():
