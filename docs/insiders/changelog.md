@@ -6,6 +6,10 @@ template: overrides/main.html
 
 ## Material for MkDocs Insiders
 
+### 4.24.1 <small>_ September 30, 2022</small> { id="4.24.1" }
+
+- Fixed #4430: Builds fails with MkDocs 1.4.0
+
 ### 4.24.0 <small>_ September 27, 2022</small> { id="4.24.0" }
 
 - Added support for custom content on index pages (blog)
