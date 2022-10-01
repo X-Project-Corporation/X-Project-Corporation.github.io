@@ -21,6 +21,7 @@
 import logging
 import os
 
+from copy import copy
 from glob import glob
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config.base import Config as PluginConfig
@@ -94,7 +95,7 @@ def _merge(meta, defaults, file):
 
         # Set scalar value
         else:
-            meta[key] = value
+            meta[key] = copy(value)
 
 # -----------------------------------------------------------------------------
 # Data
