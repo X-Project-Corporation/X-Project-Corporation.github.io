@@ -54,7 +54,7 @@ class MetaPlugin(BasePlugin[MetaPluginConfig]):
                 self.meta[file] = load(f, SafeLoader) or {}
 
     # Set defaults for file, if applicable (run early)
-    @event_priority(90)
+    @event_priority(50)
     def on_page_markdown(self, markdown, *, page, config, files):
         path = page.file.abs_src_path
         for file, defaults in self.meta.items():
