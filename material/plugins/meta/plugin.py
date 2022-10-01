@@ -23,7 +23,8 @@ import os
 
 from glob import glob
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config import base, config_options as c
+from mkdocs.config.base import Config as PluginConfig
+from mkdocs.config.config_options import Type
 from mkdocs.plugins import BasePlugin, event_priority
 from yaml import SafeLoader, load
 
@@ -31,28 +32,30 @@ from yaml import SafeLoader, load
 # Class
 # -----------------------------------------------------------------------------
 
-# Configuration scheme
-class _PluginConfig(base.Config):
-    meta_file = c.Type(str, default = "**/.meta.yml")
+# Meta plugin configuration scheme
+class MetaPluginConfig(PluginConfig):
+    meta_file = Type(str, default = "**/.meta.yml")
+
+# -----------------------------------------------------------------------------
 
 # Meta plugin
-class MetaPlugin(BasePlugin[_PluginConfig]):
+class MetaPlugin(BasePlugin[MetaPluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
         self.meta = dict()
 
     # Find all meta files and add to mapping
-    def on_pre_build(self, config):
+    def on_pre_build(self, *, config):
         path = os.path.join(config.docs_dir, self.config.meta_file)
         for file in glob(path, recursive = True):
             with open(file, encoding = "utf-8") as f:
                 self.meta[file] = load(f, SafeLoader) or {}
 
-    # Set defaults for file, if applicable
-    @event_priority(90) # Want to run among the first events
-    def on_page_markdown(self, markdown, page, config, files):
-        path = os.path.join(config.docs_dir, page.file.src_path)
+    # Set defaults for file, if applicable (run early)
+    @event_priority(90)
+    def on_page_markdown(self, markdown, *, page, config, files):
+        path = page.file.abs_src_path
         for file, defaults in self.meta.items():
             if path.startswith(os.path.dirname(file)):
                 file = file[len(config.docs_dir) + 1:]
