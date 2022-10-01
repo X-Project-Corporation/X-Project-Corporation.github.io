@@ -29,10 +29,7 @@ from lxml import html
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config import base, config_options as c
-from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin
-from mkdocs.structure.files import Files
-from mkdocs.structure.pages import Page
 from urllib.parse import urlparse
 
 # -----------------------------------------------------------------------------
@@ -59,14 +56,14 @@ class _PluginConfig(base.Config):
 class PrivacyPlugin(BasePlugin[_PluginConfig]):
 
     # Initialize plugin
-    def on_config(self, config: MkDocsConfig):
+    def on_config(self, config):
         self.site_url = urlparse(config.site_url)
         self.site_dir = config.site_dir
         self.cache = self.config.cache_dir
         self.files = []
 
     # Determine files that need to be post-processed
-    def on_files(self, files: Files, config: MkDocsConfig):
+    def on_files(self, files, config):
         if not self.config.enabled:
             return
 
@@ -86,7 +83,7 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
                 )
 
     # Parse, fetch and store external assets in pages
-    def on_post_page(self, output: str, page: Page, config: MkDocsConfig):
+    def on_post_page(self, output, page, config):
         if not self.config.enabled:
             return
 
@@ -147,7 +144,7 @@ class PrivacyPlugin(BasePlugin[_PluginConfig]):
         return output
 
     # Parse, fetch and store external assets in assets
-    def on_post_build(self, config: MkDocsConfig):
+    def on_post_build(self, config):
         if not self.config.enabled:
             return
 

@@ -29,10 +29,7 @@ from hashlib import md5
 from io import BytesIO
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config import base, config_options as c
-from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin
-from mkdocs.structure.files import Files
-from mkdocs.structure.pages import Page
 import posixpath
 from shutil import copyfile
 from tempfile import TemporaryFile
@@ -64,7 +61,7 @@ class _PluginConfig(base.Config):
 class SocialPlugin(BasePlugin[_PluginConfig]):
 
     # Retrieve configuration
-    def on_config(self, config: MkDocsConfig):
+    def on_config(self, config):
         self.color = colors.get("indigo")
         if not self.config.cards:
             return
@@ -104,7 +101,7 @@ class SocialPlugin(BasePlugin[_PluginConfig]):
         self.font = self._load_font(config)
 
     # Create social cards
-    def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files):
+    def on_page_markdown(self, markdown, page, config, files):
         if not self.config.cards:
             return
 

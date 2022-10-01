@@ -34,11 +34,10 @@ from mkdocs import utils
 from mkdocs.utils.meta import get_data
 from mkdocs.commands.build import DuplicateFilter, _populate_page
 from mkdocs.config import base, config_options as c
-from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.contrib.search import SearchIndex
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
-from mkdocs.structure.nav import Link, Navigation, Section
+from mkdocs.structure.nav import Link, Section
 from mkdocs.structure.pages import Page
 from tempfile import gettempdir
 from yaml import SafeLoader, load
@@ -109,7 +108,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
         self.dirtyreload = dirty
 
     # Initialize plugin
-    def on_config(self, config: MkDocsConfig):
+    def on_config(self, config):
         if not self.config.enabled:
             return
 
@@ -178,7 +177,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
                 self.config.draft = True
 
     # Adjust paths to assets in the posts directory and preprocess posts
-    def on_files(self, files: Files, config: MkDocsConfig):
+    def on_files(self, files, config):
         if not self.config.enabled:
             return
 
@@ -297,7 +296,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
         root.append({ "__posts": list(self.post_meta_map.keys()) })
 
     # Cleanup navigation before proceeding
-    def on_nav(self, nav: Navigation, config: MkDocsConfig, files: Files):
+    def on_nav(self, nav, config, files):
         if not self.config.enabled:
             return
 
@@ -348,7 +347,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
             break
 
     # Prepare post for rendering
-    def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files):
+    def on_page_markdown(self, markdown, page, config, files):
         if not self.config.enabled:
             return
 
@@ -420,7 +419,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
             next = next.next_page
 
     # Filter posts and generate excerpts for generated pages
-    def on_env(self, env, config: MkDocsConfig, files: Files):
+    def on_env(self, env, config, files):
         if not self.config.enabled:
             return
 
@@ -540,7 +539,7 @@ class BlogPlugin(BasePlugin[_PluginConfig]):
             )
 
     # Populate generated pages
-    def on_page_context(self, context: dict, page: Page, config: MkDocsConfig, nav: Navigation):
+    def on_page_context(self, context, page, config, nav):
         if not self.config.enabled:
             return
 

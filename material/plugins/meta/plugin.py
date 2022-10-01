@@ -24,10 +24,7 @@ import os
 from glob import glob
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config import base, config_options as c
-from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin, event_priority
-from mkdocs.structure.files import Files
-from mkdocs.structure.pages import Page
 from yaml import SafeLoader, load
 
 # -----------------------------------------------------------------------------
@@ -42,11 +39,11 @@ class _PluginConfig(base.Config):
 class MetaPlugin(BasePlugin[_PluginConfig]):
 
     # Initialize plugin
-    def on_config(self, config: MkDocsConfig):
+    def on_config(self, config):
         self.meta = dict()
 
     # Find all meta files and add to mapping
-    def on_pre_build(self, config: MkDocsConfig):
+    def on_pre_build(self, config):
         path = os.path.join(config.docs_dir, self.config.meta_file)
         for file in glob(path, recursive = True):
             with open(file, encoding = "utf-8") as f:
@@ -54,7 +51,7 @@ class MetaPlugin(BasePlugin[_PluginConfig]):
 
     # Set defaults for file, if applicable
     @event_priority(90) # Want to run among the first events
-    def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files):
+    def on_page_markdown(self, markdown, page, config, files):
         path = os.path.join(config.docs_dir, page.file.src_path)
         for file, defaults in self.meta.items():
             if path.startswith(os.path.dirname(file)):

@@ -26,11 +26,8 @@ from html import escape
 from html.parser import HTMLParser
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config import base, config_options as c
-from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
 from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
-from mkdocs.structure.nav import Navigation
-from mkdocs.structure.pages import Page
 
 try:
     import jieba
@@ -52,7 +49,7 @@ class _PluginConfig(BasePlugin.config_class):
 class SearchPlugin(BasePlugin[_PluginConfig]):
 
     # Override: use custom search index and setup jieba, if available
-    def on_pre_build(self, config: MkDocsConfig):
+    def on_pre_build(self, config):
         self.search_index = SearchIndex(**self.config)
         if self.config.prebuild_index:
             log.warning(
@@ -88,7 +85,7 @@ class SearchPlugin(BasePlugin[_PluginConfig]):
                 )
 
     # Override: remove search pragmas after indexing
-    def on_page_context(self, context: dict, page: Page, config: MkDocsConfig, nav: Navigation):
+    def on_page_context(self, context, page, config, nav):
         self.search_index.add_entry_from_context(page)
         page.content = re.sub(
             r"\s?data-search-\w+=\"[^\"]+\"",
