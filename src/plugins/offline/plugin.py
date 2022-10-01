@@ -21,20 +21,22 @@
 import os
 
 from mkdocs import utils
-from mkdocs.config import base, config_options as c
+from mkdocs.config.base import Config as PluginConfig
+from mkdocs.config.config_options import Type
 from mkdocs.plugins import BasePlugin, event_priority
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Configuration scheme
-class _PluginConfig(base.Config):
-    enabled = c.Type(bool, default = True)
+# Offline plugin configuration scheme
+class OfflinePluginConfig(PluginConfig):
+    enabled = Type(bool, default = True)
 
+# -----------------------------------------------------------------------------
 
 # Offline plugin
-class OfflinePlugin(BasePlugin[_PluginConfig]):
+class OfflinePlugin(BasePlugin[OfflinePluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
@@ -44,8 +46,8 @@ class OfflinePlugin(BasePlugin[_PluginConfig]):
         # Ensure correct resolution of links
         config.use_directory_urls = False
 
-    # Support offline search
-    @event_priority(-100)  # Run among the last
+    # Support offline search (run latest)
+    @event_priority(-100)
     def on_post_build(self, config):
         if not self.config.enabled:
             return
