@@ -20,6 +20,7 @@
 
 import logging
 import os
+import posixpath
 import re
 import requests
 import sys
@@ -28,9 +29,9 @@ from collections import defaultdict
 from hashlib import md5
 from io import BytesIO
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config import base, config_options as c
+from mkdocs.config import config_options as opt
+from mkdocs.config.base import Config
 from mkdocs.plugins import BasePlugin
-import posixpath
 from shutil import copyfile
 from tempfile import TemporaryFile
 from zipfile import ZipFile
@@ -46,19 +47,21 @@ except ImportError:
 # Class
 # -----------------------------------------------------------------------------
 
-# Configuration scheme
-class _PluginConfig(base.Config):
-    enabled = c.Type(bool, default = True)
-    cache_dir = c.Type(str, default = ".cache/plugin/social")
+# Social plugin configuration scheme
+class SocialPluginConfig(Config):
+    enabled = opt.Type(bool, default = True)
+    cache_dir = opt.Type(str, default = ".cache/plugin/social")
 
     # Options for social cards
-    cards = c.Type(bool, default = True)
-    cards_dir = c.Type(str, default = "assets/images/social")
-    cards_color = c.Type(dict, default = {})
-    cards_font = c.Optional(c.Type(str))
+    cards = opt.Type(bool, default = True)
+    cards_dir = opt.Type(str, default = "assets/images/social")
+    cards_color = opt.Type(dict, default = dict())
+    cards_font = opt.Optional(opt.Type(str))
+
+# -----------------------------------------------------------------------------
 
 # Social plugin
-class SocialPlugin(BasePlugin[_PluginConfig]):
+class SocialPlugin(BasePlugin[SocialPluginConfig]):
 
     # Retrieve configuration
     def on_config(self, config):
@@ -126,7 +129,7 @@ class SocialPlugin(BasePlugin[_PluginConfig]):
 
         # Compute page title and description
         title = page.meta.get("title", page.title)
-        description = config.site_description
+        description = config.site_description or ""
         if "description" in page.meta:
             description = page.meta["description"]
 
