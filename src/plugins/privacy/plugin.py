@@ -61,7 +61,6 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     def on_config(self, config):
         self.site_url = urlparse(config.site_url)
         self.site_dir = config.site_dir
-        self.cache = self.config.cache_dir
         self.files = []
 
     # Determine files that need to be post-processed
@@ -191,8 +190,11 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         if self._is_excluded(raw, page.file.dest_uri):
             return raw
 
+        # Compute destination file system path
+        file = os.path.join(self.config.cache_dir, self._resolve(url))
+        path = file = os.path.normpath(file)
+
         # Download file if it's not contained in the cache
-        path = file = os.path.join(self.cache, self._resolve(url))
         if not os.path.isfile(file):
             log.debug(f"Downloading external file: {raw}")
             res = requests.get(raw, headers = {
@@ -232,9 +234,13 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             file, _ = os.path.splitext(file)
             file += extension
 
+        # Append file extension to destination URL
+        path = posixpath.join(self.config.externals_dir, self._resolve(url))
+        if not path.endswith(extension):
+            path += extension
+
         # Compute final path relative to output directory
-        path = file.replace(self.cache, self.config.externals_dir)
-        full = os.path.join(self.site_dir, path)
+        full = os.path.normpath(os.path.join(self.site_dir, path))
         if not os.path.exists(full):
 
             # Open file and patch dependent resources
@@ -288,7 +294,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 continue
 
             # Download file if it's not contained in the cache
-            file = os.path.join(self.cache, self._resolve(url))
+            file = os.path.join(self.config.cache_dir, self._resolve(url))
             if not os.path.isfile(file):
                 log.debug(f"Downloading external file: {raw}")
                 res = requests.get(raw)
