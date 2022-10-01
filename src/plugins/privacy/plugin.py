@@ -146,7 +146,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         return output
 
     # Parse, fetch and store external assets in assets
-    def on_post_build(self, config):
+    def on_post_build(self, *, config):
         if not self.config.enabled:
             return
 
