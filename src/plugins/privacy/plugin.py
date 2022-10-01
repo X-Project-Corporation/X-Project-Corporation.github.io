@@ -65,7 +65,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         self.files = []
 
     # Determine files that need to be post-processed
-    def on_files(self, files, config):
+    def on_files(self, files, *, config):
         if not self.config.enabled:
             return
 
@@ -85,7 +85,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 )
 
     # Parse, fetch and store external assets in pages
-    def on_post_page(self, output, page, config):
+    def on_post_page(self, output, *, page, config):
         if not self.config.enabled:
             return
 
@@ -212,7 +212,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             name = re.findall(r"^[^;]+", res.headers["content-type"])[0]
             extension = extensions.get(name)
             if extension and not file.endswith(extension):
-                file = posixpath.splitext(file)[0] + extension
+                file, _ = posixpath.splitext(file)
+                file += extension
 
             # Write contents and create symbolic link if necessary
             utils.write_file(res.content, file)
@@ -228,7 +229,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         # Append file extension from file after resolving symbolic links
         _, extension = os.path.splitext(os.path.realpath(file))
         if not file.endswith(extension):
-            file = str(Path(file).with_suffix(extension))
+            file, _ = os.path.splitext(file)
+            file += extension
 
         # Compute final path relative to output directory
         path = file.replace(self.cache, self.config.externals_dir)
@@ -248,10 +250,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 utils.copy_file(file, full)
 
         # Return URL relative to current page
-        return utils.get_relative_url(
-            path,
-            page.url
-        )
+        return utils.get_relative_url(path, page.url)
 
     # Fetch dependent resources in external assets
     def _fetch_dependents(self, output, base):
