@@ -33,8 +33,8 @@ from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.utils.meta import get_data
 from mkdocs.commands.build import DuplicateFilter, _populate_page
-from mkdocs.config.base import Config as PluginConfig
-from mkdocs.config.config_options import Choice, Deprecated, Optional, Type
+from mkdocs.config import config_options as opt
+from mkdocs.config.base import Config
 from mkdocs.contrib.search import SearchIndex
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
@@ -48,59 +48,59 @@ from yaml import SafeLoader, load
 # -----------------------------------------------------------------------------
 
 # Blog plugin configuration scheme
-class BlogPluginConfig(PluginConfig):
-    enabled = Type(bool, default = True)
+class BlogPluginConfig(Config):
+    enabled = opt.Type(bool, default = True)
 
     # Options for blog
-    blog_dir = Type(str, default = "blog")
-    blog_custom_dir = Optional(Type(str)) # Do not use, internal option
+    blog_dir = opt.Type(str, default = "blog")
+    blog_custom_dir = opt.Optional(opt.Type(str)) # Do not use, internal option
 
     # Options for posts
-    post_date_format = Type(str, default = "long")
-    post_url_date_format = Type(str, default = "yyyy/MM/dd")
-    post_url_format = Type(str, default = "{date}/{slug}")
-    post_slugify = Type(type(slugify), default = slugify)
-    post_slugify_separator = Type(str, default = "-")
-    post_excerpt = Choice(["optional", "required"], default = "optional")
-    post_excerpt_max_authors = Type(int, default = 1)
-    post_excerpt_max_categories = Type(int, default = 5)
-    post_excerpt_separator = Type(str, default = "<!-- more -->")
-    post_readtime = Type(bool, default = True)
-    post_readtime_words_per_minute = Type(int, default = 265)
+    post_date_format = opt.Type(str, default = "long")
+    post_url_date_format = opt.Type(str, default = "yyyy/MM/dd")
+    post_url_format = opt.Type(str, default = "{date}/{slug}")
+    post_slugify = opt.Type(type(slugify), default = slugify)
+    post_slugify_separator = opt.Type(str, default = "-")
+    post_excerpt = opt.Choice(["optional", "required"], default = "optional")
+    post_excerpt_max_authors = opt.Type(int, default = 1)
+    post_excerpt_max_categories = opt.Type(int, default = 5)
+    post_excerpt_separator = opt.Type(str, default = "<!-- more -->")
+    post_readtime = opt.Type(bool, default = True)
+    post_readtime_words_per_minute = opt.Type(int, default = 265)
 
     # Options for archive
-    archive = Type(bool, default = True)
-    archive_name = Type(str, default = "blog.archive")
-    archive_date_format = Type(str, default = "yyyy")
-    archive_url_date_format = Type(str, default = "yyyy")
-    archive_url_format = Type(str, default = "archive/{date}")
+    archive = opt.Type(bool, default = True)
+    archive_name = opt.Type(str, default = "blog.archive")
+    archive_date_format = opt.Type(str, default = "yyyy")
+    archive_url_date_format = opt.Type(str, default = "yyyy")
+    archive_url_format = opt.Type(str, default = "archive/{date}")
 
     # Options for categories
-    categories = Type(bool, default = True)
-    categories_name = Type(str, default = "blog.categories")
-    categories_url_format = Type(str, default = "category/{slug}")
-    categories_slugify = Type(type(slugify), default = slugify)
-    categories_slugify_separator = Type(str, default = "-")
-    categories_allowed = Type(list, default = [])
+    categories = opt.Type(bool, default = True)
+    categories_name = opt.Type(str, default = "blog.categories")
+    categories_url_format = opt.Type(str, default = "category/{slug}")
+    categories_slugify = opt.Type(type(slugify), default = slugify)
+    categories_slugify_separator = opt.Type(str, default = "-")
+    categories_allowed = opt.Type(list, default = [])
 
     # Options for pagination
-    pagination = Type(bool, default = True)
-    pagination_per_page = Type(int, default = 10)
-    pagination_url_format = Type(str, default = "page/{page}")
-    pagination_template = Type(str, default = "~2~")
-    pagination_keep_content = Type(bool, default = False)
+    pagination = opt.Type(bool, default = True)
+    pagination_per_page = opt.Type(int, default = 10)
+    pagination_url_format = opt.Type(str, default = "page/{page}")
+    pagination_template = opt.Type(str, default = "~2~")
+    pagination_keep_content = opt.Type(bool, default = False)
 
     # Options for authors
-    authors = Type(bool, default = True)
-    authors_file = Type(str, default = "{blog}/.authors.yml")
+    authors = opt.Type(bool, default = True)
+    authors_file = opt.Type(str, default = "{blog}/.authors.yml")
 
     # Options for drafts
-    draft = Type(bool, default = False)
-    draft_on_serve = Type(bool, default = True)
-    draft_if_future_date = Type(bool, default = False)
+    draft = opt.Type(bool, default = False)
+    draft_on_serve = opt.Type(bool, default = True)
+    draft_if_future_date = opt.Type(bool, default = False)
 
     # Deprecated options
-    authors_in_excerpt = Deprecated(moved_to = "post_excerpt_max_authors")
+    authors_in_excerpt = opt.Deprecated(moved_to = "post_excerpt_max_authors")
 
 # -----------------------------------------------------------------------------
 

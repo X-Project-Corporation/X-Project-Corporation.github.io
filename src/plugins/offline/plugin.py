@@ -21,8 +21,8 @@
 import os
 
 from mkdocs import utils
-from mkdocs.config.base import Config as PluginConfig
-from mkdocs.config.config_options import Type
+from mkdocs.config import config_options as opt
+from mkdocs.config.base import Config
 from mkdocs.plugins import BasePlugin, event_priority
 
 # -----------------------------------------------------------------------------
@@ -30,8 +30,8 @@ from mkdocs.plugins import BasePlugin, event_priority
 # -----------------------------------------------------------------------------
 
 # Offline plugin configuration scheme
-class OfflinePluginConfig(PluginConfig):
-    enabled = Type(bool, default = True)
+class OfflinePluginConfig(Config):
+    enabled = opt.Type(bool, default = True)
 
 # -----------------------------------------------------------------------------
 

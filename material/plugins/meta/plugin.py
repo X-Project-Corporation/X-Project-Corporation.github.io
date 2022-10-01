@@ -24,8 +24,8 @@ import os
 from copy import copy
 from glob import glob
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config.base import Config as PluginConfig
-from mkdocs.config.config_options import Type
+from mkdocs.config import config_options as opt
+from mkdocs.config.base import Config
 from mkdocs.plugins import BasePlugin, event_priority
 from yaml import SafeLoader, load
 
@@ -34,8 +34,8 @@ from yaml import SafeLoader, load
 # -----------------------------------------------------------------------------
 
 # Meta plugin configuration scheme
-class MetaPluginConfig(PluginConfig):
-    meta_file = Type(str, default = "**/.meta.yml")
+class MetaPluginConfig(Config):
+    meta_file = opt.Type(str, default = "**/.meta.yml")
 
 # -----------------------------------------------------------------------------
 

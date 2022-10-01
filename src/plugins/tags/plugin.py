@@ -25,8 +25,8 @@ from collections import defaultdict
 from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config.base import Config as PluginConfig
-from mkdocs.config.config_options import Optional, Type
+from mkdocs.config import config_options as opt
+from mkdocs.config.base import Config
 from mkdocs.plugins import BasePlugin
 
 # -----------------------------------------------------------------------------
@@ -34,9 +34,9 @@ from mkdocs.plugins import BasePlugin
 # -----------------------------------------------------------------------------
 
 # Tags plugin configuration scheme
-class TagsPluginConfig(PluginConfig):
-    tags_file = Optional(Type(str))
-    tags_extra_files = Type(dict, default = dict())
+class TagsPluginConfig(Config):
+    tags_file = opt.Optional(opt.Type(str))
+    tags_extra_files = opt.Type(dict, default = dict())
 
 # -----------------------------------------------------------------------------
 
