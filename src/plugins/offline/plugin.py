@@ -21,36 +21,39 @@
 import os
 
 from mkdocs import utils
-from mkdocs.config.config_options import Type
-from mkdocs.plugins import BasePlugin
+from mkdocs.config import config_options as opt
+from mkdocs.config.base import Config
+from mkdocs.plugins import BasePlugin, event_priority
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Offline plugin
-class OfflinePlugin(BasePlugin):
+# Offline plugin configuration scheme
+class OfflinePluginConfig(Config):
+    enabled = opt.Type(bool, default = True)
 
-    # Configuration scheme
-    config_scheme = (
-        ("enabled", Type(bool, default = True)),
-    )
+# -----------------------------------------------------------------------------
+
+# Offline plugin
+class OfflinePlugin(BasePlugin[OfflinePluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
-        if not self.config["enabled"]:
+        if not self.config.enabled:
             return
 
         # Ensure correct resolution of links
-        config["use_directory_urls"] = False
+        config.use_directory_urls = False
 
-    # Support offline search
-    def on_post_build(self, config):
-        if not self.config["enabled"]:
+    # Support offline search (run latest)
+    @event_priority(-100)
+    def on_post_build(self, *, config):
+        if not self.config.enabled:
             return
 
         # Check for existence of search index
-        base = os.path.join(config["site_dir"], "search")
+        base = os.path.join(config.site_dir, "search")
         path = os.path.join(base, "search_index.json")
         if not os.path.exists(path):
             return

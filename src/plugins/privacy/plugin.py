@@ -28,44 +28,44 @@ from fnmatch import fnmatch
 from lxml import html
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config.config_options import Choice, Deprecated, Type
+from mkdocs.config.base import Config
+from mkdocs.config import config_options as opt
 from mkdocs.plugins import BasePlugin
-from pathlib import Path
 from urllib.parse import urlparse
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
+# Privacy plugin configuration scheme
+class PrivacyPluginConfig(Config):
+    enabled = opt.Type(bool, default = True)
+    cache_dir = opt.Type(str, default = ".cache/plugin/privacy")
+
+    # Options for external assets
+    externals = opt.Choice(("bundle", "report"), default = "bundle")
+    externals_dir = opt.Type(str, default = "assets/externals")
+    externals_exclude = opt.Type(list, default = [])
+
+    # Deprecated options
+    download = opt.Deprecated(moved_to = "enabled")
+    download_directory = opt.Deprecated(moved_to = "externals_dir")
+    externals_directory = opt.Deprecated(moved_to = "externals_dir")
+
+# -----------------------------------------------------------------------------
+
 # Privacy plugin
-class PrivacyPlugin(BasePlugin):
-
-    # Configuration scheme
-    config_scheme = (
-        ("enabled", Type(bool, default = True)),
-        ("cache_dir", Type(str, default = ".cache/plugin/privacy")),
-
-        # Options for external assets
-        ("externals", Choice(("bundle", "report"), default = "bundle")),
-        ("externals_dir", Type(str, default = "assets/externals")),
-        ("externals_exclude", Type(list, default = [])),
-
-        # Deprecated options
-        ("download", Deprecated(moved_to = "enabled")),
-        ("download_directory", Deprecated(moved_to = "externals_dir")),
-        ("externals_directory", Deprecated(moved_to = "externals_dir")),
-    )
+class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
-        self.site_url = urlparse(config.get("site_url"))
-        self.site_dir = config["site_dir"]
-        self.cache = self.config["cache_dir"]
+        self.site_url = urlparse(config.site_url)
+        self.site_dir = config.site_dir
         self.files = []
 
     # Determine files that need to be post-processed
-    def on_files(self, files, config):
-        if not self.config["enabled"]:
+    def on_files(self, files, *, config):
+        if not self.config.enabled:
             return
 
         # Filter relevant files, short-circuit Lunr.js
@@ -77,15 +77,15 @@ class PrivacyPlugin(BasePlugin):
         # If site URL is not given, add Mermaid.js - see https://bit.ly/36tZXsA
         # This is a special case, as Material for MkDocs automatically loads
         # Mermaid.js when a Mermaid diagram is found in the page.
-        if not config.get("site_url"):
-            if not any("mermaid" in js for js in config["extra_javascript"]):
-                config["extra_javascript"].append(
+        if not config.site_url:
+            if not any("mermaid" in js for js in config.extra_javascript):
+                config.extra_javascript.append(
                     "https://unpkg.com/mermaid@9.0.1/dist/mermaid.min.js"
                 )
 
     # Parse, fetch and store external assets in pages
-    def on_post_page(self, output, page, config):
-        if not self.config["enabled"]:
+    def on_post_page(self, output, *, page, config):
+        if not self.config.enabled:
             return
 
         # Find all external resources
@@ -145,8 +145,8 @@ class PrivacyPlugin(BasePlugin):
         return output
 
     # Parse, fetch and store external assets in assets
-    def on_post_build(self, config):
-        if not self.config["enabled"]:
+    def on_post_build(self, *, config):
+        if not self.config.enabled:
             return
 
         # Check all files that are part of the build
@@ -172,13 +172,13 @@ class PrivacyPlugin(BasePlugin):
     # Check if the given URL is excluded
     def _is_excluded(self, url, base):
         url = re.sub(r"^https?:\/\/", "", url)
-        for pattern in self.config["externals_exclude"]:
+        for pattern in self.config.externals_exclude:
             if fnmatch(url, pattern):
                 log.debug(f"Excluding external file in '{base}': {url}")
                 return True
 
         # Report external assets if bundling is not enabled
-        if self.config["externals"] == "report":
+        if self.config.externals == "report":
             log.warning(f"External file in '{base}': {url}")
             return True
 
@@ -187,11 +187,14 @@ class PrivacyPlugin(BasePlugin):
         raw = url.geturl()
 
         # Check if URL is excluded
-        if self._is_excluded(raw, page.file.dest_path):
+        if self._is_excluded(raw, page.file.dest_uri):
             return raw
 
+        # Compute destination file system path
+        file = os.path.join(self.config.cache_dir, self._resolve(url))
+        path = file = os.path.normpath(file)
+
         # Download file if it's not contained in the cache
-        path = file = os.path.join(self.cache, self._resolve(url))
         if not os.path.isfile(file):
             log.debug(f"Downloading external file: {raw}")
             res = requests.get(raw, headers = {
@@ -211,7 +214,8 @@ class PrivacyPlugin(BasePlugin):
             name = re.findall(r"^[^;]+", res.headers["content-type"])[0]
             extension = extensions.get(name)
             if extension and not file.endswith(extension):
-                file = str(Path(file).with_suffix(extension))
+                file, _ = posixpath.splitext(file)
+                file += extension
 
             # Write contents and create symbolic link if necessary
             utils.write_file(res.content, file)
@@ -227,11 +231,16 @@ class PrivacyPlugin(BasePlugin):
         # Append file extension from file after resolving symbolic links
         _, extension = os.path.splitext(os.path.realpath(file))
         if not file.endswith(extension):
-            file = str(Path(file).with_suffix(extension))
+            file, _ = os.path.splitext(file)
+            file += extension
+
+        # Append file extension to destination URL
+        path = posixpath.join(self.config.externals_dir, self._resolve(url))
+        if not path.endswith(extension):
+            path += extension
 
         # Compute final path relative to output directory
-        path = file.replace(self.cache, self.config["externals_dir"])
-        full = os.path.join(self.site_dir, path)
+        full = os.path.normpath(os.path.join(self.site_dir, path))
         if not os.path.exists(full):
 
             # Open file and patch dependent resources
@@ -247,10 +256,7 @@ class PrivacyPlugin(BasePlugin):
                 utils.copy_file(file, full)
 
         # Return URL relative to current page
-        return utils.get_relative_url(
-            utils.normalize_url(path),
-            page.url
-        )
+        return utils.get_relative_url(path, page.url)
 
     # Fetch dependent resources in external assets
     def _fetch_dependents(self, output, base):
@@ -288,15 +294,15 @@ class PrivacyPlugin(BasePlugin):
                 continue
 
             # Download file if it's not contained in the cache
-            file = os.path.join(self.cache, self._resolve(url))
+            file = os.path.join(self.config.cache_dir, self._resolve(url))
             if not os.path.isfile(file):
                 log.debug(f"Downloading external file: {raw}")
                 res = requests.get(raw)
                 utils.write_file(res.content, file)
 
             # Compute final path relative to output directory
-            path = os.path.join(
-                self.config["externals_dir"],
+            path = posixpath.join(
+                self.config.externals_dir,
                 self._resolve(url)
             )
 
@@ -325,7 +331,7 @@ class PrivacyPlugin(BasePlugin):
     # Resolve file name with respect to operating system
     def _resolve(self, url):
         data = url._replace(scheme = "", query = "", fragment = "")
-        return os.path.sep.join(data.geturl()[2:].split("/"))
+        return data.geturl()[2:]
 
 # -----------------------------------------------------------------------------
 # Data

@@ -25,7 +25,7 @@ import regex as re
 from html import escape
 from html.parser import HTMLParser
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config.config_options import Type
+from mkdocs.config import config_options as opt
 from mkdocs.contrib.search import SearchPlugin as BasePlugin
 from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
 
@@ -38,32 +38,32 @@ except ImportError:
 # Class
 # -----------------------------------------------------------------------------
 
+# Search plugin configuration scheme
+class SearchPluginConfig(BasePlugin.config_class):
+
+    # Options for Chinese segmentation
+    jieba_dict = opt.Optional(opt.Type(str))
+    jieba_dict_user = opt.Optional(opt.Type(str))
+
+# -----------------------------------------------------------------------------
+
 # Search plugin with custom search index
-class SearchPlugin(BasePlugin):
-
-    # Configuration scheme
-    config_scheme = (
-        *BasePlugin.config_scheme,
-
-        # Options for Chinese segmentation
-        ("jieba_dict", Type(str, required = False)),
-        ("jieba_dict_user", Type(str, required = False)),
-    )
+class SearchPlugin(BasePlugin[SearchPluginConfig]):
 
     # Override: use custom search index and setup jieba, if available
     def on_pre_build(self, config):
         self.search_index = SearchIndex(**self.config)
-        if self.config["prebuild_index"]:
+        if self.config.prebuild_index:
             log.warning(
                 "Material for MkDocs doesn't support the 'prebuild_index' "
                 "option. Please remove it from 'mkdocs.yml'."
             )
 
             # Set to false, just to be sure
-            self.config["prebuild_index"] = False
+            self.config.prebuild_index = False
 
         # Set jieba dictionary, if given
-        jieba_dict = self.config.get("jieba_dict")
+        jieba_dict = self.config.jieba_dict
         if jieba_dict:
             if os.path.exists(jieba_dict):
                 jieba.set_dictionary(jieba_dict)
@@ -75,7 +75,7 @@ class SearchPlugin(BasePlugin):
                 )
 
         # Set jieba user dictionary, if given
-        jieba_dict_user = self.config.get("jieba_dict_user")
+        jieba_dict_user = self.config.jieba_dict_user
         if jieba_dict_user:
             if os.path.exists(jieba_dict_user):
                 jieba.load_userdict(jieba_dict_user)
@@ -160,7 +160,7 @@ class SearchIndex(BaseIndex):
             else:
                 log.warning(
                     "Skipping 'tags' due to invalid syntax [%s]: %s",
-                    page.file.src_path,
+                    page.file.src_uri,
                     page.meta["tags"]
                 )
 

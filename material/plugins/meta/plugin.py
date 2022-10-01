@@ -21,41 +21,45 @@
 import logging
 import os
 
+from copy import copy
 from glob import glob
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config.config_options import Type
-from mkdocs.plugins import BasePlugin
+from mkdocs.config import config_options as opt
+from mkdocs.config.base import Config
+from mkdocs.plugins import BasePlugin, event_priority
 from yaml import SafeLoader, load
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Meta plugin
-class MetaPlugin(BasePlugin):
+# Meta plugin configuration scheme
+class MetaPluginConfig(Config):
+    meta_file = opt.Type(str, default = "**/.meta.yml")
 
-    # Configuration scheme
-    config_scheme = (
-        ("meta_file", Type(str, default = "**/.meta.yml")),
-    )
+# -----------------------------------------------------------------------------
+
+# Meta plugin
+class MetaPlugin(BasePlugin[MetaPluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
         self.meta = dict()
 
     # Find all meta files and add to mapping
-    def on_pre_build(self, config):
-        path = os.path.join(config["docs_dir"], self.config["meta_file"])
+    def on_pre_build(self, *, config):
+        path = os.path.join(config.docs_dir, self.config.meta_file)
         for file in glob(path, recursive = True):
             with open(file, encoding = "utf-8") as f:
                 self.meta[file] = load(f, SafeLoader) or {}
 
-    # Set defaults for file, if applicable
-    def on_page_markdown(self, markdown, page, config, files):
-        path = os.path.join(config["docs_dir"], page.file.src_path)
+    # Set defaults for file, if applicable (run early)
+    @event_priority(50)
+    def on_page_markdown(self, markdown, *, page, config, files):
+        path = page.file.abs_src_path
         for file, defaults in self.meta.items():
             if path.startswith(os.path.dirname(file)):
-                file = file[len(config["docs_dir"]) + 1:]
+                file = file[len(config.docs_dir) + 1:]
                 _merge(page.meta, defaults, file)
 
 # -----------------------------------------------------------------------------
@@ -91,7 +95,7 @@ def _merge(meta, defaults, file):
 
         # Set scalar value
         else:
-            meta[key] = value
+            meta[key] = copy(value)
 
 # -----------------------------------------------------------------------------
 # Data

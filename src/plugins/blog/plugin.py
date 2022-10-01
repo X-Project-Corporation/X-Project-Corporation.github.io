@@ -33,7 +33,8 @@ from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.utils.meta import get_data
 from mkdocs.commands.build import DuplicateFilter, _populate_page
-from mkdocs.config.config_options import Choice, Deprecated, Type
+from mkdocs.config import config_options as opt
+from mkdocs.config.base import Config
 from mkdocs.contrib.search import SearchIndex
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
@@ -46,73 +47,78 @@ from yaml import SafeLoader, load
 # Class
 # -----------------------------------------------------------------------------
 
+# Blog plugin configuration scheme
+class BlogPluginConfig(Config):
+    enabled = opt.Type(bool, default = True)
+
+    # Options for blog
+    blog_dir = opt.Type(str, default = "blog")
+    blog_custom_dir = opt.Optional(opt.Type(str)) # Do not use, internal option
+
+    # Options for posts
+    post_date_format = opt.Type(str, default = "long")
+    post_url_date_format = opt.Type(str, default = "yyyy/MM/dd")
+    post_url_format = opt.Type(str, default = "{date}/{slug}")
+    post_slugify = opt.Type(type(slugify), default = slugify)
+    post_slugify_separator = opt.Type(str, default = "-")
+    post_excerpt = opt.Choice(["optional", "required"], default = "optional")
+    post_excerpt_max_authors = opt.Type(int, default = 1)
+    post_excerpt_max_categories = opt.Type(int, default = 5)
+    post_excerpt_separator = opt.Type(str, default = "<!-- more -->")
+    post_readtime = opt.Type(bool, default = True)
+    post_readtime_words_per_minute = opt.Type(int, default = 265)
+
+    # Options for archive
+    archive = opt.Type(bool, default = True)
+    archive_name = opt.Type(str, default = "blog.archive")
+    archive_date_format = opt.Type(str, default = "yyyy")
+    archive_url_date_format = opt.Type(str, default = "yyyy")
+    archive_url_format = opt.Type(str, default = "archive/{date}")
+
+    # Options for categories
+    categories = opt.Type(bool, default = True)
+    categories_name = opt.Type(str, default = "blog.categories")
+    categories_url_format = opt.Type(str, default = "category/{slug}")
+    categories_slugify = opt.Type(type(slugify), default = slugify)
+    categories_slugify_separator = opt.Type(str, default = "-")
+    categories_allowed = opt.Type(list, default = [])
+
+    # Options for pagination
+    pagination = opt.Type(bool, default = True)
+    pagination_per_page = opt.Type(int, default = 10)
+    pagination_url_format = opt.Type(str, default = "page/{page}")
+    pagination_template = opt.Type(str, default = "~2~")
+    pagination_keep_content = opt.Type(bool, default = False)
+
+    # Options for authors
+    authors = opt.Type(bool, default = True)
+    authors_file = opt.Type(str, default = "{blog}/.authors.yml")
+
+    # Options for drafts
+    draft = opt.Type(bool, default = False)
+    draft_on_serve = opt.Type(bool, default = True)
+    draft_if_future_date = opt.Type(bool, default = False)
+
+    # Deprecated options
+    authors_in_excerpt = opt.Deprecated(moved_to = "post_excerpt_max_authors")
+
+# -----------------------------------------------------------------------------
+
 # Blog plugin
-class BlogPlugin(BasePlugin):
+class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
-    # Configuration scheme
-    config_scheme = (
-        ("enabled", Type(bool, default = True)),
-
-        # Options for blog
-        ("blog_dir", Type(str, default = "blog")),
-        ("blog_custom_dir", Type(str)), # Do not use, internal option
-
-        # Options for posts
-        ("post_date_format", Type(str, default = "long")),
-        ("post_url_date_format", Type(str, default = "yyyy/MM/dd")),
-        ("post_url_format", Type(str, default = "{date}/{slug}")),
-        ("post_slugify", Type(type(slugify), default = slugify)),
-        ("post_slugify_separator", Type(str, default = "-")),
-        ("post_excerpt", Choice(["optional", "required"], default = "optional")),
-        ("post_excerpt_max_authors", Type(int, default = 1)),
-        ("post_excerpt_max_categories", Type(int, default = 5)),
-        ("post_excerpt_separator", Type(str, default = "<!-- more -->")),
-        ("post_readtime", Type(bool, default = True)),
-        ("post_readtime_words_per_minute", Type(int, default = 265)),
-
-        # Options for archive
-        ("archive", Type(bool, default = True)),
-        ("archive_name", Type(str, default = "blog.archive")),
-        ("archive_date_format", Type(str, default = "yyyy")),
-        ("archive_url_date_format", Type(str, default = "yyyy")),
-        ("archive_url_format", Type(str, default = "archive/{date}")),
-
-        # Options for categories
-        ("categories", Type(bool, default = True)),
-        ("categories_name", Type(str, default = "blog.categories")),
-        ("categories_url_format", Type(str, default = "category/{slug}")),
-        ("categories_slugify", Type(type(slugify), default = slugify)),
-        ("categories_slugify_separator", Type(str, default = "-")),
-        ("categories_allowed", Type(list, default = [])),
-
-        # Options for pagination
-        ("pagination", Type(bool, default = True)),
-        ("pagination_per_page", Type(int, default = 10)),
-        ("pagination_url_format", Type(str, default = "page/{page}")),
-        ("pagination_template", Type(str, default = "~2~")),
-        ("pagination_keep_content", Type(bool, default = False)),
-
-        # Options for authors
-        ("authors", Type(bool, default = True)),
-        ("authors_file", Type(str, default = "{blog}/.authors.yml")),
-
-        # Options for drafts
-        ("draft", Type(bool, default = False)),
-        ("draft_on_serve", Type(bool, default = True)),
-        ("draft_if_future_date", Type(bool, default = False)),
-
-        # Deprecated options
-        ("authors_in_excerpt", Deprecated(moved_to = "post_excerpt_max_authors")),
-    )
+    # Determine whether we're running under dirty reload
+    def on_startup(self, *, command, dirty):
+        self.dirtyreload = False
+        self.dirty = dirty
 
     # Initialize plugin
     def on_config(self, config):
-        if not self.config["enabled"]:
+        if not self.config.enabled:
             return
 
         # Resolve and convert path to file system path
-        self.post_dir = os.path.join(self.config["blog_dir"], "posts")
-        self.post_dir = os.path.normpath(self.post_dir)
+        self.post_dir = posixpath.join(self.config.blog_dir, "posts")
 
         # Initialize posts
         self.post_map = dict()
@@ -122,25 +128,25 @@ class BlogPlugin(BasePlugin):
         self.post_excerpt_map = dict()
 
         # Initialize archive
-        if self.config["archive"]:
+        if self.config.archive:
             self.archive_map = dict()
             self.archive_post_map = dict()
 
         # Initialize categories
-        if self.config["categories"]:
+        if self.config.categories:
             self.category_map = dict()
             self.category_name_map = dict()
             self.category_post_map = dict()
 
         # Initialize authors
-        if self.config["authors"]:
-            self.authors_map = {}
+        if self.config.authors:
+            self.authors_map = dict()
 
-            # Resolve and convert path to file system path
+            # Resolve and convert from file system path
             path = os.path.normpath(os.path.join(
-                config["docs_dir"],
-                self.config["authors_file"].format(
-                    blog = self.config["blog_dir"]
+                config.docs_dir,
+                self.config.authors_file.format(
+                    blog = self.config.blog_dir
                 )
             ))
 
@@ -161,8 +167,8 @@ class BlogPlugin(BasePlugin):
                 sys.exit()
 
         # If pagination should not be used, set to large value
-        if not self.config["pagination"]:
-            self.config["pagination_per_page"] = 1e7
+        if not self.config.pagination:
+            self.config.pagination_per_page = 1e7
 
         # Hack: by default, drafts are rendered when the documentation is
         # served, but not when it is built. This should nicely align with the
@@ -171,35 +177,31 @@ class BlogPlugin(BasePlugin):
         # reason we make use of MkDocs internals to detect whether the site
         # directory is set to a temporary directory.
         self.temp_dir = os.path.join(gettempdir(), "mkdocs")
-        if self.temp_dir in config["site_dir"]:
-            if self.config["draft_on_serve"]:
-                self.config["draft"] = True
+        if self.temp_dir in config.site_dir:
+            if self.config.draft_on_serve:
+                self.config.draft = True
 
     # Adjust paths to assets in the posts directory and preprocess posts
-    def on_files(self, files, config):
-        if not self.config["enabled"]:
+    def on_files(self, files, *, config):
+        if not self.config.enabled:
             return
 
         # Adjust destination paths for assets
         for file in files.media_files():
-            if self.post_dir not in file.src_path:
+            if self.post_dir not in file.src_uri:
                 continue
 
             # Resolve and convert path to file system path
-            path = os.path.join(self.config["blog_dir"], "assets")
-            path = os.path.normpath(path)
+            path = posixpath.join(self.config.blog_dir, "assets")
 
             # Compute destination file system path
-            file.dest_path = file.dest_path.replace(self.post_dir, path)
-            file.abs_dest_path = os.path.join(
-                config["site_dir"],
-                file.dest_path
-            )
+            file.dest_uri = file.dest_uri.replace(self.post_dir, path)
+            file.abs_dest_path = os.path.join(config.site_dir, file.dest_path)
 
             # Compute destination URL
             file.url = file.url.replace(
-                self.post_dir.replace(os.path.sep, "/"),
-                posixpath.join(self.config["blog_dir"], "assets")
+                self.post_dir,
+                posixpath.join(self.config.blog_dir, "assets")
             )
 
         # Hack: as post URLs are dynamically computed and can be configured by
@@ -211,7 +213,7 @@ class BlogPlugin(BasePlugin):
         # the post metadata on our hands. This ensures that we can safely link
         # from anywhere to all pages that are generated as part of the blog.
         for file in files.documentation_pages():
-            if self.post_dir not in file.src_path:
+            if self.post_dir not in file.src_uri:
                 continue
 
             # Read and preprocess post
@@ -220,7 +222,7 @@ class BlogPlugin(BasePlugin):
 
                 # Ensure post has a date set
                 if not meta.get("date"):
-                    log.error(f"Blog post '{file.src_path}' has no date set.")
+                    log.error(f"Blog post '{file.src_uri}' has no date set.")
                     sys.exit()
 
                 # Compute slug from metadata, content or file name
@@ -237,32 +239,27 @@ class BlogPlugin(BasePlugin):
                     meta["date"] = date.fromisoformat(meta["date"])
 
                 # Compute path from format string
-                date_format = self.config["post_url_date_format"]
-                path = self.config["post_url_format"].format(
+                date_format = self.config.post_url_date_format
+                path = self.config.post_url_format.format(
                     date = self._format_date(meta["date"], date_format, config),
-                    slug = meta.get("slug", self.config["post_slugify"](
-                        slug, self.config["post_slugify_separator"]
+                    slug = meta.get("slug", self.config.post_slugify(
+                        slug, self.config.post_slugify_separator
                     ))
                 )
 
                 # Compute destination URL according to settings
-                file.url = posixpath.join(self.config["blog_dir"], path, "")
-                if not config["use_directory_urls"]:
+                file.url = posixpath.join(self.config.blog_dir, path, "")
+                if not config.use_directory_urls:
                     file.url = re.sub(r"\/$", ".html", file.url)
 
-                # Resolve and convert path to file system path
-                path = re.sub(r"(?<=\/)$", "index.html", file.url)
-                path = os.path.normpath(path)
-
                 # Compute destination file system path
-                file.dest_path = path
+                file.dest_uri = re.sub(r"(?<=\/)$", "index.html", file.url)
                 file.abs_dest_path = os.path.join(
-                    config["site_dir"],
-                    file.dest_path
+                    config.site_dir, file.dest_path
                 )
 
                 # Add post metadata
-                self.post_meta_map[file.src_path] = meta
+                self.post_meta_map[file.src_uri] = meta
 
         # Sort post metadata by date (descending)
         self.post_meta_map = dict(sorted(
@@ -271,25 +268,25 @@ class BlogPlugin(BasePlugin):
         ))
 
         # Find and extract the section hosting the blog
-        path = posixpath.join(self.config["blog_dir"], "index.md")
-        root = _host(config["nav"], posixpath.normpath(path))
+        path = posixpath.join(self.config.blog_dir, "index.md")
+        root = _host(config.nav, posixpath.normpath(path))
 
         # Ensure blog root exists
         file = files.get_file_from_path(path)
         if not file:
-            log.error(f"Blog root '{os.path.normpath(path)}' does not exist.")
+            log.error(f"Blog root '{path}' does not exist.")
             sys.exit()
 
         # Generate and register files for archive
-        if self.config["archive"]:
-            name = self._translate(config, self.config["archive_name"])
+        if self.config.archive:
+            name = self._translate(config, self.config.archive_name)
             data = self._generate_files_for_archive(config, files)
             if data:
                 root.append({ name: data })
 
         # Generate and register files for categories
-        if self.config["categories"]:
-            name = self._translate(config, self.config["categories_name"])
+        if self.config.categories:
+            name = self._translate(config, self.config.categories_name)
             data = self._generate_files_for_categories(config, files)
             if data:
                 root.append({ name: data })
@@ -298,12 +295,12 @@ class BlogPlugin(BasePlugin):
         root.append({ "__posts": list(self.post_meta_map.keys()) })
 
     # Cleanup navigation before proceeding
-    def on_nav(self, nav, config, files):
-        if not self.config["enabled"]:
+    def on_nav(self, nav, *, config, files):
+        if not self.config.enabled:
             return
 
         # Find and resolve index for cleanup
-        path = posixpath.join(self.config["blog_dir"], "index.md")
+        path = posixpath.join(self.config.blog_dir, "index.md")
         file = files.get_file_from_path(path)
 
         # Determine blog root section
@@ -349,25 +346,25 @@ class BlogPlugin(BasePlugin):
             break
 
     # Prepare post for rendering
-    def on_page_markdown(self, markdown, page, config, files):
-        if not self.config["enabled"]:
+    def on_page_markdown(self, markdown, *, page, config, files):
+        if not self.config.enabled:
             return
 
         # Only process posts
-        if self.post_dir not in page.file.src_path:
+        if self.post_dir not in page.file.src_uri:
             return
 
         # Skip processing of drafts
-        if self._is_draft(page.file.src_path):
+        if self._is_draft(page.file.src_uri):
             return
 
-        # Ensure a template is set or use default
+        # Ensure template is set or use default
         if "template" not in page.meta:
             page.meta["template"] = self._template("blog-post.html")
 
         # Ensure use of previously normalized value
         if isinstance(page.meta["date"], str):
-            page.meta["date"] = self.post_meta_map[page.file.src_path]["date"]
+            page.meta["date"] = self.post_meta_map[page.file.src_uri]["date"]
 
         # Ensure navigation is hidden
         page.meta["hide"] = page.meta.get("hide", [])
@@ -375,32 +372,32 @@ class BlogPlugin(BasePlugin):
             page.meta["hide"].append("navigation")
 
         # Format date for rendering
-        date_format = self.config["post_date_format"]
+        date_format = self.config.post_date_format
         page.meta["date_format"] = self._format_date(
             page.meta["date"], date_format, config
         )
 
         # Compute readtime if desired and not explicitly set
-        if self.config["post_readtime"]:
+        if self.config.post_readtime:
             if "readtime" not in page.meta:
-                rate = self.config["post_readtime_words_per_minute"]
+                rate = self.config.post_readtime_words_per_minute
                 read = readtime.of_markdown(markdown, rate)
                 page.meta["readtime"] = read.minutes
 
         # Compute post categories
         page.categories = []
-        if self.config["categories"]:
+        if self.config.categories:
             for name in page.meta.get("categories", []):
                 file = files.get_file_from_path(self.category_name_map[name])
                 page.categories.append(file.page)
 
         # Compute post authors
         page.authors = []
-        if self.config["authors"]:
+        if self.config.authors:
             for name in page.meta.get("authors", []):
                 if name not in self.authors_map:
                     log.error(
-                        f"Blog post '{page.file.src_path}' author '{name}' "
+                        f"Blog post '{page.file.src_uri}' author '{name}' "
                         f"unknown, not listed in .authors.yml"
                     )
                     sys.exit()
@@ -410,35 +407,35 @@ class BlogPlugin(BasePlugin):
 
         # Fix stale link if previous post is a draft
         prev = page.previous_page
-        while prev and self._is_draft(prev.file.src_path):
+        while prev and self._is_draft(prev.file.src_uri):
             page.previous_page = prev.previous_page
             prev = prev.previous_page
 
         # Fix stale link if next post is a draft
         next = page.next_page
-        while next and self._is_draft(next.file.src_path):
+        while next and self._is_draft(next.file.src_uri):
             page.next_page = next.next_page
             next = next.next_page
 
     # Filter posts and generate excerpts for generated pages
-    def on_env(self, env, config, files):
-        if not self.config["enabled"]:
+    def on_env(self, env, *, config, files):
+        if not self.config.enabled:
             return
 
         # Skip post excerpts on dirty reload to save time
-        if dirtyreload:
+        if self.dirtyreload:
             return
 
         # Remove 'toc' to disable permalinks for post excerpts
         config = copy.copy(config)
-        config["markdown_extensions"] = [
-            e for e in config["markdown_extensions"] if e != "toc"
+        config.markdown_extensions = [
+            e for e in config.markdown_extensions if e != "toc"
         ]
 
         # Filter posts that should not be published
         for file in files.documentation_pages():
-            if self.post_dir in file.src_path:
-                if self._is_draft(file.src_path):
+            if self.post_dir in file.src_uri:
+                if self._is_draft(file.src_uri):
                     files.remove(file)
 
                 # Compute navigation for post links
@@ -447,12 +444,12 @@ class BlogPlugin(BasePlugin):
                     config, files
                 )
 
-        # Ensure a template is set
+        # Ensure template is set
         if "template" not in self.main.meta:
             self.main.meta["template"] = self._template("blog.html")
 
         # Populate archive
-        if self.config["archive"]:
+        if self.config.archive:
             for path in self.archive_map:
                 self.archive_post_map[path] = []
 
@@ -463,13 +460,13 @@ class BlogPlugin(BasePlugin):
                         self._generate_excerpt(file, base, config, files)
                     )
 
-                # Ensure a template is set
+                # Ensure template is set
                 page = base.page
                 if "template" not in page.meta:
                     page.meta["template"] = self._template("blog-archive.html")
 
         # Populate categories
-        if self.config["categories"]:
+        if self.config.categories:
             for path in self.category_map:
                 self.category_post_map[path] = []
 
@@ -480,21 +477,20 @@ class BlogPlugin(BasePlugin):
                         self._generate_excerpt(file, base, config, files)
                     )
 
-                # Ensure a template is set
+                # Ensure template is set
                 page = base.page
                 if "template" not in page.meta:
                     page.meta["template"] = self._template("blog-category.html")
 
-        # Resolve and convert path to file system path
-        curr = os.path.join(self.config["blog_dir"], "index.md")
-        curr = os.path.normpath(curr)
+        # Resolve path of initial index
+        curr = posixpath.join(self.config.blog_dir, "index.md")
+        base = self.main.file
 
         # Initialize index
         self.post_map[curr] = []
         self.post_pager_pages.append(self.main)
 
         # Generate indexes by paginating through posts
-        base = self.main.file
         for path in self.post_meta_map.keys():
             file = files.get_file_from_path(path)
             if not self._is_draft(path):
@@ -503,20 +499,18 @@ class BlogPlugin(BasePlugin):
                 continue
 
             # Generate new index when the current is full
-            per_page = self.config["pagination_per_page"]
+            per_page = self.config.pagination_per_page
             if len(self.post_map[curr]) == per_page:
-                curr = self.config["pagination_url_format"].format(
-                    page = 1 + len(self.post_map)
-                )
+                offset = 1 + len(self.post_map)
 
-                # Convert path to file system path
-                curr = os.path.join(self.config["blog_dir"], curr)
-                curr = os.path.normpath(curr + ".md")
+                # Resolve path of new index
+                curr = self.config.pagination_url_format.format(page = offset)
+                curr = posixpath.join(self.config.blog_dir, curr + ".md")
 
                 # Generate file if it doesn't exist
                 if not files.get_file_from_path(curr):
                     content = f"# {self.main.title}"
-                    if self.config["pagination_keep_content"]:
+                    if self.config.pagination_keep_content:
                         content = self.main.content
 
                     # Generate file with content
@@ -543,12 +537,12 @@ class BlogPlugin(BasePlugin):
             )
 
     # Populate generated pages
-    def on_page_context(self, context, page, config, nav):
-        if not self.config["enabled"]:
+    def on_page_context(self, context, *, page, config, nav):
+        if not self.config.enabled:
             return
 
         # Provide post excerpts for index
-        path = page.file.src_path
+        path = page.file.src_uri
         if path in self.post_map:
             context["posts"] = self.post_map[path]
 
@@ -556,7 +550,7 @@ class BlogPlugin(BasePlugin):
             pagination = paginate.Page(
                 self.post_pages,
                 page = list(self.post_map.keys()).index(path) + 1,
-                items_per_page = self.config["pagination_per_page"],
+                items_per_page = self.config.pagination_per_page,
                 url_maker = lambda n: utils.get_relative_url(
                     self.post_pager_pages[n - 1].url,
                     page.url
@@ -565,25 +559,24 @@ class BlogPlugin(BasePlugin):
 
             # Create pagination pager
             context["pagination"] = lambda args: pagination.pager(
-                format = self.config["pagination_template"],
+                format = self.config.pagination_template,
                 show_if_single_page = False,
                 **args
             )
 
         # Provide post excerpts for archive
-        if self.config["archive"]:
+        if self.config.archive:
             if path in self.archive_post_map:
                 context["posts"] = self.archive_post_map[path]
 
         # Provide post excerpts for categories
-        if self.config["categories"]:
+        if self.config.categories:
             if path in self.category_post_map:
                 context["posts"] = self.category_post_map[path]
 
     # Determine whether we're running under dirty reload
-    def on_serve(self, server, config, builder):
-        global dirtyreload
-        dirtyreload = "--dirtyreload" in sys.argv
+    def on_serve(self, server, *, config, builder):
+        self.dirtyreload = self.dirty
 
     # -------------------------------------------------------------------------
 
@@ -595,20 +588,17 @@ class BlogPlugin(BasePlugin):
                 continue
 
             # Compute name from format string
-            date_format = self.config["archive_date_format"]
+            date_format = self.config.archive_date_format
             name = self._format_date(meta["date"], date_format, config)
 
             # Compute path from format string
-            date_format = self.config["archive_url_date_format"]
-            path = self.config["archive_url_format"].format(
+            date_format = self.config.archive_url_date_format
+            path = self.config.archive_url_format.format(
                 date = self._format_date(meta["date"], date_format, config)
             )
 
-            # Resolve and convert path to file system path
-            path = os.path.join(self.config["blog_dir"], path)
-            path = os.path.normpath(path + ".md")
-
             # Create file for archive if it doesn't exist
+            path = posixpath.join(self.config.blog_dir, path + ".md")
             if path not in self.archive_map:
                 self.archive_map[path] = []
 
@@ -627,7 +617,7 @@ class BlogPlugin(BasePlugin):
 
     # Generate and register files for categories
     def _generate_files_for_categories(self, config, files):
-        allowed = set(self.config["categories_allowed"])
+        allowed = set(self.config.categories_allowed)
         for path, meta in self.post_meta_map.items():
             file = files.get_file_from_path(path)
             if self._is_draft(path):
@@ -638,24 +628,21 @@ class BlogPlugin(BasePlugin):
             if allowed:
                 for name in categories - allowed:
                     log.error(
-                        f"Blog post '{file.src_path}' uses category '{name}' "
+                        f"Blog post '{file.src_uri}' uses category '{name}' "
                         f"which is not in allow list."
                     )
                     sys.exit()
 
             # Traverse all categories of the post
             for name in categories:
-                path = self.config["categories_url_format"].format(
-                    slug = self.config["categories_slugify"](
-                        name, self.config["categories_slugify_separator"]
+                path = self.config.categories_url_format.format(
+                    slug = self.config.categories_slugify(
+                        name, self.config.categories_slugify_separator
                     )
                 )
 
-                # Resolve and convert path to file system path
-                path = os.path.join(self.config["blog_dir"], path)
-                path = os.path.normpath(path + ".md")
-
                 # Create file for category if it doesn't exist
+                path = posixpath.join(self.config.blog_dir, path + ".md")
                 if path not in self.category_map:
                     self.category_map[path] = []
 
@@ -683,11 +670,11 @@ class BlogPlugin(BasePlugin):
     # Check if a post is a draft
     def _is_draft(self, path):
         meta = self.post_meta_map[path]
-        if not self.config["draft"]:
+        if not self.config.draft:
 
             # Check if post date is in the future
             future = False
-            if self.config["draft_if_future_date"]:
+            if self.config.draft_if_future_date:
                 future = meta["date"] > date.today()
 
             # Check if post is marked as draft
@@ -698,9 +685,8 @@ class BlogPlugin(BasePlugin):
 
     # Resolve template
     def _template(self, path):
-        if self.config.get("blog_custom_dir"):
-            path = os.path.join(self.config["blog_custom_dir"], path)
-            return os.path.normpath(path)
+        if self.config.blog_custom_dir:
+            return posixpath.join(self.config.blog_custom_dir, path)
         else:
             return path
 
@@ -709,18 +695,18 @@ class BlogPlugin(BasePlugin):
         page = file.page
 
         # Check if we already generated the post excerpt
-        if file.src_path in self.post_excerpt_map:
-            return self.post_excerpt_map[file.src_path]
+        if file.src_uri in self.post_excerpt_map:
+            return self.post_excerpt_map[file.src_uri]
 
         # Generate temporary file and page for post excerpt
-        temp = self._register_file(file.src_path, config)
+        temp = self._register_file(file.src_uri, config)
         excerpt = Page(page.title, temp, config)
 
         # Check for separator, if post excerpt is required
-        separator = self.config["post_excerpt_separator"]
-        if self.config["post_excerpt"] == "required":
+        separator = self.config.post_excerpt_separator
+        if self.config.post_excerpt == "required":
             if separator not in page.markdown:
-                log.error(f"Blog post '{temp.src_path}' has no excerpt.")
+                log.error(f"Blog post '{temp.src_uri}' has no excerpt.")
                 sys.exit()
 
         # Increase level of h1-h5 headlines for excerpts
@@ -743,15 +729,15 @@ class BlogPlugin(BasePlugin):
         excerpt.content  = excerpt.content.split(separator)[0]
 
         # Determine maximum number of authors and categories
-        max_authors    = self.config["post_excerpt_max_authors"]
-        max_categories = self.config["post_excerpt_max_categories"]
+        max_authors    = self.config.post_excerpt_max_authors
+        max_categories = self.config.post_excerpt_max_categories
 
         # Obtain computed metadata from original post
         excerpt.authors    = page.authors[:max_authors]
         excerpt.categories = page.categories[:max_categories]
 
         # Return post excerpt after caching
-        self.post_excerpt_map[file.src_path] = excerpt
+        self.post_excerpt_map[file.src_uri] = excerpt
         return excerpt
 
     # Generate a file with the given template and content
@@ -766,8 +752,8 @@ class BlogPlugin(BasePlugin):
     def _register_file(self, path, config, files = Files([])):
         file = files.get_file_from_path(path)
         if not file:
-            urls = config["use_directory_urls"]
-            file = File(path, self.temp_dir, config["site_dir"], urls)
+            urls = config.use_directory_urls
+            file = File(path, self.temp_dir, config.site_dir, urls)
             files.append(file)
 
         # Return file
@@ -781,7 +767,7 @@ class BlogPlugin(BasePlugin):
 
     # Translate the given placeholder value
     def _translate(self, config, value):
-        env = config["theme"].get_env()
+        env = config.theme.get_env()
 
         # Load language template and return translation for placeholder
         language = "partials/language.html"
@@ -793,7 +779,7 @@ class BlogPlugin(BasePlugin):
         return format_date(
             date,
             format = format,
-            locale = config["theme"]["language"]
+            locale = config.theme["language"]
         )
 
 # -----------------------------------------------------------------------------
@@ -862,12 +848,12 @@ def _data_to_navigation(nav, config, files):
 
     # Generate temporary file as for post excerpts
     else:
-        urls = config["use_directory_urls"]
-        link = File(path, config["docs_dir"], config["site_dir"], urls)
+        urls = config.use_directory_urls
+        link = File(path, config.docs_dir, config.site_dir, urls)
         page = Page(title or file.page.title, link, config)
 
         # Set destination file system path and URL from original file
-        link.dest_path     = file.dest_path
+        link.dest_uri      = file.dest_uri
         link.abs_dest_path = file.abs_dest_path
         link.url           = file.url
 
@@ -889,7 +875,3 @@ def _data_to_navigation(nav, config, files):
 # Set up logging
 log = logging.getLogger("mkdocs")
 log.addFilter(DuplicateFilter())
-
-# Reload state, must be global, as there's no way to detect whether the plugin
-# performs its initial run, or a repeated build. If there's a better way, PR!
-dirtyreload = False
