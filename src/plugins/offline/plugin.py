@@ -48,7 +48,7 @@ class OfflinePlugin(BasePlugin[OfflinePluginConfig]):
 
     # Support offline search (run latest)
     @event_priority(-100)
-    def on_post_build(self, config):
+    def on_post_build(self, *, config):
         if not self.config.enabled:
             return
 
