@@ -6,9 +6,16 @@ template: overrides/main.html
 
 ## Material for MkDocs Insiders
 
+### 4.24.2 <small>_ October 1, 2022</small> { id="4.24.2" }
+
+- Updated MkDocs to 1.4
+- Fixed compatibility issues with MkDocs 1.4
+- Fixed incorrectly generated paths in privacy plugin
+- Fixed blog index page not showing navigation when using meta plugin
+
 ### 4.24.1 <small>_ September 30, 2022</small> { id="4.24.1" }
 
-- Fixed #4430: Builds fails with MkDocs 1.4.0
+- Fixed #4430: build error when enabling consent without repository URL
 
 ### 4.24.0 <small>_ September 27, 2022</small> { id="4.24.0" }
 

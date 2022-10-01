@@ -63,7 +63,6 @@ hosted on a regular server.
   [Insiders]: ../insiders/index.md
   [site search]: setting-up-site-search.md
   [site directory]: https://www.mkdocs.org/user-guide/configuration/#site_dir
-  [localsearch]: https://github.com/wilhelmer/mkdocs-localsearch/
   [built-in plugins]: ../insiders/getting-started.md#built-in-plugins
   [use_directory_urls]: https://www.mkdocs.org/user-guide/configuration/#use_directory_urls
   [environment variable]: https://www.mkdocs.org/user-guide/configuration/#environment-variables
