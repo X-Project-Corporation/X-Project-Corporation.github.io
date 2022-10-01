@@ -19,28 +19,29 @@
 # IN THE SOFTWARE.
 
 import logging
-import os
 import sys
 
 from collections import defaultdict
 from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config import base, config_options as c
+from mkdocs.config.base import Config as PluginConfig
+from mkdocs.config.config_options import Optional, Type
 from mkdocs.plugins import BasePlugin
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Configuration scheme
-class _PluginConfig(base.Config):
-    tags_file = c.Optional(c.Type(str))
-    tags_extra_files = c.Type(dict, default = {})
+# Tags plugin configuration scheme
+class TagsPluginConfig(PluginConfig):
+    tags_file = Optional(Type(str))
+    tags_extra_files = Type(dict, default = dict())
 
+# -----------------------------------------------------------------------------
 
 # Tags plugin
-class TagsPlugin(BasePlugin[_PluginConfig]):
+class TagsPlugin(BasePlugin[TagsPluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
@@ -61,30 +62,30 @@ class TagsPlugin(BasePlugin[_PluginConfig]):
             toc["slugify"](str(value), toc["separator"])
         )
 
-    # Hack: 2nd pass for tags index page(s)
-    def on_nav(self, nav, config, files):
+    # Resolve tags file (and extra files)
+    def on_nav(self, nav, *, config, files):
         file = self.config.tags_file
         if file:
             self.tags_file = self._get_tags_file(files, file)
 
         # Handle extra tags index pages, if given
-        extra = self.config.tags_extra_files
-        for file, _ in extra.items():
+        for file, _ in self.config.tags_extra_files.items():
             self.tags_extra_files.append(
                 self._get_tags_file(files, file)
             )
 
     # Build and render tags index page
-    def on_page_markdown(self, markdown, page, config, files):
+    def on_page_markdown(self, markdown, *, page, config, files):
         if page.file == self.tags_file:
             return self._render_tag_index(markdown, page)
 
         # Render extra tag files
         if page.file in self.tags_extra_files:
-            extra = self.config.tags_extra_files
             return self._render_tag_index(
                 markdown, page,
-                extra.get(page.file.src_uri)
+                self.config.tags_extra_files.get(
+                    page.file.src_uri
+                )
             )
 
         # Add page to tags index
@@ -92,7 +93,7 @@ class TagsPlugin(BasePlugin[_PluginConfig]):
             self.tags[tag].append(page)
 
     # Inject tags into page (after search and before minification)
-    def on_page_context(self, context, page, config, nav):
+    def on_page_context(self, context, *, page, config, nav):
         if "tags" in page.meta:
             context["tags"] = [
                 self._render_tag(tag)
@@ -101,14 +102,14 @@ class TagsPlugin(BasePlugin[_PluginConfig]):
 
     # -------------------------------------------------------------------------
 
-    # Obtain tags file (or extra files)
+    # Obtain tags file (and extra files)
     def _get_tags_file(self, files, path):
         file = files.get_file_from_path(path)
         if not file:
             log.error(f"Tags file '{path}' does not exist.")
             sys.exit()
 
-        # Add tags file to files
+        # Hack: 2nd pass for tags index page(s)
         files.append(file)
         return file
 
@@ -143,7 +144,6 @@ class TagsPlugin(BasePlugin[_PluginConfig]):
         classes = " ".join(classes)
         content = [f"## <span class=\"{classes}\">{tag}</span>", ""]
         for page in pages:
-
             url = utils.get_relative_url(
                 page.file.src_uri,
                 tags_index.file.src_uri
