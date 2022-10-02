@@ -45,7 +45,7 @@ except ImportError:
 class SearchPluginConfig(Config):
     lang = opt.Optional(LangOption())
     separator = opt.Type(str, default=r"[\s\-]+")
-    indexing = opt.Choice(("full", "sections", "titles"), default = "full")
+    indexing = opt.Choice(("full", "titles"), default = "full")
 
     # Options for text segmentation (Chinese)
     jieba_dict = opt.Optional(opt.Type(str))
