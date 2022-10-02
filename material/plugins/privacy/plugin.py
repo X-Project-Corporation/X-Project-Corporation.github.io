@@ -28,8 +28,8 @@ from fnmatch import fnmatch
 from lxml import html
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config.base import Config
 from mkdocs.config import config_options as opt
+from mkdocs.config.base import Config
 from mkdocs.plugins import BasePlugin
 from urllib.parse import urlparse
 
