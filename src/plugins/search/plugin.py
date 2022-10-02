@@ -18,16 +18,19 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import json
 import logging
 import os
 import regex as re
 
 from html import escape
 from html.parser import HTMLParser
+from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config import config_options as opt
-from mkdocs.contrib.search import SearchPlugin as BasePlugin
-from mkdocs.contrib.search.search_index import SearchIndex as BaseIndex
+from mkdocs.config.base import Config
+from mkdocs.contrib.search import LangOption
+from mkdocs.plugins import BasePlugin
 
 try:
     import jieba
@@ -39,55 +42,58 @@ except ImportError:
 # -----------------------------------------------------------------------------
 
 # Search plugin configuration scheme
-class SearchPluginConfig(BasePlugin.config_class):
+class SearchPluginConfig(Config):
+    lang = opt.Optional(LangOption())
+    separator = opt.Type(str, default=r"[\s\-]+")
+    indexing = opt.Choice(("full", "sections", "titles"), default = "full")
 
-    # Options for Chinese segmentation
+    # Options for text segmentation (Chinese)
     jieba_dict = opt.Optional(opt.Type(str))
     jieba_dict_user = opt.Optional(opt.Type(str))
 
+    # Deprecated options
+    prebuild_index = opt.Deprecated(message = "Unsupported option")
+    min_search_length = opt.Deprecated(message = "Unsupported option")
+
 # -----------------------------------------------------------------------------
 
-# Search plugin with custom search index
+# Search plugin
 class SearchPlugin(BasePlugin[SearchPluginConfig]):
 
-    # Override: use custom search index and setup jieba, if available
-    def on_pre_build(self, config):
-        self.search_index = SearchIndex(**self.config)
-        if self.config.prebuild_index:
-            log.warning(
-                "Material for MkDocs doesn't support the 'prebuild_index' "
-                "option. Please remove it from 'mkdocs.yml'."
-            )
+    # Initialize plugin
+    def on_config(self, config):
+        if not self.config.lang:
+            self.config.lang = ["en"]
 
-            # Set to false, just to be sure
-            self.config.prebuild_index = False
+        # Initialize search index
+        self.search_index = SearchIndex(**self.config)
 
         # Set jieba dictionary, if given
-        jieba_dict = self.config.jieba_dict
-        if jieba_dict:
-            if os.path.exists(jieba_dict):
-                jieba.set_dictionary(jieba_dict)
-                log.debug(f"Loading jieba dictionary: {jieba_dict}")
+        if self.config.jieba_dict:
+            path = os.path.normpath(self.config.jieba_dict)
+            if os.path.exists(path):
+                jieba.set_dictionary(path)
+                log.debug(f"Loading jieba dictionary: {path}")
             else:
                 log.warning(
                     f"Configuration error for 'search.jieba_dict': "
-                    f"'{jieba_dict}' does not exist."
+                    f"'{self.config.jieba_dict}' does not exist."
                 )
 
         # Set jieba user dictionary, if given
-        jieba_dict_user = self.config.jieba_dict_user
-        if jieba_dict_user:
-            if os.path.exists(jieba_dict_user):
-                jieba.load_userdict(jieba_dict_user)
-                log.debug(f"Loading jieba user dictionary: {jieba_dict_user}")
+        if self.config.jieba_dict_user:
+            path = os.path.normpath(self.config.jieba_dict_user)
+            if os.path.exists(path):
+                jieba.load_userdict(path)
+                log.debug(f"Loading jieba user dictionary: {path}")
             else:
                 log.warning(
                     f"Configuration error for 'search.jieba_dict_user': "
-                    f"'{jieba_dict_user}' does not exist."
+                    f"'{self.config.jieba_dict_user}' does not exist."
                 )
 
-    # Override: remove search pragmas after indexing
-    def on_page_context(self, context, page, config, nav):
+    # Add page to search index
+    def on_page_context(self, context, *, page, config, nav):
         self.search_index.add_entry_from_context(page)
         page.content = re.sub(
             r"\s?data-search-\w+=\"[^\"]+\"",
@@ -95,12 +101,26 @@ class SearchPlugin(BasePlugin[SearchPluginConfig]):
             page.content
         )
 
+    # Generate search index
+    def on_post_build(self, *, config):
+        base = os.path.join(config.site_dir, "search")
+        path = os.path.join(base, "search_index.json")
+
+        # Generate and write search index to file
+        data = self.search_index.generate_search_index()
+        utils.write_file(data.encode("utf-8"), path)
+
 # -----------------------------------------------------------------------------
 
 # Search index with support for additional fields
-class SearchIndex(BaseIndex):
+class SearchIndex:
 
-    # Override: use custom content parser
+    # Initialize search index
+    def __init__(self, **config):
+        self.config = config
+        self.docs = []
+
+    # Add page to search index
     def add_entry_from_context(self, page):
         search = page.meta.get("search", {})
         if search.get("exclude"):
@@ -170,9 +190,35 @@ class SearchIndex(BaseIndex):
             entry["boost"] = search["boost"]
 
         # Add entry to index
-        self._entries.append(entry)
+        self.docs.append(entry)
+
+    # Generate search index
+    def generate_search_index(self):
+        config = { key: self.config[key] for key in ["lang", "separator"] }
+
+        # Return search index as JSON
+        data = { "config": config, "docs": self.docs }
+        return json.dumps(
+            data,
+            separators = (",", ":"),
+            default = str
+        )
 
     # -------------------------------------------------------------------------
+
+    # Retrieve item for anchor
+    def _find_toc_by_id(self, toc, id):
+        for toc_item in toc:
+            if toc_item.id == id:
+                return toc_item
+
+            # Recurse into children of item
+            toc_item = self._find_toc_by_id(toc_item.children, id)
+            if toc_item is not None:
+                return toc_item
+
+        # No item found
+        return None
 
     # Find and segment Chinese characters in string
     def _segment_chinese(self, data):
