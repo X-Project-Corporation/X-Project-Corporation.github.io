@@ -60,6 +60,14 @@ class SearchPluginConfig(Config):
 # Search plugin
 class SearchPlugin(BasePlugin[SearchPluginConfig]):
 
+    # Determine whether we're running under dirty reload
+    def on_startup(self, *, command, dirty):
+        self.dirtyreload = False
+        self.dirty = dirty
+
+        # Initialize search index cache
+        self.search_index_prev = None
+
     # Initialize plugin
     def on_config(self, config):
         if not self.config.lang:
@@ -107,8 +115,16 @@ class SearchPlugin(BasePlugin[SearchPluginConfig]):
         path = os.path.join(base, "search_index.json")
 
         # Generate and write search index to file
-        data = self.search_index.generate_search_index()
+        data = self.search_index.generate_search_index(self.search_index_prev)
         utils.write_file(data.encode("utf-8"), path)
+
+        # Persist search index for repeated invocation
+        if self.dirty:
+            self.search_index_prev = self.search_index
+
+    # Determine whether we're running under dirty reload
+    def on_serve(self, server, *, config, builder):
+        self.dirtyreload = self.dirty
 
 # -----------------------------------------------------------------------------
 
@@ -118,7 +134,7 @@ class SearchIndex:
     # Initialize search index
     def __init__(self, **config):
         self.config = config
-        self.docs = []
+        self.entries = []
 
     # Add page to search index
     def add_entry_from_context(self, page):
@@ -142,7 +158,7 @@ class SearchIndex:
         if item:
             url = url + item.url
         elif section.id:
-            url = url + f"#{section.id}"
+            url = url + "#" + section.id
 
         # Set page title as section title if none was given, which happens when
         # the first headline in a Markdown document is not a h1 headline. Also,
@@ -190,14 +206,41 @@ class SearchIndex:
             entry["boost"] = search["boost"]
 
         # Add entry to index
-        self.docs.append(entry)
+        self.entries.append(entry)
 
     # Generate search index
-    def generate_search_index(self):
+    def generate_search_index(self, prev):
         config = { key: self.config[key] for key in ["lang", "separator"] }
 
+        # Hack: if we're running under dirty reload, the search index will only
+        # include the entries for the current page. However, MkDocs > 1.4 allows
+        # us to persist plugin state across rebuilds, which is exactly what we
+        # do by passing the previously built index to this method. Thus, we just
+        # remove the previous entries for the current page, and append the new
+        # entries to the end of the index, as order doesn't matter.
+        if prev and self.entries:
+            path = self.entries[0]["location"]
+
+            # Since we're sure that we're running under dirty reload, the list
+            # of entries will only contain sections for a single page. Thus, we
+            # use the first entry to remove all entries from the previous run
+            # that belong to the current page. The rationale behind this is that
+            # authors might add or remove section headers, so we need to make
+            # sure that sections are synchronized correctly.
+            entries = [
+                entry for entry in prev.entries
+                    if not entry["location"].startswith(path)
+            ]
+
+            # Merge previous with current entries
+            self.entries = entries + self.entries
+
+        # Otherwise just set previous entries
+        if prev and not self.entries:
+            self.entries = prev.entries
+
         # Return search index as JSON
-        data = { "config": config, "docs": self.docs }
+        data = { "config": config, "docs": self.entries }
         return json.dumps(
             data,
             separators = (",", ":"),
