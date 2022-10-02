@@ -117,7 +117,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         if not self.config.enabled:
             return
 
-        # Resolve and convert path to file system path
+        # Resolve source directory for posts
         self.post_dir = posixpath.join(self.config.blog_dir, "posts")
 
         # Initialize posts
@@ -142,7 +142,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         if self.config.authors:
             self.authors_map = dict()
 
-            # Resolve and convert from file system path
+            # Resolve authors file
             path = os.path.normpath(os.path.join(
                 config.docs_dir,
                 self.config.authors_file.format(
@@ -191,7 +191,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             if self.post_dir not in file.src_uri:
                 continue
 
-            # Resolve and convert path to file system path
+            # Resolve target directory for assets
             path = posixpath.join(self.config.blog_dir, "assets")
 
             # Compute destination file system path
