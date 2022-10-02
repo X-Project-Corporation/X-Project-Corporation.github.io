@@ -35,8 +35,14 @@ from mkdocs.plugins import BasePlugin
 
 # Tags plugin configuration scheme
 class TagsPluginConfig(Config):
+    enabled = opt.Type(bool, default = True)
+
+    # Options for tags
     tags_file = opt.Optional(opt.Type(str))
     tags_extra_files = opt.Type(dict, default = dict())
+    tags_slugify = opt.Type(type(slugify), default = slugify)
+    tags_slugify_separator = opt.Type(str, default = "-")
+    tags_allowed = opt.Type(list, default = [])
 
 # -----------------------------------------------------------------------------
 
@@ -45,41 +51,43 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
-        self.tags = defaultdict(list)
+        if not self.config.enabled:
+            return
+
+        # Initialize tags
+        self.tags_map = defaultdict(list)
+        self.tags_type_map = config.extra.get("tags")
+
+        # Initialize tags index pages
         self.tags_file = None
         self.tags_extra_files = []
 
-        # Retrieve tags mapping from configuration
-        self.tags_map = config.extra.get("tags")
-
-        # Use override of slugify function
-        toc = { "slugify": slugify, "separator": "-" }
-        if "toc" in config.mdx_configs:
-            toc = { **toc, **config.mdx_configs["toc"] }
-
-        # Partially apply slugify function
-        self.slugify = lambda value: (
-            toc["slugify"](str(value), toc["separator"])
-        )
-
-    # Resolve tags file (and extra files)
+    # Resolve index pages (and extra files)
     def on_nav(self, nav, *, config, files):
+        if not self.config.enabled:
+            return
+
+        # Resolve tags index page
         file = self.config.tags_file
         if file:
             self.tags_file = self._get_tags_file(files, file)
 
-        # Handle extra tags index pages, if given
+        # Resolve extra tags index pages, if given
         for file, _ in self.config.tags_extra_files.items():
             self.tags_extra_files.append(
                 self._get_tags_file(files, file)
             )
 
-    # Build and render tags index page
+    # Build and render tags index(es) and link pages
     def on_page_markdown(self, markdown, *, page, config, files):
+        if not self.config.enabled:
+            return
+
+        # Render tags index page
         if page.file == self.tags_file:
             return self._render_tag_index(markdown, page)
 
-        # Render extra tag files
+        # Render extra tags index pages
         if page.file in self.tags_extra_files:
             return self._render_tag_index(
                 markdown, page,
@@ -88,12 +96,25 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
                 )
             )
 
-        # Add page to tags index
+        # Link page to each tag
         for tag in page.meta.get("tags", []):
-            self.tags[tag].append(page)
+            self.tags_map[tag].append(page)
+
+            # Ensure tag is in (non-empty) allow list
+            if self.config.tags_allowed:
+                if tag not in self.config.tags_allowed:
+                    log.error(
+                        f"Page '{page.file.src_uri}' uses tag '{tag}' "
+                        f"which is not in allow list."
+                    )
+                    sys.exit()
 
     # Inject tags into page (after search and before minification)
     def on_page_context(self, context, *, page, config, nav):
+        if not self.config.enabled:
+            return
+
+        # Provide tags for page
         if "tags" in page.meta:
             context["tags"] = [
                 self._render_tag(tag)
@@ -114,35 +135,35 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
         return file
 
     # Render tags index
-    def _render_tag_index(self, markdown, tags_index, allowed = None):
+    def _render_tag_index(self, markdown, tags_index, included = None):
         if not "[TAGS]" in markdown:
             markdown += "\n[TAGS]"
 
-        # Filter tags against allow list, if given
+        # Filter tags against inclusion list, if given
         tags = []
-        if allowed:
-            for key, value in self.tags.items():
-                if self.tags_map.get(key) in allowed:
+        if included:
+            for key, value in self.tags_map.items():
+                if self.tags_type_map.get(key) in included:
                     tags.append((key, value))
 
         # Replace placeholder in Markdown with rendered tags index
         return markdown.replace("[TAGS]", "\n".join([
             self._render_tag_links(tags_index, *args)
-                for args in sorted(tags or self.tags.items())
+                for args in sorted(tags or self.tags_map.items())
         ]))
 
     # Render the given tag and links to all pages with occurrences
-    def _render_tag_links(self, tags_index, tag, pages):
+    def _render_tag_links(self, tags_index, name, pages):
         classes = ["md-tag"]
-        if isinstance(self.tags_map, dict):
+        if isinstance(self.tags_type_map, dict):
             classes.append("md-tag-icon")
-            type = self.tags_map.get(tag)
+            type = self.tags_type_map.get(name)
             if type:
                 classes.append(f"md-tag-icon--{type}")
 
         # Render section for tag and a link to each page
         classes = " ".join(classes)
-        content = [f"## <span class=\"{classes}\">{tag}</span>", ""]
+        content = [f"## <span class=\"{classes}\">{name}</span>", ""]
         for page in pages:
             url = utils.get_relative_url(
                 page.file.src_uri,
@@ -156,14 +177,25 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
         # Return rendered tag links
         return "\n".join(content)
 
-    # Render the given tag, linking to the tags index (if enabled)
-    def _render_tag(self, tag):
-        type = self.tags_map.get(tag) if self.tags_map else None
-        if not self.tags_file or not self.slugify:
-            return dict(name = tag, type = type)
-        else:
-            url = f"{self.tags_file.url}#{self.slugify(tag)}"
-            return dict(name = tag, type = type, url = url)
+    # Render the given tag
+    def _render_tag(self, name):
+        tag = dict(name = name)
+
+        # Add tag type, if given
+        if self.tags_type_map:
+            tag["type"] = self.tags_type_map.get(name)
+
+        # Add tag URL, if tags index is enabled
+        if self.tags_file:
+            tag["url"] = "#".join([
+                self.tags_file.url,
+                self.config.tags_slugify(
+                    name, self.config.tags_slugify_separator
+                )
+            ])
+
+        # Return tag
+        return tag
 
 # -----------------------------------------------------------------------------
 # Data
