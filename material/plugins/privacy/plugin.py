@@ -40,6 +40,9 @@ from urllib.parse import urlparse
 # Privacy plugin configuration scheme
 class PrivacyPluginConfig(Config):
     enabled = opt.Type(bool, default = True)
+
+    # Options for caching
+    cache = opt.Type(bool, default = True)
     cache_dir = opt.Type(str, default = ".cache/plugin/privacy")
 
     # Options for external assets
@@ -195,7 +198,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         path = file = os.path.normpath(file)
 
         # Download file if it's not contained in the cache
-        if not os.path.isfile(file):
+        if not os.path.isfile(file) or not self.config.cache:
             log.debug(f"Downloading external file: {raw}")
             res = requests.get(raw, headers = {
 
@@ -295,7 +298,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
             # Download file if it's not contained in the cache
             file = os.path.join(self.config.cache_dir, self._resolve(url))
-            if not os.path.isfile(file):
+            if not os.path.isfile(file) or not self.config.cache:
                 log.debug(f"Downloading external file: {raw}")
                 res = requests.get(raw)
                 utils.write_file(res.content, file)
@@ -328,7 +331,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         # Return output with replaced occurrences
         return bytes(output, encoding = "utf8")
 
-    # Resolve file name with respect to operating system
+    # Resolve file name from URL
     def _resolve(self, url):
         data = url._replace(scheme = "", query = "", fragment = "")
         return data.geturl()[2:]
