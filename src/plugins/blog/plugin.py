@@ -29,6 +29,7 @@ import sys
 
 from babel.dates import format_date
 from datetime import date
+from functools import partial
 from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.utils.meta import get_data
@@ -59,7 +60,7 @@ class BlogPluginConfig(Config):
     post_date_format = opt.Type(str, default = "long")
     post_url_date_format = opt.Type(str, default = "yyyy/MM/dd")
     post_url_format = opt.Type(str, default = "{date}/{slug}")
-    post_slugify = opt.Type(type(slugify), default = slugify)
+    post_slugify = opt.Type((type(slugify), partial), default = slugify)
     post_slugify_separator = opt.Type(str, default = "-")
     post_excerpt = opt.Choice(["optional", "required"], default = "optional")
     post_excerpt_max_authors = opt.Type(int, default = 1)
@@ -79,7 +80,7 @@ class BlogPluginConfig(Config):
     categories = opt.Type(bool, default = True)
     categories_name = opt.Type(str, default = "blog.categories")
     categories_url_format = opt.Type(str, default = "category/{slug}")
-    categories_slugify = opt.Type(type(slugify), default = slugify)
+    categories_slugify = opt.Type((type(slugify), partial), default = slugify)
     categories_slugify_separator = opt.Type(str, default = "-")
     categories_allowed = opt.Type(list, default = [])
 
