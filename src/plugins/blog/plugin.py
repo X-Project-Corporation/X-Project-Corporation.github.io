@@ -120,6 +120,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
         # Resolve source directory for posts
         self.post_dir = posixpath.join(self.config.blog_dir, "posts")
+        self.post_dir = posixpath.normpath(self.post_dir)
 
         # Initialize posts
         self.post_map = dict()
