@@ -246,7 +246,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 )
 
                 # Compute destination URL according to settings
-                file.url = self._resolve(posixpath.join("path", ""))
+                file.url = posixpath.join(self.config.blog_dir, path, "")
                 if not config.use_directory_urls:
                     file.url = re.sub(r"\/$", ".html", file.url)
 
