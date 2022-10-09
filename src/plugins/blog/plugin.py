@@ -119,8 +119,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             return
 
         # Resolve source directory for posts
-        self.post_dir = posixpath.join(self.config.blog_dir, "posts")
-        self.post_dir = posixpath.normpath(self.post_dir)
+        self.post_dir = self._resolve("posts")
 
         # Initialize posts
         self.post_map = dict()
@@ -194,17 +193,14 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 continue
 
             # Resolve target directory for assets
-            path = posixpath.join(self.config.blog_dir, "assets")
+            path = self._resolve("assets")
+
+            # Compute destination URL
+            file.url = file.url.replace(self.post_dir, path)
 
             # Compute destination file system path
             file.dest_uri = file.dest_uri.replace(self.post_dir, path)
             file.abs_dest_path = os.path.join(config.site_dir, file.dest_path)
-
-            # Compute destination URL
-            file.url = file.url.replace(
-                self.post_dir,
-                posixpath.join(self.config.blog_dir, "assets")
-            )
 
         # Hack: as post URLs are dynamically computed and can be configured by
         # the author, we need to compute them before we process the contents of
@@ -250,7 +246,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 )
 
                 # Compute destination URL according to settings
-                file.url = posixpath.join(self.config.blog_dir, path, "")
+                file.url = self._resolve(posixpath.join("path", ""))
                 if not config.use_directory_urls:
                     file.url = re.sub(r"\/$", ".html", file.url)
 
@@ -270,8 +266,8 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         ))
 
         # Find and extract the section hosting the blog
-        path = posixpath.join(self.config.blog_dir, "index.md")
-        root = _host(config.nav, posixpath.normpath(path))
+        path = self._resolve("index.md")
+        root = _host(config.nav, path)
 
         # Ensure blog root exists
         file = files.get_file_from_path(path)
@@ -302,7 +298,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             return
 
         # Find and resolve index for cleanup
-        path = posixpath.join(self.config.blog_dir, "index.md")
+        path = self._resolve("index.md")
         file = files.get_file_from_path(path)
 
         # Determine blog root section
@@ -485,7 +481,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                     page.meta["template"] = self._template("blog-category.html")
 
         # Resolve path of initial index
-        curr = posixpath.join(self.config.blog_dir, "index.md")
+        curr = self._resolve("index.md")
         base = self.main.file
 
         # Initialize index
@@ -507,7 +503,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
                 # Resolve path of new index
                 curr = self.config.pagination_url_format.format(page = offset)
-                curr = posixpath.join(self.config.blog_dir, curr + ".md")
+                curr = self._resolve(curr + ".md")
 
                 # Generate file if it doesn't exist
                 if not files.get_file_from_path(curr):
@@ -600,7 +596,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             )
 
             # Create file for archive if it doesn't exist
-            path = posixpath.join(self.config.blog_dir, path + ".md")
+            path = self._resolve(path + ".md")
             if path not in self.archive_map:
                 self.archive_map[path] = []
 
@@ -644,7 +640,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 )
 
                 # Create file for category if it doesn't exist
-                path = posixpath.join(self.config.blog_dir, path + ".md")
+                path = self._resolve(path + ".md")
                 if path not in self.category_map:
                     self.category_map[path] = []
 
@@ -775,6 +771,11 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         language = "partials/language.html"
         template = env.get_template(language, None, { "config": config })
         return template.module.t(value)
+
+    # Resolve path relative to blog root
+    def _resolve(self, path):
+        path = posixpath.join(self.config.blog_dir, path)
+        return posixpath.normpath(path)
 
     # Format date according to locale
     def _format_date(self, date, format, config):
