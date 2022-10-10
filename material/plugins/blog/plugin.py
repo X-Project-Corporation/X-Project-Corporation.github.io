@@ -152,7 +152,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             ))
 
             # Load authors map, if it exists
-            if os.path.exists(path):
+            if os.path.isfile(path):
                 with open(path, encoding = "utf-8") as f:
                     self.authors_map = load(f, SafeLoader) or {}
 
@@ -246,9 +246,11 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 )
 
                 # Compute destination URL according to settings
-                file.url = posixpath.join(self.config.blog_dir, path, "")
+                file.url = self._resolve(path)
                 if not config.use_directory_urls:
-                    file.url = re.sub(r"\/$", ".html", file.url)
+                    file.url = ".html"
+                else:
+                    file.url += "/"
 
                 # Compute destination file system path
                 file.dest_uri = re.sub(r"(?<=\/)$", "index.html", file.url)
@@ -773,8 +775,8 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         return template.module.t(value)
 
     # Resolve path relative to blog root
-    def _resolve(self, path):
-        path = posixpath.join(self.config.blog_dir, path)
+    def _resolve(self, *args):
+        path = posixpath.join(self.config.blog_dir, *args)
         return posixpath.normpath(path)
 
     # Format date according to locale
