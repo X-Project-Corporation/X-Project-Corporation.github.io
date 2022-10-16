@@ -92,9 +92,9 @@ theme:
 
 # Plugins
 plugins:
-  - blog:
+  - material/blog:
       blog_custom_dir: overrides
-  - meta
+  - material/meta
   - rss:
       match_path: blog/posts/.*
       date_from_meta:
@@ -102,9 +102,9 @@ plugins:
       categories:
         - categories
         - tags
-  - search:
+  - material/search:
       separator: '[\s\u200b\-,:!=\[\]()"/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
-  - social
+  - material/social
   - redirects:
       redirect_maps:
         blog/2022/chinese-search-support.md: blog/posts/chinese-search-support.md
