@@ -36,9 +36,6 @@ copyright: Copyright &copy; 2016 - 2022 Martin Donath
 # Configuration
 theme:
   name: material
-
-  # Default values, taken from mkdocs_theme.yml
-  language: en
   features:
     - announce.dismiss
     - content.code.annotate
