@@ -35,12 +35,7 @@ copyright: Copyright &copy; 2016 - 2022 Martin Donath
 
 # Configuration
 theme:
-  name: null
-  custom_dir: !ENV [THEME_DIR, "material"]
-
-  # Static files
-  static_templates:
-    - 404.html
+  name: material
 
   # Default values, taken from mkdocs_theme.yml
   language: en
