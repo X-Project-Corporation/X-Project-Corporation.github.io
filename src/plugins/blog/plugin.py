@@ -188,12 +188,10 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             return
 
         # Adjust destination paths for assets
+        path = self._resolve("assets")
         for file in files.media_files():
             if self.post_dir not in file.src_uri:
                 continue
-
-            # Resolve target directory for assets
-            path = self._resolve("assets")
 
             # Compute destination URL
             file.url = file.url.replace(self.post_dir, path)
