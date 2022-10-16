@@ -70,13 +70,13 @@ setup(
             "material = material",
         ],
         "mkdocs.plugins": [
-            "material/blog = material.plugins.blog.plugin:BlogPlugin",
-            "material/meta = material.plugins.meta.plugin:MetaPlugin",
-            "material/offline = material.plugins.offline.plugin:OfflinePlugin",
-            "material/privacy = material.plugins.privacy.plugin:PrivacyPlugin",
-            "material/search = material.plugins.search.plugin:SearchPlugin",
-            "material/social = material.plugins.social.plugin:SocialPlugin",
-            "material/tags = material.plugins.tags.plugin:TagsPlugin"
+            "blog = material.plugins.blog.plugin:BlogPlugin",
+            "meta = material.plugins.meta.plugin:MetaPlugin",
+            "offline = material.plugins.offline.plugin:OfflinePlugin",
+            "privacy = material.plugins.privacy.plugin:PrivacyPlugin",
+            "search = material.plugins.search.plugin:SearchPlugin",
+            "social = material.plugins.social.plugin:SocialPlugin",
+            "tags = material.plugins.tags.plugin:TagsPlugin"
         ]
     },
     zip_safe = False
