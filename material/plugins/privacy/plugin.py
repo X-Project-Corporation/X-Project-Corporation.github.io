@@ -104,15 +104,10 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             re.IGNORECASE | re.MULTILINE
         )
 
-        # Parse occurrences and replace in reverse
-        for match in reversed(list(expr.finditer(output))):
+        def replacement(match):
             value = match.group()
 
-            # Compute offsets for replacement
-            l = match.start()
-            r = match.end()
-
-            # Handle external links 
+            # Handle external links
             el = html.fragment_fromstring(value.encode("utf-8"))
             if self.config.external_links and el.tag == "a":
                 for key, value in self.config.external_links_attr_map.items():
@@ -124,11 +119,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                         el.set("rel", "noopener")
 
                 # Replace link opening tag (without closing tag)
-                output = "".join([
-                    output[:l],
-                    html.tostring(el, encoding = "unicode")[:-4],
-                    output[r:]
-                ])
+                return html.tostring(el, encoding = "unicode")[:-4]
 
             # Handle external style sheet or preconnect hint
             if el.tag == "link":
@@ -137,20 +128,16 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 # Only process external assets
                 url = urlparse(raw)
                 if not self._is_external(url):
-                    continue
+                    return value
 
                 # Replace external preconnect hint
                 rel = el.get("rel")
                 if rel == "preconnect":
-                    output = output[:l] + output[r:]
+                    return ""
 
                 # Replace external style sheet
                 if rel == "stylesheet":
-                    output = "".join([
-                        output[:l],
-                        value.replace(raw, self._fetch(url, page.file, config)),
-                        output[r:]
-                    ])
+                    return value.replace(raw, self._fetch(url, page.file, config))
 
             # Handle external script or image
             if el.tag == "script" or el.tag == "img":
@@ -159,17 +146,13 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 # Only process external assets
                 url = urlparse(raw)
                 if not self._is_external(url):
-                    continue
+                    return value
 
                 # Replace external script or image
-                output = "".join([
-                    output[:l],
-                    value.replace(raw, self._fetch(url, page.file, config)),
-                    output[r:]
-                ])
+                return value.replace(raw, self._fetch(url, page.file, config))
 
         # Return output with replaced occurrences
-        return output
+        return expr.sub(replacement, output)
 
     # Parse, fetch and store external assets in style sheets and scripts
     def on_post_build(self, *, config):
@@ -301,23 +284,18 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 re.IGNORECASE | re.MULTILINE
             )
 
-        # Parse occurrences and replace in reverse
-        for match in reversed(list(expr.finditer(output))):
+        def replacement(match):
             value = match.group(0)
             raw   = match.group(1)
-
-            # Compute offsets for replacement
-            l = match.start()
-            r = match.end()
 
             # Only process external files
             url = urlparse(raw)
             if not self._is_external(url):
-                continue
+                return value
 
             # Skip excluded files
             if self._is_excluded(raw, base.dest_uri):
-                continue
+                return value
 
             # Resolve file and check if it needs to be downloaded
             file = self._map_url_to_file(url, config)
@@ -338,18 +316,14 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             else:
                 url = file.url_relative_to(base)
 
-            # Replace external asset in output
-            output = "".join([
-                output[:l],
-                value.replace(raw, url),
-                output[r:]
-            ])
-
             # Copy file to target directory
             file.copy_file()
 
+            # Replace external asset in output
+            return value.replace(raw, url)
+
         # Return output with replaced occurrences
-        return bytes(output, encoding = "utf8")
+        return expr.sub(replacement, output).encode("utf8")
 
     # Resolve a file for a URL
     def _map_url_to_file(self, url, config):
@@ -357,7 +331,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         base = self.config.external_assets_dir
         return File(
             posixpath.join(base, data.geturl()[2:]),
-            self.config.cache_dir, 
+            self.config.cache_dir,
             config.site_dir,
             False
         )
