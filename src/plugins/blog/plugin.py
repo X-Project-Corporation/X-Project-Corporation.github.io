@@ -213,7 +213,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 continue
 
             # Read and preprocess post
-            with open(file.abs_src_path, encoding = "utf-8-sig") as f:
+            with open(file.abs_src_path, encoding = "utf-8") as f:
                 markdown, meta = get_data(f.read())
 
                 # Ensure post has a date set

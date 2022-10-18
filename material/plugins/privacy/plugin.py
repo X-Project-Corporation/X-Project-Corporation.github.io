@@ -112,7 +112,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             r = match.end()
 
             # Handle external links 
-            el = html.fragment_fromstring(value)
+            el = html.fragment_fromstring(value.encode("utf-8"))
             if self.config.external_links and el.tag == "a":
                 for key, value in self.config.external_links_attr_map.items():
                     el.set(key, value)
