@@ -30,7 +30,7 @@ from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config import config_options as opt
 from mkdocs.config.base import Config
-from mkdocs.plugins import BasePlugin
+from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import File
 from urllib.parse import urlparse
 
@@ -48,7 +48,7 @@ class PrivacyPluginConfig(Config):
 
     # Options for external assets and links
     external_assets = opt.Choice(("bundle", "report"), default = "bundle")
-    external_assets_dir = opt.Type(str, default = "assets/externals")
+    external_assets_dir = opt.Type(str, default = "assets/external")
     external_assets_exclude = opt.Type(list, default = [])
     external_links = opt.Type(bool, default = True),
     external_links_attr_map = opt.Type(dict, default = dict())
@@ -92,7 +92,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                     "https://unpkg.com/mermaid@9.1.7/dist/mermaid.min.js"
                 )
 
-    # Parse, fetch and store external assets and patch links
+    # Parse, fetch and store external assets and patch links (run later)
+    @event_priority(-50)
     def on_post_page(self, output, *, page, config):
         if not self.config.enabled:
             return
