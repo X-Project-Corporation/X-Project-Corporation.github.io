@@ -108,7 +108,7 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
                         f"Page '{page.file.src_uri}' uses tag '{tag}' "
                         f"which is not in allow list."
                     )
-                    sys.exit()
+                    sys.exit(1)
 
     # Inject tags into page (after search and before minification)
     def on_page_context(self, context, *, page, config, nav):
@@ -129,7 +129,7 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
         file = files.get_file_from_path(path)
         if not file:
             log.error(f"Tags file '{path}' does not exist.")
-            sys.exit()
+            sys.exit(1)
 
         # Hack: 2nd pass for tags index page(s)
         files.append(file)

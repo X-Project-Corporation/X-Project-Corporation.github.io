@@ -165,7 +165,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         ]:
             if self.config[option].endswith("/"):
                 log.error(f"Option '{option}' must not contain trailing slash.")
-                sys.exit()
+                sys.exit(1)
 
         # If pagination should not be used, set to large value
         if not self.config.pagination:
@@ -219,7 +219,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 # Ensure post has a date set
                 if not meta.get("date"):
                     log.error(f"Blog post '{file.src_uri}' has no date set.")
-                    sys.exit()
+                    sys.exit(1)
 
                 # Compute slug from metadata, content or file name
                 headline = utils.get_markdown_title(markdown)
@@ -273,7 +273,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         file = files.get_file_from_path(path)
         if not file:
             log.error(f"Blog root '{path}' does not exist.")
-            sys.exit()
+            sys.exit(1)
 
         # Generate and register files for archive
         if self.config.archive:
@@ -398,7 +398,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                         f"Blog post '{page.file.src_uri}' author '{name}' "
                         f"unknown, not listed in .authors.yml"
                     )
-                    sys.exit()
+                    sys.exit(1)
 
                 # Add author to page
                 page.authors.append(self.authors_map[name])
@@ -629,7 +629,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                         f"Blog post '{file.src_uri}' uses category '{name}' "
                         f"which is not in allow list."
                     )
-                    sys.exit()
+                    sys.exit(1)
 
             # Traverse all categories of the post
             for name in categories:
@@ -705,7 +705,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         if self.config.post_excerpt == "required":
             if separator not in page.markdown:
                 log.error(f"Blog post '{temp.src_uri}' has no excerpt.")
-                sys.exit()
+                sys.exit(1)
 
         # Increase level of h1-h5 headlines for excerpts
         markdown = page.markdown
