@@ -69,7 +69,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
     # Initialize plugin
     def on_config(self, config):
-        self.site  = urlparse(config.site_url)
+        self.site  = urlparse(config.site_url or "")
         self.queue = []
 
     # Determine files that might include external assets
@@ -332,7 +332,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
             # Create absolute URL for asset in script
             if base.url.endswith(".js"):
-                url = posixpath.join(config.site_url, file.url)
+                url = posixpath.join(self.site.geturl(), file.url)
 
             # Create relative URL for everything else
             else:
