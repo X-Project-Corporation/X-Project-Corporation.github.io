@@ -243,13 +243,13 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 path += extension
 
             # Write contents and create symlink if no extension was present
-            utils.write_file(res.content, file.abs_src_path)
+            utils.write_file(res.content, path)
             if path != file.abs_src_path:
 
                 # Creating symlinks might fail on Windows. Thus, we just print
                 # a warning and continue - see https://bit.ly/3xYFzcZ
                 try:
-                    os.symlink(os.path.basename(file.abs_src_path), path)
+                    os.symlink(os.path.basename(path), file.abs_src_path)
                 except OSError:
                     log.warning(
                         f"Couldn't create symbolic link '{file.src_uri}'"
