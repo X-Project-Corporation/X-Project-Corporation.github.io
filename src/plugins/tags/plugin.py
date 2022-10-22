@@ -96,7 +96,7 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
             # Check if tag identifiers are defined as a list
             if not isinstance(included, list):
                 log.error(
-                    f"Page '{path}' in 'tags_extra_files' option "
+                    f"Page '{path}' in 'tags_extra_files' "
                     f"must list tag identifiers as a list."
                 )
                 sys.exit(1)
