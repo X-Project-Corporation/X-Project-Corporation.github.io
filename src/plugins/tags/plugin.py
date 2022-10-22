@@ -57,7 +57,7 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
 
         # Initialize tags
         self.tags_map = defaultdict(list)
-        self.tags_type_map = config.extra.get("tags")
+        self.tags_type_map = config.extra.get("tags") or {}
 
         # Initialize tags index pages
         self.tags_file = None
@@ -89,13 +89,20 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
             return self._render_tag_index(markdown, page)
 
         # Render extra tags index pages
+        path = page.file.src_uri
         if page.file in self.tags_extra_files:
-            return self._render_tag_index(
-                markdown, page,
-                self.config.tags_extra_files.get(
-                    page.file.src_uri
+            included = self.config.tags_extra_files.get(path)
+
+            # Check if tag identifiers are defined as a list
+            if not isinstance(included, list):
+                log.error(
+                    f"Page '{path}' in 'tags_extra_files' option "
+                    f"must list tag identifiers as a list."
                 )
-            )
+                sys.exit(1)
+
+            # Render and return page
+            return self._render_tag_index(markdown, page, included)
 
         # Link page to each tag
         for tag in page.meta.get("tags", []):
@@ -105,7 +112,7 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
             if self.config.tags_allowed:
                 if tag not in self.config.tags_allowed:
                     log.error(
-                        f"Page '{page.file.src_uri}' uses tag '{tag}' "
+                        f"Page '{path}' includes a mention of tag '{tag}' "
                         f"which is not in allow list."
                     )
                     sys.exit(1)
