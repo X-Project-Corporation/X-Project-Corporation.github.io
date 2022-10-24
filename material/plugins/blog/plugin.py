@@ -41,7 +41,6 @@ from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
 from mkdocs.structure.nav import Link, Section
 from mkdocs.structure.pages import Page
-from tempfile import gettempdir
 from yaml import SafeLoader, load
 
 # -----------------------------------------------------------------------------
@@ -110,6 +109,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
     # Determine whether we're running under dirty reload
     def on_startup(self, *, command, dirty):
+        self.is_serve = (command == "serve")
         self.dirtyreload = False
         self.dirty = dirty
 
@@ -171,16 +171,11 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         if not self.config.pagination:
             self.config.pagination_per_page = 1e7
 
-        # Hack: by default, drafts are rendered when the documentation is
-        # served, but not when it is built. This should nicely align with the
-        # expected user experience when authoring documentation, but sadly
-        # the on_serve event is triggered too late (after the build). For this
-        # reason we make use of MkDocs internals to detect whether the site
-        # directory is set to a temporary directory.
-        self.temp_dir = os.path.join(gettempdir(), "mkdocs")
-        if self.temp_dir in config.site_dir:
-            if self.config.draft_on_serve:
-                self.config.draft = True
+        # By default, drafts are rendered when the documentation is served,
+        # but not when it is built. This should nicely align with the expected
+        # user experience when authoring documentation.
+        if self.is_serve and self.config.draft_on_serve:
+            self.config.draft = True
 
     # Adjust paths to assets in the posts directory and preprocess posts
     def on_files(self, files, *, config):
