@@ -247,7 +247,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 # Compute destination URL according to settings
                 file.url = self._resolve(path)
                 if not config.use_directory_urls:
-                    file.url = ".html"
+                    file.url += ".html"
                 else:
                     file.url += "/"
 
