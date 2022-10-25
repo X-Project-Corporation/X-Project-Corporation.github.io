@@ -276,6 +276,11 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             log.error(f"Blog root '{path}' does not exist.")
             sys.exit(1)
 
+        # Ensure blog root is part of navigation
+        if not root:
+            log.error(f"Blog root '{path}' not in navigation.")
+            sys.exit(1)
+
         # Generate and register files for archive
         if self.config.archive:
             name = self._translate(config, self.config.archive_name)
