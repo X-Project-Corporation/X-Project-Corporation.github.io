@@ -238,6 +238,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 date_format = self.config.post_url_date_format
                 path = self.config.post_url_format.format(
                     date = self._format_date(meta["date"], date_format, config),
+                    file = file.name,
                     slug = meta.get("slug", self.config.post_slugify(
                         slug, self.config.post_slugify_separator
                     ))
