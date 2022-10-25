@@ -30,6 +30,7 @@ import sys
 from babel.dates import format_date
 from datetime import date
 from functools import partial
+from hashlib import md5
 from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.utils.meta import get_data
@@ -296,7 +297,10 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 root.append({ name: data })
 
         # Hack: add posts temporarily, so MkDocs doesn't complain
-        root.append({ "__posts": list(self.post_meta_map.keys()) })
+        name = md5(path.encode("utf-8")).hexdigest()
+        root.append({
+            f"__posts_${name}": list(self.post_meta_map.keys())
+        })
 
     # Cleanup navigation before proceeding
     def on_nav(self, nav, *, config, files):
@@ -315,8 +319,9 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             root = nav.items
 
         # Hack: remove temporarily added posts from the navigation
+        name = md5(path.encode("utf-8")).hexdigest()
         for item in root:
-            if not item.is_section or item.title != "__posts":
+            if not item.is_section or item.title != f"__posts_${name}":
                 continue
 
             # Detach previous and next links of posts
