@@ -28,7 +28,7 @@ import readtime
 import sys
 
 from babel.dates import format_date
-from datetime import date
+from datetime import date, datetime, time
 from functools import partial
 from hashlib import md5
 from markdown.extensions.toc import slugify
@@ -235,6 +235,10 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 if isinstance(meta["date"], str):
                     meta["date"] = date.fromisoformat(meta["date"])
 
+                # Normalize date to datetime for proper sorting
+                if not isinstance(meta["date"], datetime):
+                    meta["date"] = datetime.combine(meta["date"], time())
+
                 # Compute path from format string
                 date_format = self.config.post_url_date_format
                 path = self.config.post_url_format.format(
@@ -371,9 +375,8 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         if "template" not in page.meta:
             page.meta["template"] = self._template("blog-post.html")
 
-        # Ensure use of previously normalized value
-        if isinstance(page.meta["date"], str):
-            page.meta["date"] = self.post_meta_map[page.file.src_uri]["date"]
+        # Use previously normalized date
+        page.meta["date"] = self.post_meta_map[page.file.src_uri]["date"]
 
         # Ensure navigation is hidden
         page.meta["hide"] = page.meta.get("hide", [])
