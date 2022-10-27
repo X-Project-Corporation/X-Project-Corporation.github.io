@@ -104,6 +104,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             re.IGNORECASE | re.MULTILINE
         )
 
+        # Replacement callback
         def replacement(match):
             value = match.group()
 
@@ -137,7 +138,10 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
                 # Replace external style sheet
                 if rel == "stylesheet":
-                    return value.replace(raw, self._fetch(url, page.file, config))
+                    return value.replace(
+                        raw,
+                        self._fetch(url, page.file, config)
+                    )
 
             # Handle external script or image
             if el.tag == "script" or el.tag == "img":
@@ -284,6 +288,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 re.IGNORECASE | re.MULTILINE
             )
 
+        # Replacement callback
         def replacement(match):
             value = match.group(0)
             raw   = match.group(1)
