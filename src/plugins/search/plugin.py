@@ -267,26 +267,19 @@ class SearchIndex:
     def _segment_chinese(self, data):
         expr = re.compile(r"(\p{IsHan}+)", re.UNICODE)
 
-        # Parse occurrences and replace in reverse
-        for match in reversed(list(expr.finditer(data))):
+        def replacement(match):
             value = match.group(0)
-
-            # Compute offsets for replacement
-            l = match.start()
-            r = l + len(value)
 
             # Replace occurrence in original string with segmented version and
             # surround with zero-width whitespace for efficient indexing
-            data = "".join([
-                data[:l],
+            return "".join([
                 "\u200b",
                 "\u200b".join(jieba.cut(value.encode("utf-8"))),
                 "\u200b",
-                data[r:]
             ])
 
         # Return string with segmented occurrences
-        return data
+        return expr.sub(replacement, data)
 
 # -----------------------------------------------------------------------------
 
