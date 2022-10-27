@@ -42,6 +42,7 @@ from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
 from mkdocs.structure.nav import Link, Section
 from mkdocs.structure.pages import Page
+from tempfile import gettempdir
 from yaml import SafeLoader, load
 
 # -----------------------------------------------------------------------------
@@ -119,8 +120,9 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         if not self.config.enabled:
             return
 
-        # Resolve source directory for posts
+        # Resolve source directory for posts and generated files
         self.post_dir = self._resolve("posts")
+        self.temp_dir = gettempdir()
 
         # Initialize posts
         self.post_map = dict()
