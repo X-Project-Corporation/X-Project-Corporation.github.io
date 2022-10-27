@@ -62,8 +62,8 @@ class SearchPlugin(BasePlugin[SearchPluginConfig]):
 
     # Determine whether we're running under dirty reload
     def on_startup(self, *, command, dirty):
-        self.dirtyreload = False
-        self.dirty = dirty
+        self.is_dirtyreload = False
+        self.is_dirty = dirty
 
         # Initialize search index cache
         self.search_index_prev = None
@@ -119,12 +119,12 @@ class SearchPlugin(BasePlugin[SearchPluginConfig]):
         utils.write_file(data.encode("utf-8"), path)
 
         # Persist search index for repeated invocation
-        if self.dirty:
+        if self.is_dirty:
             self.search_index_prev = self.search_index
 
     # Determine whether we're running under dirty reload
     def on_serve(self, server, *, config, builder):
-        self.dirtyreload = self.dirty
+        self.is_dirtyreload = self.is_dirty
 
 # -----------------------------------------------------------------------------
 

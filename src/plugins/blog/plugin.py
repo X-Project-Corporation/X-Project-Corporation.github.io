@@ -111,8 +111,8 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
     # Determine whether we're running under dirty reload
     def on_startup(self, *, command, dirty):
         self.is_serve = (command == "serve")
-        self.dirtyreload = False
-        self.dirty = dirty
+        self.is_dirtyreload = False
+        self.is_dirty = dirty
 
     # Initialize plugin
     def on_config(self, config):
@@ -430,7 +430,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             return
 
         # Skip post excerpts on dirty reload to save time
-        if self.dirtyreload:
+        if self.is_dirtyreload:
             return
 
         # Remove 'toc' to disable permalinks for post excerpts
@@ -583,7 +583,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
     # Determine whether we're running under dirty reload
     def on_serve(self, server, *, config, builder):
-        self.dirtyreload = self.dirty
+        self.is_dirtyreload = self.is_dirty
 
     # -------------------------------------------------------------------------
 
