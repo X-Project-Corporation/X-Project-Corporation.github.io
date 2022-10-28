@@ -115,8 +115,11 @@ The following properties are available:
       consent:
         actions:
           - accept
-          - manage
+          - manage # (1)!
     ```
+
+    1.  If the `manage` settings button is omitted from the `actions` property,
+        the settings are always shown.
 
     The cookie consent form includes three types of buttons:
 
@@ -171,8 +174,8 @@ The following configuration options are available:
 [`enabled`](#+privacy.enabled){ #+privacy.enabled }
 
 :   :octicons-milestone-24: Default: `true` – This option specifies whether
-    the plugin is enabled when building your project. If you want to switch
-    the plugin off, e.g. for local builds, use an [environment variable]:
+    the plugin is enabled when building your project. If you want to speed up
+    local builds, you can use an [environment variable]:
 
     ``` yaml
     plugins:
