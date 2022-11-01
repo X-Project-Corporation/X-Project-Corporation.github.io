@@ -31,6 +31,7 @@ from babel.dates import format_date
 from datetime import date, datetime, time
 from functools import partial
 from hashlib import md5
+from lxml import html
 from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.utils.meta import get_data
@@ -129,7 +130,6 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         self.post_meta_map = dict()
         self.post_pages = []
         self.post_pager_pages = []
-        self.post_excerpt_map = dict()
 
         # Initialize archive
         if self.config.archive:
@@ -435,11 +435,15 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         if self.is_dirtyreload:
             return
 
-        # Remove 'toc' to disable permalinks for post excerpts
+        # Copy configuration and enable 'toc' extension
         config = copy.copy(config)
-        config.markdown_extensions = [
-            e for e in config.markdown_extensions if e != "toc"
-        ]
+        if "toc" not in config.markdown_extensions:
+            config.markdown_extensions.append("toc")
+            config.mdx_configs["toc"] = {}
+
+        # Ensure that post titles are links
+        config.mdx_configs["toc"]["anchorlink"] = True
+        config.mdx_configs["toc"]["permalink"] = False
 
         # Filter posts that should not be published
         for file in files.documentation_pages():
@@ -703,10 +707,6 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
     def _generate_excerpt(self, file, base, config, files):
         page = file.page
 
-        # Check if we already generated the post excerpt
-        if file.src_uri in self.post_excerpt_map:
-            return self.post_excerpt_map[file.src_uri]
-
         # Generate temporary file and page for post excerpt
         temp = self._register_file(file.src_uri, config)
         excerpt = Page(page.title, temp, config)
@@ -730,12 +730,34 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         excerpt.markdown = markdown
         excerpt.meta     = page.meta
 
-        # Render post
+        # Render post and revert page URL
         excerpt.render(config, files)
-
-        # Extract excerpt and revert page URL
         excerpt.file.url = page.url
-        excerpt.content  = excerpt.content.split(separator)[0]
+
+        # Find all anchor links
+        expr = re.compile(
+            r"<a[^>]+href=['\"]?#[^>]+>",
+            re.IGNORECASE | re.MULTILINE
+        )
+
+        # Replacement callback
+        def replacement(match):
+            value = match.group()
+
+            # Handle anchor links
+            el = html.fragment_fromstring(value.encode("utf-8"))
+            if el.tag == "a":
+                url = utils.get_relative_url(excerpt.file.url, base.url)
+                el.set("href", url + el.get("href"))
+
+            # Replace link opening tag (without closing tag)
+            return html.tostring(el, encoding = "unicode")[:-4]
+
+        # Extract excerpt from post and replace anchor links
+        excerpt.content = expr.sub(
+            replacement,
+            excerpt.content.split(separator)[0]
+        )
 
         # Determine maximum number of authors and categories
         max_authors    = self.config.post_excerpt_max_authors
@@ -745,8 +767,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         excerpt.authors    = page.authors[:max_authors]
         excerpt.categories = page.categories[:max_categories]
 
-        # Return post excerpt after caching
-        self.post_excerpt_map[file.src_uri] = excerpt
+        # Return post excerpt
         return excerpt
 
     # Generate a file with the given template and content
