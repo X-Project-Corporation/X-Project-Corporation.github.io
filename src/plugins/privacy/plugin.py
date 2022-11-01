@@ -242,9 +242,15 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                         f"Couldn't create symbolic link '{file.src_uri}'"
                     )
 
+                    # Fall back for when the symlink could not be created. This
+                    # means that the plugin will download the original file on
+                    # every build, as the content type cannot be resolved from
+                    # the file extension.
+                    file.abs_src_path = path
+
         # Resolve destination if file points to a symlink
         _, extension = os.path.splitext(file.abs_src_path)
-        if os.path.islink(file.abs_src_path):
+        if os.path.exists(file.abs_src_path):
             file.abs_src_path = os.path.realpath(file.abs_src_path)
             _, extension = os.path.splitext(file.abs_src_path)
 
