@@ -56,7 +56,6 @@ class BlogPluginConfig(Config):
 
     # Options for blog
     blog_dir = opt.Type(str, default = "blog")
-    blog_custom_dir = opt.Optional(opt.Type(str)) # Do not use, internal option
 
     # Options for posts
     post_date_format = opt.Type(str, default = "long")
@@ -370,7 +369,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
         # Ensure template is set or use default
         if "template" not in page.meta:
-            page.meta["template"] = self._template("blog-post.html")
+            page.meta["template"] = "blog-post.html"
 
         # Use previously normalized date
         page.meta["date"] = self.post_meta_map[page.file.src_uri]["date"]
@@ -458,7 +457,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
         # Ensure template is set
         if "template" not in self.main.meta:
-            self.main.meta["template"] = self._template("blog.html")
+            self.main.meta["template"] = "blog.html"
 
         # Populate archive
         if self.config.archive:
@@ -475,7 +474,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 # Ensure template is set
                 page = base.page
                 if "template" not in page.meta:
-                    page.meta["template"] = self._template("blog-archive.html")
+                    page.meta["template"] = "blog-archive.html"
 
         # Populate categories
         if self.config.categories:
@@ -492,7 +491,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 # Ensure template is set
                 page = base.page
                 if "template" not in page.meta:
-                    page.meta["template"] = self._template("blog-category.html")
+                    page.meta["template"] = "blog-category.html"
 
         # Resolve path of initial index
         curr = self._resolve("index.md")
@@ -694,13 +693,6 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
         # Post is not a draft
         return False
-
-    # Resolve template
-    def _template(self, path):
-        if self.config.blog_custom_dir:
-            return posixpath.join(self.config.blog_custom_dir, path)
-        else:
-            return path
 
     # Generate a post excerpt relative to base
     def _generate_excerpt(self, file, base, config, files):
