@@ -437,8 +437,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
         # Copy configuration and enable 'toc' extension
         config = copy.copy(config)
-        if "toc" not in config.markdown_extensions:
-            config.markdown_extensions.append("toc")
+        if "toc" not in config.mdx_configs:
             config.mdx_configs["toc"] = {}
 
         # Ensure that post titles are links
