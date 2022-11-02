@@ -31,6 +31,14 @@ from mkdocs.config.base import Config
 from mkdocs.plugins import BasePlugin
 
 # -----------------------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------------------
+
+# Casefold a string for comparison when sorting
+def casefold(tag):
+    return tag.casefold()
+
+# -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
@@ -43,6 +51,8 @@ class TagsPluginConfig(Config):
     tags_extra_files = opt.Type(dict, default = dict())
     tags_slugify = opt.Type((type(slugify), partial), default = slugify)
     tags_slugify_separator = opt.Type(str, default = "-")
+    tags_compare = opt.Optional(opt.Type(type(casefold)))
+    tags_compare_reverse = opt.Type(bool, default = False)
     tags_allowed = opt.Type(list, default = [])
 
 # -----------------------------------------------------------------------------
@@ -57,7 +67,7 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
 
         # Initialize tags
         self.tags_map = defaultdict(list)
-        self.tags_type_map = config.extra.get("tags") or {}
+        self.tags_type_map = config.extra.get("tags")
 
         # Initialize tags index pages
         self.tags_file = None
@@ -149,7 +159,7 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
 
         # Filter tags against inclusion list, if given
         tags = []
-        if included:
+        if self.tags_type_map and included:
             for key, value in self.tags_map.items():
                 if self.tags_type_map.get(key) in included:
                     tags.append((key, value))
@@ -157,13 +167,19 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
         # Replace placeholder in Markdown with rendered tags index
         return markdown.replace("[TAGS]", "\n".join([
             self._render_tag_links(tags_index, *args)
-                for args in sorted(tags or self.tags_map.items())
+                for args in sorted(
+                    tags or self.tags_map.items(),
+
+                    # Allow for custom comparison functions
+                    key     = self.config.tags_compare,
+                    reverse = self.config.tags_compare_reverse
+                )
         ]))
 
     # Render the given tag and links to all pages with occurrences
     def _render_tag_links(self, tags_index, name, pages):
         classes = ["md-tag"]
-        if isinstance(self.tags_type_map, dict):
+        if self.tags_type_map:
             classes.append("md-tag-icon")
             type = self.tags_type_map.get(name)
             if type:
