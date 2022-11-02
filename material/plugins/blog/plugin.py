@@ -709,12 +709,9 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 log.error(f"Blog post '{temp.src_uri}' has no excerpt.")
                 sys.exit(1)
 
-        # Increase level of h1-h5 headlines for excerpts
-        markdown = page.markdown
-        markdown = re.sub(
-            r"(^#{1,5})", "#\\1",
-            markdown, flags = re.MULTILINE
-        )
+        # Ensure separator at the end to strip footnotes and patch h1-h5
+        markdown = "\n\n".join([page.markdown, separator])
+        markdown = re.sub(r"(^#{1,5})", "#\\1", markdown, flags = re.MULTILINE)
 
         # Extract content and metadata from original post
         excerpt.file.url = base.url
