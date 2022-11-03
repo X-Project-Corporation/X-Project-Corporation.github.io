@@ -45,7 +45,6 @@ import { IconSearchIndex } from "_/components"
 
 import {
   base,
-  mkdir,
   read,
   resolve,
   watch,
@@ -264,33 +263,7 @@ const templates$ = manifest$
           .replace("$md-name$", metadata.name)
           .replace("$md-version$", metadata.version)
       }
-    })),
-
-    /* Copy blog templates to overrides */
-    mergeMap(file => {
-      if (!file.includes("blog"))
-        return of(file)
-
-      /* Replace base template */
-      return read(file)
-        .pipe(
-          map(data => data
-            .replace(
-              "main.html",
-              "overrides/main.html"
-            )
-            .replace(
-              "partials/content.html",
-              "overrides/partials/content.html"
-            )
-          ),
-          mergeMap(data => concat(
-            mkdir(`${base}/overrides`),
-            write(file.replace(base, `${base}/overrides`), data)
-          )),
-          map(() => file)
-        )
-    })
+    }))
   )
 
 /* ------------------------------------------------------------------------- */
