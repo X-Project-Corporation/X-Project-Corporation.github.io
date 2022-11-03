@@ -60,11 +60,13 @@ jobs:
             ghcr.io/${{ env.REPOSITORY_NAME }}:latest
             ghcr.io/${{ env.REPOSITORY_NAME }}:${{ github.event.ref }}
 
-      # - name: Check Docker image
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run:
-      #     docker run --rm -i --user $(id -u):$(id -g) -e GH_TOKEN=${GH_TOKEN} -v ${PWD}:/docs ghcr.io/${{ env.REPOSITORY_NAME }} build
+      - name: Check Docker image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: /tmp
+        run:
+          docker run --rm -i --user $(id -u):$(id -g) -e GH_TOKEN=${GH_TOKEN} -v ${PWD}:/docs ghcr.io/${{ env.REPOSITORY_NAME }} new .
+          docker run --rm -i --user $(id -u):$(id -g) -e GH_TOKEN=${GH_TOKEN} -v ${PWD}:/docs ghcr.io/${{ env.REPOSITORY_NAME }} build
 
       - name: Publish Docker image
         run: |
