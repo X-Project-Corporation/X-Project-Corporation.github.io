@@ -115,14 +115,14 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
             return self._render_tag_index(markdown, page, included)
 
         # Link page to each tag
-        for tag in page.meta.get("tags", []):
-            self.tags_map[tag].append(page)
+        for name in page.meta.get("tags", []):
+            self.tags_map[name].append(page)
 
             # Ensure tag is in (non-empty) allow list
             if self.config.tags_allowed:
-                if tag not in self.config.tags_allowed:
+                if name not in self.config.tags_allowed:
                     log.error(
-                        f"Page '{path}' includes a mention of tag '{tag}' "
+                        f"Page '{path}' includes a mention of tag '{name}' "
                         f"which is not in allow list."
                     )
                     sys.exit(1)
@@ -135,8 +135,8 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
         # Provide tags for page
         if "tags" in page.meta:
             context["tags"] = [
-                self._render_tag(tag)
-                    for tag in page.meta["tags"]
+                self._render_tag(name)
+                    for name in page.meta["tags"]
             ]
 
     # -------------------------------------------------------------------------
@@ -160,15 +160,15 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
         # Filter tags against inclusion list, if given
         tags = []
         if self.tags_type_map and included:
-            for key, value in self.tags_map.items():
-                if self.tags_type_map.get(key) in included:
-                    tags.append((key, value))
+            for name in self.tags_map.keys():
+                if self.tags_type_map.get(name) in included:
+                    tags.append(name)
 
         # Replace placeholder in Markdown with rendered tags index
         return markdown.replace("[TAGS]", "\n".join([
-            self._render_tag_links(tags_index, *args)
-                for args in sorted(
-                    tags or self.tags_map.items(),
+            self._render_tag_links(tags_index, name, self.tags_map[name])
+                for name in sorted(
+                    tags or self.tags_map.keys(),
 
                     # Allow for custom comparison functions
                     key     = self.config.tags_compare,
