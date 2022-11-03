@@ -108,6 +108,7 @@ class BlogPluginConfig(Config):
 
 # Blog plugin
 class BlogPlugin(BasePlugin[BlogPluginConfig]):
+    supports_multiple_instances = True
 
     # Determine whether we're running under dirty reload
     def on_startup(self, *, command, dirty):
