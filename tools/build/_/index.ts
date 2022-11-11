@@ -49,6 +49,7 @@ import glob from "tiny-glob"
 interface ResolveOptions {
   cwd: string                          /* Working directory */
   watch?: boolean                      /* Watch mode */
+  dot?: boolean                        /* Hidden files or directories */
 }
 
 /**
@@ -113,7 +114,7 @@ export function resolve(
 
       /* Build overrides */
       !process.argv.includes("--all")
-        ? filter(file => !file.startsWith("overrides/"))
+        ? filter(file => !file.startsWith(".overrides/"))
         : identity,
 
       /* Start file watcher */

@@ -29,7 +29,7 @@
   <!-- Extra style sheet (can't be set in mkdocs.yml due to content hash) -->
   <link
     rel="stylesheet"
-    href="{{ 'overrides/assets/stylesheets/main.css' | url }}"
+    href="{{ 'assets/stylesheets/custom.css' | url }}"
   />
 {% endblock %}
 
@@ -49,5 +49,5 @@
   {{ super() }}
 
   <!-- Extra JavaScript (can't be set in mkdocs.yml due to content hash) -->
-  <script src="{{ 'overrides/assets/javascripts/bundle.js' | url }}"></script>
+  <script src="{{ 'assets/javascripts/custom.js' | url }}"></script>
 {% endblock %}

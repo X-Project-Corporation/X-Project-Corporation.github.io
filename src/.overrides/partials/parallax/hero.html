@@ -30,7 +30,7 @@
     { "depth": 2, "position": "40%", "image": "5-plants-1" },
     { "depth": 1, "position": "50%", "image": "6-plants-2" },
   ] %}
-    {% set image = "overrides/assets/images/layers/" ~ layer["image"] %}
+    {% set image = "assets/images/layers/" ~ layer["image"] %}
     {% set style = "style=\"" ~ [
       "--md-parallax-depth: " ~ layer["depth"],
       "--md-image-position: " ~ layer["position"]
