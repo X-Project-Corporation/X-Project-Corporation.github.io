@@ -136,8 +136,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 if rel == "preconnect":
                     return ""
 
-                # Replace external style sheet
-                if rel == "stylesheet":
+                # Replace external style sheet or favicon
+                if rel == "stylesheet" or rel == "icon":
                     return value.replace(
                         raw,
                         self._fetch(url, page.file, config)

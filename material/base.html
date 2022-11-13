@@ -43,10 +43,10 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.7b4d9e6f.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.89fd2f0b.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
-        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.08040f6c.min.css' | url }}">
+        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.2505c338.min.css' | url }}">
         {% if palette.primary %}
           {% import "partials/palette.html" as map %}
           {% set primary = map.primary(
@@ -251,7 +251,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.b9c29124.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.02d7801c.min.js' | url }}"></script>
       {% for path in config.extra_javascript %}
         <script src="{{ path | url }}"></script>
       {% endfor %}
