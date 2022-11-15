@@ -870,6 +870,10 @@ def _data_to_navigation(nav, config, files):
     if not file:
         return Link(title, path)
 
+    # Use resolved assets destination path
+    if not path.endswith(".md"):
+        return Link(title or os.path.basename(path), file.url)
+
     # Generate temporary file as for post excerpts
     else:
         urls = config.use_directory_urls
