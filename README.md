@@ -1,6 +1,9 @@
 <p align="center">
-  <a href="https://squidfunk.github.io/mkdocs-material/">
+  <a href="https://squidfunk.github.io/mkdocs-material/#gh-light-mode-only">
     <img src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/logo.svg" width="320" alt="Material for MkDocs">
+  </a>
+  <a href="https://squidfunk.github.io/mkdocs-material/#gh-dark-mode-only">
+    <img src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/logo-dark.svg" width="320" alt="Material for MkDocs">
   </a>
 </p>
 
