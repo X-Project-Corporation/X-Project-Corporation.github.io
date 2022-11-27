@@ -254,8 +254,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             file.abs_src_path = os.path.realpath(file.abs_src_path)
             _, extension = os.path.splitext(file.abs_src_path)
 
-            # If the symlink could not be created, we already applied fell back
-            # to setting the correct extension manually, so double check.
+            # If the symlink could not be created, we already set the correct
+            # extension, so we need to check not to append it again.
             if not file.abs_dest_path.endswith(extension):
 
                 # Compute destination file system path
