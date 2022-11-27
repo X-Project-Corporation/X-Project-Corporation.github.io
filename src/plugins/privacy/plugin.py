@@ -250,16 +250,20 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
         # Resolve destination if file points to a symlink
         _, extension = os.path.splitext(file.abs_src_path)
-        if os.path.exists(file.abs_src_path):
+        if os.path.isfile(file.abs_src_path):
             file.abs_src_path = os.path.realpath(file.abs_src_path)
             _, extension = os.path.splitext(file.abs_src_path)
 
-            # Compute destination file system path
-            file.dest_uri += extension
-            file.abs_dest_path += extension
+            # If the symlink could not be created, we already applied fell back
+            # to setting the correct extension manually, so double check.
+            if not file.abs_dest_path.endswith(extension):
 
-            # Compute destination URL
-            file.url += extension
+                # Compute destination file system path
+                file.dest_uri += extension
+                file.abs_dest_path += extension
+
+                # Compute destination URL
+                file.url += extension
 
         # Copy or open and patch file
         if not os.path.isfile(file.abs_dest_path):
