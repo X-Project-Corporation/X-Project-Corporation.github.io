@@ -730,14 +730,27 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         )
 
         # Replacement callback
+        first = True
         def replacement(match):
             value = match.group()
 
             # Handle anchor links
             el = html.fragment_fromstring(value.encode("utf-8"))
             if el.tag == "a":
+                nonlocal first
+
+                # Fix up each anchor link of the excerpt with a link to the
+                # anchor of the actual post, except for the first one – that
+                # one needs to go to the top of the page. A better way might
+                # be a Markdown extension, but for now this should be fine.
                 url = utils.get_relative_url(excerpt.file.url, base.url)
-                el.set("href", url + el.get("href"))
+                if first:
+                    el.set("href", url)
+                else:
+                    el.set("href", url + el.get("href"))
+
+                # From now on reference anchors
+                first = False
 
             # Replace link opening tag (without closing tag)
             return html.tostring(el, encoding = "unicode")[:-4]
