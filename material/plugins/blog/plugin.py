@@ -741,7 +741,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
                 # Fix up each anchor link of the excerpt with a link to the
                 # anchor of the actual post, except for the first one – that
-                # one needs to go to the top of the page. A better way might
+                # one needs to go to the top of the post. A better way might
                 # be a Markdown extension, but for now this should be fine.
                 url = utils.get_relative_url(excerpt.file.url, base.url)
                 if first:
