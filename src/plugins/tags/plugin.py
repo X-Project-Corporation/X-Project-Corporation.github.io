@@ -115,18 +115,26 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
             # Render and return page
             return self._render_tag_index(markdown, page, included)
 
-        # Link page to each tag
-        for name in page.meta.get("tags", []):
-            self.tags_map[name].append(page)
+        # Ensure tags are defined as a list
+        tags = page.meta.get("tags", [])
+        if not isinstance(tags, list):
+            log.warning(f"Page '{path}' uses invalid syntax for tags: {tags}")
 
-            # Ensure tag is in (non-empty) allow list
-            if self.config.tags_allowed:
-                if name not in self.config.tags_allowed:
-                    log.error(
-                        f"Page '{path}' includes a mention of tag '{name}' "
-                        f"which is not in allow list."
-                    )
-                    sys.exit(1)
+        # Link page to each tag
+        for name in tags:
+            if not isinstance(name, (str, int, float, bool)):
+                log.warning(f"Page '{path}' includes invalid tag: {name}")
+            else:
+                self.tags_map[name].append(page)
+
+                # Ensure tag is in (non-empty) allow list
+                if self.config.tags_allowed:
+                    if name not in self.config.tags_allowed:
+                        log.error(
+                            f"Page '{path}' includes a mention of tag "
+                            f"which is not in allow list: {name}"
+                        )
+                        sys.exit(1)
 
     # Inject tags into page (after search and before minification)
     def on_page_context(self, context, *, page, config, nav):
@@ -138,6 +146,7 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
             context["tags"] = [
                 self._render_tag(name)
                     for name in page.meta["tags"]
+                        if isinstance(name, (str, int, float, bool))
             ]
 
     # -------------------------------------------------------------------------
