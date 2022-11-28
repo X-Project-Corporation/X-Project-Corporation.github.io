@@ -122,7 +122,8 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
 
         # Link page to each tag
         for name in tags:
-            if not isinstance(name, (str, int, float, bool)):
+            if not name or not isinstance(name, (str, int, float, bool)):
+                name = name or "(empty)"
                 log.warning(f"Page '{path}' includes invalid tag: {name}")
             else:
                 self.tags_map[name].append(page)
@@ -146,7 +147,7 @@ class TagsPlugin(BasePlugin[TagsPluginConfig]):
             context["tags"] = [
                 self._render_tag(name)
                     for name in page.meta["tags"]
-                        if isinstance(name, (str, int, float, bool))
+                        if name and isinstance(name, (str, int, float, bool))
             ]
 
     # -------------------------------------------------------------------------
