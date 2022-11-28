@@ -640,8 +640,8 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             if allowed:
                 for name in categories - allowed:
                     log.error(
-                        f"Blog post '{file.src_uri}' uses category '{name}' "
-                        f"which is not in allow list."
+                        f"Blog post '{file.src_uri}' uses a category "
+                        f"which is not in allow list: {name}"
                     )
                     sys.exit(1)
 
