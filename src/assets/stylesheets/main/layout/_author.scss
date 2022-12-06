@@ -33,8 +33,8 @@
     display: block;
     width: px2rem(32px);
     height: px2rem(32px);
+    flex-shrink: 0;
     overflow: hidden;
-    border-radius: 100%;
     transition:
       color 125ms,
       transform 125ms;
@@ -42,6 +42,7 @@
     // Author image
     img {
       display: block;
+      border-radius: 100%;
     }
 
     // More authors
