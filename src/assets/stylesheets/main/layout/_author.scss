@@ -31,9 +31,9 @@
   .md-author {
     position: relative;
     display: block;
+    flex-shrink: 0;
     width: px2rem(32px);
     height: px2rem(32px);
-    flex-shrink: 0;
     overflow: hidden;
     transition:
       color 125ms,
