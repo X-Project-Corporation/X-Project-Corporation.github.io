@@ -61,6 +61,7 @@ class BlogPluginConfig(Config):
     post_date_format = opt.Type(str, default = "long")
     post_url_date_format = opt.Type(str, default = "yyyy/MM/dd")
     post_url_format = opt.Type(str, default = "{date}/{slug}")
+    post_url_max_categories = opt.Type(int, default = 1)
     post_slugify = opt.Type((type(slugify), partial), default = slugify)
     post_slugify_separator = opt.Type(str, default = "-")
     post_excerpt = opt.Choice(["optional", "required"], default = "optional")
@@ -236,15 +237,31 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 if not isinstance(meta["date"], datetime):
                     meta["date"] = datetime.combine(meta["date"], time())
 
+                # Compute category slugs
+                categories = []
+                for name in meta.get("categories", []):
+                    categories.append(self.config.categories_slugify(
+                        name, self.config.categories_slugify_separator
+                    ))
+
+                    # Check if maximum number of categories is reached
+                    max_categories = self.config.post_url_max_categories
+                    if len(categories) == max_categories:
+                        break
+
                 # Compute path from format string
                 date_format = self.config.post_url_date_format
                 path = self.config.post_url_format.format(
+                    categories = "/".join(categories),
                     date = self._format_date(meta["date"], date_format, config),
                     file = file.name,
                     slug = meta.get("slug", self.config.post_slugify(
                         slug, self.config.post_slugify_separator
                     ))
                 )
+
+                # Normalize path, as it may begin with a slash
+                path = posixpath.normpath("/".join([".", path]))
 
                 # Compute destination URL according to settings
                 file.url = self._resolve(path)
