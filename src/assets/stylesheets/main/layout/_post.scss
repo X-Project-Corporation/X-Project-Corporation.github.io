@@ -100,6 +100,8 @@
 
     // Post excerpt content
     .md-post__content > :first-child {
+      --md-scroll-margin: #{px2rem(120px)};
+
       margin-top: 0;
     }
   }

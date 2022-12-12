@@ -84,6 +84,7 @@ class BlogPluginConfig(Config):
     categories_url_format = opt.Type(str, default = "category/{slug}")
     categories_slugify = opt.Type((type(slugify), partial), default = slugify)
     categories_slugify_separator = opt.Type(str, default = "-")
+    categories_toc = opt.Type(bool, default = False)
     categories_allowed = opt.Type(list, default = [])
 
     # Options for pagination
@@ -602,6 +603,15 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         if self.config.categories:
             if path in self.category_post_map:
                 context["posts"] = self.category_post_map[path]
+
+                # Provide anchors to categories
+                if self.config.categories_toc:
+                    toc = page.toc.items[0]
+                    for post in self.category_post_map[path]:
+                        toc.children.append(post.toc.items[0])
+
+                        # Remove anchors below the second level
+                        post.toc.items[0].children = []
 
     # Determine whether we're running under dirty reload
     def on_serve(self, server, *, config, builder):
