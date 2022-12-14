@@ -576,14 +576,6 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         if path in self.post_map:
             context["posts"] = self.post_map[path]
 
-            # Remove table of contents integration - see https://bit.ly/3UMQW0J
-            theme = context["config"]["theme"]
-            if "toc.integrate" in theme["features"]:
-                theme["features"] = [
-                    flag for flag in theme["features"]
-                        if flag != "toc.integrate"
-                ]
-
             # Create pagination
             pagination = paginate.Page(
                 self.post_pages,
