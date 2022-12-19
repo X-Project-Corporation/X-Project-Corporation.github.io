@@ -7,7 +7,7 @@ title: Insiders
 Material for MkDocs follows the __sponsorware__ release strategy, which means
 that new features are first exclusively released to sponsors as part of
 [Insiders]. Read on to learn [what sponsorships achieve],
-[how to become a sponsor] to get access to Insiders, and [what's in for you]!
+[how to become a sponsor] to get access to Insiders, and [what's in it for you]!
 
 <!-- <figure class="mdx-video" markdown>
   <div class="mdx-video__inner">
@@ -24,13 +24,13 @@ This documentation is built with Insiders
   [Insiders]: #what-is-insiders
   [what sponsorships achieve]: #what-sponsorships-achieve
   [how to become a sponsor]: #how-to-become-a-sponsor
-  [what's in for you]: #whats-in-for-me
+  [what's in it for you]: #whats-in-it-for-me
   [Material for MkDocs]: https://squidfunk.github.io/mkdocs-material/
 
 ## What is Insiders?
 
 Material for MkDocs Insiders is a private fork of Material for MkDocs, hosted as
-a private GitHub repository. Almost[^1] [all new features][what's in for you]
+a private GitHub repository. Almost[^1] [all new features][what's in it for you]
 are developed as part of this fork, which means that they are immediately
 available to all eligible sponsors, as they are made collaborators of this
 repository.
@@ -78,17 +78,24 @@ a handful of them, [thanks to our awesome sponsors]!
   [completed funding goals]: #goals-completed
   [thanks to our awesome sponsors]: #how-to-become-a-sponsor
 
-## What's in for me?
+<figure style="min-width:15.6rem">
+  <blockquote class="twitter-tweet" data-conversation="none" data-dnt="true">
+    <a href="https://twitter.com/WillingCarol/status/1603416470616088576?ref_src=twsrc%5Etfw"></a>
+  </blockquote>
+  <script async src="https://platform.twitter.com/widgets.js"></script>
+</figure>
+
+## What's in it for me?
 
 The moment you [become a sponsor][how to become a sponsor], you'll get __immediate
-access to 25 additional features__ that you can start using right away, and
+access to 19 additional features__ that you can start using right away, and
 which are currently exclusively available to sponsors:
 
 <div class="mdx-columns" markdown>
 
 - [x] [Privacy plugin: external links] :material-alert-decagram:{ .mdx-pulse title="Added on October 18, 2022" }
 - [x] [Navigation subtitles] :material-alert-decagram:{ .mdx-pulse title="Added on October 2, 2022" }
-- [x] [Tags plugin: allow list] and [custom sorting] :material-alert-decagram:{ .mdx-pulse title="Added on October 2, 2022" }
+- [x] [Tags plugin: allow list] + [custom sorting] :material-alert-decagram:{ .mdx-pulse title="Added on October 2, 2022" }
 - [x] [Blog plugin: custom index pages]
 - [x] [Blog plugin: related links]
 - [x] [Blog plugin]
@@ -102,15 +109,9 @@ which are currently exclusively available to sponsors:
 - [x] [Tooltips]
 - [x] [Chinese search support]
 - [x] [Card grids]
-- [x] [Offline plugin]
 - [x] [Privacy plugin]
 - [x] [Annotations]
 - [x] [Navigation icons]
-- [x] [Brand new search plugin]
-- [x] [Rich search previews]
-- [x] [Tokenizer with lookahead]
-- [x] [Advanced search highlighting]
-- [x] [Excluding content from search]
 
 </div>
 
@@ -231,7 +232,7 @@ You can cancel your sponsorship anytime.[^5]
   </small>
 </div>
 
-  [squidfunk's sponsor profile]: https://github.com/sponsors/squidfunk
+  [squidfunk's sponsor profile]: https://github.com/sponsors/squidfunk?metadata_origin=docs
 
 ## Funding <span class="mdx-sponsorship-total" data-mdx-component="sponsorship-total"></span>
 
@@ -242,22 +243,6 @@ features prefixed with a checkmark symbol, denoting whether a feature is
 :octicons-check-circle-fill-24:{ style="color: #00e676" } already available or 
 :octicons-check-circle-fill-24:{ style="color: var(--md-default-fg-color--lightest)" } planned, but not yet implemented. When the funding goal is hit, the features
 are released for general availability.
-
-#### $ 10,000 – Carolina Reaper
-
-- [x] [Brand new search plugin]
-- [x] [Rich search previews]
-- [x] [Tokenizer with lookahead]
-- [x] [Advanced search highlighting]
-- [x] [Excluding content from search]
-- [x] [Offline plugin]
-
-  [Brand new search plugin]: ../blog/posts/search-better-faster-smaller.md
-  [Rich search previews]: ../blog/posts/search-better-faster-smaller.md#rich-search-previews
-  [Tokenizer with lookahead]: ../blog/posts/search-better-faster-smaller.md#tokenizer-lookahead
-  [Advanced search highlighting]: ../blog/posts/search-better-faster-smaller.md#accurate-highlighting
-  [Excluding content from search]: ../setup/setting-up-site-search.md#search-exclusion
-  [Offline plugin]: ../setup/building-for-offline-usage.md
 
 #### $ 12,000 – Piri Piri
 
@@ -322,6 +307,22 @@ are released for general availability.
 This section lists all funding goals that were previously completed, which means
 that those features were part of Insiders, but are now generally available and
 can be used by all users.
+
+#### $ 10,000 – Carolina Reaper
+
+- [x] [Brand new search plugin]
+- [x] [Rich search previews]
+- [x] [Tokenizer with lookahead]
+- [x] [Advanced search highlighting]
+- [x] [Excluding content from search]
+- [x] [Offline plugin]
+
+  [Brand new search plugin]: ../blog/posts/search-better-faster-smaller.md
+  [Rich search previews]: ../blog/posts/search-better-faster-smaller.md#rich-search-previews
+  [Tokenizer with lookahead]: ../blog/posts/search-better-faster-smaller.md#tokenizer-lookahead
+  [Advanced search highlighting]: ../blog/posts/search-better-faster-smaller.md#accurate-highlighting
+  [Excluding content from search]: ../setup/setting-up-site-search.md#search-exclusion
+  [Offline plugin]: ../setup/building-for-offline-usage.md
 
 #### $ 8,000 – Scotch Bonnet
 
