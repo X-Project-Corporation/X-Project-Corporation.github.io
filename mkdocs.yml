@@ -97,6 +97,7 @@ plugins:
   - search:
       separator: '[\s\u200b\-,:!=\[\]()"/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - social
+  - typeset
   - redirects:
       redirect_maps:
         blog/2022/chinese-search-support.md: blog/posts/chinese-search-support.md
