@@ -50,8 +50,7 @@
     color: var(--md-typeset-a-color);
 
     // Metadata link on focus/hover
-    &:focus,
-    &:hover {
+    &:is(:focus, :hover) {
       color: var(--md-accent-fg-color);
     }
   }

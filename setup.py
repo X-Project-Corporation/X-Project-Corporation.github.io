@@ -76,7 +76,8 @@ setup(
             "material/privacy = material.plugins.privacy.plugin:PrivacyPlugin",
             "material/search = material.plugins.search.plugin:SearchPlugin",
             "material/social = material.plugins.social.plugin:SocialPlugin",
-            "material/tags = material.plugins.tags.plugin:TagsPlugin"
+            "material/tags = material.plugins.tags.plugin:TagsPlugin",
+            "material/typeset = material.plugins.typeset.plugin:TypesetPlugin"
         ]
     },
     zip_safe = False

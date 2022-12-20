@@ -99,12 +99,22 @@
 
     // Navigation link that was passed
     &--passed {
-      color: var(--md-default-fg-color--light);
+
+      // Also enable color transitions on inline code blocks
+      &,
+      code {
+        color: var(--md-default-fg-color--light);
+      }
     }
 
     // Active link
     .md-nav__item &--active {
-      color: var(--md-typeset-a-color);
+
+      // Also enable color transitions on inline code blocks
+      &,
+      code {
+        color: var(--md-typeset-a-color);
+      }
     }
 
     // Navigation link title
@@ -118,6 +128,12 @@
       + .md-icon {
         margin-left: auto;
       }
+    }
+
+    // Navigation with content that is typeset
+    .md-typeset {
+      font-size: px2rem(14px);
+      line-height: 1.3;
     }
 
     // Navigation link icon
@@ -137,6 +153,12 @@
     &:is(a:hover, label:hover) {
       color: var(--md-accent-fg-color);
       cursor: pointer;
+
+      // Inline code block
+      code {
+        color: var(--md-accent-fg-color);
+        background-color: var(--md-accent-fg-color--transparent);
+      }
     }
 
     // Show outline for keyboard devices

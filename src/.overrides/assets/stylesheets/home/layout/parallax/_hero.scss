@@ -98,12 +98,11 @@
     background-color: var(--md-default-bg-color--light);
     border-radius: px2rem(2px);
     transition:
-      color 125ms,
+      color            125ms,
       background-color 125ms;
 
     // Link on focus/hover
-    &:focus,
-    &:hover {
+    &:is(:focus, :hover) {
       color: var(--md-accent-bg-color);
       background-color: var(--md-accent-fg-color);
     }

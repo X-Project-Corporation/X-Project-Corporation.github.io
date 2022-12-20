@@ -113,8 +113,7 @@
     transition: opacity 250ms;
 
     // Button on focus/hover
-    &:focus,
-    &:hover {
+    &:is(:focus, :hover) {
       opacity: 0.75;
     }
 

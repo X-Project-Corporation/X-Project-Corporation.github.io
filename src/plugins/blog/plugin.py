@@ -18,7 +18,6 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import copy
 import logging
 import os
 import paginate
@@ -28,6 +27,7 @@ import readtime
 import sys
 
 from babel.dates import format_date
+from copy import copy
 from datetime import date, datetime, time
 from functools import partial
 from hashlib import md5
@@ -454,13 +454,12 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             return
 
         # Copy configuration and enable 'toc' extension
-        config = copy.copy(config)
-        if "toc" not in config.mdx_configs:
-            config.mdx_configs["toc"] = {}
+        config                    = copy(config)
+        config.mdx_configs["toc"] = copy(config.mdx_configs.get("toc", {}))
 
         # Ensure that post titles are links
         config.mdx_configs["toc"]["anchorlink"] = True
-        config.mdx_configs["toc"]["permalink"] = False
+        config.mdx_configs["toc"]["permalink"]  = False
 
         # Filter posts that should not be published
         for file in files.documentation_pages():

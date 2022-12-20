@@ -73,8 +73,7 @@
     }
 
     // Author on focus/hover
-    &:focus,
-    &:hover {
+    &:is(:focus, :hover) {
       z-index: 1;
       transform: scale(1.1);
 
