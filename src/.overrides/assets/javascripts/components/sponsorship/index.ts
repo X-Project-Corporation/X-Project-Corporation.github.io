@@ -32,7 +32,7 @@ import {
 
 import {
   Component,
-  getComponentElement
+  getComponentElements
 } from "../_"
 
 /* ----------------------------------------------------------------------------
@@ -120,8 +120,8 @@ export function mountSponsorship(
   )
 
   /* Retrieve adjacent components */
-  const count = getComponentElement("sponsorship-count")
-  const total = getComponentElement("sponsorship-total")
+  const counts = getComponentElements("sponsorship-count")
+  const totals = getComponentElements("sponsorship-total")
 
   /* Render sponsorship */
   sponsorship$.subscribe(sponsorship => {
@@ -144,11 +144,13 @@ export function mountSponsorship(
     ))
 
     /* Render sponsorship count and total */
-    count.innerText = `${sponsorship.sponsors.length}`
-    total.innerText = `$ ${sponsorship.total
-      .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-    } a month`
+    for (const el of counts)
+      el.innerText = `${sponsorship.sponsors.length}`
+    for (const el of totals)
+      el.innerText = `$ ${sponsorship.total
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+      } a month`
   })
 
   /* Create and return component */
