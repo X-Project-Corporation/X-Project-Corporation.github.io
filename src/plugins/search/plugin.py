@@ -307,7 +307,7 @@ class SearchIndex:
             ])
 
         # Return string with segmented occurrences
-        return expr.sub(replacement, data)
+        return expr.sub(replacement, data).strip("\u200b")
 
 # -----------------------------------------------------------------------------
 
