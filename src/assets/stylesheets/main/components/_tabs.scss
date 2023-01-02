@@ -53,6 +53,7 @@
 
   // Navigation tabs list
   &__list {
+    display: flex;
     margin: 0;
     margin-inline-start: px2rem(4px);
     padding: 0;
