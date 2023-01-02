@@ -149,8 +149,7 @@
     }
 
     // Navigation link on focus/hover
-    &:is(a:focus, label:focus),
-    &:is(a:hover, label:hover) {
+    &:not(.md-nav__container):is(:focus, :hover) {
       color: var(--md-accent-fg-color);
       cursor: pointer;
 
