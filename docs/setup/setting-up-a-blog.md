@@ -45,7 +45,7 @@ By default, the built-in blog plugin assumes that your blog is hosted inside
 the `blog` subfolder of your documentation ([this is configurable]). Next,
 you need to create the following structure:
 
-``` sh
+``` { .sh .no-copy }
 .
 ├─ docs/
 │  └─ blog/
@@ -210,6 +210,8 @@ The following configuration options are available for posts:
     format string that is used for the URL of the post. The following
     placeholders are currently supported:
 
+    - `categories` – Replaced with the post's slugified [categories].
+
     - `date` – Replaced with the post's date, as configured in
       [`post_url_date_format`][post_url_date_format].
 
@@ -236,6 +238,20 @@ The following configuration options are available for posts:
     If you remove the `date` placeholder, make sure that post URLs don't
     collide with other the URLs of other pages added to the blog section, as
     this leads to undefined behavior.
+
+[`post_url_max_categories`](#+blog.post_url_max_categories){ #+blog.post_url_max_categories }
+
+:   :octicons-milestone-24: Default: `1` – This option specifies the number of
+    categories that are included in the URL if the `categories` placeholder is
+    part of [`post_url_format`][post slugs]. If a post is assigned to multiple
+    categories, they are joined with `/`:
+
+    ``` yaml
+    plugins:
+      - blog:
+          post_url_format: "{categories}/{slug}"
+          post_url_max_categories: 2
+    ```
 
 [`post_slugify`](#+blog.post_slugify){ #+blog.post_slugify }
 
@@ -488,7 +504,7 @@ The following configuration options are available for category index generation:
 [`categories`](#+blog.categories){ #+blog.categories }
 
 :   :octicons-milestone-24: Default: `true` – This option specifies whether the
-    [built-in blog plugin] should generate category indexes. A category indexes
+    [built-in blog plugin] should generate category indexes. A category index
     shows all posts for a specific category in reverse chronological order. If
     you want to disable category index generation, add:
 
@@ -514,8 +530,8 @@ The following configuration options are available for category index generation:
 [`categories_url_format`](#+blog.categories_url_format){ #+blog.categories_url_format }
 
 :   :octicons-milestone-24: Default: `category/{slug}` – This option specifies
-    the format string that is used for the URL of the category index, and can
-    be used to localize the URL:
+    the format string that is used for the URL of a category index, and can be
+    used to localize the URL:
 
     === ":material-link: blog/category/:material-dots-horizontal:/"
 
@@ -568,6 +584,18 @@ The following configuration options are available for category index generation:
     plugins:
       - blog:
           categories_slugify_separator: "-"
+    ```
+
+[`categories_toc`](#+blog.categories_toc){ #+blog.categories_toc }
+
+:   :octicons-milestone-24: Default: `false` – This option specifies whether a
+    category index includes a table of contents with all post titles on the
+    right side as an overview:
+
+    ``` yaml
+    plugins:
+      - blog:
+          categories_toc: true
     ```
 
 [`categories_allowed`](#+blog.categories_allowed){ #+blog.categories_allowed }
@@ -907,7 +935,7 @@ your first post. The plugin doesn't assume any specific directory structure, so
 you're completely free in how you organize your posts, as long as they are all
 located inside the `posts` directory:
 
-``` sh
+``` { .sh .no-copy }
 .
 ├─ docs/
 │  └─ blog/
@@ -1185,7 +1213,7 @@ for each post. Luckily, the [built-in meta plugin] allows to set default front
 matter properties per folder. You can group your posts by categories, or
 authors, and add a `.meta.yml` file to set common properties:
 
-``` sh
+``` { .sh .no-copy }
 .
 ├─ docs/
 │  └─ blog/
@@ -1250,7 +1278,7 @@ If you want to add custom content to automatically generated [archive] and
 posts, you can manually create the category page in the same location where
 the [built-in blog plugin] would create it:
 
-``` sh
+``` { .sh .no-copy }
 .
 ├─ docs/
 │  └─ blog/

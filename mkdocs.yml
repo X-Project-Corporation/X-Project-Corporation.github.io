@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+# Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to
@@ -23,15 +23,15 @@ site_name: Material for MkDocs
 site_url: https://squidfunk.github.io/mkdocs-material/
 site_author: Martin Donath
 site_description: >-
-  Write your documentation in Markdown and create a professional static site
-  in minutes – searchable, customizable, for all devices
+  Write your documentation in Markdown and create a professional static site in
+  minutes – searchable, customizable, for all devices
 
 # Repository
 repo_name: squidfunk/mkdocs-material
 repo_url: https://github.com/squidfunk/mkdocs-material
 
 # Copyright
-copyright: Copyright &copy; 2016 - 2022 Martin Donath
+copyright: Copyright &copy; 2016 - 2023 Martin Donath
 
 # Configuration
 theme:
@@ -39,11 +39,15 @@ theme:
   custom_dir: material/.overrides
   features:
     - announce.dismiss
+    - content.action.edit
+    - content.action.view
     - content.code.annotate
+    - content.code.copy
     # - content.tabs.link
     - content.tooltips
     # - header.autohide
     # - navigation.expand
+    - navigation.footer
     - navigation.indexes
     # - navigation.instant
     # - navigation.prune
@@ -95,7 +99,7 @@ plugins:
         - categories
         - tags
   - search:
-      separator: '[\s\u200b\-,:!=\[\]()"/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+      separator: '[\s\u200b\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - social
   - typeset
   - redirects:

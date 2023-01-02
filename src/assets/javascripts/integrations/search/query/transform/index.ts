@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -21,19 +21,6 @@
  */
 
 /* ----------------------------------------------------------------------------
- * Types
- * ------------------------------------------------------------------------- */
-
-/**
- * Search transformation function
- *
- * @param value - Query value
- *
- * @returns Transformed query value
- */
-export type SearchTransformFn = (value: string) => string
-
-/* ----------------------------------------------------------------------------
  * Helper types
  * ------------------------------------------------------------------------- */
 
@@ -42,9 +29,11 @@ export type SearchTransformFn = (value: string) => string
  *
  * @param value - String value
  *
- * @returns String values
+ * @returns String term(s)
  */
-type VisitorFn = (value: string) => string | string[]
+type VisitorFn = (
+  value: string
+) => string | string[]
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -53,24 +42,26 @@ type VisitorFn = (value: string) => string | string[]
 /**
  * Default transformation function
  *
- * 1. Search for terms in quotation marks and prepend a `+` modifier to denote
- *    that the resulting document must contain all terms, converting the query
- *    to an `AND` query (as opposed to the default `OR` behavior). While users
- *    may expect terms enclosed in quotation marks to map to span queries, i.e.
- *    for which order is important, Lunr.js doesn't support them, so the best
- *    we can do is to convert the terms to an `AND` query.
+ * 1. Trim excess whitespace from left and right.
  *
- * 2. Replace control characters which are not located at the beginning of the
+ * 2. Search for parts in quotation marks and prepend a `+` modifier to denote
+ *    that the resulting document must contain all parts, converting the query
+ *    to an `AND` query (as opposed to the default `OR` behavior). While users
+ *    may expect parts enclosed in quotation marks to map to span queries, i.e.
+ *    for which order is important, Lunr.js doesn't support them, so the best
+ *    we can do is to convert the parts to an `AND` query.
+ *
+ * 3. Replace control characters which are not located at the beginning of the
  *    query or preceded by white space, or are not followed by a non-whitespace
  *    character or are at the end of the query string. Furthermore, filter
  *    unmatched quotation marks.
  *
- * 3. Split the query string at whitespace, pass it to the visitor function for
- *    tokenization, and append a wildcard to every term that is not explicitly
- *    marked with a `+` or `-` modifier, as this ensures consistent and stable
- *    ranking when multiple terms are entered.
- *
- * 4. Trim excess whitespace from left and right.
+ * 4. Split the query string at whitespace, then pass each part to the visitor
+ *    function for tokenization, and append a wildcard to every resulting term
+ *    that is not explicitly marked with a `+`, `-`, `~` or `^` modifier, since
+ *    it ensures consistent and stable ranking when multiple terms are entered.
+ *    Also, if a fuzzy or boost modifier are given, but no numeric value has
+ *    been entered, default to 1 to not induce a query error.
  *
  * @param query - Query value
  * @param fn - Visitor function
@@ -83,22 +74,23 @@ export function transform(
   return query
 
     /* => 1 */
+    .trim()
+
+    /* => 2 */
     .split(/"([^"]+)"/g)
-      .map((terms, index) => index & 1
-        ? terms.replace(/^\b|^(?![^\x00-\x7F]|$)|\s+/g, " +")
-        : terms
+      .map((parts, index) => index & 1
+        ? parts.replace(/^\b|^(?![^\x00-\x7F]|$)|\s+/g, " +")
+        : parts
       )
       .join("")
 
-    /* => 2 */
+    /* => 3 */
     .replace(/"|(?:^|\s+)[*+\-:^~]+(?=\s+|$)/g, "")
 
-    /* => 3 */
+    /* => 4 */
     .split(/\s+/g)
       .flatMap(fn)
-      .map(term => /^[+-]/.test(term) ? term : `${term}*`)
+      .map(term => /([~^]$)/.test(term) ? `${term}1` : term)
+      .map(term => /(^[+-]|[~^]\d+$)/.test(term) ? term : `${term}*`)
       .join(" ")
-
-    /* => 4 */
-    .trim()
 }

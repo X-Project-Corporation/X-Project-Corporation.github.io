@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+# Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to
@@ -36,7 +36,7 @@ COPY MANIFEST.in MANIFEST.in
 COPY package.json package.json
 COPY README.md README.md
 COPY requirements.txt requirements.txt
-COPY setup.py setup.py
+COPY pyproject.toml pyproject.toml
 
 # Perform build and cleanup artifacts and caches
 RUN \

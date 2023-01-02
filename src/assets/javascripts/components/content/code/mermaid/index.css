@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -339,6 +339,7 @@ line {
 
 /* Sequence message, loop and note text */
 .messageText,
+.loopText,
 .loopText > tspan,
 .noteText > tspan {
   font-family: var(--md-mermaid-font-family) !important;
@@ -374,4 +375,14 @@ line {
 .labelText > span {
   font-family: var(--md-mermaid-font-family);
   fill: var(--md-mermaid-node-fg-color);
+}
+
+/* Sequence number */
+.sequenceNumber {
+  fill: var(--md-accent-bg-color);
+}
+
+/* Sequence diagram markers */
+defs #sequencenumber {
+  fill: var(--md-mermaid-node-fg-color) !important;
 }

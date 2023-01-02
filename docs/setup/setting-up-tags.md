@@ -12,8 +12,7 @@ can help to discover relevant information faster.
 ### Built-in tags plugin
 
 [:octicons-tag-24: 8.2.0][Tags support] ·
-:octicons-cpu-24: Plugin ·
-:octicons-beaker-24: Experimental
+:octicons-cpu-24: Plugin
 
 The built-in tags plugin adds the ability to categorize any page with tags
 as part of the front matter of the page. In order to add support for tags, add
@@ -160,7 +159,7 @@ The following configuration options are available:
           tags_compare_reverse: true
     ```
 
-[`tags_allowed`](#+tags.tags_allowed){ #+tags.tags_allowed } :material-alert-decagram:{ .mdx-pulse title="Added on October 2, 2022" }
+[`tags_allowed`](#+tags.tags_allowed){ #+tags.tags_allowed }
 
 :   [:octicons-tag-24: insiders-4.25.0][Insiders] · :octicons-milestone-24: 
     Default: _none_ – This option allows the author to define explicitly which

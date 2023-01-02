@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -46,6 +46,7 @@ import {
   at,
   getOptionalElement,
   requestJSON,
+  setLocation,
   setToggle,
   watchDocument,
   watchKeyboard,
@@ -175,17 +176,17 @@ keyboard$
         /* Go to previous page */
         case "p":
         case ",":
-          const prev = getOptionalElement("[href][rel=prev]")
+          const prev = getOptionalElement<HTMLLinkElement>("link[rel=prev]")
           if (typeof prev !== "undefined")
-            prev.click()
+            setLocation(prev)
           break
 
         /* Go to next page */
         case "n":
         case ".":
-          const next = getOptionalElement("[href][rel=next]")
+          const next = getOptionalElement<HTMLLinkElement>("link[rel=next]")
           if (typeof next !== "undefined")
-            next.click()
+            setLocation(next)
           break
       }
     })

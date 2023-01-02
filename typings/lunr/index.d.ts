@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -30,10 +30,36 @@ declare global {
   namespace lunr {
 
     /**
+     * Indexed fields
+     */
+    type Fields = "text" | "title" | "tags"
+
+    /**
      * Index - expose inverted index
      */
     interface Index {
-      invertedIndex: object;
+      invertedIndex: Record<string, unknown>
+      fields: Fields[]
+    }
+
+    /**
+     * Improve typings of query builder
+     */
+    interface Builder {
+      field(
+        fieldName: string,
+        attributes?: {
+          boost?: number | undefined,
+          extractor?: Function
+        }): void;
+    }
+
+    /**
+     * Query parser
+     */
+    class QueryParser {
+      constructor(value: string, query: Query)
+      public parse(): void
     }
 
     /**
@@ -46,11 +72,57 @@ declare global {
     }
 
     /**
-     * Query parser - add missing class definitions
+     * Tokenizer
      */
-    class QueryParser {
-      constructor(value: string, query: Query)
-      public parse(): void
+    namespace tokenizer {
+      let table: number[][]
+    }
+
+    /**
+     * Segmenter
+     */
+    let segmenter: TinySegmenter | undefined
+
+    /**
+     * Lexeme type
+     */
+    const enum LexemeType {
+      FIELD = "FIELD",
+      TERM = "TERM",
+      PRESENCE = "PRESENCE"
+    }
+
+    /**
+     * Lexeme
+     */
+    interface Lexeme {
+      type: LexemeType
+      str: string
+      start: number
+      end: number
+    }
+
+    /**
+     * Query lexer - add missing class definitions
+     */
+    class QueryLexer {
+
+      /**
+       * Create query lexer
+       *
+       * @param query - Query
+       */
+      constructor(query: string)
+
+      /**
+       * Query lexemes
+       */
+      public lexemes: Lexeme[]
+
+      /**
+       * Lex query
+       */
+      public run(): void
     }
 
     /**

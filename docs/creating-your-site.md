@@ -24,7 +24,7 @@ Alternatively, if you're running Material for MkDocs from within Docker, use:
 
 This will create the following structure:
 
-```
+``` { .sh .no-copy }
 .
 ├─ docs/
 │  └─ index.md
@@ -78,8 +78,8 @@ theme:
 
     === "Other"
 
-        3.  Ensure your editor of choice has support for YAML schema validation.
-        4.  Add the following lines at the top of `mkdocs.yml`:
+        1.  Ensure your editor of choice has support for YAML schema validation.
+        2.  Add the following lines at the top of `mkdocs.yml`:
 
             ``` yaml
             # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json

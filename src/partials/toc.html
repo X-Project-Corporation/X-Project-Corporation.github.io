@@ -1,5 +1,5 @@
 <!--
-  Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+  Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to
@@ -21,7 +21,7 @@
 -->
 
 <!-- Determine title -->
-{% set title = lang.t("toc.title") %}
+{% set title = lang.t("toc") %}
 {% if config.mdx_configs.toc and config.mdx_configs.toc.title %}
   {% set title = config.mdx_configs.toc.title %}
 {% endif %}
@@ -31,7 +31,7 @@
   {% set toc = page.toc %}
 
   <!--
-    Hack: check whether the content contains a h1 headline. If it does, the
+    Check whether the content starts with a level 1 headline. If it does, the
     top-level anchor must be skipped, since it would be redundant to the link
     to the current page that is located just above the anchor. Therefore we
     directly continue with the children of the anchor.

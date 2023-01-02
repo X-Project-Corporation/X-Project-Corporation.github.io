@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+# Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to
@@ -44,14 +44,18 @@ except ImportError:
 # Search plugin configuration scheme
 class SearchPluginConfig(Config):
     lang = opt.Optional(LangOption())
-    separator = opt.Type(str, default=r"[\s\-]+")
-    indexing = opt.Choice(("full", "titles"), default = "full")
+    separator = opt.Optional(opt.Type(str))
+    pipeline = opt.ListOfItems(
+        opt.Choice(("stemmer", "stopWordFilter", "trimmer")),
+        default = []
+    )
 
     # Options for text segmentation (Chinese)
     jieba_dict = opt.Optional(opt.Type(str))
     jieba_dict_user = opt.Optional(opt.Type(str))
 
     # Deprecated options
+    indexing = opt.Deprecated(message = "Unsupported option")
     prebuild_index = opt.Deprecated(message = "Unsupported option")
     min_search_length = opt.Deprecated(message = "Unsupported option")
 
@@ -71,7 +75,21 @@ class SearchPlugin(BasePlugin[SearchPluginConfig]):
     # Initialize plugin
     def on_config(self, config):
         if not self.config.lang:
-            self.config.lang = ["en"]
+            self.config.lang = [self._translate(
+                config, "search.config.lang"
+            )]
+
+        # Retrieve default value for separator
+        if not self.config.separator:
+            self.config.separator = self._translate(
+                config, "search.config.separator"
+            )
+
+        # Retrieve default value for pipeline
+        if not self.config.pipeline:
+            self.config.pipeline = list(filter(len, re.split(
+                r"\s*,\s*", self._translate(config, "search.config.pipeline")
+            )))
 
         # Initialize search index
         self.search_index = SearchIndex(**self.config)
@@ -125,6 +143,17 @@ class SearchPlugin(BasePlugin[SearchPluginConfig]):
     # Determine whether we're running under dirty reload
     def on_serve(self, server, *, config, builder):
         self.is_dirtyreload = self.is_dirty
+
+    # -------------------------------------------------------------------------
+
+    # Translate the given placeholder value
+    def _translate(self, config, value):
+        env = config.theme.get_env()
+
+        # Load language template and return translation for placeholder
+        language = "partials/language.html"
+        template = env.get_template(language, None, { "config": config })
+        return template.module.t(value)
 
 # -----------------------------------------------------------------------------
 
@@ -182,23 +211,18 @@ class SearchIndex:
 
         # Create entry for section
         entry = {
+            "location": url,
             "title": title,
-            "text": text,
-            "location": url
+            "text": text
         }
 
-        # Add document tags, if any
-        if page.meta.get("tags"):
-            if type(page.meta["tags"]) is list:
-                entry["tags"] = [
-                    str(tag) for tag in page.meta["tags"]
-                ]
-            else:
-                log.warning(
-                    "Skipping 'tags' due to invalid syntax [%s]: %s",
-                    page.file.src_uri,
-                    page.meta["tags"]
-                )
+        # Set document tags
+        tags = page.meta.get("tags")
+        if isinstance(tags, list):
+            entry["tags"] = []
+            for name in tags:
+                if name and isinstance(name, (str, int, float, bool)):
+                    entry["tags"].append(name)
 
         # Set document boost
         search = page.meta.get("search", {})
@@ -210,7 +234,10 @@ class SearchIndex:
 
     # Generate search index
     def generate_search_index(self, prev):
-        config = { key: self.config[key] for key in ["lang", "separator"] }
+        config = {
+            key: self.config[key]
+                for key in ["lang", "separator", "pipeline"]
+        }
 
         # Hack: if we're running under dirty reload, the search index will only
         # include the entries for the current page. However, MkDocs > 1.4 allows
@@ -441,8 +468,15 @@ class Parser(HTMLParser):
                 if self.section.el in reversed(self.context):
                     data = self.section.title
 
+                # Remove element if empty (or only whitespace)
+                if data[-1] == f"<{tag}>":
+                    del data[-1:]
+                elif data[-1].isspace() and data[-2] == f"<{tag}>":
+                    del data[-2:]
+
                 # Append to section title or text
-                data.append(f"</{tag}>")
+                else:
+                    data.append(f"</{tag}>")
 
     # Called for the text contents of each tag
     def handle_data(self, data):

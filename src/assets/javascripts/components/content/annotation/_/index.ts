@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -29,14 +29,15 @@ import {
   debounceTime,
   defer,
   delay,
+  endWith,
   filter,
   finalize,
   fromEvent,
+  ignoreElements,
   map,
   merge,
   switchMap,
   take,
-  takeLast,
   takeUntil,
   tap,
   throttleTime,
@@ -136,7 +137,7 @@ export function mountAnnotation(
   /* Mount component on subscription */
   return defer(() => {
     const push$ = new Subject<Annotation>()
-    const done$ = push$.pipe(takeLast(1))
+    const done$ = push$.pipe(ignoreElements(), endWith(true))
     push$.subscribe({
 
       /* Handle emission */

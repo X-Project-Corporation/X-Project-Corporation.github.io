@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -23,11 +23,7 @@
 import { ComponentChild } from "preact"
 
 import { configuration, feature, translation } from "~/_"
-import {
-  SearchDocument,
-  SearchMetadata,
-  SearchResultItem
-} from "~/integrations/search"
+import { SearchItem } from "~/integrations/search"
 import { h } from "~/utilities"
 
 /* ----------------------------------------------------------------------------
@@ -55,7 +51,7 @@ const enum Flag {
  * @returns Element
  */
 function renderSearchDocument(
-  document: SearchDocument & SearchMetadata, flag: Flag
+  document: SearchItem, flag: Flag
 ): HTMLElement {
   const parent = flag & Flag.PARENT
   const teaser = flag & Flag.TEASER
@@ -69,7 +65,8 @@ function renderSearchDocument(
     .slice(0, -1)
 
   /* Assemble query string for highlighting */
-  const url = new URL(document.location)
+  const config = configuration()
+  const url = new URL(document.location, config.base)
   if (feature("search.highlight"))
     url.searchParams.set("h", Object.entries(document.terms)
       .filter(([, match]) => match)
@@ -122,13 +119,18 @@ function renderSearchDocument(
  * @returns Element
  */
 export function renderSearchResultItem(
-  result: SearchResultItem
+  result: SearchItem[]
 ): HTMLElement {
   const threshold = result[0].score
   const docs = [...result]
 
+  const config = configuration()
+
   /* Find and extract parent article */
-  const parent = docs.findIndex(doc => !doc.location.includes("#"))
+  const parent = docs.findIndex(doc => {
+    const l = `${new URL(doc.location, config.base)}` // @todo hacky
+    return !l.includes("#")
+  })
   const [article] = docs.splice(parent, 1)
 
   /* Determine last index above threshold */

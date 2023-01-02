@@ -1,5 +1,5 @@
 <!--
-  Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+  Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to
@@ -23,11 +23,12 @@
 <!-- Translations: Chinese (Traditional) -->
 {% macro t(key) %}{{ {
   "language": "zh-Hant",
+  "action.edit": "編輯此頁",
+  "action.skip": "跳轉至",
   "clipboard.copy": "拷貝",
   "clipboard.copied": "已拷貝",
-  "edit.link.title": "編輯此頁",
-  "footer.previous": "上一頁",
   "footer.next": "下一頁",
+  "footer.previous": "上一頁",
   "meta.comments": "評論",
   "meta.source": "來源",
   "search.config.pipeline": "stemmer",
@@ -38,9 +39,8 @@
   "search.result.none": "沒有找到符合條件的結果",
   "search.result.one": "找到 1 个符合條件的結果",
   "search.result.other": "# 個符合條件的結果",
-  "skip.link.title": "跳轉至",
-  "source.link.title": "前往倉庫",
-  "source.file.date.updated": "最後更新",
+  "source": "前往倉庫",
   "source.file.date.created": "建立日期",
-  "toc.title": "目錄"
+  "source.file.date.updated": "最後更新",
+  "toc": "目錄"
 }[key] }}{% endmacro %}

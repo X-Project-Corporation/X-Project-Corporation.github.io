@@ -139,7 +139,7 @@ in `mkdocs.yml`:
 
 ``` yaml
 copyright: >
-  Copyright &copy; 2016 - 2022 Martin Donath –
+  Copyright &copy; 2016 - 2023 Martin Donath –
   <a href="#__consent">Change cookie settings</a>
 ```
 
@@ -360,7 +360,7 @@ removed during the build process.
     For the official documentation, the [built-in privacy plugin] downloads the
     following resources:
 
-    ``` { .sh id="example" }
+    ``` { .sh .no-copy #example }
     .
     └─ assets/external/
        ├─ unpkg.com/tablesort@5.3.0/dist/tablesort.min.js

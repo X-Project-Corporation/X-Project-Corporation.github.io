@@ -146,6 +146,9 @@
   <a href="https://cash.app/" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-cashapp.png" height="58"
   /></a>
+  <a href="https://rackn.com/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-rackn.png" height="58"
+  /></a>
 </p>
 <p>&nbsp;</p>
 
@@ -259,7 +262,7 @@ For detailed installation instructions, configuration options, and a demo, visit
 
 **MIT License**
 
-Copyright (c) 2016-2022 Martin Donath
+Copyright (c) 2016-2023 Martin Donath
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to

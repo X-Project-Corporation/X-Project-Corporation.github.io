@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -29,8 +29,10 @@ import {
   defer,
   distinctUntilChanged,
   distinctUntilKeyChanged,
+  endWith,
   filter,
   finalize,
+  ignoreElements,
   map,
   merge,
   of,
@@ -40,7 +42,6 @@ import {
   skip,
   startWith,
   switchMap,
-  takeLast,
   takeUntil,
   tap,
   withLatestFrom
@@ -273,7 +274,7 @@ export function mountTableOfContents(
 ): Observable<Component<TableOfContents>> {
   return defer(() => {
     const push$ = new Subject<TableOfContents>()
-    const done$ = push$.pipe(takeLast(1))
+    const done$ = push$.pipe(ignoreElements(), endWith(true))
     push$.subscribe(({ prev, next }) => {
 
       /* Look forward */

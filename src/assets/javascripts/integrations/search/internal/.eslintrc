@@ -1,5 +1,6 @@
 {
   "rules": {
-    "no-fallthrough": "off"
+    "no-fallthrough": "off",
+    "no-underscore-dangle": "off"
   }
 }

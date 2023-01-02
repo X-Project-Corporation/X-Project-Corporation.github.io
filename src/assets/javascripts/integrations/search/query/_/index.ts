@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+ * Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -19,6 +19,9 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+
+import { split } from "../../internal"
+import { transform } from "../transform"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -44,6 +47,46 @@ export type SearchQueryTerms = Record<string, boolean>
  * ------------------------------------------------------------------------- */
 
 /**
+ * Transform search query
+ *
+ * This function lexes the given search query and applies the transformation
+ * function to each term, preserving markup like `+` and `-` modifiers.
+ *
+ * @param query - Search query
+ *
+ * @returns Search query
+ */
+export function transformSearchQuery(
+  query: string
+): string {
+
+  /* Split query terms with tokenizer */
+  return transform(query, part => {
+    const terms: string[] = []
+
+    /* Initialize lexer and analyze part */
+    const lexer = new lunr.QueryLexer(part)
+    lexer.run()
+
+    /* Extract and tokenize term from lexeme */
+    for (const { type, str: term, start, end } of lexer.lexemes)
+      if (type === "TERM")
+        split(term, lunr.tokenizer.separator, (...range) => {
+          terms.push([
+            part.slice(0, start),
+            term.slice(...range),
+            part.slice(end)
+          ].join(""))
+        })
+
+    /* Return terms */
+    return terms
+  })
+}
+
+/* ------------------------------------------------------------------------- */
+
+/**
  * Parse a search query for analysis
  *
  * Lunr.js itself has a bug where it doesn't detect or remove wildcards for
@@ -58,7 +101,7 @@ export type SearchQueryTerms = Record<string, boolean>
 export function parseSearchQuery(
   value: string
 ): SearchQueryClause[] {
-  const query  = new lunr.Query(["title", "text"])
+  const query  = new lunr.Query(["title", "text", "tags"])
   const parser = new lunr.QueryParser(value, query)
 
   /* Parse Search query */
@@ -66,13 +109,13 @@ export function parseSearchQuery(
   for (const clause of query.clauses) {
     clause.usePipeline = true
 
-    /* Handle leading wildcards */
+    /* Handle leading wildcard */
     if (clause.term.startsWith("*")) {
       clause.wildcard = lunr.Query.wildcard.LEADING
       clause.term = clause.term.slice(1)
     }
 
-    /* Handle trailing wildcards */
+    /* Handle trailing wildcard */
     if (clause.term.endsWith("*")) {
       clause.wildcard = lunr.Query.wildcard.TRAILING
       clause.term = clause.term.slice(0, -1)

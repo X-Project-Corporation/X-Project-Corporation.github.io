@@ -439,6 +439,9 @@
         "edit": {
           "$ref": "#/definitions/icon"
         },
+        "view": {
+          "$ref": "#/definitions/icon"
+        },
         "logo": {
           "$ref": "#/definitions/icon"
         },
@@ -581,10 +584,31 @@
             ]
           },
           {
+            "title": "Edit this page",
+            "markdownDescription": "https://squidfunk.github.io/mkdocs-material/setup/adding-a-git-repository/#code-actions",
+            "enum": [
+              "content.action.edit"
+            ]
+          },
+          {
+            "title": "View source of this page",
+            "markdownDescription": "https://squidfunk.github.io/mkdocs-material/setup/adding-a-git-repository/#code-actions",
+            "enum": [
+              "content.action.view"
+            ]
+          },
+          {
             "title": "Code annotations",
             "markdownDescription": "https://squidfunk.github.io/mkdocs-material/reference/code-blocks/#code-annotations",
             "enum": [
               "content.code.annotate"
+            ]
+          },
+          {
+            "title": "Code copy button",
+            "markdownDescription": "https://squidfunk.github.io/mkdocs-material/reference/code-blocks/#code-copy-button",
+            "enum": [
+              "content.code.copy"
             ]
           },
           {
@@ -613,6 +637,13 @@
             "markdownDescription": "https://squidfunk.github.io/mkdocs-material/setup/setting-up-navigation/#navigation-expansion",
             "enum": [
               "navigation.expand"
+            ]
+          },
+          {
+            "title": "Navigation footer",
+            "markdownDescription": "https://squidfunk.github.io/mkdocs-material/setup/setting-up-navigation/#navigation-footer",
+            "enum": [
+              "navigation.footer"
             ]
           },
           {
@@ -833,20 +864,6 @@
             "code": "${2:Roboto Mono}"
           }
         }
-      ]
-    },
-    "include_search_page": {
-      "title": "Only necessary when installing from git",
-      "markdownDescription": "Must be set to `false`",
-      "enum": [
-        false
-      ]
-    },
-    "search_index_only": {
-      "title": "Only necessary when installing from git",
-      "markdownDescription": "Must be set to `false`",
-      "enum": [
-        true
       ]
     }
   },

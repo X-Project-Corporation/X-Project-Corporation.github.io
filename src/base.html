@@ -1,5 +1,5 @@
 <!--
-  Copyright (c) 2016-2022 Martin Donath <martin.donath@squidfunk.com>
+  Copyright (c) 2016-2023 Martin Donath <martin.donath@squidfunk.com>
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to
@@ -48,6 +48,16 @@
       <!-- Canonical -->
       {% if page.canonical_url %}
         <link rel="canonical" href="{{ page.canonical_url }}" />
+      {% endif %}
+
+      <!-- Previous page -->
+      {% if page.previous_page %}
+        <link rel="prev" href="{{ page.previous_page.url | url }}" />
+      {% endif %}
+
+      <!-- Next page -->
+      {% if page.next_page %}
+        <link rel="next" href="{{ page.next_page.url | url }}" />
       {% endif %}
 
       <!-- Alternate versions -->
@@ -109,15 +119,6 @@
           rel="stylesheet"
           href="{{ 'assets/stylesheets/palette.css' | url }}"
         />
-
-        <!-- Theme-color meta tag for Android -->
-        {% if palette.primary %}
-          {% import "partials/palette.html" as map %}
-          {% set primary = map.primary(
-            palette.primary | replace(" ", "-") | lower
-          ) %}
-          <meta name="theme-color" content="{{ primary }}" />
-        {% endif %}
       {% endif %}
 
       <!-- Custom icons -->
@@ -180,15 +181,15 @@
   </head>
 
   <!-- Set text direction and color palette, if defined -->
-  {% set direction = config.theme.direction or lang.t('direction') %}
+  {% set direction = config.theme.direction or lang.t("direction") %}
   {% if config.theme.palette %}
     {% set palette = config.theme.palette %}
     {% if not palette is mapping %}
       {% set palette = palette | first %}
     {% endif %}
-    {% set scheme  = palette.scheme | d("default", true) %}
-    {% set primary = palette.primary %}
-    {% set accent  = palette.accent %}
+    {% set scheme  = palette.scheme  | d("default", true) %}
+    {% set primary = palette.primary | d("", true) %}
+    {% set accent  = palette.accent  | d("", true) %}
     <body
       dir="{{ direction }}"
       data-md-color-scheme="{{ scheme | replace(' ', '-') }}"
@@ -227,7 +228,7 @@
       {% if page.toc | first is defined %}
         {% set skip = page.toc | first %}
         <a href="{{ skip.url | url }}" class="md-skip">
-          {{ lang.t('skip.link.title') }}
+          {{ lang.t("action.skip") }}
         </a>
       {% endif %}
     </div>
@@ -285,7 +286,7 @@
 
       <!-- Navigation tabs (collapsing) -->
       {% block tabs %}
-        {% if not "navigation.tabs.sticky" in features %}
+        {% if "navigation.tabs.sticky" not in features %}
           {% if "navigation.tabs" in features %}
             {% include "partials/tabs.html" %}
           {% endif %}
@@ -319,7 +320,7 @@
             {% endif %}
 
             <!-- Table of contents -->
-            {% if not "toc.integrate" in features %}
+            {% if "toc.integrate" not in features %}
               {% if page.meta and page.meta.hide %}
                 {% set hidden = "hidden" if "toc" in page.meta.hide %}
               {% endif %}
@@ -362,7 +363,7 @@
             hidden
           >
             {% include ".icons/material/arrow-up.svg" %}
-            {{ lang.t('top.title') }}
+            {{ lang.t("top") }}
           </a>
         {% endif %}
       </main>
@@ -417,10 +418,6 @@
       {%- for key in [
         "clipboard.copy",
         "clipboard.copied",
-        "search.config.lang",
-        "search.config.pipeline",
-        "search.config.separator",
-        "search.placeholder",
         "search.result.placeholder",
         "search.result.none",
         "search.result.one",
@@ -428,7 +425,7 @@
         "search.result.more.one",
         "search.result.more.other",
         "search.result.term.missing",
-        "select.version.title"
+        "select.version"
       ] -%}
         {%- set _ = translations.update({ key: lang.t(key) }) -%}
       {%- endfor -%}
@@ -448,17 +445,5 @@
         <script src="{{ path | url }}"></script>
       {% endfor %}
     {% endblock %}
-
-    <!-- ᴴₒᴴₒᴴₒ -->
-    {% if page.meta and page.meta.ᴴₒᴴₒᴴₒ %}
-      <link
-        rel="stylesheet"
-        href="{{ 'assets/stylesheets/extra.css' | url }}"
-      />
-      <script
-        src="{{ 'assets/javascripts/extra/bundle.js' | url }}"
-        defer
-      ></script>
-    {% endif %}
   </body>
 </html>
