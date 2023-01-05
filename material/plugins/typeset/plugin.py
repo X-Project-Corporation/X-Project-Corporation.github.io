@@ -44,6 +44,9 @@ class TypesetPlugin(BasePlugin[TypesetPluginConfig]):
         if not self.config.enabled:
             return
 
+        # Initialize titles
+        self.title_map = dict()
+
         # Copy configuration and enable 'toc' extension
         mdx_configs        = copy(config.mdx_configs)
         mdx_configs["toc"] = copy(mdx_configs.get("toc", {}))
@@ -57,6 +60,16 @@ class TypesetPlugin(BasePlugin[TypesetPluginConfig]):
             extensions = config.markdown_extensions,
             extension_configs = mdx_configs
         )
+
+    # Extract source of page title before it's lost
+    def on_pre_page(self, page, *, config, files):
+        if not self.config.enabled:
+            return
+
+        # Check if page title was set in configuration
+        if page.title:
+            path = page.file.src_uri
+            self.title_map[path] = "config"
 
     # Extract typeset content for headlines
     def on_page_content(self, html, *, page, config, files):
@@ -75,6 +88,12 @@ class TypesetPlugin(BasePlugin[TypesetPluginConfig]):
             re.IGNORECASE | re.MULTILINE
         )
 
+        # Check if page title was set in metadata
+        path = page.file.src_uri
+        if path not in self.title_map:
+            if "title" in page.meta:
+                self.title_map[path] = "meta"
+
         # Flatten anchors and map to headlines
         anchors = _flatten(page.toc.items)
         for (id, title, level) in expr.findall(html):
@@ -83,11 +102,12 @@ class TypesetPlugin(BasePlugin[TypesetPluginConfig]):
 
             # Assign headline content to anchor
             anchors[id].typeset = { "title": title }
+            if path not in self.title_map:
 
-            # Assign first top-level headline to page
-            if not hasattr(page, "typeset") and int(level) == 1:
-                page.typeset = anchors[id].typeset
-                page.title = re.sub(r"<[^>]+>", "", title)
+                # Assign first top-level headline to page
+                if not hasattr(page, "typeset") and int(level) == 1:
+                    page.typeset = anchors[id].typeset
+                    page.title = re.sub(r"<[^>]+>", "", title)
 
 # -----------------------------------------------------------------------------
 # Helper functions
