@@ -59,7 +59,7 @@ class TypesetPlugin(BasePlugin[TypesetPluginConfig]):
         )
 
     # Extract typeset content for headlines
-    def on_page_context(self, context, *, page, config, nav):
+    def on_page_content(self, html, *, page, config, files):
         if not self.config.enabled:
             return
 
