@@ -58,7 +58,6 @@
 
   // Post metadata
   .md-post__meta {
-    margin: 0.75em 0;
 
     // Navigation link
     a {
@@ -104,6 +103,12 @@
 
       margin-top: 0;
     }
+  }
+
+  // Adjust spacing for navigation
+  > .md-nav:first-child > .md-nav__list,
+  > .md-nav--secondary {
+    margin: 1em 0;
   }
 }
 

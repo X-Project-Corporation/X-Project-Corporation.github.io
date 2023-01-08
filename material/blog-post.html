@@ -98,6 +98,9 @@
               </ul>
             {% endif %}
           </nav>
+          {% if "toc.integrate" in features %}
+            {% include "partials/toc.html" %}
+          {% endif %}
         </div>
       </div>
     </div>

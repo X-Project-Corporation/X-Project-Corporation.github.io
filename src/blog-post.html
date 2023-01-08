@@ -142,6 +142,11 @@
               </ul>
             {% endif %}
           </nav>
+
+          <!-- Table of contents, if integrated -->
+          {% if "toc.integrate" in features %}
+            {% include "partials/toc.html" %}
+          {% endif %}
         </div>
       </div>
     </div>
