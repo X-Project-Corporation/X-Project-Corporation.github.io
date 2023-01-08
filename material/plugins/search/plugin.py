@@ -323,6 +323,10 @@ class Element:
         self.tag   = tag
         self.attrs = attrs
 
+    # String representation
+    def __repr__(self):
+        return self.tag
+
     # Support comparison (compare by tag only)
     def __eq__(self, other):
         if other is Element:
@@ -348,11 +352,21 @@ class Section:
     """
 
     # Initialize HTML section
-    def __init__(self, el):
-        self.el    = el
+    def __init__(self, el, depth = 0):
+        self.el = el
+        self.depth = depth
+
+        # Initialize section data
         self.text  = []
         self.title = []
         self.id = None
+
+    # String representation
+    def __repr__(self):
+        if self.id:
+            return "#".join([self.el.tag, self.id])
+        else:
+            return self.el.tag
 
     # Check whether the section should be excluded
     def is_excluded(self):
@@ -407,15 +421,16 @@ class Parser(HTMLParser):
 
         # Handle headings
         if tag in ([f"h{x}" for x in range(1, 7)]):
+            depth = len(self.context)
             if "id" in attrs:
 
                 # Ensure top-level section
                 if tag != "h1" and not self.data:
-                    self.section = Section(Element("hx"))
+                    self.section = Section(Element("hx"), depth)
                     self.data.append(self.section)
 
                 # Set identifier, if not first section
-                self.section = Section(el)
+                self.section = Section(el, depth)
                 if self.data:
                     self.section.id = attrs["id"]
 
@@ -443,8 +458,10 @@ class Parser(HTMLParser):
         # Render opening tag if kept
         if not self.skip.intersection(self.context):
             if tag in self.keep:
+
+                # Check whether we're inside the section title
                 data = self.section.text
-                if self.section.el in reversed(self.context):
+                if self.section.el in self.context:
                     data = self.section.title
 
                 # Append to section title or text
@@ -455,6 +472,20 @@ class Parser(HTMLParser):
         if not self.context or self.context[-1] != tag:
             return
 
+        # Check whether we're exiting the current context, which happens when
+        # a headline is nested in another element. In that case, we close the
+        # current section, continuing to append data to the previous section,
+        # which could also be a nested section – see https://bit.ly/3IxxIJZ
+        if self.section.depth > len(self.context):
+            for section in reversed(self.data):
+                if section.depth and section.depth <= len(self.context):
+
+                    # Set depth to 0 in order to denote that the current section
+                    # is exited and must not be considered again.
+                    self.section.depth = 0
+                    self.section = section
+                    break
+
         # Remove element from skip list
         el = self.context.pop()
         if el in self.skip:
@@ -464,15 +495,23 @@ class Parser(HTMLParser):
         # Render closing tag if kept
         if not self.skip.intersection(self.context):
             if tag in self.keep:
+
+                # Check whether we're inside the section title
                 data = self.section.text
-                if self.section.el in reversed(self.context):
+                if self.section.el in self.context:
                     data = self.section.title
 
+                # Search for corresponding opening tag
+                index = data.index(f"<{tag}>")
+                for i in range(index + 1, len(data)):
+                    if not data[i].isspace():
+                        index = len(data)
+                        break
+
                 # Remove element if empty (or only whitespace)
-                if data[-1] == f"<{tag}>":
-                    del data[-1:]
-                elif data[-1].isspace() and data[-2] == f"<{tag}>":
-                    del data[-2:]
+                if len(data) > index:
+                    while len(data) > index:
+                        data.pop()
 
                 # Append to section title or text
                 else:
@@ -496,7 +535,7 @@ class Parser(HTMLParser):
             self.data.append(self.section)
 
         # Handle section headline
-        if self.section.el in reversed(self.context):
+        if self.section.el in self.context:
             permalink = False
             for el in self.context:
                 if el.tag == "a" and el.attrs.get("class") == "headerlink":
@@ -507,6 +546,11 @@ class Parser(HTMLParser):
                 self.section.title.append(
                     escape(data, quote = False)
                 )
+
+        # Collapse adjacent whitespace
+        elif data.isspace():
+            if not self.section.text or not self.section.text[-1].isspace():
+                self.section.text.append(data)
 
         # Handle everything else
         else:
