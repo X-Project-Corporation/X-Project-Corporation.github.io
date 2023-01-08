@@ -187,9 +187,9 @@ export class Search {
       this.ref("location")
 
       /* Set up index fields */
-      this.field("title", { boost: 1e3, extractor: field("title") })
-      this.field("text",  { boost: 1e0, extractor: field("text") })
-      this.field("tags",  { boost: 1e6, extractor: field("tags") })
+      for (const [name, spec] of Object.entries(config.fields))
+        // @ts-expect-error - fix typings, if this proves to be a good idea
+        this.field(name, { ...spec, extractor: field(name) })
 
       /* Add documents to index */
       for (const doc of docs)

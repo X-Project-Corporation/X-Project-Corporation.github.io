@@ -41,20 +41,25 @@ except ImportError:
 # Class
 # -----------------------------------------------------------------------------
 
+# Search pipeline functions
+pipeline = ("stemmer", "stopWordFilter", "trimmer")
+
+# Search field configuration scheme
+class SearchFieldConfig(Config):
+    boost = opt.Type(float, default = 1.0)
+
 # Search plugin configuration scheme
 class SearchPluginConfig(Config):
     lang = opt.Optional(LangOption())
     separator = opt.Optional(opt.Type(str))
-    pipeline = opt.ListOfItems(
-        opt.Choice(("stemmer", "stopWordFilter", "trimmer")),
-        default = []
-    )
+    pipeline = opt.ListOfItems(opt.Choice(pipeline), default = [])
+    fields = opt.Type(dict, default = dict())
 
     # Options for text segmentation (Chinese)
     jieba_dict = opt.Optional(opt.Type(str))
     jieba_dict_user = opt.Optional(opt.Type(str))
 
-    # Deprecated options
+    # Unsupported options, originally implemented in MkDocs
     indexing = opt.Deprecated(message = "Unsupported option")
     prebuild_index = opt.Deprecated(message = "Unsupported option")
     min_search_length = opt.Deprecated(message = "Unsupported option")
@@ -90,6 +95,19 @@ class SearchPlugin(BasePlugin[SearchPluginConfig]):
             self.config.pipeline = list(filter(len, re.split(
                 r"\s*,\s*", self._translate(config, "search.config.pipeline")
             )))
+
+        # Validate field configuration
+        validator = opt.SubConfig(SearchFieldConfig)
+        for config in self.config.fields.values():
+            validator.run_validation(config)
+
+        # Merge with default fields
+        if "title" not in self.config.fields:
+            self.config.fields["title"] = { "boost": 1e3 }
+        if "text" not in self.config.fields:
+            self.config.fields["text"] = { "boost": 1e0 }
+        if "tags" not in self.config.fields:
+            self.config.fields["tags"] = { "boost": 1e6 }
 
         # Initialize search index
         self.search_index = SearchIndex(**self.config)
@@ -205,10 +223,6 @@ class SearchIndex:
             title = self._segment_chinese(title)
             text  = self._segment_chinese(text)
 
-        # Reset text, if only titles should be indexed
-        if self.config["indexing"] == "titles":
-            text = ""
-
         # Create entry for section
         entry = {
             "location": url,
@@ -236,7 +250,7 @@ class SearchIndex:
     def generate_search_index(self, prev):
         config = {
             key: self.config[key]
-                for key in ["lang", "separator", "pipeline"]
+                for key in ["lang", "separator", "pipeline", "fields"]
         }
 
         # Hack: if we're running under dirty reload, the search index will only
