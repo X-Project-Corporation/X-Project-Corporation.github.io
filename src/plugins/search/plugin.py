@@ -412,7 +412,8 @@ class Parser(HTMLParser):
         self.keep = set([
             "p",                       # Paragraphs
             "code", "pre",             # Code blocks
-            "li", "ol", "ul"           # Lists
+            "li", "ol", "ul",          # Lists
+            "sub", "sup"               # Sub- and superscripts
         ])
 
         # Current context and section
