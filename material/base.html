@@ -49,7 +49,7 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.a608ba1f.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.497ed514.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
         <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.2505c338.min.css' | url }}">
@@ -179,6 +179,9 @@
           {% endblock %}
           {% block container %}
             <div class="md-content" data-md-component="content">
+              {% if "navigation.path" in features %}
+                {% include "partials/path.html" %}
+              {% endif %}
               <article class="md-content__inner md-typeset">
                 {% block content %}
                   {% include "partials/content.html" %}

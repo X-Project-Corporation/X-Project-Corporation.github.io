@@ -20,19 +20,14 @@
   IN THE SOFTWARE.
 -->
 
-{% import "partials/tabs-item.html" as item with context %}
+{% import "partials/path-item.html" as item with context %}
 
-<!-- Navigation tabs -->
-<nav
-  class="md-tabs"
-  aria-label="{{ lang.t('tabs') }}"
-  data-md-component="tabs"
->
-  <div class="md-tabs__inner md-grid">
-    <ul class="md-tabs__list">
-      {% for nav_item in nav %}
-        {{ item.render(nav_item) }}
-      {% endfor %}
-    </ul>
-  </div>
+<!-- Navigation path (breadcrumbs) -->
+<nav class="md-path" aria-label="{{ lang.t('nav') }}">
+  <ol class="md-path__list">
+    {{ item.render(nav.homepage) }}
+    {% for nav_item in page.ancestors | reverse %}
+      {{ item.render(nav_item) }}
+    {% endfor %}
+  </ol>
 </nav>

@@ -20,19 +20,43 @@
   IN THE SOFTWARE.
 -->
 
-{% import "partials/tabs-item.html" as item with context %}
+<!-- Render navigation link content -->
+{% macro render_content(nav_item, ref = nav_item) %}
+  <span class="md-ellipsis">
+    {{ ref.title }}
+  </span>
+{% endmacro %}
 
-<!-- Navigation tabs -->
-<nav
-  class="md-tabs"
-  aria-label="{{ lang.t('tabs') }}"
-  data-md-component="tabs"
->
-  <div class="md-tabs__inner md-grid">
-    <ul class="md-tabs__list">
-      {% for nav_item in nav %}
-        {{ item.render(nav_item) }}
-      {% endfor %}
-    </ul>
-  </div>
-</nav>
+<!-- Render navigation item -->
+{% macro render(nav_item, ref = nav_item) %}
+
+  <!-- Navigation item with nested items -->
+  {% if nav_item.children %}
+    {% set first = nav_item.children | first %}
+
+    <!-- Recurse, if the first item has further nested items -->
+    {% if first.children %}
+      {{ render(first, ref) }}
+
+    <!-- Nested navigation item -->
+    {% else %}
+      <li class="md-path__item">
+        <a href="{{ first.url | url }}" class="md-path__link">
+          <span class="md-ellipsis">
+            {{ ref.title }}
+          </span>
+        </a>
+      </li>
+    {% endif %}
+
+  <!-- Navigation item -->
+  {% else %}
+    <li class="md-path__item">
+      <a href="{{ nav_item.url | url }}" class="md-path__link">
+        <span class="md-ellipsis">
+          {{ ref.title }}
+        </span>
+      </a>
+    </li>
+  {% endif %}
+{% endmacro %}

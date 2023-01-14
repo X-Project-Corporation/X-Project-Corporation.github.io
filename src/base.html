@@ -339,9 +339,16 @@
             {% endif %}
           {% endblock %}
 
-          <!-- Page content -->
+          <!-- Page content container -->
           {% block container %}
             <div class="md-content" data-md-component="content">
+
+              <!-- Navigation path (breadcrumbs) -->
+              {% if "navigation.path" in features %}
+                {% include "partials/path.html" %}
+              {% endif %}
+
+              <!-- Page content  -->
               <article class="md-content__inner md-typeset">
                 {% block content %}
                   {% include "partials/content.html" %}

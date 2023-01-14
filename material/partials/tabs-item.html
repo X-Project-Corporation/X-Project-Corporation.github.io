@@ -1,10 +1,6 @@
 {#-
   This file was automatically generated - do not edit
 -#}
-{% set class = "md-tabs__link" %}
-{% if nav_item.active %}
-  {% set class = class ~ " md-tabs__link--active" %}
-{% endif %}
 {% macro render_content(nav_item, ref = nav_item) %}
   {% if nav_item.is_index %}
     {% if nav_item.meta.icon %}
@@ -14,6 +10,10 @@
   {{ ref.title }}
 {% endmacro %}
 {% macro render(nav_item, ref = nav_item) %}
+  {% set class = "md-tabs__link" %}
+  {% if ref.active %}
+    {% set class = class ~ " md-tabs__link--active" %}
+  {% endif %}
   {% if nav_item.children %}
     {% set first = nav_item.children | first %}
     {% if first.children %}
@@ -33,4 +33,3 @@
     </li>
   {% endif %}
 {% endmacro %}
-{{ render(nav_item) }}

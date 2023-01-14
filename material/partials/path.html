@@ -1,0 +1,12 @@
+{#-
+  This file was automatically generated - do not edit
+-#}
+{% import "partials/path-item.html" as item with context %}
+<nav class="md-path" aria-label="{{ lang.t('nav') }}">
+  <ol class="md-path__list">
+    {{ item.render(nav.homepage) }}
+    {% for nav_item in page.ancestors | reverse %}
+      {{ item.render(nav_item) }}
+    {% endfor %}
+  </ol>
+</nav>
