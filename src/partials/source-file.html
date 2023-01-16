@@ -21,7 +21,7 @@
 -->
 
 <!-- Determine date of last update -->
-{% if page and page.meta %}
+{% if page.meta %}
   {% if page.meta.git_revision_date_localized %}
     {% set updated = page.meta.git_revision_date_localized %}
   {% elif page.meta.revision_date %}
