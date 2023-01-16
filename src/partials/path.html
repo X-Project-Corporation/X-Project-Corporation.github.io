@@ -25,7 +25,9 @@
 <!-- Navigation path (breadcrumbs) -->
 <nav class="md-path" aria-label="{{ lang.t('nav') }}">
   <ol class="md-path__list">
-    {{ item.render(nav.homepage) }}
+    {% if nav.homepage %}
+      {{ item.render(nav.homepage) }}
+    {% endif %}
     {% for nav_item in page.ancestors | reverse %}
       {{ item.render(nav_item) }}
     {% endfor %}
