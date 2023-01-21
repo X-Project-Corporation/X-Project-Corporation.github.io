@@ -30,7 +30,7 @@ from babel.dates import format_date
 from copy import copy
 from datetime import date, datetime, time
 from functools import partial
-from hashlib import md5
+from hashlib import sha1
 from lxml import html
 from markdown.extensions.toc import slugify
 from mkdocs import utils
@@ -316,7 +316,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 root.append({ name: data })
 
         # Hack: add posts temporarily, so MkDocs doesn't complain
-        name = md5(path.encode("utf-8")).hexdigest()
+        name = sha1(path.encode("utf-8")).hexdigest()
         root.append({
             f"__posts_${name}": list(self.post_meta_map.keys())
         })
@@ -338,7 +338,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             root = nav.items
 
         # Hack: remove temporarily added posts from the navigation
-        name = md5(path.encode("utf-8")).hexdigest()
+        name = sha1(path.encode("utf-8")).hexdigest()
         for item in root:
             if not item.is_section or item.title != f"__posts_${name}":
                 continue
