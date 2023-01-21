@@ -208,7 +208,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             path = file.abs_src_path
 
             # Download external file
-            log.debug(f"Downloading external file: {raw}")
+            log.info(f"Downloading external file: {raw}")
             res = requests.get(raw, headers = {
 
                 # Set user agent explicitly, so Google Fonts gives us *.woff2
@@ -239,7 +239,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                     os.symlink(os.path.basename(path), file.abs_src_path)
                 except OSError:
                     log.warning(
-                        f"Couldn't create symbolic link '{file.src_uri}'"
+                        f"Couldn't create symbolic link: {file.src_uri}"
                     )
 
                     # Fall back for when the symlink could not be created. This
