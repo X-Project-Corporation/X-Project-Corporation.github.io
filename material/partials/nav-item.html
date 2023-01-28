@@ -80,9 +80,9 @@
         {% if expanded and not checked %}
           {% set indeterminate = "md-toggle--indeterminate" %}
         {% endif %}
-        <input class="md-nav__toggle md-toggle {{ indeterminate }}" data-md-toggle="{{ path }}" type="checkbox" id="{{ path }}" {{ checked }}>
+        <input class="md-nav__toggle md-toggle {{ indeterminate }}" type="checkbox" id="{{ path }}" {{ checked }}>
         {% if not indexes %}
-          <label class="md-nav__link" for="{{ path }}" tabindex="0" aria-expanded="{{ nav_item.active | tojson }}">
+          <label class="md-nav__link" for="{{ path }}" id="{{ path }}_label" tabindex="0">
             {{ render_content(nav_item) }}
             <span class="md-nav__icon md-icon"></span>
           </label>
@@ -100,7 +100,7 @@
             {% endif %}
           </div>
         {% endif %}
-        <nav class="md-nav" aria-label="{{ nav_item.title }}" data-md-level="{{ level }}">
+        <nav class="md-nav" data-md-level="{{ level }}" aria-labelledby="{{ path }}_label" aria-expanded="{{ nav_item.active | tojson }}">
           <label class="md-nav__title" for="{{ path }}">
             <span class="md-nav__icon md-icon"></span>
             {{ render_title(nav_item) }}
@@ -120,7 +120,7 @@
   {% elif nav_item == page %}
     <li class="{{ class }}">
       {% set toc = page.toc %}
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       {% set first = toc | first %}
       {% if first and first.level == 1 %}
         {% set toc = first.children %}
