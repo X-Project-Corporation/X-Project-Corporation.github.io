@@ -131,6 +131,10 @@ plugins:
   - minify:
       minify_html: !ENV [CI, false]
 
+# Hooks
+hooks:
+  - material/.overrides/hooks/translations.py
+
 # Customization
 extra:
   status:
