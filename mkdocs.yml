@@ -109,6 +109,8 @@ plugins:
         blog/2021/the-past-present-and-future.md: blog/posts/the-past-present-and-future.md
         blog/2021/excluding-content-from-search.md: blog/posts/excluding-content-from-search.md
         blog/2021/search-better-faster-smaller.md: blog/posts/search-better-faster-smaller.md
+        bug-report/index.md: contributing/reporting-a-bug.md
+        bug-report/reproduction.md: guides/creating-a-reproduction.md
         changelog/insiders.md: insiders/changelog.md
         conventions.md: philosophy.md
         reference/abbreviations.md: reference/tooltips.md
