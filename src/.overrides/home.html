@@ -27,6 +27,11 @@
   <title>{{ config.site_name }}</title>
 {% endblock %}
 
+<!-- Custom front matter -->
+{% block extrahead %}
+  <link rel="me" href="https://fosstodon.org/@squidfunk" />
+{% endblock %}
+
 <!-- Theme-related style sheets -->
 {% block styles %}
   {{ super() }}
