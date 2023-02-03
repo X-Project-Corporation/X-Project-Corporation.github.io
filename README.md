@@ -80,9 +80,6 @@
   <a href="https://www.manticoregames.com/" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-manticore-games.png" height="58"
   /></a>
-  <a href="https://www.accounttechnologies.com/" target=_blank><img
-    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-account-technologies.png" height="58"
-  /></a>
   <a href="https://orion-docs.prefect.io/" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-prefect.png" height="58"
   /></a>
@@ -148,6 +145,9 @@
   /></a>
   <a href="https://rackn.com/" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-rackn.png" height="58"
+  /></a>
+  <a href="https://civicactions.com/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-civic-actions.png" height="58"
   /></a>
 </p>
 <p>&nbsp;</p>
