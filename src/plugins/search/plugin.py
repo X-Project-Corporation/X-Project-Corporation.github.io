@@ -434,7 +434,7 @@ class Parser(HTMLParser):
         else:
             return
 
-        # Handle headings
+        # Handle heading
         if tag in ([f"h{x}" for x in range(1, 7)]):
             depth = len(self.context)
             if "id" in attrs:
@@ -583,18 +583,18 @@ log.addFilter(DuplicateFilter())
 
 # Tags that are self-closing
 void = set([
-    "area",                    # Image map areas
-    "base",                    # Document base
-    "br",                      # Line breaks
-    "col",                     # Table columns
-    "embed",                   # External content
-    "hr",                      # Horizontal rules
-    "img",                     # Images
-    "input",                   # Input fields
-    "link",                    # Links
-    "meta",                    # Metadata
-    "param",                   # External parameters
-    "source",                  # Image source sets
-    "track",                   # Text track
-    "wbr"                      # Line break opportunities
+    "area",                            # Image map areas
+    "base",                            # Document base
+    "br",                              # Line breaks
+    "col",                             # Table columns
+    "embed",                           # External content
+    "hr",                              # Horizontal rules
+    "img",                             # Images
+    "input",                           # Input fields
+    "link",                            # Links
+    "meta",                            # Metadata
+    "param",                           # External parameters
+    "source",                          # Image source sets
+    "track",                           # Text track
+    "wbr"                              # Line break opportunities
 ])

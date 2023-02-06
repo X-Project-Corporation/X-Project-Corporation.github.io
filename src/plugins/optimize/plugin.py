@@ -24,7 +24,7 @@ import os
 import subprocess
 
 from colorama import Fore, Style
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from hashlib import sha1
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
@@ -76,8 +76,8 @@ class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
         self.pool = ThreadPoolExecutor(self.config.concurrency)
         self.pool_jobs: list[Future] = []
 
-        # Initialize list of optimized files
-        self.optimize_map: dict[File, str] = dict()
+        # Initialize collection of optimized files
+        self.optimize_map: dict[str, str] = dict()
 
         # Initialize cache
         self.cache_map: dict[str, str] = dict()
@@ -117,14 +117,13 @@ class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
             # Steal responsibility from MkDocs
             files.remove(file)
 
-    # Finish pipeline
+    # Finish optimization pipeline
     def on_post_build(self, *, config):
         if not self.config.enabled:
             return
 
         # Reconcile concurrent jobs
-        for job in self.pool_jobs:
-            job.result()
+        wait(self.pool_jobs)
 
         # Compute and print gains through optimization
         if self.config.print_gain_summary:

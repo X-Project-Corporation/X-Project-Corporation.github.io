@@ -31,7 +31,7 @@ from copy import copy
 from datetime import date, datetime, time
 from functools import partial
 from hashlib import sha1
-from lxml import html
+from lxml.html import fragment_fromstring, tostring
 from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.utils.meta import get_data
@@ -760,8 +760,8 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         def replacement(match):
             value = match.group()
 
-            # Handle anchor links
-            el = html.fragment_fromstring(value.encode("utf-8"))
+            # Handle anchor link
+            el = fragment_fromstring(value.encode("utf-8"))
             if el.tag == "a":
                 nonlocal first
 
@@ -779,7 +779,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 first = False
 
             # Replace link opening tag (without closing tag)
-            return html.tostring(el, encoding = "unicode")[:-4]
+            return tostring(el, encoding = "unicode")[:-4]
 
         # Extract excerpt from post and replace anchor links
         excerpt.content = expr.sub(
@@ -904,7 +904,7 @@ def _data_to_navigation(nav, config, files):
     title, path = nav if isinstance(nav, tuple) else (None, nav)
     path, _, anchor = path.partition("#")
 
-    # Try to load existing file
+    # Try to retrieve existing file
     file = files.get_file_from_path(path)
     if not file:
         return Link(title, path)
