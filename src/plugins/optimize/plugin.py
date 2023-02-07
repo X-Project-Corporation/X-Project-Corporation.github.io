@@ -32,7 +32,6 @@ from mkdocs.config import config_options as opt
 from mkdocs.config.base import Config
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File
-from PIL import Image
 
 # -----------------------------------------------------------------------------
 # Class
@@ -244,6 +243,9 @@ class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
 
     # Optimize JPG image
     def _optimize_image_jpg(self, file: File, path: str):
+        from PIL import Image
+
+        # Open and save image with pillow
         image = Image.open(file.abs_src_path)
         image.save(path, "jpeg",
             quality     = self.config.optimize_jpg_quality,
