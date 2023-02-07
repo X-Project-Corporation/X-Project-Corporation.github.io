@@ -128,7 +128,6 @@ plugins:
   - git-committers:
       enabled: !ENV [CI, false]
       repository: squidfunk/mkdocs-material
-  - privacy
   - optimize:
       enabled: !ENV [CI, false]
   - minify:
