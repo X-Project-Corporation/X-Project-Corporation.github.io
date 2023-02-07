@@ -163,8 +163,14 @@ class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
     # Check if a file can be optimized
     def _is_optimizable(self, file: File):
         _, extension = os.path.splitext(file.url)
-        if extension in [".jpg", ".jpeg", ".png"]:
-           return True
+
+        # Check if PNG images should be optimized
+        if extension in [".png"]:
+            return self.config.optimize_png
+
+        # Check if JPG images should be optimized
+        if extension in [".jpg", ".jpeg"]:
+            return self.config.optimize_jpg
 
         # File can not be optimized by the plugin
         return False
