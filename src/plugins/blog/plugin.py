@@ -757,7 +757,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
         # Replacement callback
         first = True
-        def replacement(match):
+        def replace(match):
             value = match.group()
 
             # Handle anchor link
@@ -783,7 +783,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
 
         # Extract excerpt from post and replace anchor links
         excerpt.content = expr.sub(
-            replacement,
+            replace,
             excerpt.content.split(separator)[0]
         )
 

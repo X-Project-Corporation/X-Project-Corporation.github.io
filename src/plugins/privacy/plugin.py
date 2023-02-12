@@ -103,7 +103,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
             # Check if the file has dependent external assets that must be
             # downloaded. Create and enqueue a job for each external asset.
-            for url in self._parse(initiator):
+            for url in self._parse_media(initiator):
                 if not self._is_excluded(url, initiator):
                     file = self._queue(url, config, concurrent = True)
 
@@ -178,65 +178,24 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 self.external_done.append(file)
                 files.append(file)
 
-    # Process external assets in page (run later) - at this stage we parse the
-    # final page HTML and find all external links that need to be replaced. Many
-    # of the assets should already be downloaded earlier (= everything that is
-    # directly referenced in the document), but there may still exist external
-    # assets that were added by third-party plugins. Those assets need to be
-    # downloaded synchronously, so we can directly replace them in one go.
+    # Process external assets in template (run later)
+    @event_priority(-50)
+    def on_post_template(self, output_content, *, template_name, config):
+        if not self.config.enabled or not template_name.endswith(".html"):
+            return
+
+        # Parse and replace links to external assets in template
+        initiator = File(template_name, config.docs_dir, config.site_dir, False)
+        return self._parse_html(output_content, initiator, config)
+
+    # Process external assets in page (run later)
     @event_priority(-50)
     def on_post_page(self, output, *, page, config):
         if not self.config.enabled:
             return
 
-        # Replacement callback
-        def replacement(match: Match):
-            el: HtmlElement = fragment_fromstring(match.group().encode("utf-8"))
-
-            # Handle external link
-            if self.config.external_links and el.tag == "a":
-                for key, value in self.config.external_links_attr_map.items():
-                    el.set(key, value)
-
-                # Set `rel=noopener` if link opens in a new window
-                if self.config.external_links_noopener:
-                    if el.get("target") == "_blank":
-                        el.set("rel", "noopener")
-
-            # Handle external style sheet or preconnect hint
-            if el.tag == "link":
-                url = urlparse(el.get("href"))
-                if not self._is_excluded(url, page.file):
-                    rel = el.get("rel", "")
-
-                    # Replace external preconnect hint
-                    if rel == "preconnect":
-                        return ""
-
-                    # Replace external style sheet or favicon
-                    if rel == "stylesheet" or rel == "icon":
-                        file = self._queue(url, config)
-                        el.set("href", file.url_relative_to(page.file))
-
-            # Handle external script or image
-            if el.tag == "script" or el.tag == "img":
-                url = urlparse(el.get("src"))
-                if not self._is_excluded(url, page.file):
-                    file = self._queue(url, config)
-                    el.set("src", file.url_relative_to(page.file))
-
-            # Return element as string, but without closing tag
-            if el.tag in void:
-                return tostring(el, encoding = "unicode")
-            else:
-                tail = 3 + len(el.tag)
-                return tostring(el, encoding = "unicode")[:-tail]
-
-        # Find and replace all external asset URLs in current page
-        return re.sub(
-            r"<(?:(?:a|link)[^>]+href|(?:script|img)[^>]+src)=['\"]?http[^>]+>",
-            replacement, output, re.I | re.M | re.U
-        )
+        # Parse and replace links to external assets
+        return self._parse_html(output, page.file, config)
 
     # Reconcile jobs (run earlier) - allow other plugins (e.g. optimize plugin)
     # to process all downloaded assets, which is why we must reconcile here
@@ -315,8 +274,9 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
     # -------------------------------------------------------------------------
 
-    # Parse and extract all external assets from the given file
-    def _parse(self, initiator: File) -> "list[URL]":
+    # Parse and extract all external assets from a media file using a preset
+    # regular expression, and return all URLs found.
+    def _parse_media(self, initiator: File) -> "list[URL]":
         _, extension = os.path.splitext(initiator.dest_uri)
         if extension not in self.external_expr:
             return []
@@ -325,6 +285,71 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         expr = re.compile(self.external_expr[extension], re.I | re.M)
         with open(initiator.abs_src_path, encoding = "utf-8") as f:
             return [urlparse(url) for url in re.findall(expr, f.read())]
+
+    # Parse template or page HTML and find all external links that need to be
+    # replaced. Many of the assets should already be downloaded earlier, i.e.,
+    # everything that was directly referenced in the document, but there may
+    # still exist external assets that were added by third-party plugins.
+    def _parse_html(self, output: str, initiator: File, config: MkDocsConfig):
+
+        # Resolve callback
+        def resolve(file: File):
+            if utils.is_error_template(initiator.src_uri):
+                base = urlparse(config.site_url or "/")
+                return posixpath.join(base.path, file.url)
+            else:
+                return file.url_relative_to(initiator)
+
+        # Replace callback
+        def replace(match: Match):
+            el: HtmlElement = fragment_fromstring(match.group().encode("utf-8"))
+
+            # Handle external link
+            if self.config.external_links and el.tag == "a":
+                for key, value in self.config.external_links_attr_map.items():
+                    el.set(key, value)
+
+                # Set `rel=noopener` if link opens in a new window
+                if self.config.external_links_noopener:
+                    if el.get("target") == "_blank":
+                        el.set("rel", "noopener")
+
+            # Handle external style sheet or preconnect hint
+            if el.tag == "link":
+                url = urlparse(el.get("href"))
+                if not self._is_excluded(url, initiator):
+                    rel = el.get("rel", "")
+
+                    # Replace external preconnect hint
+                    if rel == "preconnect":
+                        return ""
+
+                    # Replace external style sheet or favicon
+                    if rel == "stylesheet" or rel == "icon":
+                        file = self._queue(url, config)
+                        el.set("href", resolve(file))
+
+            # Handle external script or image
+            if el.tag == "script" or el.tag == "img":
+                url = urlparse(el.get("src"))
+                if not self._is_excluded(url, initiator):
+                    file = self._queue(url, config)
+                    el.set("src", resolve(file))
+
+            # Return void or opening tag as string, strip closing tag
+            if el.tag in void:
+                return tostring(el, encoding = "unicode")
+            else:
+                tail = 3 + len(el.tag)
+                return tostring(el, encoding = "unicode")[:-tail]
+
+        # Find and replace all external asset URLs in current page
+        return re.sub(
+            r"<(?:(?:a|link)[^>]+href|(?:script|img)[^>]+src)=['\"]?http[^>]+>",
+            replace, output, re.I | re.M | re.U
+        )
+
+    # -------------------------------------------------------------------------
 
     # Enqueue external for download, if not already done
     def _queue(self, url: URL, config: MkDocsConfig, concurrent = False):
@@ -430,7 +455,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         file.url = file.dest_uri
 
         # Parse and enqueue dependent external assets
-        for url in self._parse(file):
+        for url in self._parse_media(file):
             if not self._is_excluded(url, file):
                 self._queue(url, config, concurrent = True)
 
@@ -439,7 +464,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         with open(initiator.abs_src_path, encoding = "utf-8") as f:
 
             # Replacement callback
-            def replacement(match: Match):
+            def replace(match: Match):
                 value = match.group(1)
 
                 # Map URL to canonical path
@@ -484,7 +509,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
             # Resolve links to external assets in file
             utils.write_file(
-                expr.sub(replacement, f.read()).encode("utf8"),
+                expr.sub(replace, f.read()).encode("utf8"),
                 initiator.abs_dest_path
             )
 

@@ -309,7 +309,7 @@ class SearchIndex:
         expr = re.compile(r"(\p{IsHan}+)", re.UNICODE)
 
         # Replacement callback
-        def replacement(match):
+        def replace(match):
             value = match.group(0)
 
             # Replace occurrence in original string with segmented version and
@@ -321,7 +321,7 @@ class SearchIndex:
             ])
 
         # Return string with segmented occurrences
-        return expr.sub(replacement, data).strip("\u200b")
+        return expr.sub(replace, data).strip("\u200b")
 
 # -----------------------------------------------------------------------------
 
