@@ -251,7 +251,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         # Check if URL matches one of the inclusion patterns
         if self.config.external_assets_include:
             for pattern in self.config.external_assets_include:
-                if fnmatch(url.geturl(), pattern):
+                if fnmatch(self._map_url_to_path(url), pattern):
                     return False
 
             # File is not included
@@ -260,7 +260,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
         # Check if URL matches one of the exclusion patterns
         for pattern in self.config.external_assets_exclude:
-            if fnmatch(url.geturl(), pattern):
+            if fnmatch(self._map_url_to_path(url), pattern):
                 log.debug(f"Excluding external file: {url.geturl()} {via}")
                 return True
 
