@@ -175,9 +175,9 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
                 sys.exit(1)
 
         # Inherit global table of contents setting
-        if None is self.config.archive_toc:
+        if not isinstance(self.config.archive_toc, bool):
             self.config.archive_toc = self.config.blog_toc
-        if None is self.config.categories_toc:
+        if not isinstance(self.config.categories_toc, bool):
             self.config.categories_toc = self.config.blog_toc
 
         # If pagination should not be used, set to large value
