@@ -56,6 +56,7 @@ class BlogPluginConfig(Config):
 
     # Options for blog
     blog_dir = opt.Type(str, default = "blog")
+    blog_toc = opt.Type(bool, default = False)
 
     # Options for posts
     post_date_format = opt.Type(str, default = "long")
@@ -77,6 +78,7 @@ class BlogPluginConfig(Config):
     archive_date_format = opt.Type(str, default = "yyyy")
     archive_url_date_format = opt.Type(str, default = "yyyy")
     archive_url_format = opt.Type(str, default = "archive/{date}")
+    archive_toc = opt.Optional(opt.Type(bool))
 
     # Options for categories
     categories = opt.Type(bool, default = True)
@@ -84,8 +86,8 @@ class BlogPluginConfig(Config):
     categories_url_format = opt.Type(str, default = "category/{slug}")
     categories_slugify = opt.Type((type(slugify), partial), default = slugify)
     categories_slugify_separator = opt.Type(str, default = "-")
-    categories_toc = opt.Type(bool, default = False)
     categories_allowed = opt.Type(list, default = [])
+    categories_toc = opt.Optional(opt.Type(bool))
 
     # Options for pagination
     pagination = opt.Type(bool, default = True)
@@ -171,6 +173,12 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             if self.config[option].endswith("/"):
                 log.error(f"Option '{option}' must not contain trailing slash.")
                 sys.exit(1)
+
+        # Inherit global table of contents setting
+        if None is self.config.archive_toc:
+            self.config.archive_toc = self.config.blog_toc
+        if None is self.config.categories_toc:
+            self.config.categories_toc = self.config.blog_toc
 
         # If pagination should not be used, set to large value
         if not self.config.pagination:
@@ -574,6 +582,8 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         path = page.file.src_uri
         if path in self.post_map:
             context["posts"] = self.post_map[path]
+            if self.config.blog_toc:
+                self._populate_toc(page, context["posts"])
 
             # Create pagination
             pagination = paginate.Page(
@@ -597,20 +607,15 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         if self.config.archive:
             if path in self.archive_post_map:
                 context["posts"] = self.archive_post_map[path]
+                if self.config.archive_toc:
+                    self._populate_toc(page, context["posts"])
 
         # Provide post excerpts for categories
         if self.config.categories:
             if path in self.category_post_map:
                 context["posts"] = self.category_post_map[path]
-
-                # Provide anchors to categories
                 if self.config.categories_toc:
-                    toc = page.toc.items[0]
-                    for post in self.category_post_map[path]:
-                        toc.children.append(post.toc.items[0])
-
-                        # Remove anchors below the second level
-                        post.toc.items[0].children = []
+                    self._populate_toc(page, context["posts"])
 
     # Determine whether we're running under dirty reload
     def on_serve(self, server, *, config, builder):
@@ -822,6 +827,15 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
         page = Page(None, file, config)
         _populate_page(page, config, files)
         return page
+
+    # Populate table of contents of given page
+    def _populate_toc(self, page, posts):
+        toc = page.toc.items[0]
+        for post in posts:
+            toc.children.append(post.toc.items[0])
+
+            # Remove anchors below the second level
+            post.toc.items[0].children = []
 
     # Translate the given placeholder value
     def _translate(self, config, value):
