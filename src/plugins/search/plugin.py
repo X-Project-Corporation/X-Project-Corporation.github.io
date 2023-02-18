@@ -46,7 +46,7 @@ pipeline = ("stemmer", "stopWordFilter", "trimmer")
 
 # Search field configuration scheme
 class SearchFieldConfig(Config):
-    boost = opt.Type(float, default = 1.0)
+    boost = opt.Type((int, float), default = 1.0)
 
 # Search plugin configuration scheme
 class SearchPluginConfig(Config):
