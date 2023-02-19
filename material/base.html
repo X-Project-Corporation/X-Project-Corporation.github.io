@@ -223,12 +223,11 @@
         "translations": {},
         "search": "assets/javascripts/workers/search.6c7302c4.min.js" | url
       } -%}
-      {%- if config.extra.version -%}
-        {%- set _ = app.update({ "version": config.extra.version }) -%}
-      {%- endif -%}
-      {%- if config.extra.tags -%}
-        {%- set _ = app.update({ "tags": config.extra.tags }) -%}
-      {%- endif -%}
+      {%- for key in ["annotate", "tags", "version"] -%}
+        {%- if config.extra[key] -%}
+          {%- set _ = app.update({ key: config.extra[key] }) -%}
+        {%- endif -%}
+      {%- endfor -%}
       {%- set translations = app.translations -%}
       {%- for key in [
         "clipboard.copy",
@@ -249,7 +248,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.9115145a.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.8b5f7ebd.min.js' | url }}"></script>
       {% for path in config.extra_javascript %}
         <script src="{{ path | url }}"></script>
       {% endfor %}

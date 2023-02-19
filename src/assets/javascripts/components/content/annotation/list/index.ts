@@ -33,6 +33,7 @@ import {
   takeUntil
 } from "rxjs"
 
+import { configuration } from "~/_"
 import {
   getElement,
   getElements,
@@ -63,6 +64,39 @@ interface MountOptions {
  * ------------------------------------------------------------------------- */
 
 /**
+ * Find all annotation hosts in the containing element
+ *
+ * @param container - Containing element
+ *
+ * @returns Annotation hosts
+ */
+function findAnnotationHosts(container: HTMLElement): HTMLElement[] {
+  const config = configuration()
+  if (container.tagName !== "CODE")
+    return [container]
+
+  /* Try to determine language of code blocks */
+  const selectors = [".c", ".c1", ".cm"]
+  if (typeof config.annotate !== "undefined") {
+    const host = container.closest("[class|=language]")
+    if (host) {
+      for (const value of Array.from(host.classList)) {
+        if (!value.startsWith("language-"))
+          continue
+
+        /* Extract language and obtain additional mappings, if any */
+        const [, language] = value.split("-")
+        if (language in config.annotate)
+          selectors.push(...config.annotate[language])
+      }
+    }
+  }
+
+  /* Retrieve and return annotation hosts */
+  return getElements(selectors.join(", "), container)
+}
+
+/**
  * Find all annotation markers in the containing element
  *
  * @param container - Containing element
@@ -71,10 +105,7 @@ interface MountOptions {
  */
 function findAnnotationMarkers(container: HTMLElement): Text[] {
   const markers: Text[] = []
-  for (const el of container.tagName === "CODE"
-    ? getElements(".c, .c1, .cm", container)
-    : [container]
-  ) {
+  for (const el of findAnnotationHosts(container)) {
     const nodes: Text[] = []
 
     /* Find all text nodes in current element */

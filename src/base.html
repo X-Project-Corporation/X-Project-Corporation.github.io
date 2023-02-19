@@ -410,15 +410,12 @@
         "search": "assets/javascripts/workers/search.js" | url
       } -%}
 
-      <!-- Versioning -->
-      {%- if config.extra.version -%}
-        {%- set _ = app.update({ "version": config.extra.version }) -%}
-      {%- endif -%}
-
-      <!-- Tags -->
-      {%- if config.extra.tags -%}
-        {%- set _ = app.update({ "tags": config.extra.tags }) -%}
-      {%- endif -%}
+      <!-- Extra configuration -->
+      {%- for key in ["annotate", "tags", "version"] -%}
+        {%- if config.extra[key] -%}
+          {%- set _ = app.update({ key: config.extra[key] }) -%}
+        {%- endif -%}
+      {%- endfor -%}
 
       <!-- Translations -->
       {%- set translations = app.translations -%}
