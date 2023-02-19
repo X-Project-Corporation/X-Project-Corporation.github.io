@@ -140,6 +140,8 @@ hooks:
 
 # Customization
 extra:
+  annotate:
+    json: [.s2]
   status:
     new: Recently added
     deprecated: Deprecated
@@ -195,6 +197,7 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
+      pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.keys
   - pymdownx.magiclink:
