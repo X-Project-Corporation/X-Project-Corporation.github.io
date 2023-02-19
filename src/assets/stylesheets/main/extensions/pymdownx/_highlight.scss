@@ -222,6 +222,7 @@
   // Copying in progress - this class is set before the content is copied and
   // removed after copying is done to mitigate whitespace-related issues.
   code[data-md-copying] {
+    display: block;
 
     // Temporarily remove highlighted lines - see https://bit.ly/32iVGWh
     .hll {

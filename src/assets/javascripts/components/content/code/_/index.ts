@@ -385,9 +385,15 @@ export function mountCodeBlock(
                 // of the next big things when merging one of the next goals.
                 // we need to unify how offsets are computed for tooltips and
                 // make the whole experience smoother.
-                // @ts-ignore
-                const top = 48 + 16 + anchor.offsetParent!.offsetTop
-                window.scrollTo({ top })
+                setTimeout(() => {
+                  let tmp = anchor
+                  let top = -(48 + 16)
+                  while (tmp !== document.body) {
+                    top += tmp.offsetTop
+                    tmp  = tmp.offsetParent as HTMLElement
+                  }
+                  window.scrollTo({ top })
+                }, 1)
               }
             }
           })
