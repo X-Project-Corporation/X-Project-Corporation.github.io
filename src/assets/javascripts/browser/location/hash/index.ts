@@ -42,7 +42,7 @@ import { h } from "~/utilities"
  * @returns Location hash
  */
 export function getLocationHash(): string {
-  return location.hash.substring(1)
+  return location.hash.slice(1)
 }
 
 /**

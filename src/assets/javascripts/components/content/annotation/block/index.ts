@@ -43,13 +43,13 @@ interface MountOptions {
  * ------------------------------------------------------------------------- */
 
 /**
- * Find candidate list element directly following a block
+ * Find list element directly following a block
  *
  * @param el - Annotation block element
  *
  * @returns List element or nothing
  */
-function findCandidateList(el: HTMLElement): HTMLElement | undefined {
+function findList(el: HTMLElement): HTMLElement | undefined {
   if (el.nextElementSibling) {
     const sibling = el.nextElementSibling as HTMLElement
     if (sibling.tagName === "OL")
@@ -57,7 +57,7 @@ function findCandidateList(el: HTMLElement): HTMLElement | undefined {
 
     /* Skip empty paragraphs - see https://bit.ly/3r4ZJ2O */
     else if (sibling.tagName === "P" && !sibling.children.length)
-      return findCandidateList(sibling)
+      return findList(sibling)
   }
 
   /* Everything else */
@@ -80,10 +80,9 @@ export function mountAnnotationBlock(
   el: HTMLElement, options: MountOptions
 ): Observable<Component<Annotation>> {
   return defer(() => {
-    const list = findCandidateList(el)
-    if (typeof list !== "undefined") {
-      return mountAnnotationList(list, el, options)
-    }
-    return EMPTY
+    const list = findList(el)
+    return typeof list !== "undefined"
+      ? mountAnnotationList(list, el, options)
+      : EMPTY
   })
 }

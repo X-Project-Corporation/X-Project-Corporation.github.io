@@ -25,27 +25,47 @@ import {
   EMPTY,
   Observable,
   Subject,
+  asyncScheduler,
   defer,
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
   finalize,
+  from,
+  fromEvent,
   map,
+  merge,
+  mergeMap,
   mergeWith,
+  observeOn,
+  scan,
+  share,
+  shareReplay,
+  startWith,
   switchMap,
   take,
   takeLast,
   takeUntil,
-  tap
+  tap,
+  withLatestFrom
 } from "rxjs"
 
 import { feature } from "~/_"
 import {
+  getElement,
   getElementContentSize,
+  getElements,
+  getOptionalElement,
+  watchElementHover,
   watchElementSize,
-  watchElementVisibility
+  watchElementVisibility,
+  watchLocationHash
 } from "~/browser"
-import { renderClipboardButton } from "~/templates"
+import {
+  renderClipboardButton,
+  renderCodeBlockNavigation,
+  renderSelectionButton
+} from "~/templates"
 
 import { Component } from "../../../_"
 import {
@@ -64,9 +84,11 @@ import {
 /**
  * Code block
  */
-export interface CodeBlock {
+export interface Overflow {
   scrollable: boolean                  /* Code block overflows */
 }
+
+export type CodeBlock = Overflow | Annotation | Tooltip
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -89,18 +111,34 @@ interface MountOptions {
  */
 let sequence = 0
 
+/**
+ * Shift-key observable - @todo consolidate with keyboard observable
+ */
+const shift$ = merge(
+  fromEvent(window, "keydown").pipe(map(() => true)),
+  merge(
+    fromEvent(window, "keyup"),
+    fromEvent(window, "contextmenu")
+  )
+    .pipe(map(() => false))
+)
+  .pipe(
+    startWith(false),
+    shareReplay(1)
+  )
+
 /* ----------------------------------------------------------------------------
  * Helper functions
  * ------------------------------------------------------------------------- */
 
 /**
- * Find candidate list element directly following a code block
+ * Find list element directly following a code block
  *
  * @param el - Code block element
  *
  * @returns List element or nothing
  */
-function findCandidateList(el: HTMLElement): HTMLElement | undefined {
+function findList(el: HTMLElement): HTMLElement | undefined {
   if (el.nextElementSibling) {
     const sibling = el.nextElementSibling as HTMLElement
     if (sibling.tagName === "OL")
@@ -108,7 +146,7 @@ function findCandidateList(el: HTMLElement): HTMLElement | undefined {
 
     /* Skip empty paragraphs - see https://bit.ly/3r4ZJ2O */
     else if (sibling.tagName === "P" && !sibling.children.length)
-      return findCandidateList(sibling)
+      return findList(sibling)
   }
 
   /* Everything else */
@@ -131,7 +169,7 @@ function findCandidateList(el: HTMLElement): HTMLElement | undefined {
  */
 export function watchCodeBlock(
   el: HTMLElement
-): Observable<CodeBlock> {
+): Observable<Overflow> {
   return watchElementSize(el)
     .pipe(
       map(({ width }) => {
@@ -164,12 +202,12 @@ export function watchCodeBlock(
  */
 export function mountCodeBlock(
   el: HTMLElement, options: MountOptions
-): Observable<Component<CodeBlock | Annotation | Tooltip>> {
+): Observable<Component<CodeBlock>> {
   const { matches: hover } = matchMedia("(hover)")
 
   /* Defer mounting of code block - see https://bit.ly/3vHVoVD */
   const factory$ = defer(() => {
-    const push$ = new Subject<CodeBlock>()
+    const push$ = new Subject<Overflow>()
     const done$ = push$.pipe(takeLast(1))
     push$.subscribe(({ scrollable }) => {
       if (scrollable && hover)
@@ -178,27 +216,11 @@ export function mountCodeBlock(
         el.removeAttribute("tabindex")
     })
 
-    /* Render button for Clipboard.js integration */
-    let tooltip: Observable<Component<Tooltip>> = EMPTY
-    if (ClipboardJS.isSupported()) {
-      if (el.closest(".copy") || (
-        feature("content.code.copy") && !el.closest(".no-copy")
-      )) {
-        const parent = el.closest("pre")!
-        parent.id = `__code_${++sequence}`
-
-        /* Mount tooltip, if enabled */
-        const button = renderClipboardButton(parent.id)
-        parent.insertBefore(button, el)
-        if (feature("content.tooltips"))
-          tooltip = mountTooltip(button)
-      }
-    }
-
-    /* Handle code annotations */
+    /* Handle code annotations and highlights */
+    const content$: Array<Observable<Component<CodeBlock>>> = []
     const container = el.closest(".highlight")
     if (container instanceof HTMLElement) {
-      const list = findCandidateList(container)
+      const list = findList(container)
 
       /* Mount code annotations, if enabled */
       if (typeof list !== "undefined" && (
@@ -206,25 +228,248 @@ export function mountCodeBlock(
         feature("content.code.annotate")
       )) {
         const annotations$ = mountAnnotationList(list, el, options)
+        content$.push(
+          watchElementSize(container)
+            .pipe(
+              takeUntil(done$),
+              map(({ width, height }) => width && height),
+              distinctUntilChanged(),
+              switchMap(active => active ? annotations$ : EMPTY)
+            )
+        )
+      }
+    }
 
-        /* Create and return component */
-        return watchCodeBlock(el)
+    // Code block sequence number
+    const id = sequence++
+
+    const buttons: HTMLElement[] = []
+    const parent = el.closest("pre")!
+    parent.id = `__code_${id}`
+
+    // @todo: refactor and move into separate component
+
+    /* Check if code block has line spans */
+    const spans = getElements(":scope > span[id]", el)
+    if (spans.length) {
+      el.classList.add("md-code__content")
+
+      /* Mount code selection */
+      if (el.closest(".select") || (
+        feature("content.code.select") && !el.closest(".no-select")
+      )) {
+        const base = +spans[0].id.split("-").pop()!
+
+        /* Mount tooltip, if enabled */
+        const button = renderSelectionButton()
+        buttons.push(button)
+        if (feature("content.tooltips"))
+          content$.push(mountTooltip(button))
+
+        /* Selection state */
+        const select$ = fromEvent(button, "click")
           .pipe(
-            tap(state => push$.next(state)),
-            finalize(() => push$.complete()),
-            map(state => ({ ref: el, ...state })),
-            mergeWith(
-              tooltip,
-              watchElementSize(container)
-                .pipe(
-                  takeUntil(done$),
-                  map(({ width, height }) => width && height),
-                  distinctUntilChanged(),
-                  switchMap(active => active ? annotations$ : EMPTY)
-                )
+            scan(active => !active, false),
+            tap(() => button.blur()),
+            share()
+          )
+
+        /* Toggle active selection state on button */
+        select$.subscribe(active => {
+          button.classList.toggle("md-code__button--active", active)
+        })
+
+        /* Observable that monitors hovering */
+        const hover$ = from(spans)
+          .pipe(
+            mergeMap(span => watchElementHover(span)
+              .pipe(
+                map(active => [span, active] as const)
+              )
             )
           )
+
+        /* Trigger hover selection state based on state */
+        select$
+          .pipe(
+            switchMap(active => active ? hover$ : EMPTY)
+          )
+            .subscribe(([span, active]) => {
+              // @todo: don't mutate, but wrap everything in selection elements
+              const highlight = getOptionalElement(".hll.select", span)
+              if (highlight && !active) {
+                highlight.replaceWith(...Array.from(highlight.childNodes))
+              } else if (!highlight && active) {
+                const hll = document.createElement("span")
+                hll.className = "hll select"
+                hll.append(...Array.from(span.childNodes).slice(1))
+                span.append(hll)
+              }
+            })
+
+        // @todo: use a single event handler and consolidate events
+        const click$ = from(spans)
+          .pipe(
+            mergeMap(span => fromEvent(span, "mousedown")
+              .pipe(
+                tap(ev => ev.preventDefault()),
+                map(() => span)
+              )
+            )
+          )
+
+        const range$ = select$
+          .pipe(
+            switchMap(active => active ? click$ : EMPTY),
+            withLatestFrom(shift$),
+            map(([span, shift]) => {
+
+              /* Determine focused line number */
+              const active = spans.indexOf(span) + base
+              if (shift === false) {
+                return [active, active] as const
+
+                /* Shift is pressed, so extend selection */
+              } else {
+                const range = getElements(".hll", el)
+                  .map(line => spans.indexOf(line.parentElement!) + base)
+
+                // Hack: this is a side effect, but we need to remove all ranges
+                // or rendering might look weird.
+                window.getSelection()?.removeAllRanges()
+
+                /* Return range */
+                return [
+                  Math.min(active, ...range),
+                  Math.max(active, ...range)
+                ] as const
+              }
+            })
+          )
+
+        // Currently, all mounted code blocks will receive this event. That#s
+        // not ideal, since we should handle this higher up the tree
+        const hash$ = watchLocationHash()
+          .pipe(
+            // @todo: make more resilient
+            filter(hash => hash.startsWith(`__codelineno-${id}-`))
+          )
+
+        hash$.subscribe(hash => {
+          const [, , line] = hash.split("-")
+          const range = line.split(":").map(value => +value - base + 1)
+          if (range.length === 1)
+            range.push(range[0])
+
+          // remove all existing, then set range...
+          for (const span of getElements(".hll:not(.select)", el)) {
+            span.replaceWith(...Array.from(span.childNodes))
+          }
+
+          // set new range @todo move this into one block
+          const selection = spans.slice(range[0] - 1, range[1])
+          for (const span of selection) {
+            const hll = document.createElement("span")
+            hll.className = "hll"
+            hll.append(...Array.from(span.childNodes).slice(1))
+            span.append(hll)
+          }
+        })
+
+        hash$.pipe(take(1), observeOn(asyncScheduler))
+          .subscribe(hash => {
+            if (hash.includes(":")) {
+              const anchor = document.getElementById(hash.split(":")[0])
+              if (anchor) {
+                // this is a hack - we will refactor anchor / targetting as one
+                // of the next big things when merging one of the next goals.
+                // we need to unify how offsets are computed for tooltips and
+                // make the whole experience smoother.
+                // @ts-ignore
+                const top = 48 + 16 + anchor.offsetParent!.offsetTop
+                window.scrollTo({ top })
+              }
+            }
+          })
+
+        /* Allow selection via anchor links */
+        const jump$ = from(
+          getElements("a[href^=\"#__codelineno\"]", container!)
+        )
+          .pipe(
+            mergeMap(anchor => fromEvent(anchor, "click")
+              .pipe(
+                tap(ev => ev.preventDefault()),
+                map(() => anchor as HTMLAnchorElement)
+              )
+            )
+          )
+
+        /* Determine next highlighted lines */
+        const next$ = jump$
+          .pipe(
+            takeUntil(done$),
+            withLatestFrom(shift$),
+            map(([anchor, shift]) => {
+              const target = getElement(`[id="${anchor.hash.slice(1)}"]`)!
+
+              /* Determine focused line number */
+              const active = +target.parentElement!.id.split("-").pop()!
+              if (shift === false) {
+                return [active, active] as const
+
+              /* Shift is pressed, so extend selection */
+              } else {
+                const range = getElements(".hll", el)
+                  .map(line => +line.parentElement!.id.split("-").pop()!)
+
+                /* Return range */
+                return [
+                  Math.min(active, ...range),
+                  Math.max(active, ...range)
+                ] as const
+              }
+            })
+          )
+
+        // Push selection to URL
+        merge(range$, next$).subscribe(range => {
+          // @todo: improve resilience, so we're not dependent on class names
+          let hash = `#__codelineno-${id}-`
+          if (range[0] === range[1]) {
+            hash += range[0]
+          } else {
+            hash += `${range[0]}:${range[1]}`
+          }
+          history.replaceState({}, "", hash)
+          // @hack dispatch artificial hashchange event
+          window.dispatchEvent(new HashChangeEvent("hashchange", {
+            newURL: window.location.origin + window.location.pathname + hash,
+            oldURL: window.location.href
+          }))
+        })
       }
+    }
+
+    /* Render button for Clipboard.js integration */
+    if (ClipboardJS.isSupported()) {
+      if (el.closest(".copy") || (
+        feature("content.code.copy") && !el.closest(".no-copy")
+      )) {
+
+        /* Mount tooltip, if enabled */
+        const button = renderClipboardButton(parent.id)
+        buttons.push(button)
+        if (feature("content.tooltips"))
+          content$.push(mountTooltip(button))
+      }
+    }
+
+    // @hack Render code navigation and buttons
+    if (buttons.length) {
+      const nav = renderCodeBlockNavigation()
+      nav.append(...buttons)
+      parent.insertBefore(nav, el)
     }
 
     /* Create and return component */
@@ -233,7 +478,7 @@ export function mountCodeBlock(
         tap(state => push$.next(state)),
         finalize(() => push$.complete()),
         map(state => ({ ref: el, ...state })),
-        mergeWith(tooltip),
+        mergeWith(...content$),
       )
   })
 

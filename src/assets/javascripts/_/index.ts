@@ -33,6 +33,7 @@ export type Flag =
   | "announce.dismiss"                 /* Dismissable announcement bar */
   | "content.code.annotate"            /* Code annotations */
   | "content.code.copy"                /* Code copy button */
+  | "content.code.select"              /* Code selection */
   | "content.lazy"                     /* Lazy content elements */
   | "content.tabs.link"                /* Link content tabs */
   | "content.tooltips"                 /* Tooltips */

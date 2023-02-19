@@ -33,14 +33,16 @@ import {
 } from "../annotation"
 import {
   CodeBlock,
-  Mermaid,
-  mountCodeBlock,
-  mountMermaid
+  mountCodeBlock
 } from "../code"
 import {
   Details,
   mountDetails
 } from "../details"
+import {
+  Mermaid,
+  mountMermaid
+} from "../mermaid"
 import {
   DataTable,
   mountDataTable

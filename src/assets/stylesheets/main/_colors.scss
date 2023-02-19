@@ -69,9 +69,13 @@
   // Code color shades
   --md-code-fg-color:                  hsla(200, 18%, 26%, 1);
   --md-code-bg-color:                  hsla(0, 0%, 96%, 1);
+  --md-code-bg-color--light:           hsla(0, 0%, 96%, 0.7);
 
   // Code highlighting color shades
-  --md-code-hl-color:                  hsla(#{hex2hsl($clr-yellow-a200)}, 0.5);
+  --md-code-hl-color:                  hsla(#{hex2hsl($clr-blue-a200)}, 1);
+  --md-code-hl-color--light:           hsla(#{hex2hsl($clr-blue-a200)}, 0.1);
+
+  // Code highlighting syntax color shades
   --md-code-hl-number-color:           hsla(0, 67%, 50%, 1);
   --md-code-hl-special-color:          hsla(340, 83%, 47%, 1);
   --md-code-hl-function-color:         hsla(291, 45%, 50%, 1);

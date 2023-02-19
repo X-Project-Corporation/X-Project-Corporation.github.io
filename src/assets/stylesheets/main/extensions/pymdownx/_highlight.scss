@@ -161,7 +161,8 @@
     display: block;
     margin: 0 px2em(-16px, 13.6px);
     padding: 0 px2em(16px, 13.6px);
-    background-color: var(--md-code-hl-color);
+    background-color: var(--md-code-hl-color--light);
+    box-shadow: 2px 0 0 0 var(--md-code-hl-color) inset;
   }
 
   // Code block title
@@ -287,7 +288,6 @@
 
   // Code block line numbers container
   .linenodiv {
-    padding-right: px2em(8px, 13.6px);
     box-shadow: px2rem(-1px) 0 var(--md-default-fg-color--lightest) inset;
 
     // Adjust colors and alignment
@@ -295,6 +295,19 @@
       color: var(--md-default-fg-color--light);
       text-align: right;
     }
+
+    // Adjust spacing
+    span[class] {
+      padding-right: px2em(8px, 13.6px);
+    }
+
+    // .active {
+    //   display: inline-block;
+    //   background-color: var(--md-code-hl-color--light);
+    //   margin-left: -1.1764705882em; // @todo source correct values
+    //   padding-left: 1.1764705882em;
+    //   font-weight: bold;
+    // }
   }
 
   // Code block container - stretch to remaining space
