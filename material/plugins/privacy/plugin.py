@@ -312,7 +312,12 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 # Set `rel=noopener` if link opens in a new window
                 if self.config.external_links_noopener:
                     if el.get("target") == "_blank":
-                        el.set("rel", "noopener")
+                        rel = re.findall(r"\S+", el.get("rel", ""))
+                        if "noopener" not in rel:
+                            rel.append("noopener")
+
+                        # Set relationships after adding noopener
+                        el.set("rel", " ".join(rel))
 
             # Handle external style sheet or preconnect hint
             if el.tag == "link":
