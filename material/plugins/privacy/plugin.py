@@ -302,7 +302,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
         # Replace callback
         def replace(match: Match):
-            el: HtmlElement = fragment_fromstring(match.group().encode("utf-8"))
+            el: HtmlElement = fragment_fromstring(match.group())
 
             # Handle external link
             if self.config.external_links and el.tag == "a":
@@ -316,7 +316,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                         if "noopener" not in rel:
                             rel.append("noopener")
 
-                        # Set relationships after adding noopener
+                        # Set relationships after adding `noopener`
                         el.set("rel", " ".join(rel))
 
             # Handle external style sheet or preconnect hint
