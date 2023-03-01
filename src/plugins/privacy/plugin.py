@@ -149,7 +149,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             r"<img[^>]+src=['\"]?http[^>]+>",
             html, re.I | re.M
         ):
-            el: HtmlElement = fragment_fromstring(match.encode("utf-8"))
+            encoded = match.encode("unicode_escape")
+            el: HtmlElement = fragment_fromstring(encoded)
 
             # Create and enqueue job to fetch external image
             url = urlparse(el.get("src"))
@@ -302,7 +303,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
         # Replace callback
         def replace(match: Match):
-            el: HtmlElement = fragment_fromstring(match.group())
+            encoded = match.group().encode("unicode_escape")
+            el: HtmlElement = fragment_fromstring(encoded)
 
             # Handle external link
             if self.config.external_links and el.tag == "a":
@@ -342,11 +344,12 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                     el.set("src", resolve(file))
 
             # Return void or opening tag as string, strip closing tag
+            decoded = tostring(el).decode("unicode_escape")
             if el.tag in void:
-                return tostring(el, encoding = "unicode")
+                return decoded
             else:
                 tail = 3 + len(el.tag)
-                return tostring(el, encoding = "unicode")[:-tail]
+                return decoded[:-tail]
 
         # Find and replace all external asset URLs in current page
         return re.sub(
