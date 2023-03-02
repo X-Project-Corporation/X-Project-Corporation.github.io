@@ -354,7 +354,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         # Find and replace all external asset URLs in current page
         return re.sub(
             r"<(?:(?:a|link)[^>]+href|(?:script|img)[^>]+src)=['\"]?http[^>]+>",
-            replace, output, re.I | re.M | re.U
+            replace, output, flags = re.I | re.U | re.M
         )
 
     # -------------------------------------------------------------------------
