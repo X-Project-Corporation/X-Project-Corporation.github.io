@@ -34,8 +34,8 @@
 // Navigation path (breadcrumbs)
 .md-path {
   display: block;
-  margin: 0 px2rem(16px);
   padding-top: px2rem(24px);
+  margin: 0 px2rem(16px);
   overflow: auto;
   font-size: px2rem(14px);
 
@@ -49,8 +49,8 @@
     display: flex;
     gap: px2rem(4px);
     align-items: center;
-    margin: 0;
     padding: 0;
+    margin: 0;
     list-style: none;
   }
 
@@ -65,9 +65,9 @@
       display: inline;
       width: px2rem(16px);
       height: px2rem(16px);
-      mask-image: var(--md-path-icon);
-      background-color: var(--md-default-fg-color--lighter);
       content: "";
+      background-color: var(--md-default-fg-color--lighter);
+      mask-image: var(--md-path-icon);
     }
   }
 

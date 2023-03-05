@@ -30,8 +30,8 @@
   // Grid container
   .grid {
     display: grid;
-    grid-gap: px2rem(8px);
     grid-template-columns: repeat(auto-fit, minmax(#{px2rem(320px)}, 1fr));
+    grid-gap: px2rem(8px);
     margin: 1em 0;
 
     // Grid card container - if all grid items should render as cards, the
@@ -46,8 +46,8 @@
     &.cards > :is(ul, ol) > li,
     > .card {
       display: block;
-      margin: 0;
       padding: px2rem(16px);
+      margin: 0;
       border: px2rem(1px) solid var(--md-default-fg-color--lightest);
       border-radius: px2rem(2px);
       transition:
