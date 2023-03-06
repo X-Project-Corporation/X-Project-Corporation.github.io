@@ -294,6 +294,7 @@ kbd {
   abbr {
     text-decoration: none;
     cursor: help;
+    border-bottom: px2rem(1px) dotted var(--md-default-fg-color--light);
   }
 
   // Small text
