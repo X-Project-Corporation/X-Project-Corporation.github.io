@@ -21,9 +21,9 @@
 -->
 
 <!-- Render navigation link content -->
-{% macro render_content(nav_item, ref = nav_item) %}
+{% macro render_content(nav_item) %}
   <span class="md-ellipsis">
-    {{ ref.title }}
+    {{ nav_item.title }}
   </span>
 {% endmacro %}
 
@@ -42,9 +42,7 @@
     {% else %}
       <li class="md-path__item">
         <a href="{{ first.url | url }}" class="md-path__link">
-          <span class="md-ellipsis">
-            {{ ref.title }}
-          </span>
+          {{ render_content(ref) }}
         </a>
       </li>
     {% endif %}
@@ -53,9 +51,7 @@
   {% else %}
     <li class="md-path__item">
       <a href="{{ nav_item.url | url }}" class="md-path__link">
-        <span class="md-ellipsis">
-          {{ ref.title }}
-        </span>
+        {{ render_content(ref) }}
       </a>
     </li>
   {% endif %}
