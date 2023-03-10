@@ -93,7 +93,7 @@ export function patchEllipsis(
     )
       .subscribe()
 
-  /* @todo move this outside of here and fix memleaks */
+  // @todo move this outside of here and fix memleaks
   document$
     .pipe(
       switchMap(() => getElements(".md-status")),
