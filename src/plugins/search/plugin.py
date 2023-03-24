@@ -308,7 +308,7 @@ class SearchIndex:
     def _segment_chinese(self, data):
         expr = re.compile(r"(\p{IsHan}+)", re.UNICODE)
 
-        # Replacement callback
+        # Replace callback
         def replace(match):
             value = match.group(0)
 

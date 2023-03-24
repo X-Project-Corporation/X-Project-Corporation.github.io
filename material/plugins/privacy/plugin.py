@@ -213,7 +213,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         # Spawn concurrent job to patch all links to dependent external asset
         # in all style sheet and script files
         for file in self.external:
-            _, extension = os.path.splitext(file.dest_uri)
+            _, extension = posixpath.splitext(file.dest_uri)
             if extension in [".css", ".js"]:
                 self.pool_jobs.append(self.pool.submit(
                     self._patch, file
@@ -278,12 +278,12 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     # Parse and extract all external assets from a media file using a preset
     # regular expression, and return all URLs found.
     def _parse_media(self, initiator: File) -> "list[URL]":
-        _, extension = os.path.splitext(initiator.dest_uri)
+        _, extension = posixpath.splitext(initiator.dest_uri)
         if extension not in self.external_expr:
             return []
 
         # Find and extract all external asset URLs
-        expr = re.compile(self.external_expr[extension], re.I | re.M)
+        expr = re.compile(self.external_expr[extension], flags = re.I | re.M)
         with open(initiator.abs_src_path, encoding = "utf-8") as f:
             return [urlparse(url) for url in re.findall(expr, f.read())]
 
@@ -379,7 +379,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             # known and the concurrent flag is set. In that case, this function
             # is called in a context where no replacements are carried out, so
             # the caller must only ensure to reconcile the concurrent jobs.
-            _, extension = os.path.splitext(url.path)
+            _, extension = posixpath.splitext(url.path)
             if extension and concurrent:
                 self.pool_jobs.append(self.pool.submit(
                     self._fetch, file, config
@@ -471,7 +471,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     def _patch(self, initiator: File):
         with open(initiator.abs_src_path, encoding = "utf-8") as f:
 
-            # Replacement callback
+            # Replace callback
             def replace(match: Match):
                 value = match.group(1)
 
@@ -512,7 +512,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 return match.group().replace(value, url)
 
             # Resolve replacement expression according to asset type
-            _, extension = os.path.splitext(initiator.dest_uri)
+            _, extension = posixpath.splitext(initiator.dest_uri)
             expr = re.compile(self.external_expr[extension], re.I | re.M)
 
             # Resolve links to external assets in file

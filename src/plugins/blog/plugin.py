@@ -760,7 +760,7 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             re.IGNORECASE | re.MULTILINE
         )
 
-        # Replacement callback
+        # Replace callback
         first = True
         def replace(match):
             value = match.group()
