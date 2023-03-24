@@ -359,7 +359,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
     # -------------------------------------------------------------------------
 
-    # Enqueue external for download, if not already done
+    # Enqueue external asset for download, if not already done
     def _queue(self, url: URL, config: MkDocsConfig, concurrent = False):
         path = self._map_url_to_path(url)
         full = posixpath.join(self.config.external_assets_dir, path)
