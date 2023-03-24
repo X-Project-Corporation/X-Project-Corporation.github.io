@@ -63,7 +63,7 @@ class PrivacyPluginConfig(Config):
     assets_expr_map = opt.Type(dict, default = dict())
 
     # Options for external links
-    links = opt.Type(bool, default = True),
+    links = opt.Type(bool, default = True)
     links_attr_map = opt.Type(dict, default = dict())
     links_noopener = opt.Type(bool, default = True)
 
