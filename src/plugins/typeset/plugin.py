@@ -82,12 +82,6 @@ class TypesetPlugin(BasePlugin[TypesetPluginConfig]):
                 if line.startswith("#")
         ]))
 
-        # Find id, typeset content and level for each headline
-        expr = re.compile(
-            r"id=\"([^\"]+).*?>(.*?)<\/h(\d)",
-            re.IGNORECASE | re.MULTILINE
-        )
-
         # Check if page title was set in metadata
         path = page.file.src_uri
         if path not in self.title_map:
@@ -96,9 +90,15 @@ class TypesetPlugin(BasePlugin[TypesetPluginConfig]):
 
         # Flatten anchors and map to headlines
         anchors = _flatten(page.toc.items)
-        for (id, title, level) in expr.findall(html):
+        for (id, title, level) in re.findall(
+            r"id=\"([^\"]+).*?>(.*?)<\/h(\d)",
+            html, flags = re.I | re.M
+        ):
             if id not in anchors:
                 continue
+
+            # Remove author-provided ids - see https://bit.ly/3ngiZea
+            title = re.sub(r"id=\"?[^\">]+\"?", "", title)
 
             # Assign headline content to anchor
             anchors[id].typeset = { "title": title }

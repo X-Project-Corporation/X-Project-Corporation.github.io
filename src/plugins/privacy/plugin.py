@@ -147,7 +147,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         # Find all external images and download them if not excluded
         for match in re.findall(
             r"<img[^>]+src=['\"]?http[^>]+>",
-            html, re.I | re.M
+            html, flags = re.I | re.M
         ):
             encoded = match.encode("unicode_escape")
             el: HtmlElement = fragment_fromstring(encoded)
