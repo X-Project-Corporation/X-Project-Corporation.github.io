@@ -349,7 +349,7 @@ export function mountCodeBlock(
 
         // Currently, all mounted code blocks will receive this event. That#s
         // not ideal, since we should handle this higher up the tree
-        const hash$ = watchLocationHash()
+        const hash$ = watchLocationHash(EMPTY)
           .pipe(
             // @todo: make more resilient
             filter(hash => hash.startsWith(`__codelineno-${id}-`))
