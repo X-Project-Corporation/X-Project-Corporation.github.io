@@ -359,7 +359,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
     # -------------------------------------------------------------------------
 
-    # Enqueue external for download, if not already done
+    # Enqueue external asset for download, if not already done
     def _queue(self, url: URL, config: MkDocsConfig, concurrent = False):
         path = self._map_url_to_path(url)
         full = posixpath.join(self.config.external_assets_dir, path)
@@ -399,11 +399,11 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     # Fetch external asset referenced through the given file
     def _fetch(self, file: File, config: MkDocsConfig):
 
-        # Check if external file needs to be downloaded
+        # Check if external asset needs to be downloaded
         if not os.path.isfile(file.abs_src_path) or not self.config.cache:
             path = file.abs_src_path
 
-            # Download external file
+            # Download external asset
             log.info(f"Downloading external file: {file.url}")
             res = requests.get(file.url, headers = {
 

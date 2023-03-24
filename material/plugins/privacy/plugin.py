@@ -399,11 +399,11 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     # Fetch external asset referenced through the given file
     def _fetch(self, file: File, config: MkDocsConfig):
 
-        # Check if external file needs to be downloaded
+        # Check if external asset needs to be downloaded
         if not os.path.isfile(file.abs_src_path) or not self.config.cache:
             path = file.abs_src_path
 
-            # Download external file
+            # Download external asset
             log.info(f"Downloading external file: {file.url}")
             res = requests.get(file.url, headers = {
 
