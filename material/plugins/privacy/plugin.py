@@ -54,15 +54,28 @@ class PrivacyPluginConfig(Config):
     cache = opt.Type(bool, default = True)
     cache_dir = opt.Type(str, default = ".cache/plugin/privacy")
 
-    # Options for external assets and links
-    external_assets = opt.Choice(("bundle", "report"), default = "bundle")
-    external_assets_dir = opt.Type(str, default = "assets/external")
-    external_assets_include = opt.Type(list, default = [])
-    external_assets_exclude = opt.Type(list, default = [])
-    external_assets_expr = opt.Type(dict, default = dict())
-    external_links = opt.Type(bool, default = True),
-    external_links_attr_map = opt.Type(dict, default = dict())
-    external_links_noopener = opt.Type(bool, default = True)
+    # Options for external assets
+    assets = opt.Type(bool, default = True)
+    assets_dir = opt.Type(str, default = "assets/external")
+    assets_action = opt.Choice(("bundle", "report"), default = "bundle")
+    assets_include = opt.Type(list, default = [])
+    assets_exclude = opt.Type(list, default = [])
+    assets_expr_map = opt.Type(dict, default = dict())
+
+    # Options for external links
+    links = opt.Type(bool, default = True),
+    links_attr_map = opt.Type(dict, default = dict())
+    links_noopener = opt.Type(bool, default = True)
+
+    # Deprecated options
+    external_assets = opt.Deprecated(moved_to = "assets_action")
+    external_assets_dir = opt.Deprecated(moved_to = "assets_dir")
+    external_assets_include = opt.Deprecated(moved_to = "assets_include")
+    external_assets_exclude = opt.Deprecated(moved_to = "assets_exclude")
+    external_assets_expr = opt.Deprecated(moved_to = "assets_expr")
+    external_links = opt.Deprecated(moved_to = "links")
+    external_links_attr_map = opt.Deprecated(moved_to = "links_attr_map")
+    external_links_noopener = opt.Deprecated(moved_to = "links_noopener")
 
 # -----------------------------------------------------------------------------
 
@@ -76,17 +89,17 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         if not self.config.enabled:
             return
 
-        # Initialize thread pool
-        self.pool = ThreadPoolExecutor(self.config.concurrency)
-        self.pool_jobs: list[Future] = []
+        # Initialize external assets thread pool
+        self.assets_pool = ThreadPoolExecutor(self.config.concurrency)
+        self.assets_jobs: list[Future] = []
 
-        # Initialize collection of external assets
-        self.external = Files([])
-        self.external_done: list[File] = []
-        self.external_expr = dict({
+        # Initialize external assets file collections
+        self.assets = Files([])
+        self.assets_done: list[File] = []
+        self.assets_expr_map = dict({
             ".css": r"url\((\s*http?[^)]+)\)",
             ".js": r"[\"'](http[^\"']+\.(?:css|js(?:on)?))[\"']",
-            **self.config.external_assets_expr
+            **self.config.assets_expr_map
         })
 
     # Process external style sheets and scripts (run latest) - run this hook
@@ -94,6 +107,10 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     @event_priority(-100)
     def on_files(self, files, *, config):
         if not self.config.enabled:
+            return
+
+        # Skip if external assets must not be processed
+        if not self.config.assets:
             return
 
         # Find all external style sheet and script files that are provided as
@@ -119,7 +136,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             # The local asset references at least one external asset, which
             # means we must download and replace them later
             if file:
-                self.external.append(initiator)
+                self.assets.append(initiator)
                 files.remove(initiator)
 
         # Process external style sheet and script files, bringing them under
@@ -144,6 +161,10 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         if not self.config.enabled:
             return
 
+        # Skip if external assets must not be processed
+        if not self.config.assets:
+            return
+
         # Find all external images and download them if not excluded
         for match in re.findall(
             r"<img[^>]+src=['\"]?http[^>]+>",
@@ -166,23 +187,27 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
         # Reconcile concurrent jobs and clear thread pool, as we will reuse the
         # same thread pool for fetching all remaining external assets
-        wait(self.pool_jobs)
-        self.pool_jobs.clear()
+        wait(self.assets_jobs)
+        self.assets_jobs.clear()
 
         # Append all downloaded assets that are not style sheets or scripts to
         # MkDocs's collection of files, making them available to other plugins
         # for further processing. The remaining exteral assets are patched
         # before copying, which is done at the end of the build process.
-        for file in self.external:
+        for file in self.assets:
             _, extension = posixpath.splitext(file.dest_uri)
             if extension not in [".css", ".js"]:
-                self.external_done.append(file)
+                self.assets_done.append(file)
                 files.append(file)
 
     # Process external assets in template (run later)
     @event_priority(-50)
     def on_post_template(self, output_content, *, template_name, config):
-        if not self.config.enabled or not template_name.endswith(".html"):
+        if not self.config.enabled:
+            return
+
+        # Skip sitemap.xml and other non-HTML files
+        if not template_name.endswith(".html"):
             return
 
         # Parse and replace links to external assets in template
@@ -207,26 +232,26 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
         # Reconcile concurrent jobs and clear thread pool, as we will reuse the
         # same thread pool for patching all links to external assets
-        wait(self.pool_jobs)
-        self.pool_jobs.clear()
+        wait(self.assets_jobs)
+        self.assets_jobs.clear()
 
         # Spawn concurrent job to patch all links to dependent external asset
         # in all style sheet and script files
-        for file in self.external:
+        for file in self.assets:
             _, extension = posixpath.splitext(file.dest_uri)
             if extension in [".css", ".js"]:
-                self.pool_jobs.append(self.pool.submit(
+                self.assets_jobs.append(self.assets_pool.submit(
                     self._patch, file
                 ))
 
             # Otherwise, just copy external asset to output directory, if we
             # haven't handed control to MkDocs in `on_env` before
-            elif file not in self.external_done:
+            elif file not in self.assets_done:
                 file.copy_file()
 
         # Reconcile concurrent jobs for the last time, so the plugins following
         # in the build process always have a consistent state to work with
-        wait(self.pool_jobs)
+        wait(self.assets_jobs)
 
     # -------------------------------------------------------------------------
 
@@ -240,6 +265,10 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         if not self._is_external(url):
             return True
 
+        # Skip if external assets must not be processed
+        if not self.config.assets:
+            return True
+
         # If initiator is given, format for printing
         via = ""
         if initiator:
@@ -250,8 +279,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             ])
 
         # Check if URL matches one of the inclusion patterns
-        if self.config.external_assets_include:
-            for pattern in self.config.external_assets_include:
+        if self.config.assets_include:
+            for pattern in self.config.assets_include:
                 if fnmatch(self._map_url_to_path(url), pattern):
                     return False
 
@@ -260,13 +289,13 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             return True
 
         # Check if URL matches one of the exclusion patterns
-        for pattern in self.config.external_assets_exclude:
+        for pattern in self.config.assets_exclude:
             if fnmatch(self._map_url_to_path(url), pattern):
                 log.debug(f"Excluding external file: {url.geturl()} {via}")
                 return True
 
         # Report external assets if bundling is not enabled
-        if self.config.external_assets == "report":
+        if self.config.assets_action == "report":
             log.warning(f"External file: {url.geturl()} {via}")
             return True
 
@@ -279,11 +308,11 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     # regular expression, and return all URLs found.
     def _parse_media(self, initiator: File) -> "list[URL]":
         _, extension = posixpath.splitext(initiator.dest_uri)
-        if extension not in self.external_expr:
+        if extension not in self.assets_expr_map:
             return []
 
         # Find and extract all external asset URLs
-        expr = re.compile(self.external_expr[extension], flags = re.I | re.M)
+        expr = re.compile(self.assets_expr_map[extension], flags = re.I | re.M)
         with open(initiator.abs_src_path, encoding = "utf-8") as f:
             return [urlparse(url) for url in re.findall(expr, f.read())]
 
@@ -307,12 +336,12 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             el: HtmlElement = fragment_fromstring(encoded)
 
             # Handle external link
-            if self.config.external_links and el.tag == "a":
-                for key, value in self.config.external_links_attr_map.items():
+            if self.config.links and el.tag == "a":
+                for key, value in self.config.links_attr_map.items():
                     el.set(key, value)
 
                 # Set `rel=noopener` if link opens in a new window
-                if self.config.external_links_noopener:
+                if self.config.links_noopener:
                     if el.get("target") == "_blank":
                         rel = re.findall(r"\S+", el.get("rel", ""))
                         if "noopener" not in rel:
@@ -362,10 +391,10 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     # Enqueue external asset for download, if not already done
     def _queue(self, url: URL, config: MkDocsConfig, concurrent = False):
         path = self._map_url_to_path(url)
-        full = posixpath.join(self.config.external_assets_dir, path)
+        full = posixpath.join(self.config.assets_dir, path)
 
         # Try to retrieve existing file
-        file = self.external.get_file_from_path(full)
+        file = self.assets.get_file_from_path(full)
         if not file:
 
             # Compute path to external asset, which is sourced from the cache
@@ -381,7 +410,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             # the caller must only ensure to reconcile the concurrent jobs.
             _, extension = posixpath.splitext(url.path)
             if extension and concurrent:
-                self.pool_jobs.append(self.pool.submit(
+                self.assets_jobs.append(self.assets_pool.submit(
                     self._fetch, file, config
                 ))
 
@@ -391,7 +420,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 self._fetch(file, config)
 
             # Register external asset as file
-            self.external.append(file)
+            self.assets.append(file)
 
         # Return file associated with external asset
         return file
@@ -477,16 +506,16 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
                 # Map URL to canonical path
                 path = self._map_url_to_path(urlparse(value))
-                full = posixpath.join(self.config.external_assets_dir, path)
+                full = posixpath.join(self.config.assets_dir, path)
 
                 # Try to retrieve existing file
-                file = self.external.get_file_from_path(full)
+                file = self.assets.get_file_from_path(full)
                 if not file:
                     name = os.readlink(os.path.join(self.config.cache_dir, full))
                     full = posixpath.join(posixpath.dirname(full), name)
 
                     # Try again after resolving symlink
-                    file = self.external.get_file_from_path(full)
+                    file = self.assets.get_file_from_path(full)
 
                 # This can theoretically never happen, as we're sure that we
                 # only replace files that we successfully extracted. However,
@@ -513,7 +542,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
             # Resolve replacement expression according to asset type
             _, extension = posixpath.splitext(initiator.dest_uri)
-            expr = re.compile(self.external_expr[extension], re.I | re.M)
+            expr = re.compile(self.assets_expr_map[extension], re.I | re.M)
 
             # Resolve links to external assets in file
             utils.write_file(
@@ -547,7 +576,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     # Create a file for the given path
     def _generate_file(self, path: str, config: MkDocsConfig):
         return File(
-            posixpath.join(self.config.external_assets_dir, path),
+            posixpath.join(self.config.assets_dir, path),
             os.path.abspath(self.config.cache_dir),
             config.site_dir,
             False
