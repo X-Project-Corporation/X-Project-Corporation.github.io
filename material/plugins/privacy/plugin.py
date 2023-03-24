@@ -56,8 +56,8 @@ class PrivacyPluginConfig(Config):
 
     # Options for external assets
     assets = opt.Type(bool, default = True)
-    assets_dir = opt.Type(str, default = "assets/external")
-    assets_action = opt.Choice(("bundle", "report"), default = "bundle")
+    assets_fetch = opt.Type(bool, default = True)
+    assets_fetch_dir = opt.Type(str, default = "assets/external")
     assets_include = opt.Type(list, default = [])
     assets_exclude = opt.Type(list, default = [])
     assets_expr_map = opt.Type(dict, default = dict())
@@ -68,8 +68,8 @@ class PrivacyPluginConfig(Config):
     links_noopener = opt.Type(bool, default = True)
 
     # Deprecated options
-    external_assets = opt.Deprecated(moved_to = "assets_action")
-    external_assets_dir = opt.Deprecated(moved_to = "assets_dir")
+    external_assets = opt.Deprecated(message = "Deprecated, use 'assets_fetch'")
+    external_assets_dir = opt.Deprecated(moved_to = "assets_fetch_dir")
     external_assets_include = opt.Deprecated(moved_to = "assets_include")
     external_assets_exclude = opt.Deprecated(moved_to = "assets_exclude")
     external_assets_expr = opt.Deprecated(moved_to = "assets_expr_map")
@@ -294,8 +294,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
                 log.debug(f"Excluding external file: {url.geturl()} {via}")
                 return True
 
-        # Report external assets if bundling is not enabled
-        if self.config.assets_action == "report":
+        # Print warning if fetching is not enabled
+        if not self.config.assets_fetch:
             log.warning(f"External file: {url.geturl()} {via}")
             return True
 
@@ -391,7 +391,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     # Enqueue external asset for download, if not already done
     def _queue(self, url: URL, config: MkDocsConfig, concurrent = False):
         path = self._map_url_to_path(url)
-        full = posixpath.join(self.config.assets_dir, path)
+        full = posixpath.join(self.config.assets_fetch_dir, path)
 
         # Try to retrieve existing file
         file = self.assets.get_file_from_path(full)
@@ -506,7 +506,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
                 # Map URL to canonical path
                 path = self._map_url_to_path(urlparse(value))
-                full = posixpath.join(self.config.assets_dir, path)
+                full = posixpath.join(self.config.assets_fetch_dir, path)
 
                 # Try to retrieve existing file
                 file = self.assets.get_file_from_path(full)
@@ -576,7 +576,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
     # Create a file for the given path
     def _generate_file(self, path: str, config: MkDocsConfig):
         return File(
-            posixpath.join(self.config.assets_dir, path),
+            posixpath.join(self.config.assets_fetch_dir, path),
             os.path.abspath(self.config.cache_dir),
             config.site_dir,
             False
