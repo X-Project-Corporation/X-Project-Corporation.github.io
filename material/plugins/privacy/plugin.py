@@ -72,7 +72,7 @@ class PrivacyPluginConfig(Config):
     external_assets_dir = opt.Deprecated(moved_to = "assets_dir")
     external_assets_include = opt.Deprecated(moved_to = "assets_include")
     external_assets_exclude = opt.Deprecated(moved_to = "assets_exclude")
-    external_assets_expr = opt.Deprecated(moved_to = "assets_expr")
+    external_assets_expr = opt.Deprecated(moved_to = "assets_expr_map")
     external_links = opt.Deprecated(moved_to = "links")
     external_links_attr_map = opt.Deprecated(moved_to = "links_attr_map")
     external_links_noopener = opt.Deprecated(moved_to = "links_noopener")
