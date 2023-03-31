@@ -235,6 +235,9 @@ export function emojiCursor(options) {
   }
 }
 
-emojiCursor({
-  emoji: ["😀", "😂", "🤓", "😊", "😶‍🌫️", "🥹", "🥸", "😱", "😆", "😏"]
-})
+const date = new Date()
+if (date.toISOString().startsWith("2023-04-01")) {
+  emojiCursor({
+    emoji: ["😀", "😂", "🤓", "😊", "😶‍🌫️", "🥹", "🥸", "😱", "😆", "😏"]
+  })
+}
