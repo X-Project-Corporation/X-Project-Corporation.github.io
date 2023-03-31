@@ -58,9 +58,15 @@
 </p>
 
 <h2></h2>
+<p id="premium-sponsors">&nbsp;</p>
+<p align="center"><strong>Silver sponsors</strong></p>
+<p align="center">
+  <a href="https://fastapi.tiangolo.com/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-fastapi.png" height="120"
+  /></a>
+</p>
 <p>&nbsp;</p>
-<p id="premium-sponsors" align="center"><strong>Special thanks</strong> to our <strong>premium sponsors</strong>:</p>
-<p>&nbsp;</p>
+<p align="center"><strong>Bronze sponsors</strong></p>
 <p align="center">
   <a href="https://cirrus-ci.org/" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-cirrus-ci.png" height="58"
@@ -239,6 +245,7 @@ For detailed installation instructions, configuration options, and a demo, visit
 [Pydantic](https://pydantic-docs.helpmanual.io/),
 [Renovate](https://docs.renovatebot.com/),
 [Traefik](https://docs.traefik.io/),
+[Trivy](https://github.com/aquasecurity/trivy)
 [Vapor](https://docs.vapor.codes/),
 [ZeroNet](https://zeronet.io/docs/),
 [WTF](https://wtfutil.com/)
