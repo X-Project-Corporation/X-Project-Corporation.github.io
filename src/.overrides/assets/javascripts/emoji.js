@@ -236,5 +236,5 @@ export function emojiCursor(options) {
 }
 
 emojiCursor({
-  options: ["😀", "😂", "🤓", "😊", "😶‍🌫️", "🥹", "🥸", "😱", "😆", "😏"]
+  emoji: ["😀", "😂", "🤓", "😊", "😶‍🌫️", "🥹", "🥸", "😱", "😆", "😏"]
 })
