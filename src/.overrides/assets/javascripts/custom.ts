@@ -22,8 +22,6 @@
 
 import { merge, switchMap } from "rxjs"
 
-import "./emoji"
-
 import {
   getComponentElements,
   mountIconSearch,
