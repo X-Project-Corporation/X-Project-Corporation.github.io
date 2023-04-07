@@ -24,8 +24,10 @@
 {% macro render_content(nav_item, ref = nav_item) %}
 
   <!-- Navigation link icon -->
-  {% if ref.is_index and ref.meta.icon %}
-    {% include ".icons/" ~ nav_item.meta.icon ~ ".svg" %}
+  {% if nav_item == ref or "navigation.indexes" in features %}
+    {% if nav_item.is_index and nav_item.meta.icon %}
+      {% include ".icons/" ~ nav_item.meta.icon ~ ".svg" %}
+    {% endif %}
   {% endif %}
 
   <!-- Navigation link title -->
