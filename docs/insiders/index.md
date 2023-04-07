@@ -195,6 +195,7 @@ You can cancel your sponsorship anytime.[^5]
 [![Cash App]](https://cash.app/){ target=_blank title="Cash App" }
 [![RackN]](https://rackn.com/){ target=_blank title="RackN" }
 [![CivicActions]](https://civicactions.com/){ target=_blank title="CivicActions" }
+[![bitcrowd]](https://bitcrowd.net/){ target=_blank title="bitcrowd" }
 
 </div>
 
@@ -223,6 +224,7 @@ You can cancel your sponsorship anytime.[^5]
   [Cash App]: https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-cashapp.png
   [RackN]: https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-rackn.png
   [CivicActions]: https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-civic-actions.png
+  [bitcrowd]: https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-bitcrowd.png
 
 <hr />
 
@@ -248,6 +250,10 @@ features prefixed with a checkmark symbol, denoting whether a feature is
 :octicons-check-circle-fill-24:{ style="color: #00e676" } already available or 
 :octicons-check-circle-fill-24:{ style="color: var(--md-default-fg-color--lightest)" } planned, but not yet implemented. When the funding goal is hit, the features
 are released for general availability.
+
+> [In February, we lost $1,3k in monthly funding because GitHub removed PayPal support][Twitter]
+
+  [Twitter]: https://twitter.com/squidfunk/status/1643539228574269443
 
 #### $ 12,000 – Piri Piri
 
