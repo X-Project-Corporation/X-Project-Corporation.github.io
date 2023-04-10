@@ -819,6 +819,12 @@ class BlogPlugin(BasePlugin[BlogPluginConfig]):
             file = File(path, self.temp_dir, config.site_dir, urls)
             files.append(file)
 
+            # Mark file as generated, so other plugins don't think it's part
+            # of the file system. This is more or less a new quasi-standard
+            # for plugins that generate files which was introduced by the
+            # git-revision-date-localized-plugin - see https://bit.ly/3ZUmdBx
+            file.generated_by = "material/blog"
+
         # Return file
         return file
 

@@ -123,9 +123,6 @@ plugins:
       enabled: !ENV [CI, false]
       enable_creation_date: true
       type: timeago
-      exclude:
-        - blog/archive/*
-        - blog/category/*
   - git-committers:
       enabled: !ENV [CI, false]
       repository: squidfunk/mkdocs-material
