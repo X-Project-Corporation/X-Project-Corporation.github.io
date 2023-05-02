@@ -39,7 +39,7 @@
 <p align="center">
   Write your documentation in Markdown and create a professional static site for
   your Open Source or commercial project in minutes – searchable, customizable,
-  more than 50 languages, for all devices.
+  more than 60 languages, for all devices.
 </p>
 
 <p align="center">
@@ -145,6 +145,9 @@
   /></a>
   <a href="https://botcity.dev/" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-botcity.png" height="58"
+  /></a>
+  <a href="https://www.springernature.com/gp" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-sn-technology.png" height="58"
   /></a>
 </p>
 <p>&nbsp;</p>
