@@ -241,7 +241,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # Compute path to card, which is sourced from the cache directory, and
         # generate file to register it with MkDocs as soon as it was generated
-        path = page.file.dest_uri.replace(".html", ".png")
+        path = ".html" if page.is_index else "/index.html"
+        path = page.file.dest_uri.replace(path, ".png")
         file = self._generate_file(path, config)
 
         # Check if file hash changed, so we need to re-generate the card. If
