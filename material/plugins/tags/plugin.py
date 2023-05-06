@@ -22,43 +22,18 @@ import logging
 import sys
 
 from collections import defaultdict
-from functools import partial
-from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config import config_options as opt
-from mkdocs.config.base import Config
 from mkdocs.plugins import BasePlugin
 
-# -----------------------------------------------------------------------------
-# Functions
-# -----------------------------------------------------------------------------
-
-# Casefold a string for comparison when sorting
-def casefold(tag):
-    return tag.casefold()
+from material.plugins.tags.config import TagsConfig
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Tags plugin configuration scheme
-class TagsPluginConfig(Config):
-    enabled = opt.Type(bool, default = True)
-
-    # Options for tags
-    tags_file = opt.Optional(opt.Type(str))
-    tags_extra_files = opt.Type(dict, default = dict())
-    tags_slugify = opt.Type((type(slugify), partial), default = slugify)
-    tags_slugify_separator = opt.Type(str, default = "-")
-    tags_compare = opt.Optional(opt.Type(type(casefold)))
-    tags_compare_reverse = opt.Type(bool, default = False)
-    tags_allowed = opt.Type(list, default = [])
-
-# -----------------------------------------------------------------------------
-
 # Tags plugin
-class TagsPlugin(BasePlugin[TagsPluginConfig]):
+class TagsPlugin(BasePlugin[TagsConfig]):
     supports_multiple_instances = True
 
     # Initialize plugin

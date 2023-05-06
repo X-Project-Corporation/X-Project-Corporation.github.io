@@ -18,16 +18,19 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import logging
-import sys
+from mkdocs.config.config_options import Type
+from mkdocs.config.base import Config
 
-try:
-    import cairosvg as _
-    import PIL as _
-except ImportError:
-    log = logging.getLogger("mkdocs")
-    log.error(
-        "Required dependencies of \"optimize\" plugin not found. "
-        "Install with: pip install pillow"
-    )
-    sys.exit(1)
+# -----------------------------------------------------------------------------
+# Class
+# -----------------------------------------------------------------------------
+
+# Info plugin configuration scheme
+class InfoConfig(Config):
+    enabled = Type(bool, default = True)
+    enabled_on_serve = Type(bool, default = False)
+
+    # Options for archive
+    archive = Type(bool, default = True)
+    archive_name = Type(str, default = "example")
+    archive_stop_on_violation = Type(bool, default = True)

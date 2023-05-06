@@ -29,15 +29,11 @@ import sys
 from babel.dates import format_date
 from copy import copy
 from datetime import date, datetime, time
-from functools import partial
 from hashlib import sha1
 from lxml.html import fragment_fromstring, tostring
-from markdown.extensions.toc import slugify
 from mkdocs import utils
 from mkdocs.utils.meta import get_data
 from mkdocs.commands.build import DuplicateFilter, _populate_page
-from mkdocs.config import config_options as opt
-from mkdocs.config.base import Config
 from mkdocs.contrib.search import SearchIndex
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
@@ -46,72 +42,14 @@ from mkdocs.structure.pages import Page
 from tempfile import gettempdir
 from yaml import SafeLoader, load
 
+from material.plugins.blog.config import BlogConfig
+
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Blog plugin configuration scheme
-class BlogPluginConfig(Config):
-    enabled = opt.Type(bool, default = True)
-
-    # Options for blog
-    blog_dir = opt.Type(str, default = "blog")
-    blog_toc = opt.Type(bool, default = False)
-
-    # Options for posts
-    post_date_format = opt.Type(str, default = "long")
-    post_url_date_format = opt.Type(str, default = "yyyy/MM/dd")
-    post_url_format = opt.Type(str, default = "{date}/{slug}")
-    post_url_max_categories = opt.Type(int, default = 1)
-    post_slugify = opt.Type((type(slugify), partial), default = slugify)
-    post_slugify_separator = opt.Type(str, default = "-")
-    post_excerpt = opt.Choice(["optional", "required"], default = "optional")
-    post_excerpt_max_authors = opt.Type(int, default = 1)
-    post_excerpt_max_categories = opt.Type(int, default = 5)
-    post_excerpt_separator = opt.Type(str, default = "<!-- more -->")
-    post_readtime = opt.Type(bool, default = True)
-    post_readtime_words_per_minute = opt.Type(int, default = 265)
-
-    # Options for archive
-    archive = opt.Type(bool, default = True)
-    archive_name = opt.Type(str, default = "blog.archive")
-    archive_date_format = opt.Type(str, default = "yyyy")
-    archive_url_date_format = opt.Type(str, default = "yyyy")
-    archive_url_format = opt.Type(str, default = "archive/{date}")
-    archive_toc = opt.Optional(opt.Type(bool))
-
-    # Options for categories
-    categories = opt.Type(bool, default = True)
-    categories_name = opt.Type(str, default = "blog.categories")
-    categories_url_format = opt.Type(str, default = "category/{slug}")
-    categories_slugify = opt.Type((type(slugify), partial), default = slugify)
-    categories_slugify_separator = opt.Type(str, default = "-")
-    categories_allowed = opt.Type(list, default = [])
-    categories_toc = opt.Optional(opt.Type(bool))
-
-    # Options for pagination
-    pagination = opt.Type(bool, default = True)
-    pagination_per_page = opt.Type(int, default = 10)
-    pagination_url_format = opt.Type(str, default = "page/{page}")
-    pagination_template = opt.Type(str, default = "~2~")
-    pagination_keep_content = opt.Type(bool, default = False)
-
-    # Options for authors
-    authors = opt.Type(bool, default = True)
-    authors_file = opt.Type(str, default = "{blog}/.authors.yml")
-
-    # Options for drafts
-    draft = opt.Type(bool, default = False)
-    draft_on_serve = opt.Type(bool, default = True)
-    draft_if_future_date = opt.Type(bool, default = False)
-
-    # Deprecated options
-    authors_in_excerpt = opt.Deprecated(moved_to = "post_excerpt_max_authors")
-
-# -----------------------------------------------------------------------------
-
 # Blog plugin
-class BlogPlugin(BasePlugin[BlogPluginConfig]):
+class BlogPlugin(BasePlugin[BlogConfig]):
     supports_multiple_instances = True
 
     # Determine whether we're running under dirty reload

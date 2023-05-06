@@ -18,16 +18,34 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import logging
-import sys
+import os
 
-try:
-    import cairosvg as _
-    import PIL as _
-except ImportError:
-    log = logging.getLogger("mkdocs")
-    log.error(
-        "Required dependencies of \"optimize\" plugin not found. "
-        "Install with: pip install pillow"
-    )
-    sys.exit(1)
+from mkdocs.config.base import Config
+from mkdocs.config.config_options import Type
+
+# -----------------------------------------------------------------------------
+# Class
+# -----------------------------------------------------------------------------
+
+# Optimize plugin configuration scheme
+class OptimizeConfig(Config):
+    enabled = Type(bool, default = True)
+    concurrency = Type(int, default = os.cpu_count())
+
+    # Options for caching
+    cache = Type(bool, default = True)
+    cache_dir = Type(str, default = ".cache/plugin/optimize")
+
+    # Options for PNG optimization
+    optimize_png = Type(bool, default = True)
+    optimize_png_speed = Type(int, default = 4)
+    optimize_png_strip = Type(bool, default = True)
+
+    # Options for JPG optimization
+    optimize_jpg = Type(bool, default = True)
+    optimize_jpg_quality = Type(int, default = 60)
+    optimize_jpg_progressive = Type(bool, default = True)
+
+    # Options for reporting
+    print_gain = Type(bool, default = True)
+    print_gain_summary = Type(bool, default = True)

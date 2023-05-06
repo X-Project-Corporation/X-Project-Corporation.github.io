@@ -24,46 +24,22 @@ import os
 import subprocess
 
 from colorama import Fore, Style
-from concurrent.futures import Future, ThreadPoolExecutor, wait
+from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha1
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config import config_options as opt
-from mkdocs.config.base import Config
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File
+from PIL import Image
+
+from material.plugins.optimize.config import OptimizeConfig
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Optimize plugin configuration scheme
-class OptimizePluginConfig(Config):
-    enabled = opt.Type(bool, default = True)
-    concurrency = opt.Type(int, default = os.cpu_count())
-
-    # Options for caching
-    cache = opt.Type(bool, default = True)
-    cache_dir = opt.Type(str, default = ".cache/plugin/optimize")
-
-    # Options for PNG optimization
-    optimize_png = opt.Type(bool, default = True)
-    optimize_png_speed = opt.Type(int, default = 4)
-    optimize_png_strip = opt.Type(bool, default = True)
-
-    # Options for JPG optimization
-    optimize_jpg = opt.Type(bool, default = True)
-    optimize_jpg_quality = opt.Type(int, default = 60)
-    optimize_jpg_progressive = opt.Type(bool, default = True)
-
-    # Options for reporting
-    print_gain = opt.Type(bool, default = True)
-    print_gain_summary = opt.Type(bool, default = True)
-
-# -----------------------------------------------------------------------------
-
 # Optimize plugin
-class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
+class OptimizePlugin(BasePlugin[OptimizeConfig]):
     supports_multiple_instances = True
 
     # Initialize plugin
@@ -73,20 +49,19 @@ class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
 
         # Initialize thread pool
         self.pool = ThreadPoolExecutor(self.config.concurrency)
-        self.pool_jobs: list[Future] = []
 
-        # Initialize collection of optimized files
+        # Initialize optimized files
         self.optimize_map: dict[str, str] = dict()
 
         # Initialize cache
-        self.cache_map: dict[str, str] = dict()
-        self.cache_map_file = os.path.join(self.config.cache_dir, "images.json")
-        self.cache_map_file = os.path.normpath(self.cache_map_file)
+        self.cache: dict[str, str] = dict()
+        self.cache_file = os.path.join(self.config.cache_dir, "manifest.json")
+        self.cache_file = os.path.normpath(self.cache_file)
 
         # Load cache map, if it exists and the cache should be used
-        if os.path.isfile(self.cache_map_file) and self.config.cache:
-            with open(self.cache_map_file) as f:
-                self.cache_map = json.load(f)
+        if os.path.isfile(self.cache_file) and self.config.cache:
+            with open(self.cache_file) as f:
+                self.cache = json.load(f)
 
     # Initialize optimization pipeline
     def on_env(self, env, *, config, files):
@@ -102,16 +77,12 @@ class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
                 continue
 
             # Compute path to cached image
-            path = os.path.normpath(os.path.join(
-                self.config.cache_dir, "images",
-                file.src_path
-            ))
+            path = os.path.join(self.config.cache_dir, file.src_path)
+            path = os.path.normpath(path)
 
             # Concurrently optimize images
             self.optimize_map[file.abs_src_path] = path
-            self.pool_jobs.append(self.pool.submit(
-                self._optimize_image, file, path
-            ))
+            self.pool.submit(self._optimize_image, file, path)
 
             # Steal responsibility from MkDocs
             files.remove(file)
@@ -121,8 +92,8 @@ class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
         if not self.config.enabled:
             return
 
-        # Reconcile concurrent jobs
-        wait(self.pool_jobs)
+        # Reconcile concurrent jobs and shutdown thread pool
+        self.pool.shutdown()
 
         # Compute and print gains through optimization
         if self.config.print_gain_summary:
@@ -182,7 +153,7 @@ class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
             hash = sha1(data).hexdigest()
 
             # Check if file hash changed, so we need to optimize again
-            prev = self.cache_map.get(file.url, "")
+            prev = self.cache.get(file.url, "")
             if hash != prev or not os.path.exists(path):
                 os.makedirs(os.path.dirname(path), exist_ok = True)
 
@@ -218,9 +189,9 @@ class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
 
                 # Update cache map and write it immediately, so we keep
                 # intermediate results when doing incremental builds
-                self.cache_map[file.url] = hash
-                with open(self.cache_map_file, "w") as f:
-                    f.write(json.dumps(self.cache_map, indent = 2))
+                self.cache[file.url] = hash
+                with open(self.cache_file, "w") as f:
+                    f.write(json.dumps(self.cache, indent = 2))
 
         # Copy file to target directory
         utils.copy_file(path, file.abs_dest_path)
@@ -249,9 +220,6 @@ class OptimizePlugin(BasePlugin[OptimizePluginConfig]):
 
     # Optimize JPG image
     def _optimize_image_jpg(self, file: File, path: str):
-        from PIL import Image
-
-        # Open and save image with pillow
         image = Image.open(file.abs_src_path)
         image.save(path, "jpeg",
             quality     = self.config.optimize_jpg_quality,

@@ -18,16 +18,32 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import logging
-import sys
+from functools import partial
+from markdown.extensions.toc import slugify
+from mkdocs.config.config_options import Optional, Type
+from mkdocs.config.base import Config
 
-try:
-    import cairosvg as _
-    import PIL as _
-except ImportError:
-    log = logging.getLogger("mkdocs")
-    log.error(
-        "Required dependencies of \"optimize\" plugin not found. "
-        "Install with: pip install pillow"
-    )
-    sys.exit(1)
+# -----------------------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------------------
+
+# Casefold a string for comparison when sorting
+def casefold(tag):
+    return tag.casefold()
+
+# -----------------------------------------------------------------------------
+# Class
+# -----------------------------------------------------------------------------
+
+# Tags plugin configuration scheme
+class TagsConfig(Config):
+    enabled = Type(bool, default = True)
+
+    # Options for tags
+    tags_file = Optional(Type(str))
+    tags_extra_files = Type(dict, default = dict())
+    tags_slugify = Type((type(slugify), partial), default = slugify)
+    tags_slugify_separator = Type(str, default = "-")
+    tags_compare = Optional(Type(type(casefold)))
+    tags_compare_reverse = Type(bool, default = False)
+    tags_allowed = Type(list, default = [])

@@ -20,44 +20,41 @@
 
 import os
 
-from mkdocs import utils
-from mkdocs.plugins import BasePlugin, event_priority
-
-from material.plugins.offline.config import OfflineConfig
+from mkdocs.config.base import Config
+from mkdocs.config.config_options import Deprecated, Type
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Offline plugin
-class OfflinePlugin(BasePlugin[OfflineConfig]):
+# Social plugin configuration scheme
+class SocialConfig(Config):
+    enabled = Type(bool, default = True)
+    concurrency = Type(int, default = os.cpu_count())
 
-    # Initialize plugin
-    def on_config(self, config):
-        if not self.config.enabled:
-            return
+    # Options for caching
+    cache = Type(bool, default = True)
+    cache_dir = Type(str, default = ".cache/plugin/social")
 
-        # Ensure correct resolution of links
-        config.use_directory_urls = False
+    # Options for cards
+    cards = Type(bool, default = True)
+    cards_dir = Type(str, default = "assets/images/social")
+    cards_layout_dir = Type(str, default = ".")
+    cards_layout = Type(str, default = "default")
+    cards_layout_params = Type(dict, default = {})
 
-    # Support offline search (run latest)
-    @event_priority(-100)
-    def on_post_build(self, *, config):
-        if not self.config.enabled:
-            return
+    # Options for debugging
+    debug = Type(bool, default = False)
+    debug_grid = Type(bool, default = True)
+    debug_grid_step = Type(int, default = 32)
+    debug_color = Type(str, default = "yellow")
 
-        # Check for existence of search index
-        base = os.path.join(config.site_dir, "search")
-        path = os.path.join(base, "search_index.json")
-        if not os.path.exists(path):
-            return
-
-        # Retrieve search index
-        with open(path, "r") as data:
-            index = data.read()
-
-            # Inline search index into script
-            utils.write_file(
-                f"var __index = {index}".encode("utf-8"),
-                os.path.join(base, "search_index.js")
-            )
+    # Deprecated options
+    cards_color = Deprecated(
+        message =
+            "Deprecated, use 'cards_layout_params.background_color' "
+            "and 'cards_layout_params.color' with 'default' layout"
+        )
+    cards_font = Deprecated(
+        message = "Deprecated, use 'cards_layout_params.font_family'"
+    )

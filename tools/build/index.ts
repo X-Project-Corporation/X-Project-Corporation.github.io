@@ -157,7 +157,7 @@ const assets$ = concat(
     })),
 
   /* Copy images and configurations */
-  ...["**/*.svg", "**/images/**/*.*", "**/*.yml"]
+  ...["**/*.svg", "**/images/**/*.*"]
     .map(pattern => copyAll(pattern, {
       from: "src",
       to: base
@@ -165,7 +165,7 @@ const assets$ = concat(
 )
 
 /* Copy plugins and extensions */
-const sources$ = copyAll("**/*.py", {
+const sources$ = copyAll("**/*.{py,yml}", {
   from: "src",
   to: base,
   watch: process.argv.includes("--watch")

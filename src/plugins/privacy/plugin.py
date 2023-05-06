@@ -33,54 +33,20 @@ from hashlib import sha1
 from lxml.html import HtmlElement, fragment_fromstring, tostring
 from mkdocs import utils
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config import config_options as opt
-from mkdocs.config.base import Config
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import File, Files
 from re import Match
 from urllib.parse import ParseResult as URL, urlparse
 
+from material.plugins.privacy.config import PrivacyConfig
+
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Privacy plugin configuration scheme
-class PrivacyPluginConfig(Config):
-    enabled = opt.Type(bool, default = True)
-    concurrency = opt.Type(int, default = os.cpu_count())
-
-    # Options for caching
-    cache = opt.Type(bool, default = True)
-    cache_dir = opt.Type(str, default = ".cache/plugin/privacy")
-
-    # Options for external assets
-    assets = opt.Type(bool, default = True)
-    assets_fetch = opt.Type(bool, default = True)
-    assets_fetch_dir = opt.Type(str, default = "assets/external")
-    assets_include = opt.Type(list, default = [])
-    assets_exclude = opt.Type(list, default = [])
-    assets_expr_map = opt.Type(dict, default = dict())
-
-    # Options for external links
-    links = opt.Type(bool, default = True)
-    links_attr_map = opt.Type(dict, default = dict())
-    links_noopener = opt.Type(bool, default = True)
-
-    # Deprecated options
-    external_assets = opt.Deprecated(message = "Deprecated, use 'assets_fetch'")
-    external_assets_dir = opt.Deprecated(moved_to = "assets_fetch_dir")
-    external_assets_include = opt.Deprecated(moved_to = "assets_include")
-    external_assets_exclude = opt.Deprecated(moved_to = "assets_exclude")
-    external_assets_expr = opt.Deprecated(moved_to = "assets_expr_map")
-    external_links = opt.Deprecated(moved_to = "links")
-    external_links_attr_map = opt.Deprecated(moved_to = "links_attr_map")
-    external_links_noopener = opt.Deprecated(moved_to = "links_noopener")
-
-# -----------------------------------------------------------------------------
-
 # Privacy plugin
-class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
+class PrivacyPlugin(BasePlugin[PrivacyConfig]):
     supports_multiple_instances = True
 
     # Initialize plugin
@@ -89,11 +55,11 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
         if not self.config.enabled:
             return
 
-        # Initialize external assets thread pool
-        self.assets_pool = ThreadPoolExecutor(self.config.concurrency)
-        self.assets_jobs: list[Future] = []
+        # Initialize thread pool
+        self.pool = ThreadPoolExecutor(self.config.concurrency)
+        self.pool_jobs: list[Future] = []
 
-        # Initialize external assets file collections
+        # Initialize collections of external assets
         self.assets = Files([])
         self.assets_done: list[File] = []
         self.assets_expr_map = dict({
@@ -187,8 +153,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
         # Reconcile concurrent jobs and clear thread pool, as we will reuse the
         # same thread pool for fetching all remaining external assets
-        wait(self.assets_jobs)
-        self.assets_jobs.clear()
+        wait(self.pool_jobs)
+        self.pool_jobs.clear()
 
         # Append all downloaded assets that are not style sheets or scripts to
         # MkDocs's collection of files, making them available to other plugins
@@ -232,15 +198,15 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
         # Reconcile concurrent jobs and clear thread pool, as we will reuse the
         # same thread pool for patching all links to external assets
-        wait(self.assets_jobs)
-        self.assets_jobs.clear()
+        wait(self.pool_jobs)
+        self.pool_jobs.clear()
 
         # Spawn concurrent job to patch all links to dependent external asset
         # in all style sheet and script files
         for file in self.assets:
             _, extension = posixpath.splitext(file.dest_uri)
             if extension in [".css", ".js"]:
-                self.assets_jobs.append(self.assets_pool.submit(
+                self.pool_jobs.append(self.pool.submit(
                     self._patch, file
                 ))
 
@@ -251,7 +217,8 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
 
         # Reconcile concurrent jobs for the last time, so the plugins following
         # in the build process always have a consistent state to work with
-        wait(self.assets_jobs)
+        wait(self.pool_jobs)
+        self.pool.shutdown()
 
     # -------------------------------------------------------------------------
 
@@ -410,7 +377,7 @@ class PrivacyPlugin(BasePlugin[PrivacyPluginConfig]):
             # the caller must only ensure to reconcile the concurrent jobs.
             _, extension = posixpath.splitext(url.path)
             if extension and concurrent:
-                self.assets_jobs.append(self.assets_pool.submit(
+                self.pool_jobs.append(self.pool.submit(
                     self._fetch, file, config
                 ))
 

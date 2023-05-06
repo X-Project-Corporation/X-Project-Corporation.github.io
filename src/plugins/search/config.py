@@ -18,46 +18,39 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import os
-
-from mkdocs import utils
-from mkdocs.plugins import BasePlugin, event_priority
-
-from material.plugins.offline.config import OfflineConfig
+from mkdocs.config.config_options import (
+    Choice,
+    Deprecated,
+    Optional,
+    ListOfItems,
+    Type
+)
+from mkdocs.config.base import Config
+from mkdocs.contrib.search import LangOption
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Offline plugin
-class OfflinePlugin(BasePlugin[OfflineConfig]):
+# Search pipeline functions
+pipeline = ("stemmer", "stopWordFilter", "trimmer")
 
-    # Initialize plugin
-    def on_config(self, config):
-        if not self.config.enabled:
-            return
+# Search field configuration scheme
+class SearchFieldConfig(Config):
+    boost = Type((int, float), default = 1.0)
 
-        # Ensure correct resolution of links
-        config.use_directory_urls = False
+# Search plugin configuration scheme
+class SearchConfig(Config):
+    lang = Optional(LangOption())
+    separator = Optional(Type(str))
+    pipeline = ListOfItems(Choice(pipeline), default = [])
+    fields = Type(dict, default = dict())
 
-    # Support offline search (run latest)
-    @event_priority(-100)
-    def on_post_build(self, *, config):
-        if not self.config.enabled:
-            return
+    # Options for text segmentation (Chinese)
+    jieba_dict = Optional(Type(str))
+    jieba_dict_user = Optional(Type(str))
 
-        # Check for existence of search index
-        base = os.path.join(config.site_dir, "search")
-        path = os.path.join(base, "search_index.json")
-        if not os.path.exists(path):
-            return
-
-        # Retrieve search index
-        with open(path, "r") as data:
-            index = data.read()
-
-            # Inline search index into script
-            utils.write_file(
-                f"var __index = {index}".encode("utf-8"),
-                os.path.join(base, "search_index.js")
-            )
+    # Unsupported options, originally implemented in MkDocs
+    indexing = Deprecated(message = "Unsupported option")
+    prebuild_index = Deprecated(message = "Unsupported option")
+    min_search_length = Deprecated(message = "Unsupported option")

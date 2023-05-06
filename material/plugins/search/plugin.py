@@ -26,11 +26,11 @@ import regex as re
 from html import escape
 from html.parser import HTMLParser
 from mkdocs import utils
+from mkdocs.config.config_options import SubConfig
 from mkdocs.commands.build import DuplicateFilter
-from mkdocs.config import config_options as opt
-from mkdocs.config.base import Config
-from mkdocs.contrib.search import LangOption
 from mkdocs.plugins import BasePlugin
+
+from material.plugins.search.config import SearchConfig, SearchFieldConfig
 
 try:
     import jieba
@@ -41,33 +41,8 @@ except ImportError:
 # Class
 # -----------------------------------------------------------------------------
 
-# Search pipeline functions
-pipeline = ("stemmer", "stopWordFilter", "trimmer")
-
-# Search field configuration scheme
-class SearchFieldConfig(Config):
-    boost = opt.Type((int, float), default = 1.0)
-
-# Search plugin configuration scheme
-class SearchPluginConfig(Config):
-    lang = opt.Optional(LangOption())
-    separator = opt.Optional(opt.Type(str))
-    pipeline = opt.ListOfItems(opt.Choice(pipeline), default = [])
-    fields = opt.Type(dict, default = dict())
-
-    # Options for text segmentation (Chinese)
-    jieba_dict = opt.Optional(opt.Type(str))
-    jieba_dict_user = opt.Optional(opt.Type(str))
-
-    # Unsupported options, originally implemented in MkDocs
-    indexing = opt.Deprecated(message = "Unsupported option")
-    prebuild_index = opt.Deprecated(message = "Unsupported option")
-    min_search_length = opt.Deprecated(message = "Unsupported option")
-
-# -----------------------------------------------------------------------------
-
 # Search plugin
-class SearchPlugin(BasePlugin[SearchPluginConfig]):
+class SearchPlugin(BasePlugin[SearchConfig]):
 
     # Determine whether we're running under dirty reload
     def on_startup(self, *, command, dirty):
@@ -97,7 +72,7 @@ class SearchPlugin(BasePlugin[SearchPluginConfig]):
             )))
 
         # Validate field configuration
-        validator = opt.SubConfig(SearchFieldConfig)
+        validator = SubConfig(SearchFieldConfig)
         for config in self.config.fields.values():
             validator.run_validation(config)
 

@@ -18,16 +18,13 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import logging
-import sys
+from mkdocs.config.config_options import Type
+from mkdocs.config.base import Config
 
-try:
-    import cairosvg as _
-    import PIL as _
-except ImportError:
-    log = logging.getLogger("mkdocs")
-    log.error(
-        "Required dependencies of \"optimize\" plugin not found. "
-        "Install with: pip install pillow"
-    )
-    sys.exit(1)
+# -----------------------------------------------------------------------------
+# Class
+# -----------------------------------------------------------------------------
+
+# Typeset plugin configuration scheme
+class TypesetConfig(Config):
+    enabled = Type(bool, default = True)

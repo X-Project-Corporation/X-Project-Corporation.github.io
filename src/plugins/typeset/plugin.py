@@ -22,22 +22,16 @@ import re
 
 from copy import copy
 from markdown import Markdown
-from mkdocs.config import config_options as opt
-from mkdocs.config.base import Config
 from mkdocs.plugins import BasePlugin
+
+from material.plugins.typeset.config import TypesetConfig
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Typeset plugin configuration scheme
-class TypesetPluginConfig(Config):
-    enabled = opt.Type(bool, default = True)
-
-# -----------------------------------------------------------------------------
-
 # Typeset plugin
-class TypesetPlugin(BasePlugin[TypesetPluginConfig]):
+class TypesetPlugin(BasePlugin[TypesetConfig]):
 
     # Initialize plugin
     def on_config(self, config):

@@ -133,8 +133,8 @@
 
       <!-- Load fonts from Google -->
       {% if config.theme.font != false %}
-        {% set text = config.theme.font.text | d("Roboto", true) %}
-        {% set code = config.theme.font.code | d("Roboto Mono", true) %}
+        {% set text = config.theme.font.get("text", "Roboto") %}
+        {% set code = config.theme.font.get("code", "Roboto Mono") %}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
           rel="stylesheet"
@@ -164,17 +164,6 @@
     {% block analytics %}
       {% include "partials/integrations/analytics.html" %}
     {% endblock %}
-
-    <!-- Meta tags from front matter or plugins -->
-    {% if page.meta and page.meta.meta %}
-      {% for tag in page.meta.meta %}
-        <meta
-          {% for key, value in tag.items() %}
-            {{ key }}="{{value}}"
-          {% endfor %}
-        />
-      {% endfor %}
-    {% endif %}
 
     <!-- Custom front matter -->
     {% block extrahead %}{% endblock %}
