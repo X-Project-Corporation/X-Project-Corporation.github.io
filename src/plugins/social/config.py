@@ -47,7 +47,7 @@ class SocialConfig(Config):
     debug = Type(bool, default = False)
     debug_grid = Type(bool, default = True)
     debug_grid_step = Type(int, default = 32)
-    debug_color = Type(str, default = "yellow")
+    debug_color = Type(str, default = "grey")
 
     # Deprecated options
     cards_color = Deprecated(
