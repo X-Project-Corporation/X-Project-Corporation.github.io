@@ -202,6 +202,10 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             for pool in [self.card_layer_pool, self.card_pool]:
                 pool.shutdown()
 
+    # Add custom layout directory to watched files
+    def on_serve(self, server, *, config, builder):
+        server.watch(self.config.cards_layout_dir, recursive = True)
+
     # -------------------------------------------------------------------------
 
     # Generate card for the given page - generation of cards does not depend on

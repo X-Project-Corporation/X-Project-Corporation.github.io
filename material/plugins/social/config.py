@@ -39,7 +39,7 @@ class SocialConfig(Config):
     # Options for cards
     cards = Type(bool, default = True)
     cards_dir = Type(str, default = "assets/images/social")
-    cards_layout_dir = Type(str, default = ".")
+    cards_layout_dir = Type(str, default = "layouts")
     cards_layout = Type(str, default = "default")
     cards_layout_options = Type(dict, default = {})
 
