@@ -329,7 +329,13 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # If given, load background image and resize it proportionally to cover
         # the entire area while retaining the aspect ratio of the input image
         if background.get("image"):
-            image = Image.open(background["image"]).convert("RGBA")
+            with open(background["image"], "br") as f:
+                data = f.read()
+                if background["image"].endswith(".svg"):
+                    data = svg2png(data, output_width = input.width)
+
+            # Resize image to cover entire area
+            image = Image.open(BytesIO(data)).convert("RGBA")
             input.alpha_composite(_resize_cover(image, input))
 
         # If given, fill background color - this is done after the image is
