@@ -180,7 +180,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 f"<meta property=\"{property}\" content=\"{content}\" />"
                     for property, content in _replace(
                         layout["tags"], config, page = page, image = image,
-                        params = self.config.cards_layout_params,
+                        layout = self.config.cards_layout_options,
                     ).items() if content
             ]),
             output[at:]
@@ -229,7 +229,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 template = env.from_string(variable)
                 fingerprints.append(template.render(
                     page = page, config = config,
-                    params = self.config.cards_layout_params
+                    layout = self.config.cards_layout_options
                 ))
 
             # Compute digest of fingerprints
@@ -239,10 +239,15 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # the exact same card was already generated and cached
         hash = _digest([layout, *list(layers.keys())])
 
+        # Determine part of path we need to replace - this depends on whether
+        # we're using directory URLs and if the page is an index page or not
+        suffix = ".html"
+        if config.use_directory_urls and not page.is_index:
+            suffix = "/index.html"
+
         # Compute path to card, which is sourced from the cache directory, and
         # generate file to register it with MkDocs as soon as it was generated
-        path = ".html" if page.is_index else "/index.html"
-        path = page.file.dest_uri.replace(path, ".png")
+        path = page.file.dest_uri.replace(suffix, ".png")
         file = self._generate_file(path, config)
 
         # Check if file hash changed, so we need to re-generate the card. If
@@ -300,7 +305,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         image = Image.new(mode = "RGBA", size = get_size(layer))
         layer = _replace(
             layer, config, page = page,
-            params = self.config.cards_layout_params
+            layout = self.config.cards_layout_options
         )
 
         # Render background, icon, and typography

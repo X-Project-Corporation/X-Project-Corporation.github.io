@@ -41,7 +41,7 @@ class SocialConfig(Config):
     cards_dir = Type(str, default = "assets/images/social")
     cards_layout_dir = Type(str, default = ".")
     cards_layout = Type(str, default = "default")
-    cards_layout_params = Type(dict, default = {})
+    cards_layout_options = Type(dict, default = {})
 
     # Options for debugging
     debug = Type(bool, default = False)
@@ -52,9 +52,9 @@ class SocialConfig(Config):
     # Deprecated options
     cards_color = Deprecated(
         message =
-            "Deprecated, use 'cards_layout_params.background_color' "
-            "and 'cards_layout_params.color' with 'default' layout"
+            "Deprecated, use 'cards_layout_options.background_color' "
+            "and 'cards_layout_options.color' with 'default' layout"
         )
     cards_font = Deprecated(
-        message = "Deprecated, use 'cards_layout_params.font_family'"
+        message = "Deprecated, use 'cards_layout_options.font_family'"
     )
