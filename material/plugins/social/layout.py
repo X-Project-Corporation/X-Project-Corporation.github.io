@@ -18,7 +18,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from typing import Dict, List, Optional, TypedDict
+from typing import Dict, List, Optional, TypedDict, Union
 
 # -----------------------------------------------------------------------------
 # Typings
@@ -91,7 +91,7 @@ class Layout(TypedDict):
 # -----------------------------------------------------------------------------
 
 # Get layer or layout size as tuple
-def get_size(layer: Layer | Layout):
+def get_size(layer: Union[Layer, Layout]):
     size = layer["size"]
     return (
         size["width"],
