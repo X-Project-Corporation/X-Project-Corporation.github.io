@@ -104,7 +104,6 @@ plugins:
       separator: '[\s\u200b\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - social:
       cards_layout: default/variant
-      debug: true
   - typeset
   - redirects:
       redirect_maps:
