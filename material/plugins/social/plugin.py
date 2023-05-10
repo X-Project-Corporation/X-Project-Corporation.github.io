@@ -638,7 +638,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # the font family is first downloaded from Google Fonts and the styles are
     # saved to the cache directory. If the font cannot be resolved, the plugin
     # must abort with an error.
-    def _resolve_font(self, family: str, styles: set[str]):
+    def _resolve_font(self, family: str, styles: "set[str]"):
         path = os.path.join(self.config.cache_dir, "fonts", family)
         path = os.path.normpath(path)
 
