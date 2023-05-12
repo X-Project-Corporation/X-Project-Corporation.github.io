@@ -138,7 +138,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if not self.config.enabled:
             return
 
-        # Skip if cards should not be generated
+        # Skip if cards should not be generated or site URL is not set
         if not self.config.cards or not config.site_url:
             return
 
@@ -204,7 +204,9 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
     # Add custom layout directory to watched files
     def on_serve(self, server, *, config, builder):
-        server.watch(self.config.cards_layout_dir, recursive = True)
+        path = os.path.abspath(self.config.cards_layout_dir)
+        if os.path.exists(path):
+            server.watch(path, recursive = True)
 
     # -------------------------------------------------------------------------
 
