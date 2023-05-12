@@ -89,27 +89,33 @@ class SearchPlugin(BasePlugin[SearchConfig]):
 
         # Set jieba dictionary, if given
         if self.config.jieba_dict:
-            path = os.path.normpath(self.config.jieba_dict)
-            if os.path.exists(path):
-                jieba.set_dictionary(path)
-                log.debug(f"Loading jieba dictionary: {path}")
+            if jieba is None:
+                log.warning("jieba is not installed, ignoring 'search.jieba_dict'")
             else:
-                log.warning(
-                    f"Configuration error for 'search.jieba_dict': "
-                    f"'{self.config.jieba_dict}' does not exist."
-                )
+                path = os.path.normpath(self.config.jieba_dict)
+                if os.path.exists(path):
+                    jieba.set_dictionary(path)
+                    log.debug(f"Loading jieba dictionary: {path}")
+                else:
+                    log.warning(
+                        f"Configuration error for 'search.jieba_dict': "
+                        f"'{self.config.jieba_dict}' does not exist."
+                    )
 
         # Set jieba user dictionary, if given
         if self.config.jieba_dict_user:
-            path = os.path.normpath(self.config.jieba_dict_user)
-            if os.path.exists(path):
-                jieba.load_userdict(path)
-                log.debug(f"Loading jieba user dictionary: {path}")
+            if jieba is None:
+                log.warning("jieba is not installed, ignoring 'search.jieba_dict_user'")
             else:
-                log.warning(
-                    f"Configuration error for 'search.jieba_dict_user': "
-                    f"'{self.config.jieba_dict_user}' does not exist."
-                )
+                path = os.path.normpath(self.config.jieba_dict_user)
+                if os.path.exists(path):
+                    jieba.load_userdict(path)
+                    log.debug(f"Loading jieba user dictionary: {path}")
+                else:
+                    log.warning(
+                        f"Configuration error for 'search.jieba_dict_user': "
+                        f"'{self.config.jieba_dict_user}' does not exist."
+                    )
 
     # Add page to search index
     def on_page_context(self, context, *, page, config, nav):
