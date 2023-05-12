@@ -103,8 +103,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Check if site URL is defined
         if not config.site_url:
             log.warning(
-                "The \"social\" plugin needs the \"site_url\" configuration "
-                "option to be defined, or the cards will not be shown."
+                "The \"site_url\" option is not set. The cards are generated, "
+                "but not linked, so they won't be visible on social media."
             )
 
     # Generate card as soon as metadata is available (run latest) - run this
@@ -139,7 +139,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return
 
         # Skip if cards should not be generated
-        if not self.config.cards:
+        if not self.config.cards or not config.site_url:
             return
 
         # Reconcile concurrent jobs - we need to wait for the card job to finish
