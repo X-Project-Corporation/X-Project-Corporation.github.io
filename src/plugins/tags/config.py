@@ -23,13 +23,7 @@ from markdown.extensions.toc import slugify
 from mkdocs.config.config_options import Optional, Type
 from mkdocs.config.base import Config
 
-# -----------------------------------------------------------------------------
-# Functions
-# -----------------------------------------------------------------------------
-
-# Casefold a string for comparison when sorting
-def casefold(tag):
-    return tag.casefold()
+from material.plugins.tags import casefold
 
 # -----------------------------------------------------------------------------
 # Class
