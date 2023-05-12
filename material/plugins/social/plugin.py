@@ -139,8 +139,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if not self.config.enabled:
             return
 
-        # Skip if cards should not be generated or site URL is not set
-        if not self.config.cards or not config.site_url:
+        # Skip if cards should not be generated
+        if not self.config.cards:
             return
 
         # Reconcile concurrent jobs - we need to wait for the card job to finish
@@ -159,8 +159,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         name = self.config.cards_layout
         layout, _ = self._resolve_layout(name, config)
 
-        # Stop if no tags are present
-        if not layout.get("tags"):
+        # Stop if no tags are present or site URL is not set
+        if not layout.get("tags") or not config.site_url:
             return
 
         # Resolve image dimensions and curate image metadata
