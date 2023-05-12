@@ -20,8 +20,6 @@
 
 import re
 
-from copy import copy
-from markdown import Markdown
 from mkdocs.plugins import BasePlugin
 
 from material.plugins.typeset.config import TypesetConfig
@@ -41,20 +39,6 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
         # Initialize titles
         self.title_map = dict()
 
-        # Copy configuration and enable 'toc' extension
-        mdx_configs        = copy(config.mdx_configs)
-        mdx_configs["toc"] = copy(mdx_configs.get("toc", {}))
-
-        # Ensure that headlines do not contain any links
-        mdx_configs["toc"]["anchorlink"] = False
-        mdx_configs["toc"]["permalink"]  = False
-
-        # Create Markdown renderer and convert headlines
-        self.markdown = Markdown(
-            extensions = config.markdown_extensions,
-            extension_configs = mdx_configs
-        )
-
     # Extract source of page title before it's lost
     def on_pre_page(self, page, *, config, files):
         if not self.config.enabled:
@@ -70,12 +54,6 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
         if not self.config.enabled:
             return
 
-        # Ensure to re-render headlines only
-        html = self.markdown.convert("\n".join([
-            line for line in page.markdown.split("\n")
-                if line.startswith("#")
-        ]))
-
         # Check if page title was set in metadata
         path = page.file.src_uri
         if path not in self.title_map:
@@ -90,6 +68,22 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
         ):
             if id not in anchors:
                 continue
+
+            # Remove anchor links from headlines – we need to do that, or we
+            # end up with anchors links inside anchors links, which is invalid
+            # HTML5. There are two cases we need to account for here:
+            #
+            # 1. If toc.anchorlink is enabled, the entire headline is wrapped
+            #    in an anchor link, so we unpack its contents
+            #
+            # 2. If toc.permalink is enabled, an anchor link is appended to the
+            #    contents of the headline, so we just remove it
+            #
+            # Albeit it doesn't make much sense, both options can be used at
+            # the same time, so we need to account for both cases. This problem
+            # was first reported in https://bit.ly/456AjUm
+            title = re.sub(r"^<a.*?>(.*?)<\/a>", r"\1", title)
+            title = re.sub(r"<a.*?>.*?<\/a>$", "", title)
 
             # Remove author-provided ids - see https://bit.ly/3ngiZea
             title = re.sub(r"id=\"?[^\">]+\"?", "", title)
