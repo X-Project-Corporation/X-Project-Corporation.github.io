@@ -25,6 +25,7 @@ import os
 import posixpath
 import re
 import requests
+import shutil
 import sys
 
 from cairosvg import svg2png
@@ -202,7 +203,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             for pool in [self.card_layer_pool, self.card_pool]:
                 pool.shutdown()
 
-    # Add custom layout directory to watched files
+    # Add custom layout directory to watched files, if it exists
     def on_serve(self, server, *, config, builder):
         path = os.path.abspath(self.config.cards_layout_dir)
         if os.path.exists(path):
@@ -708,7 +709,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
                     # Move fonts to cache directory
                     os.makedirs(os.path.join(path, family), exist_ok = True)
-                    os.replace(file, os.path.join(path, family, f"{name}.ttf"))
+                    shutil.move(file, os.path.join(path, family, f"{name}.ttf"))
 
     # -------------------------------------------------------------------------
 
