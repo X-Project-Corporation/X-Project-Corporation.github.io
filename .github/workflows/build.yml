@@ -115,8 +115,13 @@ jobs:
         env:
           REPO_FULL_NAME: '${{ github.event.repository.full_name }}'
         run: |
+<<<<<<< HEAD
           docker run --rm -i --user $(id -u):$(id -g) -e GH_TOKEN=${GH_TOKEN} -v ${PWD}:/docs ghcr.io/${REPO_FULL_NAME,,}:${{ steps.meta.outputs.version }} new .
           docker run --rm -i --user $(id -u):$(id -g) -e GH_TOKEN=${GH_TOKEN} -v ${PWD}:/docs ghcr.io/${REPO_FULL_NAME,,}:${{ steps.meta.outputs.version }} build
+=======
+          docker run --rm -i -v ${PWD}:/docs ${REPO_FULL_NAME,,}:${{ steps.meta.outputs.version }} new .
+          docker run --rm -i -v ${PWD}:/docs ${REPO_FULL_NAME,,}:${{ steps.meta.outputs.version }} build
+>>>>>>> upstream/master
 
       - name: Set platforms
         if: github.event_name == 'release'
