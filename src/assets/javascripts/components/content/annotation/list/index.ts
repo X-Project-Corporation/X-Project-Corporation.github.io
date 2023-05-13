@@ -207,6 +207,9 @@ export function mountAnnotationList(
       .subscribe(active => {
         el.hidden = !active
 
+        /* Add class to discern list element */
+        el.classList.toggle("md-annotation-list", active)
+
         /* Show annotations in code block or list (print) */
         for (const [inner, child] of pairs)
           if (!active)

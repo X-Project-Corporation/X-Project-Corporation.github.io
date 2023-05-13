@@ -258,6 +258,7 @@
       // [print]: Render annotation markers as numbers
       @media print {
         padding: 0 0.6ch;
+        font-weight: 700;
         color: var(--md-default-bg-color);
         white-space: nowrap;
         background: var(--md-default-fg-color--lighter);
@@ -267,6 +268,42 @@
         &::after {
           content: attr(data-md-annotation-id);
         }
+      }
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+
+// Scoped in typesetted content to match specificity of regular content
+.md-typeset {
+
+  // Annotation list
+  .md-annotation-list {
+    list-style: none;
+    counter-reset: xxx;
+
+    // Annotation list item
+    li {
+      position: relative;
+
+      // Annotation list marker
+      &::before {
+        position: absolute;
+        top: px2em(4px);
+        inset-inline-start: px2em(-34px);
+        min-width: 2ch;
+        height: 2ch;
+        padding: 0 0.6ch;
+        font-size: px2em(14.2px);
+        font-weight: 700;
+        line-height: 1.25;
+        color: var(--md-default-bg-color);
+        text-align: center;
+        content: counter(xxx);
+        counter-increment: xxx;
+        background: var(--md-default-fg-color--lighter);
+        border-radius: 2ch;
       }
     }
   }
