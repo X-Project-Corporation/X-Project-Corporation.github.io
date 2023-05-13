@@ -216,6 +216,12 @@ export function mountCodeBlock(
         el.removeAttribute("tabindex")
     })
 
+    // Code block sequence number
+    const id = sequence++
+    const buttons: HTMLElement[] = []
+    const parent = el.closest("pre")!
+    parent.id = `__code_${id}`
+
     /* Handle code annotations and highlights */
     const content$: Array<Observable<Component<CodeBlock>>> = []
     const container = el.closest(".highlight")
@@ -239,13 +245,6 @@ export function mountCodeBlock(
         )
       }
     }
-
-    // Code block sequence number
-    const id = sequence++
-
-    const buttons: HTMLElement[] = []
-    const parent = el.closest("pre")!
-    parent.id = `__code_${id}`
 
     // @todo: refactor and move into separate component
 
