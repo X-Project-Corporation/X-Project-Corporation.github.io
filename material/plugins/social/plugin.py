@@ -18,6 +18,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import functools
 import html
 import json
 import logging
@@ -25,7 +26,6 @@ import os
 import posixpath
 import re
 import requests
-import shutil
 import sys
 
 from cairosvg import svg2png
@@ -33,13 +33,15 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from glob import glob
 from hashlib import sha1
 from io import BytesIO
-from jinja2 import meta
+from jinja2 import Environment, meta
 from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import File
 from mkdocs.structure.pages import Page
+from mkdocs.utils import copy_file
 from PIL import Image, ImageColor, ImageDraw, ImageFont
+from PIL.Image import Image as _Image
 from statistics import stdev
 from tempfile import TemporaryFile, TemporaryDirectory
 from zipfile import ZipFile
@@ -71,11 +73,11 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         self.is_serve = (command == "serve")
 
         # Initialize thread pool for cards
-        self.card_pool = ThreadPoolExecutor(self.config.concurrency)
+        self.card_pool = ThreadPoolExecutor(self.config.concurrency - 1)
         self.card_jobs: dict[str, Future] = dict()
 
         # Initialize thread pool for card layers
-        self.card_layer_pool = ThreadPoolExecutor(self.config.concurrency)
+        self.card_layer_pool = ThreadPoolExecutor(self.config.concurrency - 1)
         self.card_layer_jobs: dict[str, Future] = dict()
 
     # Initialize plugin
@@ -83,9 +85,10 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if not self.config.enabled:
             return
 
-        # Initialize card layouts and templates
+        # Initialize card layouts, variables and environment
         self.card_layouts: dict[str, Layout] = dict()
-        self.card_templates: dict[str, list[list[str]]] = dict()
+        self.card_variables: dict[str, list[list[str]]] = dict()
+        self.card_env = Environment()
 
         # Initialize cache
         self.cache: dict[str, str] = dict()
@@ -180,7 +183,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             "\n".join([
                 f"<meta property=\"{property}\" content=\"{content}\" />"
                     for property, content in _replace(
-                        layout["tags"], config, page = page, image = image,
+                        layout["tags"], self.card_env, config,
+                        page = page, image = image,
                         layout = self.config.cards_layout_options,
                     ).items() if content
             ]),
@@ -216,8 +220,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # which is why it is an embarrassingly parallel problem and can be solved
     # by delegating the generation of each card to a thread pool.
     def _generate(self, name: str, page: Page, config: MkDocsConfig):
-        layout, templates = self._resolve_layout(name, config)
-        env = config.theme.get_env()
+        layout, variables = self._resolve_layout(name, config)
 
         # Each card can consist of multiple layers, many of which are likely
         # the same across cards (like background or logo layers). Some of the
@@ -228,12 +231,12 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Thus, we generate a hash for each card, which is based on the layers
         # and the values of all variables that are used to generate the card.
         layers: dict[str, Layer] = dict()
-        for layer, variables in zip(layout["layers"], templates):
+        for layer, templates in zip(layout["layers"], variables):
             fingerprints = [dict(self.config), layer]
 
             # Compute fingerprints for each layer
-            for variable in variables:
-                template = env.from_string(variable)
+            for template in templates:
+                template = _compile(template, self.card_env)
                 fingerprints.append(template.render(
                     page = page, config = config,
                     layout = self.config.cards_layout_options
@@ -311,8 +314,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     def _render(self, layer: Layer, page: Page, config: MkDocsConfig):
         image = Image.new(mode = "RGBA", size = get_size(layer))
         layer = _replace(
-            layer, config, page = page,
-            layout = self.config.cards_layout_options
+            layer, self.card_env, config,
+            page = page, layout = self.config.cards_layout_options
         )
 
         # Render background, icon, and typography
@@ -324,7 +327,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         return image
 
     # Render layer background
-    def _render_background(self, layer: Layer, input: Image):
+    def _render_background(self, layer: Layer, input: _Image):
         background = layer.get("background")
         if not background:
             return input
@@ -352,7 +355,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         return input
 
     # Render layer icon
-    def _render_icon(self, layer: Layer, input: Image, config: MkDocsConfig):
+    def _render_icon(self, layer: Layer, input: _Image, config: MkDocsConfig):
         icon = layer.get("icon")
         if not icon:
             return input
@@ -383,7 +386,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         return input
 
     # Render layer typography
-    def _render_typography(self, layer: Layer, input: Image):
+    def _render_typography(self, layer: Layer, input: _Image):
         typography = layer.get("typography")
         if not typography:
             return input
@@ -516,7 +519,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         return input
 
     # Render overlay for debugging
-    def _render_overlay(self, layout: Layout, input: Image):
+    def _render_overlay(self, layout: Layout, input: _Image):
         path = self._resolve_font("Roboto", ["Regular"])
         typeface = ImageFont.truetype(path, 12)
 
@@ -576,7 +579,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     def _resolve_layout(self, name: str, config: MkDocsConfig):
         name, _ = os.path.splitext(name)
         if name in self.card_layouts:
-            return self.card_layouts[name], self.card_templates[name]
+            return self.card_layouts[name], self.card_variables[name]
 
         # If the user specified a custom directory, try to resolve the layout
         # from this directory first, otherwise fall back to the default.
@@ -594,12 +597,13 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             # Open file and parse layout as YAML
             with open(path, encoding = "utf-8") as f:
                 self.card_layouts[name] = load(f, SafeLoader)
-                self.card_templates[name] = []
+                self.card_variables[name] = []
 
-                # Extract templates for each layer from layout
+                # Extract variables for each layer from layout
                 layout = self.card_layouts[name]
                 for layer in layout["layers"]:
-                    self.card_templates[name].append(_extract(layer, config))
+                    variables = _extract(layer, self.card_env, config)
+                    self.card_variables[name].append(variables)
 
                     # Set defaults for size and offset
                     layer["size"]   = layer.get("size", layout["size"])
@@ -613,8 +617,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             log.error(f"Could not find layout '{name}'")
             sys.exit(1)
 
-        # Return layout and templates
-        return self.card_layouts[name], self.card_templates[name]
+        # Return layout and variables
+        return self.card_layouts[name], self.card_variables[name]
 
     # Resolve icon with given name - this function searches for the icon in all
     # known theme directories, including custom directories specified by the
@@ -708,8 +712,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                     name = " ".join([name.replace(family, ""), style]).strip()
 
                     # Move fonts to cache directory
-                    os.makedirs(os.path.join(path, family), exist_ok = True)
-                    shutil.move(file, os.path.join(path, family, f"{name}.ttf"))
+                    copy_file(file, os.path.join(path, family, f"{name}.ttf"))
 
     # -------------------------------------------------------------------------
 
@@ -737,25 +740,24 @@ def _digest(data: dict):
 # -----------------------------------------------------------------------------
 
 # Extract all variables recursively
-def _extract(data: any, config: MkDocsConfig):
+def _extract(data: any, env: Environment, config: MkDocsConfig):
 
     # Traverse dictionary
     if isinstance(data, dict):
         return [
             variable for value in data.values()
-                for variable in _extract(value, config)
+                for variable in _extract(value, env, config)
         ]
 
     # Traverse list
     elif isinstance(data, list):
         return [
             variable for value in data
-                for variable in _extract(value, config)
+                for variable in _extract(value, env, config)
         ]
 
     # Retrieve variables from string
     elif isinstance(data, str):
-        env = config.theme.get_env()
         if meta.find_undeclared_variables(env.parse(data)):
             return [data]
 
@@ -763,38 +765,41 @@ def _extract(data: any, config: MkDocsConfig):
     return []
 
 # Replace all variables recursively and return a copy of the given data
-def _replace(data: any, config: MkDocsConfig, **kwargs):
+def _replace(data: any, env: Environment, config: MkDocsConfig, **kwargs):
 
     # Traverse dictionary
     if isinstance(data, dict):
         return {
-            key: _replace(value, config, **kwargs)
+            key: _replace(value, env, config, **kwargs)
                 for key, value in data.items()
         }
 
     # Traverse list
     elif isinstance(data, list):
         return [
-            _replace(value, config, **kwargs)
+            _replace(value, env, config, **kwargs)
                 for value in data
         ]
 
     # Retrieve variables from string
     elif isinstance(data, str):
-        env = config.theme.get_env()
-
-        # Unescape HTML entities and render template
-        template = env.from_string(html.unescape(data))
-        return template.render(config = config, **kwargs) or None
+        return _compile(data, env).render(
+            config = config, **kwargs
+        ) or None
 
     # Return data
     return data
+
+# Compile template and cache it indefinitely
+@functools.lru_cache(maxsize = None)
+def _compile(data: str, env: Environment):
+    return env.from_string(html.unescape(data))
 
 # -----------------------------------------------------------------------------
 
 # Resize image to match the size of the reference image and align it to the
 # center of the reference image so that it is fully covered
-def _resize_cover(image: Image, ref: Image):
+def _resize_cover(image: _Image, ref: _Image):
     ratio = max(
         ref.width  / image.width,
         ref.height / image.height
@@ -818,7 +823,7 @@ def _resize_cover(image: Image, ref: Image):
 
 # Resize image to match the size of the reference image and align it to the
 # center of the reference image so that it is fully contained
-def _resize_contain(image: Image, ref: Image):
+def _resize_contain(image: _Image, ref: _Image):
     ratio = min(
         ref.width  / image.width,
         ref.height / image.height
@@ -846,7 +851,7 @@ def _resize_contain(image: Image, ref: Image):
 # font size and spacing between lines based on the number of lines and height.
 # In order to omit rounding errors, we compute the ascender and descender based
 # on a font size of 1,000.
-def _metrics(path: str, line: Line, ref: Image):
+def _metrics(path: str, line: Line, ref: _Image):
     typeface = ImageFont.truetype(path, 1000)
     ascender, descender = typeface.getmetrics()
 
