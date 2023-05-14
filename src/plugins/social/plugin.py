@@ -104,6 +104,12 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if self.config.debug:
             log.warning("Debug mode is enabled for \"social\" plugin.")
 
+            # By default, debug mode is disabled when the documentation is
+            # built, but not when it is served. This should nicely align with
+            # the expected user experience when authoring documentation.
+            if not self.is_serve and not self.config.debug_on_build:
+                self.config.debug = False
+
         # Check if site URL is defined
         if not config.site_url:
             log.warning(
@@ -291,7 +297,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 get_offset(layer)
             )
 
-        # If enabled, render debug overlay
+        # If debug mode is enabled, render overlay
         if self.config.debug:
             image = self._render_overlay(layout, image)
 
