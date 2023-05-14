@@ -450,10 +450,25 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if len(lengths) != indexes[-1]:
             indexes.append(len(lengths))
 
-        # If the number of lines exceeds the maximum amount of lines we are able
-        # to render, truncate the text and add an ellipsis
+        # If the number of lines exceeds the maximum amount we are able to
+        # render, either shrink or truncate the text and add an ellipsis
         amount = line.get("amount", 1)
         if amount < len(indexes) - 1:
+
+            # If overflow mode is set to 'shrink', decrease the font size and
+            # try to render the typography again to see if it fits
+            overflow = typography.get("overflow")
+            if overflow == "shrink":
+                line = typography["line"] = { **line }
+                line["amount"] = amount + 1
+
+                # Render layer with new typography metrics by calling this
+                # function recursively and returning immediately from it
+                return self._render_typography({
+                    **layer, "typography": typography
+                }, input)
+
+            # Determine last and penultimate line indexes
             indexes = indexes[:amount + 1]
             p, q = indexes[-2:]
 

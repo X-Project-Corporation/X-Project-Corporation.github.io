@@ -64,6 +64,7 @@ class Font(TypedDict):
 class Typography(TypedDict):
     content: Optional[str]
     alignment: Optional[str]
+    overflow: Optional[str]
     color: Optional[str]
     line: Optional[Line]
     font: Optional[Font]
