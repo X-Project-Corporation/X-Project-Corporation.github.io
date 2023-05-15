@@ -294,7 +294,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         for h, layer in layers.items():
             image.alpha_composite(
                 self.card_layer_jobs[h].result(),
-                get_offset(layer)
+                get_offset(layer, image)
             )
 
         # If debug mode is enabled, render overlay
@@ -566,7 +566,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # Draw overlay outline for each layer
         for i, layer in enumerate(layout["layers"]):
-            x, y = get_offset(layer)
+            x, y = get_offset(layer, image)
             w, h = get_size(layer)
 
             # Draw overlay outline
@@ -906,13 +906,13 @@ def _metrics(path: str, line: Line, ref: _Image):
 def _anchor(data: str):
     axis = re.split(r"\s+", data)
 
-    # Determine horizontal axis
+    # Determine anchor on x-axis
     if   "start"  in axis: anchor  = "l"
     elif "end"    in axis: anchor  = "r"
     elif "center" in axis: anchor  = "m"
     else:                  anchor  = "l"
 
-    # Determine vertical axis
+    # Determine anchor on y-axis
     if   "top"    in axis: anchor += "a"
     elif "bottom" in axis: anchor += "d"
     elif "center" in axis: anchor += "m"
