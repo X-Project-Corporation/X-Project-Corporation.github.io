@@ -42,6 +42,8 @@ class SocialConfig(Config):
     cards_layout_dir = Type(str, default = "layouts")
     cards_layout = Type(str, default = "default")
     cards_layout_options = Type(dict, default = {})
+    cards_include = Type(list, default = [])
+    cards_exclude = Type(list, default = [])
 
     # Options for debugging
     debug = Type(bool, default = False)

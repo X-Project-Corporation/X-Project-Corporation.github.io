@@ -30,6 +30,7 @@ import sys
 
 from cairosvg import svg2png
 from concurrent.futures import Future, ThreadPoolExecutor
+from fnmatch import fnmatch
 from glob import glob
 from hashlib import sha1
 from io import BytesIO
@@ -125,7 +126,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return
 
         # Skip if cards should not be generated
-        if not self.config.cards:
+        if not self.config.cards or self._is_excluded(page):
             return
 
         # Resolve card layout - currently, only a single layout per site is
@@ -149,7 +150,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return
 
         # Skip if cards should not be generated
-        if not self.config.cards:
+        if not self.config.cards or self._is_excluded(page):
             return
 
         # Reconcile concurrent jobs - we need to wait for the card job to finish
@@ -218,6 +219,34 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         path = os.path.abspath(self.config.cards_layout_dir)
         if os.path.exists(path):
             server.watch(path, recursive = True)
+
+    # -------------------------------------------------------------------------
+
+    # Check if the given page is excluded - giving the author the option to
+    # include and exclude specific pages is important, as it allows control
+    # which pages should generate social cards, and which don't. Different
+    # cards can be built by using multiple instances of the plugin.
+    def _is_excluded(self, page: Page):
+        path = page.file.src_uri
+
+        # Check if page matches one of the inclusion patterns
+        if self.config.cards_include:
+            for pattern in self.config.cards_include:
+                if fnmatch(path, pattern):
+                    return False
+
+            # Page is not included
+            log.debug(f"Excluding page: {path}")
+            return True
+
+        # Check if page matches one of the exclusion patterns
+        for pattern in self.config.cards_exclude:
+            if fnmatch(path, pattern):
+                log.debug(f"Excluding page: {path}")
+                return True
+
+        # Page is not excluded
+        return False
 
     # -------------------------------------------------------------------------
 
