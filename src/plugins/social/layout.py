@@ -120,13 +120,13 @@ def get_offset(layer: Layer, image: _Image):
 
         # Compute origin on x-axis
         if   "start"  in origin: pass
-        elif "end"    in origin: x = (image.width  - w)      - x
-        elif "center" in origin: x = (image.width  - w) >> 1 + x
+        elif "end"    in origin: x += (image.width  - w)  - 2 * x
+        elif "center" in origin: x += (image.width  - w) >> 1
 
         # Compute origin on y-axis
         if   "top"    in origin: pass
-        elif "bottom" in origin: y = (image.height - h)      - y
-        elif "center" in origin: y = (image.height - h) >> 1 + y
+        elif "bottom" in origin: y += (image.height - h)  - 2 * y
+        elif "center" in origin: y += (image.height - h) >> 1
 
     # Return offset
     return x, y
