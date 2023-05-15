@@ -73,11 +73,11 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         self.is_serve = (command == "serve")
 
         # Initialize thread pool for cards
-        self.card_pool = ThreadPoolExecutor(self.config.concurrency - 1)
+        self.card_pool = ThreadPoolExecutor(self.config.concurrency)
         self.card_jobs: dict[str, Future] = dict()
 
         # Initialize thread pool for card layers
-        self.card_layer_pool = ThreadPoolExecutor(self.config.concurrency - 1)
+        self.card_layer_pool = ThreadPoolExecutor(self.config.concurrency)
         self.card_layer_jobs: dict[str, Future] = dict()
 
     # Initialize plugin

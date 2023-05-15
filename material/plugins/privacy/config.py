@@ -30,7 +30,7 @@ from mkdocs.config.config_options import Deprecated, Type
 # Privacy plugin configuration scheme
 class PrivacyConfig(Config):
     enabled = Type(bool, default = True)
-    concurrency = Type(int, default = os.cpu_count())
+    concurrency = Type(int, default = max(1, os.cpu_count() - 1))
 
     # Options for caching
     cache = Type(bool, default = True)
