@@ -30,6 +30,7 @@ import sys
 
 from cairosvg import svg2png
 from concurrent.futures import Future, ThreadPoolExecutor
+from fnmatch import fnmatch
 from glob import glob
 from hashlib import sha1
 from io import BytesIO
@@ -125,7 +126,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return
 
         # Skip if cards should not be generated
-        if not self.config.cards:
+        if not self.config.cards or self._is_excluded(page):
             return
 
         # Resolve card layout - currently, only a single layout per site is
@@ -149,7 +150,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return
 
         # Skip if cards should not be generated
-        if not self.config.cards:
+        if not self.config.cards or self._is_excluded(page):
             return
 
         # Reconcile concurrent jobs - we need to wait for the card job to finish
@@ -218,6 +219,34 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         path = os.path.abspath(self.config.cards_layout_dir)
         if os.path.exists(path):
             server.watch(path, recursive = True)
+
+    # -------------------------------------------------------------------------
+
+    # Check if the given page is excluded - giving the author the option to
+    # include and exclude specific pages is important, as it allows control
+    # which pages should generate social cards, and which don't. Different
+    # cards can be built by using multiple instances of the plugin.
+    def _is_excluded(self, page: Page):
+        path = page.file.src_uri
+
+        # Check if page matches one of the inclusion patterns
+        if self.config.cards_include:
+            for pattern in self.config.cards_include:
+                if fnmatch(path, pattern):
+                    return False
+
+            # Page is not included
+            log.debug(f"Excluding page: {path}")
+            return True
+
+        # Check if page matches one of the exclusion patterns
+        for pattern in self.config.cards_exclude:
+            if fnmatch(path, pattern):
+                log.debug(f"Excluding page: {path}")
+                return True
+
+        # Page is not excluded
+        return False
 
     # -------------------------------------------------------------------------
 
@@ -408,7 +437,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Retrieve font family and font style - try to load regular font style,
         # if the given font style is not available (e.g. for icon fonts)
         family = font.get("family", "Roboto")
-        styles = set([font.get("style", "Regular"), "Regular"])
+        styles = set([font.get("style", "Regular")])
 
         # Resolve and load font and compute metrics
         path = self._resolve_font(family, styles)
@@ -635,7 +664,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # Abort, since the layout could not be resolved
         if name not in self.card_layouts:
-            log.error(f"Could not find layout '{name}'")
+            log.error(f"Couldn't find layout '{name}'")
             sys.exit(1)
 
         # Return layout and variables
@@ -659,7 +688,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 return f.read()
 
         # Abort, since the icon could not be resolved
-        log.error(f"Could not find icon '{name}'")
+        log.error(f"Couldn't find icon '{name}'")
         sys.exit(1)
 
     # Resolve font family with specific style - if we haven't already done it,
@@ -681,15 +710,20 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             if name in styles:
                 return os.path.join(path, file)
 
-        # Abort, since the font could not be resolved
-        styles = ", ".join(styles)
-        log.error(
-            f"Could not find style '{styles}' for font family '{family}'. " +
-            f"Styles available:\n\n" +
-            f"\n".join([os.path.splitext(file)[0] for file in list]) +
-            f"\n\n"
-        )
-        sys.exit(1)
+        # Print warning in debug mode, since the font could not be resolved
+        if self.config.debug:
+            styles = ", ".join(styles)
+            log.warning(
+                f"Couldn't find style '{styles}' for font family '{family}'. " +
+                f"Styles available:\n\n" +
+                f"\n".join([os.path.splitext(file)[0] for file in list]) +
+                f"\n\n"
+                f"Falling back to: Regular\n"
+                f"\n"
+            )
+
+        # Fall back to regular font
+        return self._resolve_font(family, { "Regular" })
 
     # -------------------------------------------------------------------------
 
@@ -708,7 +742,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             # Ensure that the download succeeded
             if res.status_code != 200:
                 log.error(
-                    f"Could not find font family '{family}' on Google Fonts "
+                    f"Couldn't find font family '{family}' on Google Fonts "
                     f"({res.status_code}: {res.reason})"
                 )
                 sys.exit(1)
