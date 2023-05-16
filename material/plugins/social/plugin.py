@@ -44,6 +44,7 @@ from PIL import Image, ImageColor, ImageDraw, ImageFont
 from PIL.Image import Image as _Image
 from statistics import stdev
 from tempfile import TemporaryFile, TemporaryDirectory
+from threading import Lock
 from zipfile import ZipFile
 from yaml import SafeLoader, load
 
@@ -84,6 +85,9 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     def on_config(self, config):
         if not self.config.enabled:
             return
+
+        # Initialize lock for synchronizing downloading of fonts
+        self.lock = Lock()
 
         # Initialize card layouts, variables and environment
         self.card_layouts: dict[str, Layout] = dict()
@@ -670,9 +674,16 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         path = os.path.join(self.config.cache_dir, "fonts", family)
         path = os.path.normpath(path)
 
-        # Fetch font family, if it hasn't been fetched yet
+        # Fetch font family, if it hasn't been fetched yet - we use a lock to
+        # synchronize access, so the font is not downloaded multiple times, but
+        # all other threads wait for the font being available. This is also why
+        # we need the double path check, which makes sure that we only use the
+        # lock when we actually need to download a font that doesn't exist. If
+        # we already downloaded it, we don't want to block at all.
         if not os.path.exists(path):
-            self._fetch_font_from_google_fonts(family)
+            with self.lock:
+                if not os.path.exists(path):
+                    self._fetch_font_from_google_fonts(family)
 
         # Check for availability of font style
         list = sorted(os.listdir(path))
