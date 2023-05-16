@@ -409,8 +409,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         font = typography.get("font", {})
         line = typography.get("line", {})
 
-        # Retrieve font family and font style - try to load regular font style,
-        # if the given font style is not available (e.g. for icon fonts)
+        # Retrieve font family and font style
         family = font.get("family", "Roboto")
         styles = set([font.get("style", "Regular")])
 
