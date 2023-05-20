@@ -23,20 +23,22 @@ import html
 import json
 import logging
 import os
+import pickle
 import posixpath
 import re
 import requests
-import sys
 
 from cairosvg import svg2png
 from concurrent.futures import Future, ThreadPoolExecutor
+from copy import copy
 from fnmatch import fnmatch
 from glob import glob
 from hashlib import sha1
 from io import BytesIO
 from jinja2 import Environment, meta
-from mkdocs.commands.build import DuplicateFilter
+from mkdocs.config.base import Config
 from mkdocs.config.defaults import MkDocsConfig
+from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import File
 from mkdocs.structure.pages import Page
@@ -47,7 +49,6 @@ from statistics import stdev
 from tempfile import TemporaryFile, TemporaryDirectory
 from threading import Lock
 from zipfile import ZipFile
-from yaml import SafeLoader, load
 
 from material.plugins.social.config import SocialConfig
 from material.plugins.social.layout import Layer, Layout, Line
@@ -122,11 +123,17 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 "but not linked, so they won't be visible on social media."
             )
 
+        # Remember last error, so we can disable the plugin if necessary. This
+        # allows for a much better editing experience, as the user can fix the
+        # issue and the plugin will pick up the changes, so there's no need to
+        # restart the preview server.
+        self.error = None
+
     # Generate card as soon as metadata is available (run latest) - run this
     # hook after all other plugins, so they can alter the card configuration
     @event_priority(-100)
     def on_page_markdown(self, markdown, *, page, config, files):
-        if not self.config.enabled:
+        if not self.config.enabled and not self.error:
             return
 
         # Skip if cards should not be generated
@@ -138,7 +145,13 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # We also preload the layout here, so we're not triggering multiple
         # concurrent loads in the worker threads.
         name = self.config.cards_layout
-        self._resolve_layout(name, config)
+        try:
+            self._resolve_layout(name, config)
+
+        # If an error occurs during layout resolution, we need to disable the
+        # plugin, as we cannot generate cards without a valid layout
+        except Exception as e:
+            return self._error(e)
 
         # Spawn concurrent job to generate card for page and add future to
         # list of jobs, as it returns the file we need to copy later on
@@ -150,7 +163,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # we want plugins like the minify plugin to pick up the HTML we inject
     @event_priority(50)
     def on_post_page(self, output, *, page, config):
-        if not self.config.enabled:
+        if not self.config.enabled and not self.error:
             return
 
         # Skip if cards should not be generated
@@ -163,7 +176,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # fails and the user can fix the issue.
         future = self.card_jobs[page.file.src_uri]
         if future.exception():
-            raise future.exception()
+            return self._error(future.exception())
         else:
             file: File = future.result()
             file.copy_file()
@@ -174,7 +187,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         layout, _ = self._resolve_layout(name, config)
 
         # Stop if no tags are present or site URL is not set
-        if not layout.get("tags") or not config.site_url:
+        if not layout.tags or not config.site_url:
             return
 
         # Resolve image dimensions and curate image metadata
@@ -194,7 +207,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             "\n".join([
                 f"<meta property=\"{property}\" content=\"{content}\" />"
                     for property, content in _replace(
-                        layout["tags"], self.card_env, config,
+                        layout.tags, self.card_env, config,
                         page = page, image = image,
                         layout = self.config.cards_layout_options,
                     ).items() if content
@@ -206,7 +219,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # generated cards, so we can run this hook after all of them
     @event_priority(-100)
     def on_post_build(self, *, config):
-        if not self.config.enabled:
+        if not self.config.enabled and not self.error:
             return
 
         # Skip if cards should not be generated
@@ -270,8 +283,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Thus, we generate a hash for each card, which is based on the layers
         # and the values of all variables that are used to generate the card.
         layers: dict[str, Layer] = dict()
-        for layer, templates in zip(layout["layers"], variables):
-            fingerprints = [dict(self.config), layer]
+        for layer, templates in zip(layout.layers, variables):
+            fingerprints = [self.config, layer]
 
             # Compute fingerprints for each layer
             for template in templates:
@@ -367,16 +380,14 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
     # Render layer background
     def _render_background(self, layer: Layer, input: _Image):
-        background = layer.get("background")
-        if not background:
-            return input
+        background = layer.background
 
         # If given, load background image and resize it proportionally to cover
         # the entire area while retaining the aspect ratio of the input image
-        if background.get("image"):
-            with open(background["image"], "br") as f:
+        if background.image:
+            with open(background.image, "br") as f:
                 data = f.read()
-                if background["image"].endswith(".svg"):
+                if background.image.endswith(".svg"):
                     data = svg2png(data, output_width = input.width)
 
             # Resize image to cover entire area
@@ -385,8 +396,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # If given, fill background color - this is done after the image is
         # loaded to allow for transparent tints. How awesome is that?
-        if background.get("color"):
-            color = background["color"]
+        if background.color:
+            color = background.color
             image = Image.new(mode = "RGBA", size = input.size, color = color)
             input.alpha_composite(image)
 
@@ -395,21 +406,17 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
     # Render layer icon
     def _render_icon(self, layer: Layer, input: _Image, config: MkDocsConfig):
-        icon = layer.get("icon")
-        if not icon:
-            return input
-
-        # If an empty string is given, return immediately
-        if not icon.get("value"):
+        icon = layer.icon
+        if not icon.value:
             return input
 
         # Resolve icon by searching all configured theme directories and apply
         # the fill color before rendering, if given. Note that the fill color
         # must be converted to rgba() function syntax, or opacity will not work
         # correctly. This way, we don't need to use the fill-opacity property.
-        data = self._resolve_icon(icon["value"], config)
-        if icon.get("color"):
-            (r, g, b, *a) = ImageColor.getrgb(icon["color"])
+        data = self._resolve_icon(icon.value, config)
+        if icon.color:
+            (r, g, b, *a) = ImageColor.getrgb(icon.color)
             opacity = a[0] / 255 if a else 1
 
             # Compute and replace fill color
@@ -426,26 +433,18 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
     # Render layer typography
     def _render_typography(self, layer: Layer, input: _Image):
-        typography = layer.get("typography")
-        if not typography:
+        typography = layer.typography
+        if not typography.content:
             return input
-
-        # If an empty string is given, return immediately
-        if not typography.get("content"):
-            return input
-
-        # Retrieve font and line configuration
-        font = typography.get("font", {})
-        line = typography.get("line", {})
 
         # Retrieve font family and font style
-        family = font.get("family", "Roboto")
-        styles = set([font.get("style", "Regular")])
+        family = typography.font.family
+        styles = set([typography.font.style])
 
         # Resolve and load font and compute metrics
         path = self._resolve_font(family, styles)
-        current, spacing = _metrics(path, line, input)
-        typeface = ImageFont.truetype(path, current)
+        current, spacing = _metrics(path, typography.line, input)
+        font = ImageFont.truetype(path, current)
 
         # Create image and initialize drawing context
         image = Image.new(mode = "RGBA", size = input.size)
@@ -457,8 +456,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # whitespace. Note that lengths of words are perfectly additive, so we
         # can compute the length of a line by adding the lengths of all words
         # and the whitespace between them.
-        space = context.textlength(" ", font = typeface)
-        ellipsis = context.textlength("...", font = typeface)
+        space = context.textlength(" ", font = font)
+        ellipsis = context.textlength("...", font = font)
 
         # Initialize lists to hold the lengths of words and indexes of lines.
         # Tracking line indexes allows us to improve splitting using heuristics.
@@ -471,7 +470,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # image, and thus overflow the line, start a new one.
         words = re.split(r"\s+", typography["content"])
         for word in words:
-            length = context.textlength(word, font = typeface)
+            length = context.textlength(word, font = font)
             lengths.append(length)
 
             # Start new line if current line overflows
@@ -490,21 +489,18 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # If the number of lines exceeds the maximum amount we are able to
         # render, either shrink or truncate the text and add an ellipsis
-        amount = line.get("amount", 1)
+        amount = typography.line.amount
         if amount < len(indexes) - 1:
 
             # If overflow mode is set to 'shrink', decrease the font size and
             # try to render the typography again to see if it fits
             overflow = typography.get("overflow")
             if overflow == "shrink":
-                line = typography["line"] = { **line }
-                line["amount"] = amount + 1
+                typography.line.amount += 1
 
                 # Render layer with new typography metrics by calling this
                 # function recursively and returning immediately from it
-                return self._render_typography({
-                    **layer, "typography": typography
-                }, input)
+                return self._render_typography(layer, input)
 
             # Determine last and penultimate line indexes
             indexes = indexes[:amount + 1]
@@ -539,7 +535,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # is computed as a string of two characters, where the first character
         # denotes the horizontal alignment and the second character denotes
         # the vertical alignment.
-        anchor = _anchor(typography.get("align", "start"))
+        anchor = _anchor(typography.align)
 
         # Compute horizontal alignment
         if   anchor[0] == "l": align, x = "left",   0
@@ -560,10 +556,10 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Draw text onto image
         context.text(
             (x, y), text,
-            font = typeface,
+            font = font,
             anchor = anchor,
             spacing = spacing,
-            fill = typography.get("color"),
+            fill = typography.color,
             align = align
         )
 
@@ -597,7 +593,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         color = "black" if r * 0.299 + g * 0.587 + b * 0.114 > 150 else "white"
 
         # Draw overlay outline for each layer
-        for i, layer in enumerate(layout["layers"]):
+        for i, layer in enumerate(layout.layers):
             x, y = get_offset(layer, image)
             w, h = get_size(layer)
 
@@ -649,26 +645,36 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
             # Open file and parse layout as YAML
             with open(path, encoding = "utf-8") as f:
-                self.card_layouts[name] = load(f, SafeLoader)
+                layout = Layout()
+                layout.load_file(f)
+
+                #
+                errors, warnings = layout.validate()
+                for key, w in warnings:
+                    log.warning(w)
+                for key, e in errors:
+                    raise e
+
+                # Store layout and variables
+                self.card_layouts[name] = layout
                 self.card_variables[name] = []
 
                 # Extract variables for each layer from layout
-                layout = self.card_layouts[name]
-                for layer in layout["layers"]:
+                for layer in layout.layers:
                     variables = _extract(layer, self.card_env, config)
                     self.card_variables[name].append(variables)
 
-                    # Set defaults for size and offset
-                    layer["size"]   = layer.get("size", layout["size"])
-                    layer["offset"] = layer.get("offset", {})
+                    # Set default values for for layer size, if not given
+                    for key, value in layer.size.items():
+                        if value == 0:
+                            layer.size[key] = layout.size[key]
 
             # Abort, since we're done
             break
 
         # Abort, since the layout could not be resolved
         if name not in self.card_layouts:
-            log.error(f"Couldn't find layout '{name}'")
-            sys.exit(1)
+            raise PluginError(f"Couldn't find layout '{name}'")
 
         # Return layout and variables
         return self.card_layouts[name], self.card_variables[name]
@@ -691,8 +697,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 return f.read()
 
         # Abort, since the icon could not be resolved
-        log.error(f"Couldn't find icon '{name}'")
-        sys.exit(1)
+        raise PluginError(f"Couldn't find icon '{name}'")
 
     # Resolve font family with specific style - if we haven't already done it,
     # the font family is first downloaded from Google Fonts and the styles are
@@ -751,11 +756,10 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
             # Ensure that the download succeeded
             if res.status_code != 200:
-                log.error(
+                raise PluginError(
                     f"Couldn't find font family '{family}' on Google Fonts "
                     f"({res.status_code}: {res.reason})"
                 )
-                sys.exit(1)
 
             # Extract fonts from archive
             with TemporaryDirectory() as temp:
@@ -781,6 +785,24 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
     # -------------------------------------------------------------------------
 
+    # Handle error - if we're serving, we just log the first error we encounter.
+    # If we're building, we raise an exception, so the build fails.
+    def _error(self, e: Exception):
+        if not self.is_serve:
+            raise PluginError(str(e))
+
+        # Remember last error
+        if not self.error:
+            self.error = e
+
+            # If we're serving, just log the error and emit a warning that
+            # social cards are not being generated from that point on.
+            log.error(e)
+            log.warning(
+                "Skipping generation of social cards for this build. "
+                "Please fix the error to enable social cards again."
+            )
+
     # Create a file for the given path
     def _generate_file(self, path: str, config: MkDocsConfig):
         return File(
@@ -799,16 +821,16 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 # the same. Additionally, we can identify identical layers between images,
 # e.g., background, logos, or avatars, but also unchanged text.
 def _digest(data: dict):
-    flat = json.dumps(data, sort_keys = True)
-    return sha1(flat.encode("utf-8")).hexdigest()
+    flat = pickle.dumps(data)
+    return sha1(flat).hexdigest()
 
 # -----------------------------------------------------------------------------
 
 # Extract all variables recursively
 def _extract(data: any, env: Environment, config: MkDocsConfig):
 
-    # Traverse dictionary
-    if isinstance(data, dict):
+    # Traverse configuration or dictionary
+    if isinstance(data, (Config, dict)):
         return [
             variable for value in data.values()
                 for variable in _extract(value, env, config)
@@ -832,12 +854,11 @@ def _extract(data: any, env: Environment, config: MkDocsConfig):
 # Replace all variables recursively and return a copy of the given data
 def _replace(data: any, env: Environment, config: MkDocsConfig, **kwargs):
 
-    # Traverse dictionary
-    if isinstance(data, dict):
-        return {
-            key: _replace(value, env, config, **kwargs)
-                for key, value in data.items()
-        }
+    # Traverse configuration or dictionary
+    if isinstance(data, (Config, dict)):
+        data = copy(data)
+        for key, value in data.items():
+            data[key] = _replace(value, env, config, **kwargs)
 
     # Traverse list
     elif isinstance(data, list):
@@ -971,4 +992,3 @@ def _anchor(data: str):
 
 # Set up logging
 log = logging.getLogger("mkdocs")
-log.addFilter(DuplicateFilter())

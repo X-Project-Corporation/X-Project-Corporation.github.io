@@ -20,75 +20,96 @@
 
 import re
 
+from mkdocs.config.base import Config
+from mkdocs.config.config_options import Choice, ListOfItems, SubConfig, Type
 from PIL.Image import Image as _Image
-from typing import Dict, List, Optional, TypedDict, Union
+from typing import Union
 
 # -----------------------------------------------------------------------------
-# Typings
+# Options
+# -----------------------------------------------------------------------------
+
+# Options for origin
+Origin = (
+    "start top",        "center top",       "end top",
+    "start center",     "center",           "end center",
+    "start bottom",     "center bottom",    "end bottom",
+    "start",                                "end"
+)
+
+# Options for overflow
+Overflow = (
+    "truncate",
+    "shrink"
+)
+# -----------------------------------------------------------------------------
+# Configuration
 # -----------------------------------------------------------------------------
 
 # Size
-class Size(TypedDict):
-    width: int
-    height: int
+class Size(Config):
+    width = Type(int, default = 0)
+    height = Type(int, default = 0)
 
 # Offset
-class Offset(TypedDict):
-    x: int
-    y: int
+class Offset(Config):
+    x = Type(int, default = 0)
+    y = Type(int, default = 0)
 
-# -----------------------------------------------------------------------------
+# # -----------------------------------------------------------------------------
 
 # Background
-class Background(TypedDict):
-    color: Optional[str]
-    image: Optional[str]
+class Background(Config):
+    color = Type(str, default = "")
+    image = Type(str, default = "")
 
-# -----------------------------------------------------------------------------
+# # -----------------------------------------------------------------------------
 
 # Icon
-class Icon(TypedDict):
-    value: Optional[str]
-    color: Optional[str]
+class Icon(Config):
+    value = Type(str, default = "")
+    color = Type(str, default = "")
 
-# -----------------------------------------------------------------------------
+# # -----------------------------------------------------------------------------
 
 # Line
-class Line(TypedDict):
-    amount: Optional[int]
-    height: Optional[int]
+class Line(Config):
+    amount = Type((int, float), default = 1)
+    height = Type((int, float), default = 1)
 
 # Font
-class Font(TypedDict):
-    name: Optional[str]
-    weight: Optional[str]
+class Font(Config):
+    family = Type(str, default = "Roboto")
+    style = Type(str, default = "Regular")
 
 # Typography
-class Typography(TypedDict):
-    content: Optional[str]
-    alignment: Optional[str]
-    overflow: Optional[str]
-    color: Optional[str]
-    line: Optional[Line]
-    font: Optional[Font]
+class Typography(Config):
+    content = Type(str, default = "")
+    align = Choice(Origin, default = "start top")
+    overflow = Choice(Overflow, default = "truncate")
+    color = Type(str, default = "")
+    line = SubConfig(Line)
+    font = SubConfig(Font)
 
 # -----------------------------------------------------------------------------
 
 # Layer
-class Layer(TypedDict):
-    size: Optional[Size]
-    offset: Optional[Offset]
-    background: Optional[Background]
-    icon: Optional[Icon]
-    typography: Optional[Typography]
+class Layer(Config):
+    size = SubConfig(Size)
+    offset = SubConfig(Offset)
+    origin = Choice(Origin, default = "start top")
+    background = SubConfig(Background)
+    icon = SubConfig(Icon)
+    typography = SubConfig(Typography)
 
 # -----------------------------------------------------------------------------
 
 # Layout
-class Layout(TypedDict):
-    tags: Dict[str, str]
-    size: Size
-    layers: List[Layer]
+class Layout(Config):
+    definitions = ListOfItems(Type(str), default = [])
+    tags = Type(dict, default = {})
+    size = SubConfig(Size)
+    layers = ListOfItems(SubConfig(Layer), default = [])
 
 # -----------------------------------------------------------------------------
 # Functions
@@ -96,24 +117,16 @@ class Layout(TypedDict):
 
 # Get layer or layout size as tuple
 def get_size(layer: Union[Layer, Layout]):
-    size = layer["size"]
-    return (
-        size["width"],
-        size["height"]
-    )
+    return layer.size.width, layer.size.height
 
 # Get layer offset as tuple
 def get_offset(layer: Layer, image: _Image):
-    offset = layer["offset"]
-
-    # Get layer offset
-    x = offset.get("x", 0)
-    y = offset.get("y", 0)
+    x, y = layer.offset.x, layer.offset.y
 
     # Compute offset from origin - if an origin is given, compute the offset
     # relative to the image and layer size to allow for flexible positioning
-    if "origin" in layer:
-        origin = re.split(r"\s+", layer.get("origin", "start"))
+    if layer.origin != "start top":
+        origin = re.split(r"\s+", layer.origin)
 
         # Get layer size
         w, h = get_size(layer)
