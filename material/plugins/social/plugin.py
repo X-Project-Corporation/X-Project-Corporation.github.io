@@ -133,7 +133,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # hook after all other plugins, so they can alter the card configuration
     @event_priority(-100)
     def on_page_markdown(self, markdown, *, page, config, files):
-        if not self.config.enabled and not self.error:
+        if not self.config.enabled or self.error:
             return
 
         # Skip if cards should not be generated
@@ -163,7 +163,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # we want plugins like the minify plugin to pick up the HTML we inject
     @event_priority(50)
     def on_post_page(self, output, *, page, config):
-        if not self.config.enabled and not self.error:
+        if not self.config.enabled or self.error:
             return
 
         # Skip if cards should not be generated
@@ -219,7 +219,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # generated cards, so we can run this hook after all of them
     @event_priority(-100)
     def on_post_build(self, *, config):
-        if not self.config.enabled and not self.error:
+        if not self.config.enabled or self.error:
             return
 
         # Skip if cards should not be generated
@@ -648,7 +648,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 layout = Layout()
                 layout.load_file(f)
 
-                #
+                # Validate layout and abort if errors occurred
                 errors, warnings = layout.validate()
                 for key, w in warnings:
                     log.warning(w)
@@ -938,12 +938,8 @@ def _resize_contain(image: _Image, ref: _Image):
 # In order to omit rounding errors, we compute the ascender and descender based
 # on a font size of 1,000.
 def _metrics(path: str, line: Line, ref: _Image):
-    typeface = ImageFont.truetype(path, 1000)
-    ascender, descender = typeface.getmetrics()
-
-    # Retrieve number of lines and height
-    amount = line.get("amount", 1)
-    height = line.get("height", 1)
+    font = ImageFont.truetype(path, 1000)
+    ascender, descender = font.getmetrics()
 
     # It would be too complex to let the author define the font size, since this
     # would involve a lot of fiddling to find the right value. Instead, we let
@@ -952,18 +948,18 @@ def _metrics(path: str, line: Line, ref: _Image):
     # the ascender as the actual line height and also add the descender to
     # account for the last line. It's no secret that correctly handling font
     # metrics is super tricky - see https://bit.ly/31u9bh6
-    extent = amount * ascender + 1 * descender
+    extent = line.amount * ascender + 1 * descender
 
     # Now, we still need to account for spacing between lines, which is why we
     # take the number of lines - 1, and multiply that with the line height we
     # computed from the ascender. We add this to the extent we computed before,
     # which we use as a basis for the final font size.
-    extent += (amount - 1) * (height - 1) * ascender
+    extent += (line.amount - 1) * (line.height - 1) * ascender
     size = (1000 * ref.height) / extent
 
     # From this, we can compute the spacing between lines, and we're done. We
     # then return both, the font size and spacing between lines.
-    spacing = (height - 1) * ascender * size / 1000
+    spacing = (line.height - 1) * ascender * size / 1000
     return int(size), spacing
 
 # Compute anchor, determining the alignment of text relative to the given
