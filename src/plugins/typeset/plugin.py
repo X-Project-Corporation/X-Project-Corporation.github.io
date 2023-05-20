@@ -70,7 +70,7 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
                 continue
 
             # Remove anchor links from headlines – we need to do that, or we
-            # end up with anchors links inside anchors links, which is invalid
+            # end up with anchor links inside anchor links, which is invalid
             # HTML5. There are two cases we need to account for here:
             #
             # 1. If toc.anchorlink is enabled, the entire headline is wrapped
