@@ -28,7 +28,6 @@ import sys
 from colorama import Fore, Style
 from io import BytesIO
 from mkdocs import utils
-from mkdocs.commands.build import DuplicateFilter
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import get_files
 from pkg_resources import get_distribution, working_set
@@ -223,5 +222,4 @@ def _size(value, factor = 1):
 # -----------------------------------------------------------------------------
 
 # Set up logging
-log = logging.getLogger("mkdocs")
-log.addFilter(DuplicateFilter())
+log = logging.getLogger("mkdocs.material.info")

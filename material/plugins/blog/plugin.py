@@ -33,7 +33,7 @@ from hashlib import sha1
 from lxml.html import fragment_fromstring, tostring
 from mkdocs import utils
 from mkdocs.utils.meta import get_data
-from mkdocs.commands.build import DuplicateFilter, _populate_page
+from mkdocs.commands.build import _populate_page
 from mkdocs.contrib.search import SearchIndex
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
@@ -898,5 +898,4 @@ def _data_to_navigation(nav, config, files):
 # -----------------------------------------------------------------------------
 
 # Set up logging
-log = logging.getLogger("mkdocs")
-log.addFilter(DuplicateFilter())
+log = logging.getLogger("mkdocs.material.blog")

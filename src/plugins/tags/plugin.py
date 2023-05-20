@@ -23,7 +23,6 @@ import sys
 
 from collections import defaultdict
 from mkdocs import utils
-from mkdocs.commands.build import DuplicateFilter
 from mkdocs.plugins import BasePlugin
 
 # deprecated, but kept for downward compatibility. Use 'material.plugins.tags'
@@ -215,5 +214,4 @@ class TagsPlugin(BasePlugin[TagsConfig]):
 # -----------------------------------------------------------------------------
 
 # Set up logging
-log = logging.getLogger("mkdocs")
-log.addFilter(DuplicateFilter())
+log = logging.getLogger("mkdocs.material.tags")

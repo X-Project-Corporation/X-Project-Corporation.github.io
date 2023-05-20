@@ -32,7 +32,6 @@ from fnmatch import fnmatch
 from hashlib import sha1
 from lxml.html import HtmlElement, fragment_fromstring, tostring
 from mkdocs import utils
-from mkdocs.commands.build import DuplicateFilter
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import File, Files
@@ -554,8 +553,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
 # -----------------------------------------------------------------------------
 
 # Set up logging
-log = logging.getLogger("mkdocs")
-log.addFilter(DuplicateFilter())
+log = logging.getLogger("mkdocs.material.privacy")
 
 # Expected file extensions
 extensions = dict({

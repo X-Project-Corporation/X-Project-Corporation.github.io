@@ -23,7 +23,6 @@ import os
 
 from copy import copy
 from glob import glob
-from mkdocs.commands.build import DuplicateFilter
 from mkdocs.plugins import BasePlugin, event_priority
 from yaml import SafeLoader, load
 
@@ -96,5 +95,4 @@ def _merge(meta, defaults, file):
 # -----------------------------------------------------------------------------
 
 # Set up logging
-log = logging.getLogger("mkdocs")
-log.addFilter(DuplicateFilter())
+log = logging.getLogger("mkdocs.material.meta")

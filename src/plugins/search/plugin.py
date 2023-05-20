@@ -27,7 +27,6 @@ from html import escape
 from html.parser import HTMLParser
 from mkdocs import utils
 from mkdocs.config.config_options import SubConfig
-from mkdocs.commands.build import DuplicateFilter
 from mkdocs.plugins import BasePlugin
 
 from material.plugins.search.config import SearchConfig, SearchFieldConfig
@@ -554,8 +553,7 @@ class Parser(HTMLParser):
 # -----------------------------------------------------------------------------
 
 # Set up logging
-log = logging.getLogger("mkdocs")
-log.addFilter(DuplicateFilter())
+log = logging.getLogger("mkdocs.material.search")
 
 # Tags that are self-closing
 void = set([

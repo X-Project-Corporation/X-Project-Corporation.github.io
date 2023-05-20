@@ -24,10 +24,9 @@ import os
 import subprocess
 
 from colorama import Fore, Style
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from hashlib import sha1
 from mkdocs import utils
-from mkdocs.commands.build import DuplicateFilter
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File
 from PIL import Image
@@ -242,5 +241,4 @@ def _size(value):
 # -----------------------------------------------------------------------------
 
 # Set up logging
-log = logging.getLogger("mkdocs")
-log.addFilter(DuplicateFilter())
+log = logging.getLogger("mkdocs.material.optimize")
