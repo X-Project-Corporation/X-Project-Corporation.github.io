@@ -116,6 +116,7 @@ plugins:
         changelog/insiders.md: insiders/changelog.md
         conventions.md: philosophy.md
         reference/abbreviations.md: reference/tooltips.md
+        reference/mathjax.md: reference/math.md
         reference/meta-tags.md: reference/index.md
         reference/variables.md: https://mkdocs-macros-plugin.readthedocs.io/
         sponsorship.md: insiders/index.md
@@ -282,7 +283,7 @@ nav:
     - Icons, Emojis: reference/icons-emojis.md
     - Images: reference/images.md
     - Lists: reference/lists.md
-    - MathJax: reference/mathjax.md
+    - Math: reference/math.md
     - Tooltips: reference/tooltips.md
   - Insiders:
     - insiders/index.md
