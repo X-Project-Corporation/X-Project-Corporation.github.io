@@ -352,9 +352,13 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
         # Compute readtime if desired and not explicitly set
         if self.config.post_readtime:
+
+            # There's a bug in the readtime library, which causes it to fail
+            # when the input string contains emojis (reported in #5555)
+            encoded = markdown.encode("unicode_escape")
             if "readtime" not in page.meta:
                 rate = self.config.post_readtime_words_per_minute
-                read = readtime.of_markdown(markdown, rate)
+                read = readtime.of_markdown(encoded, rate)
                 page.meta["readtime"] = read.minutes
 
         # Compute post categories
