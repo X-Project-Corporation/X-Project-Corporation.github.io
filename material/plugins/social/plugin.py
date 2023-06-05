@@ -820,7 +820,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 # can leverage caching to omit re-generating layers when their parameters stay
 # the same. Additionally, we can identify identical layers between images,
 # e.g., background, logos, or avatars, but also unchanged text.
-def _digest(data: dict):
+def _digest(data: object):
     flat = pickle.dumps(data)
     return sha1(flat).hexdigest()
 
