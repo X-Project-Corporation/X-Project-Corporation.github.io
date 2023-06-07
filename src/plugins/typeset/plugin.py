@@ -62,8 +62,8 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
 
         # Flatten anchors and map to headlines
         anchors = _flatten(page.toc.items)
-        for (id, title, level) in re.findall(
-            r"id=\"([^\"]+).*?>(.*?)<\/h(\d)",
+        for (level, id, title) in re.findall(
+            r"<h(\d)[^>]+id=\"([^\"]+).*?>(.*?)<\/h\1>",
             html, flags = re.I | re.M
         ):
             if id not in anchors:
@@ -82,8 +82,8 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
             # Albeit it doesn't make much sense, both options can be used at
             # the same time, so we need to account for both cases. This problem
             # was first reported in https://bit.ly/456AjUm
-            title = re.sub(r"^<a\s+[^>]+>(.*?)<\/a>", r"\1", title)
-            title = re.sub(r"<a\s+[^>]+>.*?<\/a>$", "", title)
+            title = re.sub(r"<a\s+[^>]+>[^<]+?<\/a>$", "", title)
+            title = re.sub(r"<a\s+[^>]+>(.*?)<\/a>", r"\1", title)
 
             # Remove author-provided ids - see https://bit.ly/3ngiZea
             title = re.sub(r"id=\"?[^\">]+\"?", "", title)
