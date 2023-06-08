@@ -22,12 +22,11 @@ import logging
 import sys
 
 try:
-    import cairosvg as _
     import PIL as _
 except ImportError:
     log = logging.getLogger("mkdocs.material.optimize")
     log.error(
         "Required dependencies of \"optimize\" plugin not found. "
-        "Install with: pip install pillow cairosvg"
+        "Install with: pip install pillow"
     )
     sys.exit(1)
