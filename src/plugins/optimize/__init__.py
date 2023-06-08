@@ -28,6 +28,6 @@ except ImportError:
     log = logging.getLogger("mkdocs.material.optimize")
     log.error(
         "Required dependencies of \"optimize\" plugin not found. "
-        "Install with: pip install pillow"
+        "Install with: pip install pillow cairosvg"
     )
     sys.exit(1)
