@@ -22,7 +22,6 @@ import logging
 import sys
 
 try:
-    import cairosvg as _
     import PIL as _
 except ImportError:
     log = logging.getLogger("mkdocs.material.optimize")
