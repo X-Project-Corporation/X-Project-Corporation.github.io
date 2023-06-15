@@ -121,6 +121,10 @@ export function mountPalette(
   const meta = h("meta", { name: "theme-color" })
   document.head.appendChild(meta)
 
+  // Add color scheme meta tag
+  const scheme = h("meta", { name: "color-scheme" })
+  document.head.appendChild(scheme)
+
   /* Mount component on subscription */
   const media$ = watchMedia("(prefers-color-scheme: light)")
   return defer(() => {
@@ -162,10 +166,13 @@ export function mountPalette(
       .pipe(
         map(() => {
           const header = getComponentElement("header")
-          const { backgroundColor } = window.getComputedStyle(header)
+          const style  = window.getComputedStyle(header)
+
+          // Set color scheme
+          scheme.content = style.colorScheme
 
           /* Return color in hexadecimal format */
-          return backgroundColor.match(/\d+/g)!
+          return style.backgroundColor.match(/\d+/g)!
             .map(value => (+value).toString(16).padStart(2, "0"))
             .join("")
         })

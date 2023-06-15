@@ -37,7 +37,7 @@
         <link rel="alternate" type="application/rss+xml" title="{{ lang.t('rss.updated') }}" href="{{ 'feed_rss_updated.xml' | url }}">
       {% endif %}
       <link rel="icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-9.1.15+insiders-4.35.3">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-9.1.16+insiders-4.36.0">
     {% endblock %}
     {% block htmltitle %}
       {% if page.meta and page.meta.title %}
@@ -243,7 +243,7 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.10c6cd24.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.bb10a73f.min.js' | url }}"></script>
       {% for path in config.extra_javascript %}
         {% if path.endswith(".mjs") %}
           <script type="module" src="{{ path | url }}"></script>
