@@ -51,6 +51,7 @@ theme:
     - navigation.footer
     - navigation.indexes
     # - navigation.instant
+    # - navigation.instant.prefetch
     # - navigation.path
     # - navigation.prune
     - navigation.sections

@@ -28,11 +28,14 @@ import {
   catchError,
   concat,
   debounceTime,
+  distinct,
   distinctUntilKeyChanged,
   endWith,
+  exhaustMap,
   fromEvent,
   ignoreElements,
   map,
+  merge,
   of,
   share,
   skip,
@@ -54,7 +57,7 @@ import {
 } from "~/browser"
 import { getComponentElement } from "~/components"
 
-import { fetchSitemap } from "../sitemap"
+import { Sitemap, fetchSitemap } from "../sitemap"
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -66,6 +69,63 @@ import { fetchSitemap } from "../sitemap"
 interface SetupOptions {
   location$: Subject<URL>              /* Location subject */
   viewport$: Observable<Viewport>      /* Viewport observable */
+}
+
+/* ----------------------------------------------------------------------------
+ * Helper functions
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Try to resolve internal URL
+ *
+ * @param ev - Mouse event
+ * @param sitemap - Sitemap
+ *
+ * @returns URL observable
+ */
+function resolve(
+  ev: MouseEvent, sitemap: Sitemap
+): Observable<URL> {
+  if (!(ev.target instanceof Element))
+    return EMPTY
+
+  // Skip, as target is not within a link - clicks on non-link elements are
+  // also captured, which we need to exclude from processing.
+  const el = ev.target.closest("a")
+  if (el === null)
+    return EMPTY
+
+  // Skip, as link opens in new window - we now know we have captured a click
+  // on a link, but the link either has a `target` property defined, or the
+  // user pressed the `meta` or `ctrl` key to open it in a new window. Thus,
+  // we need to filter those events, too.
+  if (el.target || ev.metaKey || ev.ctrlKey)
+    return EMPTY
+
+  // Next, we must check if the URL is relevant for us, i.e., if it's an
+  // internal link to a page that is managed by MkDocs. Only then we can be
+  // sure that the structure of the page to be loaded adheres to the current
+  // document structure and can subsequently be injected into it without doing
+  // a full reload. For this reason, we must canonicalize the URL by removing
+  // all search parameters and hash fragments.
+  const url = new URL(el.href)
+  url.search = url.hash = ""
+
+  // Skip, if URL is not included in the sitemap - this could be the case when
+  // linking between versions or languages, or to another page that the author
+  // included as part of the build, but that is not managed by MkDocs. In that
+  // case we must not continue with instant navigation.
+  if (!sitemap.includes(`${url}`))
+    return EMPTY
+
+  // We now know that we have a link to an internal page, so we prevent the
+  // browser from navigation and emit the URL for instant navigation. Note that
+  // this also includes anchor links, which means we need to implement anchor
+  // positioning ourselves. The reason for this is that if we wouldn't manage
+  // anchor links as well, scroll restoration will not work correctly (e.g.
+  // following an anchor link and scrolling).
+  ev.preventDefault()
+  return of(new URL(el.href))
 }
 
 /* ----------------------------------------------------------------------------
@@ -105,50 +165,40 @@ export function setupInstantLoading(
   const instant$ = fromEvent<MouseEvent>(document.body, "click")
     .pipe(
       withLatestFrom(sitemap$),
-      switchMap(([ev, sitemap]) => {
-        if (!(ev.target instanceof Element))
-          return EMPTY
-
-        // Skip, as target is not within a link - clicks on non-link elements
-        // are also captured, which we need to exclude from processing.
-        const el = ev.target.closest("a")
-        if (el === null)
-          return EMPTY
-
-        // Skip, as link opens in new window - we now know we have captured a
-        // click on a link, but the link either has a `target` property defined,
-        // or the user pressed the `meta` or `ctrl` key to open it in a new
-        // window. Thus, we need to filter those events, too.
-        if (el.target || ev.metaKey || ev.ctrlKey)
-          return EMPTY
-
-        // Next, we must check if the URL is relevant for us, i.e., if it's an
-        // internal link to a page that is managed by MkDocs. Only then we can
-        // be sure that the structure of the page to be loaded adheres to the
-        // current document structure and can subsequently be injected into it
-        // without doing a full reload. For this reason, we must canonicalize
-        // the URL by removing all search parameters and hash fragments.
-        const url = new URL(el.href)
-        url.search = url.hash = ""
-
-        // Skip, if URL is not included in the sitemap - this could be the case
-        // when linking between versions or languages, or to another page that
-        // the author included as part of the build, but that is not managed by
-        // MkDocs. In that case we must not continue with instant navigation.
-        if (!sitemap.includes(`${url}`))
-          return EMPTY
-
-        // We now know that we have a link to an internal page, so we prevent
-        // the browser from navigation and emit the URL for instant navigation.
-        // Note that this also includes anchor links, which means we need to
-        // implement anchor positioning ourselves. The reason for this is that
-        // if we wouldn't manage anchor links as well, scroll restoration will
-        // not work correctly (e.g. following an anchor link and scrolling).
-        ev.preventDefault()
-        return of(new URL(el.href))
-      }),
+      switchMap(([ev, sitemap]) => resolve(ev, sitemap)),
       share()
     )
+
+  // If prefetching is enabled, prefetch pages for links that would trigger
+  // inter-site navigation on mouse events - this should improve performance,
+  // since pages will be cached. Note that we exhaust map URLs, so we ensure
+  // that loading is properly debounced and we don't fill caches up to quickly.
+  if (feature("navigation.instant.prefetch"))
+    merge(
+      fromEvent<MouseEvent>(document.body, "mousemove"),
+      fromEvent<MouseEvent>(document.body, "focusin")
+    )
+      .pipe(
+        withLatestFrom(sitemap$),
+        switchMap(([ev, sitemap]) => resolve(ev, sitemap)),
+        debounceTime(25),
+        distinct(({ href }) => href),
+        exhaustMap(href => {
+          const link = document.createElement("link")
+          link.rel = "prefetch"
+          link.href = href.toString()
+
+          // Instruct browser to prefetch link by adding a link tag of type
+          // prefetch to the head, and remove it again once the page was loaded
+          document.head.appendChild(link)
+          return fromEvent(link, "load")
+            .pipe(
+              map(() => link),
+              take(1)
+            )
+        })
+      )
+        .subscribe(link => link.remove())
 
   // Before fetching for the first time, resolve the absolute favicon position,
   // as the browser will try to fetch the icon immediately.
