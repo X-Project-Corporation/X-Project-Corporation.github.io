@@ -63,7 +63,7 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
         # Flatten anchors and map to headlines
         anchors = _flatten(page.toc.items)
         for (level, id, title) in re.findall(
-            r"<h(\d)[^>]+id=\"([^\"]+).*?>(.*?)<\/h\1>",
+            r"<h(\d)[^>]+id=\"([^\"]+)[^>]*>(.*?)<\/h\1>",
             html, flags = re.I | re.M
         ):
             if id not in anchors:
