@@ -569,7 +569,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
     # Render overlay for debugging
     def _render_overlay(self, layout: Layout, input: _Image):
-        path = self._resolve_font("Roboto", ["Regular"])
+        path = self._resolve_font("Roboto", set(["Regular"]))
         typeface = ImageFont.truetype(path, 12)
 
         # Create image and initialize drawing context
