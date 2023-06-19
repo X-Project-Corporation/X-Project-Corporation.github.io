@@ -683,7 +683,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # known theme directories, including custom directories specified by the
     # author, which allows for using custom icons in cards. If the icon cannot
     # be resolved, the plugin must abort with an error.
-    def _resolve_icon(self, name: str, config: MkDocsConfig, color: str = None):
+    def _resolve_icon(self, name: str, config: MkDocsConfig):
         for base in config.theme.dirs:
             path = os.path.join(base, ".icons", f"{name}.svg")
             path = os.path.normpath(path)
