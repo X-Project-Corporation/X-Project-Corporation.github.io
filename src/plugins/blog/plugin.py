@@ -660,7 +660,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             # Check if post date is in the future
             future = False
             if self.config.draft_if_future_date:
-                future = meta["date"] > date.today()
+                future = meta["date"] > datetime.now()
 
             # Check if post is marked as draft
             return meta.get("draft", future)
