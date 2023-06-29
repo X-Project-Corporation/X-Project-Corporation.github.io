@@ -35,7 +35,7 @@ COPY material material
 COPY package.json package.json
 COPY pyproject.toml pyproject.toml
 COPY README.md README.md
-COPY requirements.txt requirements.txt
+COPY *requirements.txt ./
 
 # Perform build and cleanup artifacts and caches
 RUN \
@@ -72,6 +72,10 @@ RUN \
       "mkdocs-rss-plugin==1.6.0" \
       "pillow>=9.0" \
       "cairosvg>=2.5"; \
+  fi \
+&& \
+  if [ -e user-requirements.txt ]; then \
+    pip install -U -r user-requirements.txt; \
   fi \
 && \
   apk del .build \
