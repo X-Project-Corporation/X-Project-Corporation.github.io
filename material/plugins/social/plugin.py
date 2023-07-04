@@ -137,14 +137,14 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return
 
         # Skip if cards should not be generated
-        if not self.config.cards or self._is_excluded(page):
+        if not self._config("cards", page) or self._is_excluded(page):
             return
 
         # Resolve card layout - currently, only a single layout per site is
         # supported, but this restriction will be lifted in the near future.
         # We also preload the layout here, so we're not triggering multiple
         # concurrent loads in the worker threads.
-        name = self.config.cards_layout
+        name = self._config("cards_layout", page)
         try:
             self._resolve_layout(name, config)
 
@@ -167,7 +167,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return
 
         # Skip if cards should not be generated
-        if not self.config.cards or self._is_excluded(page):
+        if not self._config("cards", page) or self._is_excluded(page):
             return
 
         # Reconcile concurrent jobs - we need to wait for the card job to finish
@@ -183,7 +183,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # Resolve card layout - currently, only a single layout per site is
         # supported, but this restriction will be lifted in the near future
-        name = self.config.cards_layout
+        name = self._config("cards_layout", page)
         layout, _ = self._resolve_layout(name, config)
 
         # Stop if no tags are present or site URL is not set
@@ -209,7 +209,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                     for property, content in _replace(
                         layout.tags, self.card_env, config,
                         page = page, image = image,
-                        layout = self.config.cards_layout_options,
+                        layout = self._config("cards_layout_options", page),
                     ).items() if content
             ]),
             output[at:]
@@ -220,10 +220,6 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     @event_priority(-100)
     def on_post_build(self, *, config):
         if not self.config.enabled or self.error:
-            return
-
-        # Skip if cards should not be generated
-        if not self.config.cards:
             return
 
         # Shutdown thread pools if we're not serving
@@ -290,8 +286,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             for template in templates:
                 template = _compile(template, self.card_env)
                 fingerprints.append(template.render(
-                    page = page, config = config,
-                    layout = self.config.cards_layout_options
+                    config = config, page = page,
+                    layout = self._config("cards_layout_options", page)
                 ))
 
             # Compute digest of fingerprints
@@ -367,7 +363,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         image = Image.new(mode = "RGBA", size = get_size(layer))
         layer = _replace(
             layer, self.card_env, config,
-            page = page, layout = self.config.cards_layout_options
+            page = page, layout = self._config("cards_layout_options", page)
         )
 
         # Render background, icon, and typography
@@ -650,9 +646,9 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
                 # Validate layout and abort if errors occurred
                 errors, warnings = layout.validate()
-                for key, w in warnings:
+                for _, w in warnings:
                     log.warning(w)
-                for key, e in errors:
+                for _, e in errors:
                     raise e
 
                 # Store layout and variables
@@ -784,6 +780,19 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                     copy_file(file, os.path.join(path, family, f"{name}.ttf"))
 
     # -------------------------------------------------------------------------
+
+    # Retrieve configuration value - each page can override certain parts of
+    # the site configuration, depending on the type and structure of the value
+    def _config(self, name: str, page: Page):
+        meta = page.meta.get("social", dict())
+
+        # Primitive values: choose page- over site-level configuration
+        if isinstance(self.config[name], (bool, str, int, float)):
+            return meta.get(name, self.config[name])
+
+        # Dictionary values: merge site- with page-level configuration
+        if isinstance(self.config[name], (dict)):
+            return { **self.config[name], **meta.get(name, dict()) }
 
     # Handle error - if we're serving, we just log the first error we encounter.
     # If we're building, we raise an exception, so the build fails.
