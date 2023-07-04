@@ -222,7 +222,10 @@ export function mountContentTabs(
         .pipe(
           takeUntil(done$),
           filter(ev => !(ev.metaKey || ev.ctrlKey)),
-          tap(ev => ev.preventDefault())
+          tap(ev => {
+            ev.preventDefault()
+            ev.stopPropagation()
+          })
         )
           // @todo we might need to remove the anchor link on complete
           .subscribe(() => {

@@ -266,7 +266,7 @@ export function setupInstantLoading(
     )
 
   // Initialize the DOM parser, parse the returned HTML, and replace selected
-  // meta tags and components before handing control down to the application.
+  // meta tags and components before handing control down to the application
   const dom = new DOMParser()
   const document$ = response$
     .pipe(
@@ -303,7 +303,7 @@ export function setupInstantLoading(
         }
 
         // After meta tags and components were replaced, re-evaluate scripts
-        // that were provided by the author as part of Markdown files.
+        // that were provided by the author as part of Markdown files
         const container = getComponentElement("container")
         return concat(getElements("script", container))
           .pipe(
@@ -334,7 +334,7 @@ export function setupInstantLoading(
     )
 
   // Intercept popstate events, e.g. when using the browser's back and forward
-  // buttons, and emit new location for fetching and parsing.
+  // buttons, and emit new location for fetching and parsing
   const popstate$ = fromEvent<PopStateEvent>(window, "popstate")
   popstate$.pipe(map(getLocation))
     .subscribe(location$)
