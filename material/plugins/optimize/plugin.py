@@ -24,7 +24,7 @@ import os
 import subprocess
 
 from colorama import Fore, Style
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from hashlib import sha1
 from mkdocs import utils
 from mkdocs.plugins import BasePlugin
@@ -41,13 +41,19 @@ from material.plugins.optimize.config import OptimizeConfig
 class OptimizePlugin(BasePlugin[OptimizeConfig]):
     supports_multiple_instances = True
 
+    # Determine whether we're serving the site, and thus doing an incremental
+    # build, and initialize thread pools for optimization
+    def on_startup(self, *, command, dirty):
+        self.is_serve = (command == "serve")
+
+        # Initialize thread pool
+        self.pool = ThreadPoolExecutor(self.config.concurrency)
+        self.pool_jobs: list[Future] = []
+
     # Initialize plugin
     def on_config(self, config):
         if not self.config.enabled:
             return
-
-        # Initialize thread pool
-        self.pool = ThreadPoolExecutor(self.config.concurrency)
 
         # Initialize optimized files
         self.optimize_map: dict[str, str] = dict()
@@ -81,7 +87,9 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
 
             # Concurrently optimize images
             self.optimize_map[file.abs_src_path] = path
-            self.pool.submit(self._optimize_image, file, path)
+            self.pool_jobs.append(self.pool.submit(
+                self._optimize_image, file, path
+            ))
 
             # Steal responsibility from MkDocs
             files.remove(file)
@@ -91,8 +99,10 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         if not self.config.enabled:
             return
 
-        # Reconcile concurrent jobs and shutdown thread pool
-        self.pool.shutdown()
+        # Reconcile concurrent jobs and shutdown thread pool if not serving
+        wait(self.pool_jobs)
+        if not self.is_serve:
+            self.pool.shutdown()
 
         # Compute and print gains through optimization
         if self.config.print_gain_summary:
