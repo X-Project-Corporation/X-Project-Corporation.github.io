@@ -35,7 +35,8 @@ from fnmatch import fnmatch
 from glob import glob
 from hashlib import sha1
 from io import BytesIO
-from jinja2 import Environment, meta
+from jinja2 import Environment
+from jinja2.meta import find_undeclared_variables
 from mkdocs.config.base import Config
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import PluginError
@@ -77,11 +78,11 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # Initialize thread pool for cards
         self.card_pool = ThreadPoolExecutor(self.config.concurrency)
-        self.card_jobs: dict[str, Future] = dict()
+        self.card_pool_jobs: dict[str, Future] = dict()
 
         # Initialize thread pool for card layers
         self.card_layer_pool = ThreadPoolExecutor(self.config.concurrency)
-        self.card_layer_jobs: dict[str, Future] = dict()
+        self.card_layer_pool_jobs: dict[str, Future] = dict()
 
     # Initialize plugin
     def on_config(self, config):
@@ -140,10 +141,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if not self._config("cards", page) or self._is_excluded(page):
             return
 
-        # Resolve card layout - currently, only a single layout per site is
-        # supported, but this restriction will be lifted in the near future.
-        # We also preload the layout here, so we're not triggering multiple
-        # concurrent loads in the worker threads.
+        # Resolve card layout - we also preload the layout here, so we're not
+        # triggering multiple concurrent loads in the worker threads
         name = self._config("cards_layout", page)
         try:
             self._resolve_layout(name, config)
@@ -154,8 +153,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return self._error(e)
 
         # Spawn concurrent job to generate card for page and add future to
-        # list of jobs, as it returns the file we need to copy later on
-        self.card_jobs[page.file.src_uri] = self.card_pool.submit(
+        # job dictionary, as it returns the file we need to copy later
+        self.card_pool_jobs[page.file.src_uri] = self.card_pool.submit(
             self._generate, name, page, config
         )
 
@@ -174,15 +173,14 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # before we can copy the generated files to the output directory. If an
         # exception occurred in one of the jobs, we raise it here, so the build
         # fails and the user can fix the issue.
-        future = self.card_jobs[page.file.src_uri]
+        future = self.card_pool_jobs[page.file.src_uri]
         if future.exception():
             return self._error(future.exception())
         else:
             file: File = future.result()
             file.copy_file()
 
-        # Resolve card layout - currently, only a single layout per site is
-        # supported, but this restriction will be lifted in the near future
+        # Resolve card layout
         name = self._config("cards_layout", page)
         layout, _ = self._resolve_layout(name, config)
 
@@ -323,8 +321,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             # we check if the layer was already dispatched. If we don't do this,
             # layers might be dispatched multiple times. The track is to use a
             # sentinel value to check if the layer was already dispatched.
-            if sentinel == self.card_layer_jobs.setdefault(h, sentinel):
-                self.card_layer_jobs[h] = self.card_layer_pool.submit(
+            if sentinel == self.card_layer_pool_jobs.setdefault(h, sentinel):
+                self.card_layer_pool_jobs[h] = self.card_layer_pool.submit(
                     self._render, layer, page, config
                 )
 
@@ -335,7 +333,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         image = Image.new(mode = "RGBA", size = get_size(layout))
         for h, layer in layers.items():
             image.alpha_composite(
-                self.card_layer_jobs[h].result(),
+                self.card_layer_pool_jobs[h].result(),
                 get_offset(layer, image)
             )
 
@@ -565,8 +563,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
     # Render overlay for debugging
     def _render_overlay(self, layout: Layout, input: _Image):
-        path = self._resolve_font("Roboto", set(["Regular"]))
-        typeface = ImageFont.truetype(path, 12)
+        path = self._resolve_font("Roboto", { "Regular" })
+        font = ImageFont.truetype(path, 12)
 
         # Create image and initialize drawing context
         image = Image.new(mode = "RGBA", size = input.size)
@@ -604,12 +602,12 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             # to compute the coordinates of the text box manually in order to
             # have the rectangle align perfectly with the outline
             text = f"{i} – {x}, {y}"
-            (_, _, x1, y1) = context.textbbox((x, y), text, font = typeface)
+            (_, _, x1, y1) = context.textbbox((x, y), text, font = font)
 
             # Draw text on a small rectangle in the top left corner of the
             # layer denoting the number of the layer and its offset
             context.rectangle(fill = fill, xy = (x, y, x1 + 8, y1 + 4))
-            context.text((x + 4, y + 2), text, font = typeface, fill = color)
+            context.text((x + 4, y + 2), text, font = font, fill = color)
 
         # Return image with overlay
         input.alpha_composite(image)
@@ -770,10 +768,10 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                     os.path.join(temp, "**/*.[to]tf"),
                     recursive = True
                 ):
-                    typeface = ImageFont.truetype(file)
+                    font = ImageFont.truetype(file)
 
                     # Extract font family name and style
-                    name, style = typeface.getname()
+                    name, style = font.getname()
                     name = " ".join([name.replace(family, ""), style]).strip()
 
                     # Move fonts to cache directory
@@ -800,16 +798,15 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if not self.is_serve:
             raise PluginError(str(e))
 
-        # Remember last error
+        # Remember first error
         if not self.error:
             self.error = e
 
-            # If we're serving, just log the error and emit a warning that
-            # social cards are not being generated from that point on.
+            # If we're serving, just log the error
             log.error(e)
             log.warning(
-                "Skipping generation of social cards for this build. "
-                "Please fix the error to enable social cards again."
+                "Skipping social plugin for this build. "
+                "Please fix the error to enable the social plugin again."
             )
 
     # Create a file for the given path
@@ -854,7 +851,7 @@ def _extract(data: any, env: Environment, config: MkDocsConfig):
 
     # Retrieve variables from string
     elif isinstance(data, str):
-        if meta.find_undeclared_variables(env.parse(data)):
+        if find_undeclared_variables(env.parse(data)):
             return [data]
 
     # Return nothing
