@@ -19,6 +19,7 @@
 # IN THE SOFTWARE.
 
 import logging
+import shutil
 import sys
 
 try:
@@ -28,5 +29,13 @@ except ImportError:
     log.error(
         "Required dependencies of \"optimize\" plugin not found. "
         "Install with: pip install pillow"
+    )
+    sys.exit(1)
+
+if not shutil.which("pngquant"):
+    log = logging.getLogger("mkdocs.material.optimize")
+    log.error(
+        "Required dependencies of \"optimize\" plugin not found. "
+        "Make sure 'pngquant' is installed and in your path"
     )
     sys.exit(1)

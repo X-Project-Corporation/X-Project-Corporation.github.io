@@ -24,9 +24,10 @@ import os
 import subprocess
 
 from colorama import Fore, Style
-from concurrent.futures import Future, ThreadPoolExecutor, wait
+from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha1
 from mkdocs import utils
+from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File
 from PIL import Image
@@ -48,15 +49,12 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
 
         # Initialize thread pool
         self.pool = ThreadPoolExecutor(self.config.concurrency)
-        self.pool_jobs: list[Future] = []
+        self.pool_jobs: dict[str, Future] = dict()
 
     # Initialize plugin
     def on_config(self, config):
         if not self.config.enabled:
             return
-
-        # Initialize optimized files
-        self.optimize_map: dict[str, str] = dict()
 
         # Initialize cache
         self.cache: dict[str, str] = dict()
@@ -67,6 +65,12 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         if os.path.isfile(self.cache_file) and self.config.cache:
             with open(self.cache_file) as f:
                 self.cache = json.load(f)
+
+        # Remember last error, so we can disable the plugin if necessary. This
+        # allows for a much better editing experience, as the user can fix the
+        # issue and the plugin will pick up the changes, so there's no need to
+        # restart the preview server.
+        self.error = None
 
     # Initialize optimization pipeline
     def on_env(self, env, *, config, files):
@@ -85,11 +89,11 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
             path = os.path.join(self.config.cache_dir, file.src_path)
             path = os.path.normpath(path)
 
-            # Concurrently optimize images
-            self.optimize_map[file.abs_src_path] = path
-            self.pool_jobs.append(self.pool.submit(
+            # Spawn concurrent job to optimize the given image and add future
+            # to job dictionary, as it returns the file we need to copy later
+            self.pool_jobs[file.abs_src_path] = self.pool.submit(
                 self._optimize_image, file, path
-            ))
+            )
 
             # Steal responsibility from MkDocs
             files.remove(file)
@@ -99,8 +103,18 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         if not self.config.enabled:
             return
 
-        # Reconcile concurrent jobs and shutdown thread pool if not serving
-        wait(self.pool_jobs)
+        # Reconcile concurrent jobs - we need to wait for all jobs to finish
+        # before we can copy the optimized files to the output directory. If an
+        # exception occurred in one of the jobs, we raise it here, so the build
+        # fails and the user can fix the issue.
+        for path, future in self.pool_jobs.items():
+            if future.exception():
+                return self._error(future.exception())
+            else:
+                file: File = future.result()
+                file.copy_file()
+
+        # Shutdown thread pool if we're not serving
         if not self.is_serve:
             self.pool.shutdown()
 
@@ -112,15 +126,18 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
             # Print summary for file extension
             for seek in [".png", ".jpg"]:
                 size = size_opt = 0
-                for source, target in self.optimize_map.items():
-                    _, extension = os.path.splitext(source)
+                for path, future in self.pool_jobs.items():
+                    file: File = future.result()
+
+                    # Skip files that are not of the given type
+                    _, extension = os.path.splitext(path)
                     extension = ".jpg" if extension == ".jpeg" else extension
                     if extension != seek:
                         continue
 
                     # Compute size before and after optimization
-                    size     += os.path.getsize(source)
-                    size_opt += os.path.getsize(target)
+                    size     += os.path.getsize(path)
+                    size_opt += os.path.getsize(file.abs_dest_path)
 
                 # Compute absolute and relative gain
                 if size and size_opt:
@@ -202,8 +219,12 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
                 with open(self.cache_file, "w") as f:
                     f.write(json.dumps(self.cache, indent = 2))
 
-        # Copy file to target directory
-        utils.copy_file(path, file.abs_dest_path)
+        # Compute source file system path
+        file.src_path     = path
+        file.abs_src_path = os.path.abspath(path)
+
+        # Return file to be copied from cache
+        return file
 
     # Optimize PNG image - we first tried to use libimagequant, but encountered
     # the occassional segmentation fault, which means it's probably not a good
@@ -234,6 +255,26 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
             quality     = self.config.optimize_jpg_quality,
             progressive = self.config.optimize_jpg_progressive
         )
+
+    # -------------------------------------------------------------------------
+
+    # Handle error - if we're serving, we just log the first error we encounter.
+    # If we're building, we raise an exception, so the build fails.
+    def _error(self, e: Exception):
+        if not self.is_serve:
+            raise PluginError(str(e))
+
+        # Remember first error
+        if not self.error:
+            self.error = e
+
+            # If we're serving, just log the error
+            log.error(e)
+            log.warning(
+                "Skipping optimize plugin for this build. "
+                "Please fix the error to enable the optimize plugin again."
+            )
+
 
 # -----------------------------------------------------------------------------
 # Helper functions
