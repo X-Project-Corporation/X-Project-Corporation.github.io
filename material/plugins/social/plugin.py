@@ -41,7 +41,7 @@ from mkdocs.config.base import Config
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, event_priority
-from mkdocs.structure.files import File
+from mkdocs.structure.files import File, Files
 from mkdocs.structure.pages import Page
 from mkdocs.utils import copy_file
 from PIL import Image, ImageColor, ImageDraw, ImageFont
@@ -129,6 +129,19 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # issue and the plugin will pick up the changes, so there's no need to
         # restart the preview server.
         self.error = None
+
+    # Remove layouts from built site, but keep them when we're serving the site,
+    # in order to enable an instant and awesome editing experience
+    def on_files(self, files, *, config):
+        if self.is_serve:
+            return
+
+        # Expand the list of files, because otherwise the iteration index would
+        # not be updated correctly and some files would not be removed
+        base = os.path.join(os.path.dirname(__file__), "layouts")
+        for file in [*files]:
+            if file.abs_src_path.startswith(base):
+                files.remove(file)
 
     # Generate card as soon as metadata is available (run latest) - run this
     # hook after all other plugins, so they can alter the card configuration
@@ -225,10 +238,11 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             for pool in [self.card_layer_pool, self.card_pool]:
                 pool.shutdown()
 
-    # Add custom layout directory to watched files, if it exists
+    # Add custom layout directory to watched files, if it exists and we're
+    # serving the site, but not when we're building it
     def on_serve(self, server, *, config, builder):
         path = os.path.abspath(self.config.cards_layout_dir)
-        if os.path.exists(path):
+        if self.is_serve and os.path.exists(path):
             server.watch(path, recursive = True)
 
     # -------------------------------------------------------------------------
