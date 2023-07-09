@@ -41,7 +41,7 @@ from mkdocs.config.base import Config
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, event_priority
-from mkdocs.structure.files import File, Files
+from mkdocs.structure.files import File
 from mkdocs.structure.pages import Page
 from mkdocs.utils import copy_file
 from PIL import Image, ImageColor, ImageDraw, ImageFont
