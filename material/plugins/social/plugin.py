@@ -242,7 +242,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # serving the site, but not when we're building it
     def on_serve(self, server, *, config, builder):
         path = os.path.abspath(self.config.cards_layout_dir)
-        if self.is_serve and os.path.exists(path):
+        if self.is_serve and os.path.isdir(path):
             server.watch(path, recursive = True)
 
     # -------------------------------------------------------------------------
@@ -323,7 +323,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Check if file hash changed, so we need to re-generate the card. If
         # the hash didn't change, we can return the existing file.
         prev = self.cache.get(file.url, "")
-        if hash == prev and os.path.exists(file.abs_src_path):
+        if hash == prev and os.path.isfile(file.abs_src_path):
             return file
 
         # Spawn jobs to render layers - we only need to render layers that we
@@ -648,7 +648,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             path = os.path.normpath(path)
 
             # Skip if layout does not exist and try next directory
-            if not os.path.exists(path):
+            if not os.path.isfile(path):
                 continue
 
             # Open file and parse layout as YAML
@@ -697,7 +697,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             path = os.path.normpath(path)
 
             # Skip if icon does not exist and try next directory
-            if not os.path.exists(path):
+            if not os.path.isfile(path):
                 continue
 
             # Load and convert icon to PNG
@@ -721,9 +721,9 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # we need the double path check, which makes sure that we only use the
         # lock when we actually need to download a font that doesn't exist. If
         # we already downloaded it, we don't want to block at all.
-        if not os.path.exists(path):
+        if not os.path.isdir(path):
             with self.lock:
-                if not os.path.exists(path):
+                if not os.path.isdir(path):
                     self._fetch_font_from_google_fonts(family)
 
         # Check for availability of font style

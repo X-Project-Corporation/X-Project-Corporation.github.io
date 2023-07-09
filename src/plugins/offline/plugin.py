@@ -49,7 +49,7 @@ class OfflinePlugin(BasePlugin[OfflineConfig]):
         # Check for existence of search index
         base = os.path.join(config.site_dir, "search")
         path = os.path.join(base, "search_index.json")
-        if not os.path.exists(path):
+        if not os.path.isfile(path):
             return
 
         # Retrieve search index

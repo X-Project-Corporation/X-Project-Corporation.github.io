@@ -89,7 +89,7 @@ class SearchPlugin(BasePlugin[SearchConfig]):
         # Set jieba dictionary, if given
         if self.config.jieba_dict:
             path = os.path.normpath(self.config.jieba_dict)
-            if os.path.exists(path):
+            if os.path.isfile(path):
                 jieba.set_dictionary(path)
                 log.debug(f"Loading jieba dictionary: {path}")
             else:
@@ -101,7 +101,7 @@ class SearchPlugin(BasePlugin[SearchConfig]):
         # Set jieba user dictionary, if given
         if self.config.jieba_dict_user:
             path = os.path.normpath(self.config.jieba_dict_user)
-            if os.path.exists(path):
+            if os.path.isfile(path):
                 jieba.load_userdict(path)
                 log.debug(f"Loading jieba user dictionary: {path}")
             else:

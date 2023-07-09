@@ -180,7 +180,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
 
             # Check if file hash changed, so we need to optimize again
             prev = self.cache.get(file.url, "")
-            if hash != prev or not os.path.exists(path):
+            if hash != prev or not os.path.isfile(path):
                 os.makedirs(os.path.dirname(path), exist_ok = True)
 
                 # Optimize PNG image using pngquant
@@ -245,7 +245,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         # This can happen if files are already compressed and optimized by
         # the author. In that case, just copy the original file.
         subprocess.run([*args, file.abs_src_path])
-        if not os.path.exists(path):
+        if not os.path.isfile(path):
             utils.copy_file(file.abs_src_path, path)
 
     # Optimize JPG image
