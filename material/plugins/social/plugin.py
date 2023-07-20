@@ -130,19 +130,6 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # restart the preview server.
         self.error = None
 
-    # Remove layouts from built site, but keep them when we're serving the site,
-    # in order to enable an instant and awesome editing experience
-    def on_files(self, files, *, config):
-        if self.is_serve:
-            return
-
-        # Expand the list of files, because otherwise the iteration index would
-        # not be updated correctly and some files would not be removed
-        base = os.path.join(os.path.dirname(__file__), "layouts")
-        for file in [*files]:
-            if file.abs_src_path.startswith(base):
-                files.remove(file)
-
     # Generate card as soon as metadata is available (run latest) - run this
     # hook after all other plugins, so they can alter the card configuration
     @event_priority(-100)
@@ -238,11 +225,10 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             for pool in [self.card_layer_pool, self.card_pool]:
                 pool.shutdown()
 
-    # Add custom layout directory to watched files, if it exists and we're
-    # serving the site, but not when we're building it
+    # Add custom layout directory to watched files
     def on_serve(self, server, *, config, builder):
         path = os.path.abspath(self.config.cards_layout_dir)
-        if self.is_serve and os.path.isdir(path):
+        if os.path.isdir(path):
             server.watch(path, recursive = True)
 
     # -------------------------------------------------------------------------
@@ -642,7 +628,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # from this directory first, otherwise fall back to the default.
         for base in [
             os.path.abspath(self.config.cards_layout_dir),
-            os.path.join(os.path.dirname(__file__), "layouts")
+            os.path.join(os.path.dirname(__file__), ".layouts")
         ]:
             path = os.path.join(base, f"{name}.yml")
             path = os.path.normpath(path)
