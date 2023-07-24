@@ -42,8 +42,14 @@ from material.plugins.optimize.config import OptimizeConfig
 class OptimizePlugin(BasePlugin[OptimizeConfig]):
     supports_multiple_instances = True
 
-    # Determine whether we're serving the site, and thus doing an incremental
-    # build, and initialize thread pools for optimization
+    # Initialize plugin
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Initialize incremental builds
+        self.is_serve = False
+
+    # Determine whether we're serving
     def on_startup(self, *, command, dirty):
         self.is_serve = (command == "serve")
 

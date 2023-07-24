@@ -63,6 +63,13 @@ from material.plugins.social.layout import get_size, get_offset
 class SocialPlugin(BasePlugin[SocialConfig]):
     supports_multiple_instances = True
 
+    # Initialize plugin
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Initialize incremental builds
+        self.is_serve = False
+
     # Determine whether we're serving the site, and thus doing an incremental
     # build, and initialize thread pools for card generation. Card generation
     # is split into two stages: rendering of layers and composition. We use two
