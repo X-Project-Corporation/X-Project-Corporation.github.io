@@ -6,9 +6,7 @@
 
 <p align="center">
   <strong>
-    A 
-    <a href="https://material.io/">Material Design</a> 
-    theme for 
+    A powerful documentation framework on top of
     <a href="https://www.mkdocs.org/">MkDocs</a>
   </strong>
 </p>
@@ -157,6 +155,9 @@
   /></a>
   <a href="https://astral.sh/" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-astral.png" height="58"
+  /></a>
+  <a href="https://oikolab.com/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-oikolab.png" height="58"
   /></a>
 </p>
 <p>&nbsp;</p>
