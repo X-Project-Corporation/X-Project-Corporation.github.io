@@ -49,6 +49,7 @@ from PIL.Image import Image as _Image
 from statistics import stdev
 from tempfile import TemporaryFile, TemporaryDirectory
 from threading import Lock
+from yaml import SafeLoader, load
 from zipfile import ZipFile
 
 from material.plugins.social.config import SocialConfig
@@ -647,7 +648,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             # Open file and parse layout as YAML
             with open(path, encoding = "utf-8") as f:
                 layout = Layout()
-                layout.load_file(f)
+                layout.load_dict(load(f, SafeLoader))
 
                 # Validate layout and abort if errors occurred
                 errors, warnings = layout.validate()
