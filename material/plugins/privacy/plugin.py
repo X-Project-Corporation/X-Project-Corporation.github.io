@@ -32,6 +32,7 @@ from fnmatch import fnmatch
 from hashlib import sha1
 from lxml.html import HtmlElement, fragment_fromstring, tostring
 from mkdocs import utils
+from mkdocs.config.config_options import ExtraScriptValue
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import File, Files
@@ -94,9 +95,11 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
                     # automatically loads Mermaid.js when a Mermaid diagram is
                     # found in the page - https://bit.ly/36tZXsA.
                     if "mermaid.min.js" in url.path and not config.site_url:
-                        mermaid = url.geturl()
-                        if mermaid not in config.extra_javascript:
-                            config.extra_javascript.append(mermaid)
+                        path = url.geturl()
+                        if path not in config.extra_javascript:
+                            config.extra_javascript.append(
+                                ExtraScriptValue(path)
+                            )
 
             # The local asset references at least one external asset, which
             # means we must download and replace them later
@@ -104,10 +107,15 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
                 self.assets.append(initiator)
                 files.remove(initiator)
 
-        # Process external style sheet and script files, bringing them under
-        # our control by adding them to the collection of external assets
-        for path in [*config.extra_css, *config.extra_javascript]:
+        # Process external style sheet files
+        for path in config.extra_css:
             url = urlparse(path)
+            if not self._is_excluded(url):
+                self._queue(url, config, concurrent = True)
+
+        # Process external script files
+        for script in config.extra_javascript:
+            url = urlparse(script.path)
             if not self._is_excluded(url):
                 self._queue(url, config, concurrent = True)
 
