@@ -49,7 +49,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         # Initialize incremental builds
         self.is_serve = False
 
-    # Determine whether we're serving
+    # Determine whether we're serving the site
     def on_startup(self, *, command, dirty):
         self.is_serve = (command == "serve")
 

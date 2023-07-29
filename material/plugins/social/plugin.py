@@ -27,6 +27,7 @@ import pickle
 import posixpath
 import re
 import requests
+import yaml
 
 from cairosvg import svg2png
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -49,7 +50,7 @@ from PIL.Image import Image as _Image
 from statistics import stdev
 from tempfile import TemporaryFile, TemporaryDirectory
 from threading import Lock
-from yaml import SafeLoader, load
+from yaml import SafeLoader
 from zipfile import ZipFile
 
 from material.plugins.social.config import SocialConfig
@@ -72,8 +73,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         self.is_serve = False
 
     # Determine whether we're serving the site, and thus doing an incremental
-    # build, and initialize thread pools for card generation. Card generation
-    # is split into two stages: rendering of layers and composition. We use two
+    # build, and initialize two thread pools for card generation, because it's
+    # split into two stages: rendering of layers and composition. We use two
     # thread pools, one for each stage, as we need to make sure that all layers
     # of a card are rendered before we compose the card itself. At the same time
     # we want to off-load as much as possible onto worker threads, as card
@@ -647,8 +648,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
             # Open file and parse layout as YAML
             with open(path, encoding = "utf-8") as f:
-                layout = Layout()
-                layout.load_dict(load(f, SafeLoader))
+                layout: Layout = Layout()
+                layout.load_dict(yaml.load(f, SafeLoader))
 
                 # Validate layout and abort if errors occurred
                 errors, warnings = layout.validate()

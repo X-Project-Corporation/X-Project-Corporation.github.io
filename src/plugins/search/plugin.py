@@ -53,7 +53,7 @@ class SearchPlugin(BasePlugin[SearchConfig]):
         # Initialize search index cache
         self.search_index_prev = None
 
-    # Determine whether we're serving
+    # Determine whether we're serving the site
     def on_startup(self, *, command, dirty):
         self.is_dirty = dirty
 

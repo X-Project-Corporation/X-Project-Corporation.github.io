@@ -61,7 +61,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         self.is_dirtyreload = False
         self.is_dirty = False
 
-    # Determine whether we're serving
+    # Determine whether we're serving the site
     def on_startup(self, *, command, dirty):
         self.is_serve = (command == "serve")
         self.is_dirty = dirty
