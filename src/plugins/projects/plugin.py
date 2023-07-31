@@ -84,30 +84,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             # which a project should be stored. If the configuration file
             # changes, settings are reloaded before starting the next build.
             if not self.projects:
-                root = urlparse(config.site_url or "")
                 for name, project in self._find_all(os.getcwd()):
-                    if name == ".":
-                        continue
-
-                    # If the project defines a site URL, replace the name with
-                    # the path suffix when compared to the top-level project
-                    if project.site_url:
-                        url = urlparse(project.site_url)
-                        if url.path.startswith(root.path):
-                            name = os.path.join(".", url.path[len(root.path):])
-
-                        # If we're serving the site, replace the project's host
-                        # name with the dev server address, so we can serve it
-                        if self.is_serve:
-                            url = url._replace(netloc = str(config.dev_addr))
-                            project.site_url = url.geturl()
-
-                    # Adjust the project's site directory and associate the
-                    # project to the computed name from the concatenation of
-                    # paths, or from the comparing the site URLs of the project
-                    # and the top-level project
-                    project.site_dir = os.path.join(config.site_dir, name)
-                    self.projects[name] = project
+                    self.projects[name] = self._prepare(name, project, config)
 
                 # Reverse projects to adhere to post-order
                 self.projects = dict(reversed(self.projects.items()))
@@ -150,12 +128,41 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             return
 
         # Reconcile concurrent jobs - if an exception occurred in one of the
-        # jobs, catch and print it without interrupting the server
+        # jobs, catch and print it without interrupting the server. Moreover,
+        # when we're serving the site, we must create a symbolic link for each
+        # project in its parent site directory, or incremental builds will not
+        # work correctly, as MkDocs will clear the site directory on each and
+        # every build, except for when using the bugged dirty build flag.
         for name, future in self.pool_jobs.items():
             if future.exception():
                 self._error(future.exception())
             else:
                 _print(name, *future.result())
+                project = self.projects[name]
+
+                # If we're serving the site, create a symbol link for the
+                # project inside the site directory of the parent project
+                path = os.path.join(config.site_dir, name)
+                if not os.path.exists(path):
+                    up = os.path.dirname(name)
+                    if up in self.projects:
+                        parent = self.projects[up]
+
+                        # Recompute path, as we need to create the symbolic
+                        # link in the site directory of the parent project
+                        path = os.path.join(
+                            os.path.dirname(parent.config_file_path),
+                            parent.site_dir,
+                            os.path.basename(name)
+                        )
+
+                    # Create symbolic link, if we haven't already
+                    if not os.path.exists(path):
+                        os.makedirs(os.path.dirname(path), exist_ok = True)
+                        os.symlink(os.path.join(
+                            os.path.dirname(project.config_file_path),
+                            project.site_dir
+                        ), path)
 
         # Shutdown process pool
         self.pool.shutdown()
@@ -176,16 +183,21 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         def resolve(event: FileSystemEvent):
             for name, project in self.projects.items():
                 path = os.path.dirname(project.config_file_path)
-                if event.src_path.startswith(path):
-                    log.debug(f"Detected file changes in '{name}'")
+                if not event.src_path.startswith(path):
+                    continue
 
-                    # If the project configuration file changed, reload it
-                    if event.src_path == project.config_file_path:
-                        self.projects[name] = self._resolve_config(path)
+                # If the project configuration file changed, reload it for a
+                # better user experience, as we need to do a full build anyway
+                if event.src_path == project.config_file_path:
+                    self.projects[name] = self._prepare(
+                        name, self._resolve_config(path), config
+                    )
 
-                    # Remove finished job from pool to schedule rebuild
-                    del self.pool_jobs[name]
-                    break
+                # Remove finished job from pool to schedule rebuild and return
+                # early, as we don't need to rebuild other projects
+                log.debug(f"Detected file changes in '{name}'")
+                del self.pool_jobs[name]
+                return
 
         # Initialize file system event handler
         handler = FileSystemEventHandler()
@@ -214,7 +226,12 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         for name in sorted(os.listdir(path)):
             project = self._resolve_config(os.path.join(path, name))
             if project:
-                yield os.path.join(base, name), project
+                name = os.path.join(base, name)
+                name = os.path.normpath(name)
+
+                # Yield normalized path, because otherwise, concatenation of
+                # directories when we're serving the site will not work
+                yield name, project
 
     # Find and yield projects for the given path and recurse - traverse the
     # projects directories recursively, yielding projects and projects inside
@@ -229,7 +246,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         stack = [(base, self._resolve_config(path))]
         while stack:
             name, project = stack.pop()
-            yield name, project
+            if name != ".":
+                yield name, project
 
             # Resolve project configuration and check if the current project
             # has a projects directory. If yes, add all projects to the stack.
@@ -275,6 +293,37 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             # Print errors and warnings and return configuration
             _print(name, errors, warnings)
             return config
+
+    # -------------------------------------------------------------------------
+
+    # Prepare project configuration to be used by plugin
+    def _prepare(self, name: str, project: MkDocsConfig, config: MkDocsConfig):
+        root = urlparse(config.site_url or "")
+
+        # If the project defines a site URL, replace the name with the path
+        # suffix when compared to the top-level project
+        if project.site_url:
+            url = urlparse(project.site_url)
+            if url.path.startswith(root.path):
+                name = os.path.join(".", url.path[len(root.path):])
+
+            # If we're serving the site, replace the project's host name with
+            # the dev server address, so we can serve it
+            if self.is_serve:
+                url = url._replace(netloc = str(config.dev_addr))
+                project.site_url = url.geturl()
+
+        # Adjust the project's site directory and associate the project to the
+        # computed name from the concatenation of paths, or from comparing the
+        # site URLs of the project and the top-level project, but if and only
+        # if we're building the site. If we're serving the site, we must fall
+        # back to symbolic links, because MkDocs will empty the site directory
+        # each and every time it performs a build.
+        if not self.is_serve:
+            project.site_dir = os.path.join(config.site_dir, name)
+
+        # Return project prepared for building
+        return project
 
     # -------------------------------------------------------------------------
 
