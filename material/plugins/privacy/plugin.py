@@ -115,6 +115,10 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
 
         # Process external script files
         for script in config.extra_javascript:
+            if isinstance(script, str):
+                script = ExtraScriptValue(script)
+
+            # Enqueue a job if the script needs to downloaded
             url = urlparse(script.path)
             if not self._is_excluded(url):
                 self._queue(url, config, concurrent = True)
