@@ -22,6 +22,7 @@ import json
 import logging
 import os
 import platform
+import re
 import requests
 import sys
 
@@ -73,8 +74,14 @@ class InfoPlugin(BasePlugin[InfoConfig]):
         _, version = res.headers.get("location").rsplit("/", 1)
         package = get_distribution("mkdocs-material")
         if not package.version.startswith(version):
-            log.error("Please upgrade to the latest version.")
-            self._help_on_versions_and_exit(package.version, version)
+
+            # We can't fetch the latest version from Insiders from GitHub,
+            # but the Community edition might have received a beta release
+            # that we advertise as a latest release. In this case, we need
+            # to skip the check.
+            if not re.search(r"b\d+$", version):
+                log.error("Please upgrade to the latest version.")
+                self._help_on_versions_and_exit(package.version, version)
 
         # Print message that we're creating a bug report
         log.info("Started archive creation for bug report")
