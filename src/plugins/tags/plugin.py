@@ -173,6 +173,13 @@ class TagsPlugin(BasePlugin[TagsConfig]):
             if type:
                 classes.append(f"md-tag--{type}")
 
+        # If a custom comparison function is given, sort pages
+        if self.config.tags_pages_compare:
+            pages = sorted(pages,
+                key     = self.config.tags_pages_compare,
+                reverse = self.config.tags_pages_compare_reverse
+            )
+
         # Render section for tag and a link to each page
         classes = " ".join(classes)
         content = [f"## <span class=\"{classes}\">{name}</span>", ""]

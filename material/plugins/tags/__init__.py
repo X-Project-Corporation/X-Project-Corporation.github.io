@@ -18,6 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from mkdocs.structure.pages import Page
+
 # -----------------------------------------------------------------------------
 # Functions
 # -----------------------------------------------------------------------------
@@ -25,3 +27,13 @@
 # Casefold a string for comparison when sorting
 def casefold(tag: str):
     return tag.casefold()
+
+# -----------------------------------------------------------------------------
+
+# Return the title of a page for sorting
+def page_title(page: Page):
+    return page.title
+
+# Return the url of a page for sorting
+def page_url(page: Page):
+    return page.url
