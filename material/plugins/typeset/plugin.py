@@ -69,6 +69,14 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
             if id not in anchors:
                 continue
 
+            # If the author uses `data-toc-label` to override a heading (which
+            # doesn't support adding of HTML tags), we can abort here, since
+            # the headline will be rendered as-is. It's more or less a hack, so
+            # we should check if we can improve it in the future.
+            label = anchors[id].title
+            if re.search(rf"data-toc-label=['\"]{label}", page.markdown):
+                continue
+
             # Remove anchor links from headlines – we need to do that, or we
             # end up with anchor links inside anchor links, which is invalid
             # HTML5. There are two cases we need to account for here:
