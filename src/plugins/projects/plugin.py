@@ -20,15 +20,20 @@
 
 import logging
 import os
+import posixpath
 
 from copy import deepcopy
 from concurrent.futures import Future, ProcessPoolExecutor
+from jinja2 import pass_context
+from jinja2.runtime import Context
 from mkdocs.commands.build import build
 from mkdocs.config.base import Config, ConfigErrors, ConfigWarnings
 from mkdocs.config.config_options import Plugins
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import Abort, PluginError
-from mkdocs.plugins import BasePlugin, event_priority
+from mkdocs.plugins import BasePlugin
+from mkdocs.utils import get_theme_dir
+from mkdocs.utils.filters import url_filter
 from urllib.parse import urlparse
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 
@@ -58,7 +63,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
     # Determine whether we're serving the site
     def on_startup(self, *, command, dirty):
-        self.is_serve = (command == "serve")
+        self.is_serve = command == "serve"
         self.is_dirty = dirty
 
     # Initialize plugin – this plugin is forced to use a process pool in order
@@ -69,7 +74,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # Disable building of projects in projects - we manage all processes on
         # the top-level for maximum efficiency when allocating resources
-        if os.getcwd() != os.path.dirname(config.config_file_path):
+        if os.path.dirname(config.config_file_path) != os.getcwd():
             self.config.projects = False
 
         # Initialize process pool - we must initialize a new process pool for
@@ -96,10 +101,9 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # restart the preview server.
         self.error = None
 
-    # Schedule projects for building (run latest) - in general, projects are
-    # considered to be independent, which is why we schedule them at this stage
-    @event_priority(-100)
-    def on_files(self, files, *, config):
+    # Schedule projects for building - currently, we consider all projects to
+    # be independent of each other, which is why we schedule them at this stage
+    def on_pre_build(self, *, config):
         if not self.config.enabled or self.error:
             return
 
@@ -110,13 +114,50 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # Spawn concurrent job to build each project and add a future to the
         # projects dictionary to associate build results to built projects.
         # In order to support efficient incremental builds, only build projects
-        # we haven't built yet, or something changed. Whether something changed
-        # is tracked and detected in the on_serve hook that
+        # we haven't built yet, or something changed.
         for name, project in self.projects.items():
             if not name in self.pool_jobs:
                 self.pool_jobs[name] = self.pool.submit(
                     _build, project, self.is_dirty
                 )
+
+    # Patch environment to allow for hoisting of media files provided by the
+    # theme itself, which will also work for other themes, not only this one
+    def on_env(self, env, *, config, files):
+        if not self.config.enabled or self.error:
+            return
+
+        # If we're building the top-level project, stop, as we need to copy all
+        # theme files to the site directory, so they can be hoisted in projects
+        if os.path.dirname(config.config_file_path) == os.getcwd():
+            return
+
+        # If hoisting is enabled and we're building a project, remove all media
+        # files that are provided by the theme, as they are hoisted
+        if self.config.hoist:
+            theme = get_theme_dir(config.theme.name)
+            paths: list[str] = []
+
+            # Remove all media files that are provided by the theme
+            for file in files.media_files():
+                if file.abs_src_path.startswith(theme):
+                    files.remove(file)
+                    paths.append(file.url)
+
+            # Wrap template URL filter to correctly resolve hoisted media files
+            # that we identified in the previous step
+            @pass_context
+            def url_filter_with_hoisting(context: Context, value: str):
+                if not value in paths:
+                    return url_filter(context, value)
+                else:
+                    return posixpath.join(
+                        self.config.hoist_path,
+                        url_filter(context, value)
+                    )
+
+            # Override template URL filter to allow for hoisting
+            env.filters["url"] = url_filter_with_hoisting
 
     # Reconcile jobs and copy projects to output directory
     def on_post_build(self, *, config):
@@ -151,7 +192,6 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                         # Recompute path, as we need to create the symbolic
                         # link in the site directory of the parent project
                         path = os.path.join(
-                            os.path.dirname(parent.config_file_path),
                             parent.site_dir,
                             os.path.basename(name)
                         )
@@ -159,10 +199,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                     # Create symbolic link, if we haven't already
                     if not os.path.exists(path):
                         os.makedirs(os.path.dirname(path), exist_ok = True)
-                        os.symlink(os.path.join(
-                            os.path.dirname(project.config_file_path),
-                            project.site_dir
-                        ), path)
+                        os.symlink(project.site_dir, path)
 
         # Shutdown process pool
         self.pool.shutdown()
@@ -224,7 +261,12 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # Find and yield all projects with their configurations
         for name in sorted(os.listdir(path)):
-            project = self._resolve_config(os.path.join(path, name))
+            full = os.path.join(path, name)
+            if not os.path.isdir(full):
+                continue
+
+            # Try to resolve project configuration
+            project = self._resolve_config(full)
             if project:
                 name = os.path.join(base, name)
                 name = os.path.normpath(name)
@@ -273,30 +315,43 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 config.load_file(f)
                 return config
 
-    # Try to resolve the plugin configuration for the given project - we need
-    # to deep copy the configuration object, as MkDocs seems to mutate it when
-    # parsing. We're using an internal method of the Plugins class to ensure
-    # that we always stick to the syntax allowed by MkDocs.
-    def _resolve_plugin_config(self, name: str, config: Config):
-        plugins = deepcopy(config.plugins)
-        for name, data in Plugins._parse_configs(plugins):
-            if not name == "projects":
+    # Make sure that every project has a plugin configuration set - we need to
+    # deep copy the configuration object, as MkDocs mutates it during parsing.
+    # We're using an internal method of the Plugins class to ensure that we
+    # always stick to the syntax allowed by MkDocs.
+    def _resolve_plugin_config(self, name: str, config: MkDocsConfig):
+        plugins = Plugins._parse_configs(deepcopy(config.plugins))
+        for index, (key, value) in enumerate(plugins):
+            if key != "projects":
                 continue
 
-            # Initialize configuration
-            config: ProjectsConfig = ProjectsConfig()
-            config.load_dict(data)
+            # If hoisting is enabled, compute the relative path from the site
+            # directory of the project to the top-level
+            if self.config.hoist:
+                value["hoist_path"] = posixpath.relpath(".", name)
 
-            # Validate configuration
-            errors, warnings = config.validate()
+            # Initialize and expand the plugin configuration, and mutate the
+            # plugin collection to persist the configuration for hoisting
+            plugin: ProjectsConfig = ProjectsConfig()
+            plugin.load_dict(value)
+            if isinstance(config.plugins, list):
+                config.plugins[index] = { key: dict(plugin.items()) }
+            else:
+                config.plugins[key] = dict(plugin.items())
 
-            # Print errors and warnings and return configuration
-            _print(name, errors, warnings)
-            return config
+            # Validate plugin configuration, print errors and warnings and
+            # return validated configuration to be used by the plugin
+            _print(name, *plugin.validate())
+            return plugin
+
+        # If no plugin configuration was found, add the default configuration
+        # and call this function recursively, so we ensure that it's present
+        config.plugins.append("projects")
+        return self._resolve_plugin_config(name, config)
 
     # -------------------------------------------------------------------------
 
-    # Prepare project configuration to be used by plugin
+    # Prepare project configuration to be used by the plugin
     def _prepare(self, name: str, project: MkDocsConfig, config: MkDocsConfig):
         root = urlparse(config.site_url or "")
 
@@ -318,9 +373,15 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # site URLs of the project and the top-level project, but if and only
         # if we're building the site. If we're serving the site, we must fall
         # back to symbolic links, because MkDocs will empty the site directory
-        # each and every time it performs a build.
+        # each and every time it performs a build, and thus resolve the site
+        # directory within the project itself to an absolute path.
         if not self.is_serve:
             project.site_dir = os.path.join(config.site_dir, name)
+        else:
+            project.site_dir = os.path.join(
+                os.path.dirname(project.config_file_path),
+                project.site_dir
+            )
 
         # Return project prepared for building
         return project
@@ -363,7 +424,7 @@ def _build(config: Config, dirty: bool):
         finally:
             config.plugins.run_event("shutdown")
 
-    # Return warnings and errors for printing
+    # Return errors and warnings for printing
     return errors, warnings
 
 # Print errors and warnings resulting from building a project

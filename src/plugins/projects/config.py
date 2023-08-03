@@ -35,3 +35,7 @@ class ProjectsConfig(Config):
     # Options for projects
     projects = Type(bool, default = True)
     projects_dir = Type(str, default = "projects")
+
+    # Options for hoisting
+    hoist = Type(bool, default = True)
+    hoist_path = Type(str, default = ".")
