@@ -52,7 +52,7 @@ class InfoPlugin(BasePlugin[InfoConfig]):
 
     # Determine whether we're serving the site
     def on_startup(self, *, command, dirty):
-        self.is_serve = (command == "serve")
+        self.is_serve = command == "serve"
 
     # Initialize plugin (run earliest)
     @event_priority(100)

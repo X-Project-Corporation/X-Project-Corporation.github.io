@@ -63,7 +63,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
     # Determine whether we're serving the site
     def on_startup(self, *, command, dirty):
-        self.is_serve = (command == "serve")
+        self.is_serve = command == "serve"
         self.is_dirty = dirty
 
     # Initialize plugin

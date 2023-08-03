@@ -83,7 +83,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # re-generate the exact same images again and again, making successive
     # builds of large sites much faster.
     def on_startup(self, *, command, dirty):
-        self.is_serve = (command == "serve")
+        self.is_serve = command == "serve"
 
         # Initialize thread pool for cards
         self.card_pool = ThreadPoolExecutor(self.config.concurrency)
