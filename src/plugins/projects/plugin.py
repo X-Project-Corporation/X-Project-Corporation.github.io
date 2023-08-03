@@ -134,7 +134,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # If hoisting is enabled and we're building a project, remove all media
         # files that are provided by the theme, as they are hoisted
-        if self.config.hoist:
+        if self.config.hoisting:
             theme = get_theme_dir(config.theme.name)
             paths: list[str] = []
 
@@ -152,7 +152,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                     return url_filter(context, value)
                 else:
                     return posixpath.join(
-                        self.config.hoist_path,
+                        self.config.hoisting_path,
                         url_filter(context, value)
                     )
 
@@ -327,8 +327,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
             # If hoisting is enabled, compute the relative path from the site
             # directory of the project to the top-level
-            if self.config.hoist:
-                value["hoist_path"] = posixpath.relpath(".", name)
+            if self.config.hoisting:
+                value["hoisting_path"] = posixpath.relpath(".", name)
 
             # Initialize and expand the plugin configuration, and mutate the
             # plugin collection to persist the configuration for hoisting
