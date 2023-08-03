@@ -73,7 +73,7 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
             # doesn't support adding of HTML tags), we can abort here, since
             # the headline will be rendered as-is. It's more or less a hack, so
             # we should check if we can improve it in the future.
-            label = anchors[id].title
+            label = re.escape(anchors[id].title)
             if re.search(rf"data-toc-label=['\"]{label}", page.markdown):
                 continue
 
