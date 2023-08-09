@@ -18,30 +18,14 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import os
-
-from mkdocs.config.config_options import Type
-from mkdocs.config.base import Config
+from mkdocs.structure.nav import Link
 
 # -----------------------------------------------------------------------------
 # Class
 # -----------------------------------------------------------------------------
 
-# Projects plugin configuration scheme
-class ProjectsConfig(Config):
-    enabled = Type(bool, default = True)
-    concurrency = Type(int, default = max(1, os.cpu_count() - 1))
+# Extension of the link class to allow for marking project links
+class ProjectsLink(Link):
 
-    # Options for caching
-    cache = Type(bool, default = True)
-    cache_dir = Type(str, default = ".cache/plugin/projects")
-
-    # Options for projects
-    projects = Type(bool, default = True)
-    projects_dir = Type(str, default = "projects")
-
-    # Options for hoisting
-    hoisting = Type(bool, default = True)
-
-    # Internal options (don't use these)
-    internal_slug = Type(str, default = ".")
+    # Indicate that the link points to a project
+    is_project = True

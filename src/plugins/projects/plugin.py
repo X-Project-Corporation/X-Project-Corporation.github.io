@@ -20,6 +20,7 @@
 
 import logging
 import os
+import pickle
 import posixpath
 
 from copy import deepcopy
@@ -31,13 +32,17 @@ from mkdocs.config.base import Config, ConfigErrors, ConfigWarnings
 from mkdocs.config.config_options import Plugins
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import Abort, PluginError
-from mkdocs.plugins import BasePlugin
+from mkdocs.plugins import BasePlugin, event_priority
+from mkdocs.structure.pages import Page
+from mkdocs.structure.nav import Link, Section
 from mkdocs.utils import get_theme_dir
 from mkdocs.utils.filters import url_filter
-from urllib.parse import urlparse
+from typing import Union
+from urllib.parse import ParseResult as URL, urlparse
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 
 from material.plugins.projects.config import ProjectsConfig
+from material.plugins.projects.nav.link import ProjectsLink
 
 # -----------------------------------------------------------------------------
 # Class
@@ -46,7 +51,7 @@ from material.plugins.projects.config import ProjectsConfig
 # Projects plugin
 class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
-    # Initialize plugin
+    # Initialize plugin state
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -66,16 +71,33 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         self.is_serve = command == "serve"
         self.is_dirty = dirty
 
-    # Initialize plugin – this plugin is forced to use a process pool in order
-    # to guarantee proper isolation, as MkDocs itself is not thread-safe
+    # Initialize plugin – compared to our other concurrent plugins, this plugin
+    # is forced to use a process pool in order to guarantee proper isolation, as
+    # MkDocs itself is not thread-safe. Additionally, all project configurations
+    # are resolved and written to the cache (if enabled), as it's sufficient to
+    # resolve them once on the top-level before projects are built. We might
+    # need adjacent project configurations for interlinking projects.
     def on_config(self, config):
         if not self.config.enabled:
             return
 
+        # Compute path to persist project configurations
+        path = os.path.join(self.config.cache_dir, "config.pickle")
+        path = os.path.normpath(path)
+
         # Disable building of projects in projects - we manage all processes on
         # the top-level for maximum efficiency when allocating resources
+        os.makedirs(os.path.dirname(path), exist_ok = True)
         if os.path.dirname(config.config_file_path) != os.getcwd():
             self.config.projects = False
+
+            # We're building a project, so we try to load all adjacent project
+            # configurations from the cache, as they are necessary for correct
+            # link resolution between projects. Note that the only sane reason
+            # to disable caching is for debugging purposes.
+            if self.config.cache and os.path.isfile(path):
+                with open(path, "rb") as f:
+                    self.projects = pickle.load(f)
 
         # Initialize process pool - we must initialize a new process pool for
         # every build and get rid of it when we're done, because the process
@@ -84,16 +106,19 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         if self.config.projects:
             self.pool = ProcessPoolExecutor(self.config.concurrency)
 
-            # Traverse projects directory and load the configuration for each
-            # project, as the author may use site URL to specify the path at
-            # which a project should be stored. If the configuration file
-            # changes, settings are reloaded before starting the next build.
-            if not self.projects:
-                for name, project in self._find_all(os.getcwd()):
-                    self.projects[name] = self._prepare(name, project, config)
+        # Traverse projects directory and load the configuration for each
+        # project, as the author may use the site URL to specify the path at
+        # which a project should be stored. If the configuration file changes,
+        # settings are reloaded before starting the next build.
+        if not self.projects:
+            for slug, project in self._find_all(os.getcwd()):
+                self.projects[slug] = self._prepare(slug, project, config)
 
-                # Reverse projects to adhere to post-order
-                self.projects = dict(reversed(self.projects.items()))
+            # Reverse projects to adhere to post-order and write them to cache,
+            # so the projects don't need to be resolved in spawned jobs
+            self.projects = dict(reversed(self.projects.items()))
+            with open(path, "wb") as f:
+                pickle.dump(self.projects, f)
 
         # Remember last error, so we can disable the plugin if necessary. This
         # allows for a much better editing experience, as the user can fix the
@@ -101,8 +126,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # restart the preview server.
         self.error = None
 
-    # Schedule projects for building - currently, we consider all projects to
-    # be independent of each other, which is why we schedule them at this stage
+    # Schedule projects for building - the general case is that all projects
+    # can be considered independent of each other, so we build them in parallel
     def on_pre_build(self, *, config):
         if not self.config.enabled or self.error:
             return
@@ -114,10 +139,10 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # Spawn concurrent job to build each project and add a future to the
         # projects dictionary to associate build results to built projects.
         # In order to support efficient incremental builds, only build projects
-        # we haven't built yet, or something changed.
-        for name, project in self.projects.items():
-            if not name in self.pool_jobs:
-                self.pool_jobs[name] = self.pool.submit(
+        # we haven't built yet, or when something changed.
+        for slug, project in self.projects.items():
+            if not slug in self.pool_jobs:
+                self.pool_jobs[slug] = self.pool.submit(
                     _build, project, self.is_dirty
                 )
 
@@ -127,9 +152,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         if not self.config.enabled or self.error:
             return
 
-        # If we're building the top-level project, stop, as we need to copy all
-        # theme files to the site directory, so they can be hoisted in projects
-        if os.path.dirname(config.config_file_path) == os.getcwd():
+        # We're building the top-level project
+        if self.config.projects:
             return
 
         # If hoisting is enabled and we're building a project, remove all media
@@ -144,20 +168,30 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                     files.remove(file)
                     paths.append(file.url)
 
-            # Wrap template URL filter to correctly resolve hoisted media files
-            # that we identified in the previous step
+            # Wrap template URL filter to correctly resolve media files hoisted
+            # to the top-level that we identified in the previous step
             @pass_context
             def url_filter_with_hoisting(context: Context, value: str):
                 if not value in paths:
                     return url_filter(context, value)
                 else:
                     return posixpath.join(
-                        self.config.hoisting_path,
+                        os.path.relpath(".", self.config.internal_slug),
                         url_filter(context, value)
                     )
 
             # Override template URL filter to allow for hoisting
             env.filters["url"] = url_filter_with_hoisting
+
+    # Merge project navigation (run latest) - we need to do it at this stage,
+    # because other plugins might modify the navigation, e.g., the blog plugin
+    @event_priority(-100)
+    def on_page_context(self, context, *, page, config, nav):
+        if not self.config.enabled or self.error:
+            return
+
+        # Replace project links in navigation
+        self._replace(self.config.internal_slug, nav.items)
 
     # Reconcile jobs and copy projects to output directory
     def on_post_build(self, *, config):
@@ -174,18 +208,18 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # project in its parent site directory, or incremental builds will not
         # work correctly, as MkDocs will clear the site directory on each and
         # every build, except for when using the bugged dirty build flag.
-        for name, future in self.pool_jobs.items():
+        for slug, future in self.pool_jobs.items():
             if future.exception():
                 self._error(future.exception())
             else:
-                _print(name, *future.result())
-                project = self.projects[name]
+                _print(slug, *future.result())
+                project = self.projects[slug]
 
-                # If we're serving the site, create a symbol link for the
+                # If we're serving the site, create a symbolic link for the
                 # project inside the site directory of the parent project
-                path = os.path.join(config.site_dir, name)
+                path = os.path.join(config.site_dir, slug)
                 if not os.path.exists(path):
-                    up = os.path.dirname(name)
+                    up = os.path.dirname(slug)
                     if up in self.projects:
                         parent = self.projects[up]
 
@@ -193,7 +227,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                         # link in the site directory of the parent project
                         path = os.path.join(
                             parent.site_dir,
-                            os.path.basename(name)
+                            os.path.basename(slug)
                         )
 
                     # Create symbolic link, if we haven't already
@@ -218,7 +252,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # we can be sure that leafs will always be checked before projects that
         # are higher up the tree, so a simple prefix check is enough.
         def resolve(event: FileSystemEvent):
-            for name, project in self.projects.items():
+            for slug, project in self.projects.items():
                 path = os.path.dirname(project.config_file_path)
                 if not event.src_path.startswith(path):
                     continue
@@ -226,14 +260,14 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 # If the project configuration file changed, reload it for a
                 # better user experience, as we need to do a full build anyway
                 if event.src_path == project.config_file_path:
-                    self.projects[name] = self._prepare(
-                        name, self._resolve_config(path), config
+                    self.projects[slug] = self._prepare(
+                        slug, self._resolve_config(path), config
                     )
 
                 # Remove finished job from pool to schedule rebuild and return
                 # early, as we don't need to rebuild other projects
-                log.debug(f"Detected file changes in '{name}'")
-                del self.pool_jobs[name]
+                log.debug(f"Detected file changes in '{slug}'")
+                del self.pool_jobs[slug]
                 return
 
         # Initialize file system event handler
@@ -260,20 +294,20 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             return
 
         # Find and yield all projects with their configurations
-        for name in sorted(os.listdir(path)):
-            full = os.path.join(path, name)
+        for slug in sorted(os.listdir(path)):
+            full = os.path.join(path, slug)
             if not os.path.isdir(full):
                 continue
 
             # Try to resolve project configuration
             project = self._resolve_config(full)
             if project:
-                name = os.path.join(base, name)
-                name = os.path.normpath(name)
+                slug = os.path.join(base, slug)
+                slug = os.path.normpath(slug)
 
                 # Yield normalized path, because otherwise, concatenation of
                 # directories when we're serving the site will not work
-                yield name, project
+                yield slug, project
 
     # Find and yield projects for the given path and recurse - traverse the
     # projects directories recursively, yielding projects and projects inside
@@ -287,18 +321,18 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # traversal, resolving and yielding all projects in reverse
         stack = [(base, self._resolve_config(path))]
         while stack:
-            name, project = stack.pop()
-            if name != ".":
-                yield name, project
+            slug, project = stack.pop()
+            if slug != ".":
+                yield slug, project
 
             # Resolve project configuration and check if the current project
             # has a projects directory. If yes, add all projects to the stack.
-            plugin = self._resolve_plugin_config(name, project)
+            plugin = self._resolve_project_config(slug, project)
             if plugin and plugin.projects:
                 stack.extend(self._find(os.path.join(
                     os.path.dirname(project.config_file_path),
                     plugin.projects_dir
-                ), name))
+                ), slug))
 
     # -------------------------------------------------------------------------
 
@@ -318,17 +352,17 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
     # Make sure that every project has a plugin configuration set - we need to
     # deep copy the configuration object, as MkDocs mutates it during parsing.
     # We're using an internal method of the Plugins class to ensure that we
-    # always stick to the syntax allowed by MkDocs.
-    def _resolve_plugin_config(self, name: str, config: MkDocsConfig):
+    # always stick to the syntaxes allowed by MkDocs (list and dictionary).
+    def _resolve_project_config(self, slug: str, config: MkDocsConfig):
         plugins = Plugins._parse_configs(deepcopy(config.plugins))
         for index, (key, value) in enumerate(plugins):
             if key != "projects":
                 continue
 
-            # If hoisting is enabled, compute the relative path from the site
-            # directory of the project to the top-level
-            if self.config.hoisting:
-                value["hoisting_path"] = posixpath.relpath(".", name)
+            # Pass the computed slug of the project, so it can be used to
+            # resolve information from the top-level and allow for hoisting
+            value["internal_slug"] = slug
+            value["cache"] = self.config.cache
 
             # Initialize and expand the plugin configuration, and mutate the
             # plugin collection to persist the configuration for hoisting
@@ -341,26 +375,32 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
             # Validate plugin configuration, print errors and warnings and
             # return validated configuration to be used by the plugin
-            _print(name, *plugin.validate())
+            _print(slug, *plugin.validate())
             return plugin
 
         # If no plugin configuration was found, add the default configuration
         # and call this function recursively, so we ensure that it's present
         config.plugins.append("projects")
-        return self._resolve_plugin_config(name, config)
+        return self._resolve_project_config(slug, config)
+
+    # Resolve project link
+    def _resolve_project_url(self, slug: str, url: URL):
+        return url.hostname
 
     # -------------------------------------------------------------------------
 
     # Prepare project configuration to be used by the plugin
-    def _prepare(self, name: str, project: MkDocsConfig, config: MkDocsConfig):
+    def _prepare(self, slug: str, project: MkDocsConfig, config: MkDocsConfig):
         root = urlparse(config.site_url or "")
 
-        # If the project defines a site URL, replace the name with the path
-        # suffix when compared to the top-level project
+        # If the project defines a site URL, replace the slug with the path
+        # suffix starting from the top-level project. This is a very powerful
+        # feature that allows the author to define the directory structure
+        # independent of the directory structure of the project.
         if project.site_url:
             url = urlparse(project.site_url)
             if url.path.startswith(root.path):
-                name = os.path.join(".", url.path[len(root.path):])
+                slug = os.path.join(".", url.path[len(root.path):])
 
             # If we're serving the site, replace the project's host name with
             # the dev server address, so we can serve it
@@ -369,14 +409,15 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 project.site_url = url.geturl()
 
         # Adjust the project's site directory and associate the project to the
-        # computed name from the concatenation of paths, or from comparing the
+        # computed slug from the concatenation of paths, or from comparing the
         # site URLs of the project and the top-level project, but if and only
         # if we're building the site. If we're serving the site, we must fall
         # back to symbolic links, because MkDocs will empty the site directory
         # each and every time it performs a build, and thus resolve the site
-        # directory within the project itself to an absolute path.
+        # directory within the project itself to an absolute path, as otherwise
+        # MkDocs will try to resolve it from the project directory.
         if not self.is_serve:
-            project.site_dir = os.path.join(config.site_dir, name)
+            project.site_dir = os.path.join(config.site_dir, slug)
         else:
             project.site_dir = os.path.join(
                 os.path.dirname(project.config_file_path),
@@ -385,6 +426,44 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # Return project prepared for building
         return project
+
+    # -------------------------------------------------------------------------
+
+    # Replace project links in the given list of navigaton items
+    def _replace(self, slug: str, items: "list[Union[Link, Page, Section]]"):
+        for index, item in enumerate(items):
+            if isinstance(item, Link):
+                items[index] = self._replace_link(slug, item)
+
+            # If this is a section and we haven't found the navigation item to
+            # inject the navigation up to this point, go one level deeper
+            elif isinstance(item, Section):
+                return self._replace(slug, item.children)
+
+    # Replace project link
+    def _replace_link(self, slug: str, item: Link):
+        url = urlparse(item.url)
+        if url.scheme != "project":
+            return item
+
+        # Resolve fully qualified project slug - the given slug is the context
+        # of the project that is currently being built. When we're building a
+        # nested project, we need to prepend the slug of the project that is
+        # currently being built to the slug of the project that is referenced.
+        slug = posixpath.join(slug, url.hostname)
+        slug = posixpath.normpath(slug)
+
+        # Abort, since the project could not be resolved
+        if slug not in self.projects:
+            raise PluginError(f"Invalid project: '{slug}' not found")
+
+        # If the link or section does not include a title, we just use the name
+        # of the project as a title, allowing to manage it inside the project
+        title = item.title or self.projects[slug].site_name
+
+        # Resolve and return project link
+        url = self._resolve_project_url(slug, url)
+        return ProjectsLink(title, url)
 
     # -------------------------------------------------------------------------
 
@@ -428,16 +507,15 @@ def _build(config: Config, dirty: bool):
     return errors, warnings
 
 # Print errors and warnings resulting from building a project
-def _print(name: str, errors: ConfigErrors, warnings: ConfigWarnings):
-    name = os.path.normpath(name)
+def _print(slug: str, errors: ConfigErrors, warnings: ConfigWarnings):
 
     # Print warnings
     for value, message in warnings:
-        log.warning(f"[{name}] Config value '{value}': {message}")
+        log.warning(f"[{slug}] Config value '{value}': {message}")
 
     # Print errors
     for value, message in errors:
-        log.error(f"[{name}] Config value '{value}': {message}")
+        log.error(f"[{slug}] Config value '{value}': {message}")
 
     # Abort if there were errors
     if errors:

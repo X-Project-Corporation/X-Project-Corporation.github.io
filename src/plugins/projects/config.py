@@ -32,10 +32,16 @@ class ProjectsConfig(Config):
     enabled = Type(bool, default = True)
     concurrency = Type(int, default = max(1, os.cpu_count() - 1))
 
+    # Options for caching
+    cache = Type(bool, default = True)
+    cache_dir = Type(str, default = ".cache/plugin/projects")
+
     # Options for projects
     projects = Type(bool, default = True)
     projects_dir = Type(str, default = "projects")
 
     # Options for hoisting
     hoisting = Type(bool, default = True)
-    hoisting_path = Type(str, default = ".")
+
+    # Internal options (don't use these)
+    internal_slug = Type(str, default = ".")
