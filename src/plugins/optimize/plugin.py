@@ -68,7 +68,8 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         self.cache_file = os.path.normpath(self.cache_file)
 
         # Load cache map, if it exists and the cache should be used
-        if os.path.isfile(self.cache_file) and self.config.cache:
+        os.makedirs(os.path.dirname(self.cache_file), exist_ok = True)
+        if self.config.cache and os.path.isfile(self.cache_file):
             with open(self.cache_file) as f:
                 self.cache = json.load(f)
 

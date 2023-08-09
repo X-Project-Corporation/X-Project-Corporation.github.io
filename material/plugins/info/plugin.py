@@ -43,7 +43,7 @@ from material.plugins.info.config import InfoConfig
 # Info plugin
 class InfoPlugin(BasePlugin[InfoConfig]):
 
-    # Initialize plugin
+    # Initialize plugin state
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

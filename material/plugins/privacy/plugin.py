@@ -68,8 +68,8 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
             **self.config.assets_expr_map
         })
 
-    # Process external style sheets and scripts (run latest) - run this hook
-    # after all other plugins, so they can add additional assets
+    # Process external style sheets and scripts (run latest) - run this after
+    # all other plugins, so they can add additional assets
     @event_priority(-100)
     def on_files(self, files, *, config):
         if not self.config.enabled:
@@ -128,11 +128,11 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
     # type of external asset when writing. Thus, we create and enqueue a job for
     # each image we find that checks if the image needs to be downloaded. Also,
     # downloading all external images at this stage, we reconcile all concurrent
-    # jobs in the `on_env` hook, which is the stage in which the optimize plugin
-    # will evaluate what images can and need to be optimized. This means we can
-    # pass external images through the optimization pipeline. Additionally, we
-    # run this hook after all other plugins, so we allow them to add additional
-    # images to the page content. How cool is that?
+    # jobs in `on_env`, which is the stage in which the optimize plugin will
+    # evaluate what images can and need to be optimized. This means we can pass
+    # external images through the optimization pipeline. Additionally, we run
+    # this after all other plugins, so we allow them to add additional images
+    # to the content of the page. How cool is that?
     @event_priority(-100)
     def on_page_content(self, html, *, page, config, files):
         if not self.config.enabled:

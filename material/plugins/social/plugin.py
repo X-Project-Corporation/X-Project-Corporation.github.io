@@ -98,6 +98,17 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if not self.config.enabled:
             return
 
+        # Initialize cache
+        self.cache: dict[str, str] = dict()
+        self.cache_file = os.path.join(self.config.cache_dir, "manifest.json")
+        self.cache_file = os.path.normpath(self.cache_file)
+
+        # Load cache map, if it exists and the cache should be used
+        os.makedirs(os.path.dirname(self.cache_file), exist_ok = True)
+        if self.config.cache and os.path.isfile(self.cache_file):
+            with open(self.cache_file) as f:
+                self.cache = json.load(f)
+
         # Initialize lock for synchronizing downloading of fonts
         self.lock = Lock()
 
@@ -105,16 +116,6 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         self.card_layouts: dict[str, Layout] = dict()
         self.card_variables: dict[str, list[list[str]]] = dict()
         self.card_env = Environment()
-
-        # Initialize cache
-        self.cache: dict[str, str] = dict()
-        self.cache_file = os.path.join(self.config.cache_dir, "manifest.json")
-        self.cache_file = os.path.normpath(self.cache_file)
-
-        # Load cache map, if it exists and the cache should be used
-        if os.path.isfile(self.cache_file) and self.config.cache:
-            with open(self.cache_file) as f:
-                self.cache = json.load(f)
 
         # Always print a warning when debug mode is active
         if self.config.debug:
@@ -140,7 +141,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         self.error = None
 
     # Generate card as soon as metadata is available (run latest) - run this
-    # hook after all other plugins, so they can alter the card configuration
+    # after all other plugins, so they can alter the card configuration
     @event_priority(-100)
     def on_page_markdown(self, markdown, *, page, config, files):
         if not self.config.enabled or self.error:
@@ -167,8 +168,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             self._generate, name, page, config
         )
 
-    # Generate card metadata (run earlier) - don't run this hook too late, as
-    # we want plugins like the minify plugin to pick up the HTML we inject
+    # Generate card metadata (run earlier) - don't run this too late, as we
+    # want plugins like the minify plugin to pick up the HTML we inject
     @event_priority(50)
     def on_post_page(self, output, *, page, config):
         if not self.config.enabled or self.error:
@@ -223,7 +224,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         ])
 
     # Reconcile jobs (run latest) - all other plugins do not depend on the
-    # generated cards, so we can run this hook after all of them
+    # generated cards, so we can run this after all of them
     @event_priority(-100)
     def on_post_build(self, *, config):
         if not self.config.enabled or self.error:
@@ -321,8 +322,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if hash == prev and os.path.isfile(file.abs_src_path):
             return file
 
-        # Spawn jobs to render layers - we only need to render layers that we
-        # haven't already dispatched, reducing work by deduplication
+        # Spawn concurrent jobs to render layers - we only need to render layers
+        # that we haven't already dispatched, reducing work by deduplication
         for h, layer in layers.items():
             sentinel = Future()
 
@@ -831,13 +832,12 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 # Helper functions
 # -----------------------------------------------------------------------------
 
-# Compute a stable hash from a dictionary - since we're doing compositing, we
-# can leverage caching to omit re-generating layers when their parameters stay
-# the same. Additionally, we can identify identical layers between images,
-# e.g., background, logos, or avatars, but also unchanged text.
+# Compute a stable hash from an object - since we're doing compositing, we can
+# leverage caching to omit re-generating layers when their parameters stay the
+# same. Additionally, we can identify identical layers between images, e.g.,
+# background, logos, or avatars, but also unchanged text.
 def _digest(data: object):
-    flat = pickle.dumps(data)
-    return sha1(flat).hexdigest()
+    return sha1(pickle.dumps(data)).hexdigest()
 
 # -----------------------------------------------------------------------------
 
