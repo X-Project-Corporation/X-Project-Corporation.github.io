@@ -134,17 +134,11 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 "but not linked, so they won't be visible on social media."
             )
 
-        # Remember last error, so we can disable the plugin if necessary. This
-        # allows for a much better editing experience, as the user can fix the
-        # issue and the plugin will pick up the changes, so there's no need to
-        # restart the preview server.
-        self.error = None
-
     # Generate card as soon as metadata is available (run latest) - run this
     # after all other plugins, so they can alter the card configuration
     @event_priority(-100)
     def on_page_markdown(self, markdown, *, page, config, files):
-        if not self.config.enabled or self.error:
+        if not self.config.enabled:
             return
 
         # Skip if cards should not be generated
@@ -154,13 +148,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Resolve card layout - we also preload the layout here, so we're not
         # triggering multiple concurrent loads in the worker threads
         name = self._config("cards_layout", page)
-        try:
-            self._resolve_layout(name, config)
-
-        # If an error occurs during layout resolution, we need to disable the
-        # plugin, as we cannot generate cards without a valid layout
-        except Exception as e:
-            return self._error(e)
+        self._resolve_layout(name, config)
 
         # Spawn concurrent job to generate card for page and add future to
         # job dictionary, as it returns the file we need to copy later
@@ -172,7 +160,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # want plugins like the minify plugin to pick up the HTML we inject
     @event_priority(50)
     def on_post_page(self, output, *, page, config):
-        if not self.config.enabled or self.error:
+        if not self.config.enabled:
             return
 
         # Skip if cards should not be generated
@@ -185,7 +173,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # fails and the user can fix the issue.
         future = self.card_pool_jobs[page.file.src_uri]
         if future.exception():
-            return self._error(future.exception())
+            raise future.exception()
         else:
             file: File = future.result()
             file.copy_file()
@@ -227,7 +215,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # generated cards, so we can run this after all of them
     @event_priority(-100)
     def on_post_build(self, *, config):
-        if not self.config.enabled or self.error:
+        if not self.config.enabled:
             return
 
         # Shutdown thread pools if we're not serving
@@ -389,6 +377,10 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # If given, load background image and resize it proportionally to cover
         # the entire area while retaining the aspect ratio of the input image
         if background.image:
+            if not os.path.isfile(background.image):
+                raise PluginError(f"Couldn't find image '{background.image}'")
+
+            # Open file and convert SVGs to PNGs
             with open(background.image, "br") as f:
                 data = f.read()
                 if background.image.endswith(".svg"):
@@ -801,23 +793,6 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Dictionary values: merge site- with page-level configuration
         if isinstance(self.config[name], (dict)):
             return { **self.config[name], **meta.get(name, dict()) }
-
-    # Handle error - if we're serving, we just log the first error we encounter.
-    # If we're building, we raise an exception, so the build fails.
-    def _error(self, e: Exception):
-        if not self.is_serve:
-            raise PluginError(str(e))
-
-        # Remember first error
-        if not self.error:
-            self.error = e
-
-            # If we're serving, just log the error
-            log.error(e)
-            log.warning(
-                "Skipping social plugin for this build. "
-                "Please fix the error to enable the social plugin again."
-            )
 
     # Create a file for the given path
     def _generate_file(self, path: str, config: MkDocsConfig):
