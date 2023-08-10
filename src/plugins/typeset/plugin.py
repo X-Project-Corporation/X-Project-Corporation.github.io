@@ -37,7 +37,7 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
             return
 
         # Initialize titles
-        self.title_map = dict()
+        self.title_map: dict[str, str] = dict()
 
     # Extract source of page title before it's lost
     def on_pre_page(self, page, *, config, files):
