@@ -57,7 +57,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         self.pool = ThreadPoolExecutor(self.config.concurrency)
         self.pool_jobs: dict[str, Future] = dict()
 
-    # Initialize plugin
+    # Resolve and load manifest
     def on_config(self, config):
         if not self.config.enabled:
             return
@@ -72,12 +72,6 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         if self.config.cache and os.path.isfile(self.cache_file):
             with open(self.cache_file) as f:
                 self.cache = json.load(f)
-
-        # Remember last error, so we can disable the plugin if necessary. This
-        # allows for a much better editing experience, as the user can fix the
-        # issue and the plugin will pick up the changes, so there's no need to
-        # restart the preview server.
-        self.error = None
 
     # Initialize optimization pipeline
     def on_env(self, env, *, config, files):
@@ -116,7 +110,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         # fails and the user can fix the issue.
         for path, future in self.pool_jobs.items():
             if future.exception():
-                return self._error(future.exception())
+                raise future.exception()
             else:
                 file: File = future.result()
                 file.copy_file()
@@ -262,26 +256,6 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
             quality     = self.config.optimize_jpg_quality,
             progressive = self.config.optimize_jpg_progressive
         )
-
-    # -------------------------------------------------------------------------
-
-    # Handle error - if we're serving, we just log the first error we encounter.
-    # If we're building, we raise an exception, so the build fails.
-    def _error(self, e: Exception):
-        if not self.is_serve:
-            raise PluginError(str(e))
-
-        # Remember first error
-        if not self.error:
-            self.error = e
-
-            # If we're serving, just log the error
-            log.error(e)
-            log.warning(
-                "Skipping optimize plugin for this build. "
-                "Please fix the error to enable the optimize plugin again."
-            )
-
 
 # -----------------------------------------------------------------------------
 # Helper functions
