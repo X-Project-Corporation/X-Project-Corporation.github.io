@@ -117,7 +117,7 @@ class InfoPlugin(BasePlugin[InfoConfig]):
         example = slugify(example, "-")
 
         # Create self-contained example from project
-        files = []
+        files: list[str] = []
         with ZipFile(archive, "a", ZIP_DEFLATED, False) as f:
             for path in ["mkdocs.yml", "requirements.txt"]:
                 if os.path.isfile(path):
@@ -183,7 +183,7 @@ class InfoPlugin(BasePlugin[InfoConfig]):
         if buffer.nbytes > 1000000:
             log.warning("Archive exceeds recommended maximum size of 1 MB")
 
-        # Aaaaaand done.
+        # Aaaaaand done
         sys.exit(1)
 
     # -------------------------------------------------------------------------
