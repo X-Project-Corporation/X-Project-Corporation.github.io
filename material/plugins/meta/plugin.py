@@ -64,7 +64,7 @@ class MetaPlugin(BasePlugin[MetaConfig]):
                         f"{e}"
                     )
 
-    # Set metadata for page, if applicable (run early)
+    # Set metadata for page, if applicable (run earlier)
     @event_priority(50)
     def on_page_markdown(self, markdown, *, page, config, files):
         if not self.config.enabled:
