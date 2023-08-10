@@ -259,7 +259,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
         # Check if URL matches one of the inclusion patterns
         if self.config.assets_include:
             for pattern in self.config.assets_include:
-                if fnmatch(self._map_url_to_path(url), pattern):
+                if fnmatch(self._path_from_url(url), pattern):
                     return False
 
             # File is not included
@@ -268,7 +268,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
 
         # Check if URL matches one of the exclusion patterns
         for pattern in self.config.assets_exclude:
-            if fnmatch(self._map_url_to_path(url), pattern):
+            if fnmatch(self._path_from_url(url), pattern):
                 log.debug(f"Excluding external file: {url.geturl()} {via}")
                 return True
 
@@ -368,7 +368,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
 
     # Enqueue external asset for download, if not already done
     def _queue(self, url: URL, config: MkDocsConfig, concurrent = False):
-        path = self._map_url_to_path(url)
+        path = self._path_from_url(url)
         full = posixpath.join(self.config.assets_fetch_dir, path)
 
         # Try to retrieve existing file
@@ -379,7 +379,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
             # directory, and generate file to register it with MkDocs as soon
             # as it was downloaded. This allows other plugins to apply
             # additional processing.
-            file = self._generate_file(path, config)
+            file = self._path_to_file(path, config)
             file.url = url.geturl()
 
             # Spawn concurrent job to fetch external asset if the extension is
@@ -483,7 +483,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
                 value = match.group(1)
 
                 # Map URL to canonical path
-                path = self._map_url_to_path(urlparse(value))
+                path = self._path_from_url(urlparse(value))
                 full = posixpath.join(self.config.assets_fetch_dir, path)
 
                 # Try to retrieve existing file
@@ -533,7 +533,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
     # Normalize (= canonicalize) path by removing trailing slashes, and ensure
     # that hidden folders (`.` after `/`) are unhidden. Otherwise MkDocs will
     # not consider them being part of the build and refuse to copy them.
-    def _map_url_to_path(self, url: URL):
+    def _path_from_url(self, url: URL):
         path = posixpath.normpath(url.path)
         path = re.sub(r"/\.", "/_", path)
 
@@ -552,7 +552,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
         return url.geturl()[2:]
 
     # Create a file for the given path
-    def _generate_file(self, path: str, config: MkDocsConfig):
+    def _path_to_file(self, path: str, config: MkDocsConfig):
         return File(
             posixpath.join(self.config.assets_fetch_dir, path),
             os.path.abspath(self.config.cache_dir),
