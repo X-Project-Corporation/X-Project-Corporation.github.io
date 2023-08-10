@@ -107,7 +107,10 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         os.makedirs(os.path.dirname(self.cache_file), exist_ok = True)
         if self.config.cache and os.path.isfile(self.cache_file):
             with open(self.cache_file) as f:
-                self.cache = json.load(f)
+                try:
+                    self.cache = json.load(f)
+                except:
+                    pass
 
         # Initialize lock for synchronizing downloading of fonts
         self.lock = Lock()
