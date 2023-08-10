@@ -27,4 +27,7 @@ from mkdocs.config.base import Config
 
 # Meta plugin configuration scheme
 class MetaConfig(Config):
+    enabled = Type(bool, default = True)
+
+    # Options for meta files
     meta_file = Type(str, default = "**/.meta.yml")

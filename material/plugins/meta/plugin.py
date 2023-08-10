@@ -21,8 +21,9 @@
 import logging
 import os
 
-from copy import copy
 from glob import glob
+from mergedeep import Strategy, merge
+from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, event_priority
 from yaml import SafeLoader, load
 
@@ -35,60 +36,56 @@ from material.plugins.meta.config import MetaConfig
 # Meta plugin
 class MetaPlugin(BasePlugin[MetaConfig]):
 
-    # Initialize plugin
-    def on_config(self, config):
+    # Construct metadata mapping
+    def on_pre_build(self, *, config):
+        if not self.config.enabled:
+            return
+
+        # Initialize metadata mapping
         self.meta = dict()
 
-    # Find all meta files and add to mapping
-    def on_pre_build(self, *, config):
+        # Resolve and load meta files in docs directory
         path = os.path.join(config.docs_dir, self.config.meta_file)
-        for file in glob(path, recursive = True):
+        for file in sorted(glob(path, recursive = True)):
             with open(file, encoding = "utf-8") as f:
-                self.meta[file] = load(f, SafeLoader) or {}
+                try:
+                    self.meta[file] = load(f, SafeLoader)
 
-    # Set defaults for file, if applicable (run early)
+                # The meta file could not be loaded because of a syntax error,
+                # which we display to the user with a nice error message
+                except Exception as e:
+                    file = os.path.relpath(file, config.docs_dir)
+                    path = os.path.relpath(config.docs_dir)
+                    raise PluginError(
+                        f"Error reading meta file '{file}' in '{path}':"
+                        f"\n\n"
+                        f"{e}"
+                    )
+
+    # Set metadata for page, if applicable (run early)
     @event_priority(50)
     def on_page_markdown(self, markdown, *, page, config, files):
+        if not self.config.enabled:
+            return
+
+        # Merge all matching metadata from the mapping in descending order
         path = page.file.abs_src_path
         for file, defaults in self.meta.items():
             if path.startswith(os.path.dirname(file)):
-                file = file[len(config.docs_dir) + 1:]
-                _merge(page.meta, defaults, file)
+                strategy = Strategy.TYPESAFE_ADDITIVE
+                try:
+                    merge(page.meta, defaults, strategy = strategy)
 
-# -----------------------------------------------------------------------------
-# Helper functions
-# -----------------------------------------------------------------------------
-
-# Recursively merge a dictionary
-def _merge(meta, defaults, file):
-    for key, value in defaults.items():
-        if key in meta:
-
-            # Merge dictionaries
-            if isinstance(meta[key], dict):
-                if isinstance(value, dict):
-                    _merge(meta[key], value, file)
-                else:
-                    log.warning(
-                        f"Format error in front matter of '{file}': "
-                        f"'{key}' is not a dictionary. Skipped merge."
+                # The metadata could not be merged with the given strategy,
+                # which we display to the user with a nice error message
+                except Exception as e:
+                    file = os.path.relpath(file, config.docs_dir)
+                    path = os.path.relpath(config.docs_dir)
+                    raise PluginError(
+                        f"Error merging meta file '{file}' in '{path}':"
+                        f"\n\n"
+                        f"{e}"
                     )
-
-            # Merge lists
-            elif isinstance(meta[key], list):
-                if isinstance(value, list):
-                    for item in value:
-                        if item not in meta[key]:
-                            meta[key].append(item)
-                else:
-                    log.warning(
-                        f"Format error in front matter of '{file}': "
-                        f"'{key}' is not a list. Skipped merge."
-                    )
-
-        # Set scalar value
-        else:
-            meta[key] = copy(value)
 
 # -----------------------------------------------------------------------------
 # Data
