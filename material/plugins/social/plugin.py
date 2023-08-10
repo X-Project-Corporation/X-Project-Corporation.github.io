@@ -93,7 +93,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         self.card_layer_pool = ThreadPoolExecutor(self.config.concurrency)
         self.card_layer_pool_jobs: dict[str, Future] = dict()
 
-    # Initialize plugin
+    # Resolve and load manifest and initialize environment
     def on_config(self, config):
         if not self.config.enabled:
             return
@@ -291,7 +291,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # Compute digest of all fingerprints - we use this value to check if
         # the exact same card was already generated and cached
-        hash = _digest([layout, *list(layers.keys())])
+        hash = _digest([layout, *list(layers)])
 
         # Determine part of path we need to replace - this depends on whether
         # we're using directory URLs and if the page is an index page or not
@@ -302,7 +302,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Compute path to card, which is sourced from the cache directory, and
         # generate file to register it with MkDocs as soon as it was generated
         path = page.file.dest_uri.replace(suffix, ".png")
-        file = self._generate_file(path, config)
+        file = self._path_to_file(path, config)
 
         # Check if file hash changed, so we need to re-generate the card. If
         # the hash didn't change, we can return the existing file.
@@ -795,7 +795,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return { **self.config[name], **meta.get(name, dict()) }
 
     # Create a file for the given path
-    def _generate_file(self, path: str, config: MkDocsConfig):
+    def _path_to_file(self, path: str, config: MkDocsConfig):
         return File(
             posixpath.join(self.config.cards_dir, path),
             os.path.abspath(self.config.cache_dir),
