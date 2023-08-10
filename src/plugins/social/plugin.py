@@ -544,12 +544,12 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Compute horizontal alignment
         if   anchor[0] == "l": align, x = "left",   0
         elif anchor[0] == "m": align, x = "center", input.width  >> 1
-        elif anchor[0] == "r": align, x = "right",  input.width  >> 0
+        else:                  align, x = "right",  input.width  >> 0
 
         # Compute vertical alignment
         if   anchor[1] == "a":        y =           0
         elif anchor[1] == "m":        y =           input.height >> 1
-        elif anchor[1] == "d":        y =           input.height >> 0
+        else:                         y =           input.height >> 0
 
         # Join words with whitespace and lines with line breaks
         text = "\n".join([

@@ -34,7 +34,7 @@ from lxml.html import fragment_fromstring, tostring
 from mkdocs import utils
 from mkdocs.utils.meta import get_data
 from mkdocs.commands.build import _populate_page
-from mkdocs.contrib.search import SearchIndex
+from mkdocs.contrib.search.search_index import SearchIndex
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File, Files
 from mkdocs.structure.nav import Link, Section

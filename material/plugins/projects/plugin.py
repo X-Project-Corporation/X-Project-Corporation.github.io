@@ -36,7 +36,7 @@ from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.pages import Page
 from mkdocs.structure.nav import Link, Section
 from mkdocs.utils import get_theme_dir
-from mkdocs.utils.filters import url_filter
+from mkdocs.utils.templates import url_filter
 from typing import Union
 from urllib.parse import ParseResult as URL, urlparse
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
