@@ -80,7 +80,7 @@ class MetaPlugin(BasePlugin[MetaConfig]):
             try:
                 merge(page.meta, defaults, strategy = strategy)
 
-            # The metadata could not be merged with the given strategy,
+            # Merging the metadata with the given strategy resulted in an error,
             # which we display to the user with a nice error message
             except Exception as e:
                 path = os.path.relpath(config.docs_dir)
