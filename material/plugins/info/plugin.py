@@ -27,11 +27,11 @@ import requests
 import sys
 
 from colorama import Fore, Style
+from importlib.metadata import distributions, version
 from io import BytesIO
 from mkdocs import utils
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import get_files
-from pkg_resources import get_distribution, working_set
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from material.plugins.info.config import InfoConfig
@@ -43,7 +43,7 @@ from material.plugins.info.config import InfoConfig
 # Info plugin
 class InfoPlugin(BasePlugin[InfoConfig]):
 
-    # Initialize plugin state
+    # Initialize plugin
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -54,7 +54,10 @@ class InfoPlugin(BasePlugin[InfoConfig]):
     def on_startup(self, *, command, dirty):
         self.is_serve = command == "serve"
 
-    # Initialize plugin (run earliest)
+    # Create a self-contained example (run earliest) - determine all files that
+    # are visible to MkDocs and are used to build the site, create an archive
+    # that contains all of them, and print a summary of the archive contents.
+    # The user must attach this archive to the bug report.
     @event_priority(100)
     def on_config(self, config):
         if not self.config.enabled:
@@ -71,17 +74,17 @@ class InfoPlugin(BasePlugin[InfoConfig]):
         res = requests.get(url, allow_redirects = False)
 
         # Check if we're running the latest version
-        _, version = res.headers.get("location").rsplit("/", 1)
-        package = get_distribution("mkdocs-material")
-        if not package.version.startswith(version):
+        _, current = res.headers.get("location").rsplit("/", 1)
+        present = version("mkdocs-material")
+        if not present.startswith(current):
 
-            # We can't fetch the latest version from Insiders from GitHub,
-            # but the Community edition might have received a beta release
-            # that we advertise as a latest release. In this case, we need
-            # to skip the check.
-            if not re.search(r"b\d+$", version):
+            # We can't fetch the latest version from Insiders from GitHub, but
+            # the Community edition might have received a beta release that we
+            # advertise as a latest release. In this case, we need to skip the
+            # version check, or users cannot easily create reproductions.
+            if not re.search(r"b\d+$", current):
                 log.error("Please upgrade to the latest version.")
-                self._help_on_versions_and_exit(package.version, version)
+                self._help_on_versions_and_exit(present, current)
 
         # Print message that we're creating a bug report
         log.info("Started archive creation for bug report")
@@ -123,7 +126,8 @@ class InfoPlugin(BasePlugin[InfoConfig]):
             f.writestr(
                 os.path.join(archive_name, "requirements.lock.txt"),
                 "\n".join(sorted([
-                    f"{dist.as_requirement()}" for dist in working_set
+                    "==".join([package.name, package.version])
+                        for package in distributions()
                 ]))
             )
 
