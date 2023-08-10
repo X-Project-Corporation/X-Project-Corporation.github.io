@@ -120,16 +120,10 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             with open(path, "wb") as f:
                 pickle.dump(self.projects, f)
 
-        # Remember last error, so we can disable the plugin if necessary. This
-        # allows for a much better editing experience, as the user can fix the
-        # issue and the plugin will pick up the changes, so there's no need to
-        # restart the preview server.
-        self.error = None
-
     # Schedule projects for building - the general case is that all projects
     # can be considered independent of each other, so we build them in parallel
     def on_pre_build(self, *, config):
-        if not self.config.enabled or self.error:
+        if not self.config.enabled:
             return
 
         # Skip if projects should not be built
@@ -149,7 +143,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
     # Patch environment to allow for hoisting of media files provided by the
     # theme itself, which will also work for other themes, not only this one
     def on_env(self, env, *, config, files):
-        if not self.config.enabled or self.error:
+        if not self.config.enabled:
             return
 
         # We're building the top-level project
@@ -187,7 +181,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
     # because other plugins might modify the navigation, e.g., the blog plugin
     @event_priority(-100)
     def on_page_context(self, context, *, page, config, nav):
-        if not self.config.enabled or self.error:
+        if not self.config.enabled:
             return
 
         # Replace project links in navigation
@@ -195,7 +189,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
     # Reconcile jobs and copy projects to output directory
     def on_post_build(self, *, config):
-        if not self.config.enabled or self.error:
+        if not self.config.enabled:
             return
 
         # Skip if projects should not be built
@@ -210,7 +204,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # every build, except for when using the bugged dirty build flag.
         for slug, future in self.pool_jobs.items():
             if future.exception():
-                self._error(future.exception())
+                raise future.exception()
             else:
                 _print(slug, *future.result())
                 project = self.projects[slug]
@@ -455,7 +449,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # Abort, since the project could not be resolved
         if slug not in self.projects:
-            raise PluginError(f"Invalid project: '{slug}' not found")
+            raise PluginError(f"Couldn't find project '{slug}'")
 
         # If the link or section does not include a title, we just use the name
         # of the project as a title, allowing to manage it inside the project
@@ -464,25 +458,6 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # Resolve and return project link
         url = self._resolve_project_url(slug, url)
         return ProjectsLink(title, url)
-
-    # -------------------------------------------------------------------------
-
-    # Handle error - if we're serving, we just log the first error we encounter.
-    # If we're building, we raise an exception, so the build fails.
-    def _error(self, e: Exception):
-        if not self.is_serve:
-            raise PluginError(str(e))
-
-        # Remember first error
-        if not self.error:
-            self.error = e
-
-            # If we're serving, just log the error
-            log.error(e)
-            log.warning(
-                "Skipping projects plugin for this build. "
-                "Please fix the error to enable the projects plugin again."
-            )
 
 # -----------------------------------------------------------------------------
 # Helper functions
