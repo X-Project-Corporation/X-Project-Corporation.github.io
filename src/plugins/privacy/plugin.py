@@ -49,7 +49,7 @@ from material.plugins.privacy.config import PrivacyConfig
 class PrivacyPlugin(BasePlugin[PrivacyConfig]):
     supports_multiple_instances = True
 
-    # Initialize plugin
+    # Initialize thread pools and asset collections
     def on_config(self, config):
         self.site = urlparse(config.site_url or "")
         if not self.config.enabled:
