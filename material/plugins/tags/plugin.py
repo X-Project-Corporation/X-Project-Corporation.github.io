@@ -148,7 +148,7 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         # Filter tags against inclusion list, if given
         tags = []
         if self.tags_type_map and included:
-            for name in self.tags_map.keys():
+            for name in self.tags_map:
                 if self.tags_type_map.get(name) in included:
                     tags.append(name)
 
@@ -156,7 +156,7 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         return markdown.replace("[TAGS]", "\n".join([
             self._render_tag_links(tags_index, name, self.tags_map[name])
                 for name in sorted(
-                    tags or self.tags_map.keys(),
+                    tags or self.tags_map,
 
                     # Allow for custom comparison functions
                     key     = self.config.tags_compare,

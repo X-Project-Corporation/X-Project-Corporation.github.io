@@ -51,7 +51,7 @@ from material.plugins.projects.nav.link import ProjectsLink
 # Projects plugin
 class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
-    # Initialize plugin state
+    # Initialize plugin
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -71,7 +71,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         self.is_serve = command == "serve"
         self.is_dirty = dirty
 
-    # Initialize plugin – compared to our other concurrent plugins, this plugin
+    # Resolve projects – compared to our other concurrent plugins, this plugin
     # is forced to use a process pool in order to guarantee proper isolation, as
     # MkDocs itself is not thread-safe. Additionally, all project configurations
     # are resolved and written to the cache (if enabled), as it's sufficient to
@@ -309,7 +309,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 # directories when we're serving the site will not work
                 yield slug, project
 
-    # Find and yield projects for the given path and recurse - traverse the
+    # Find and yield projects recursively for the given path - traverse the
     # projects directories recursively, yielding projects and projects inside
     # projects in reverse post-order. The caller needs to reverse all yielded
     # values, so that projects can be built in the correct order.
