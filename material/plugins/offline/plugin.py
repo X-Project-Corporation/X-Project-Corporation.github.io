@@ -32,15 +32,17 @@ from material.plugins.offline.config import OfflineConfig
 # Offline plugin
 class OfflinePlugin(BasePlugin[OfflineConfig]):
 
-    # Initialize plugin
+    # Set configuration for offline build
     def on_config(self, config):
         if not self.config.enabled:
             return
 
-        # Ensure correct resolution of links
+        # Ensure correct resolution of links when viewing the site from the
+        # file system by disabling directory URLs
         config.use_directory_urls = False
 
-    # Support offline search (run latest)
+    # Add support for offline search (run latest) - the search index is copied
+    # and inlined into a script, so that it can be used without a server
     @event_priority(-100)
     def on_post_build(self, *, config):
         if not self.config.enabled:
@@ -52,12 +54,9 @@ class OfflinePlugin(BasePlugin[OfflineConfig]):
         if not os.path.isfile(path):
             return
 
-        # Retrieve search index
-        with open(path, "r") as data:
-            index = data.read()
-
-            # Inline search index into script
+        # Create script with inlined search index
+        with open(path, "r") as f:
             utils.write_file(
-                f"var __index = {index}".encode("utf-8"),
-                os.path.join(base, "search_index.js")
+                f"var __index = {f.read()}".encode("utf-8"),
+                path.replace(".json", ".js"),
             )
