@@ -70,7 +70,7 @@ class MetaPlugin(BasePlugin[MetaConfig]):
         if not self.config.enabled:
             return
 
-        # Merge matching meta files in descending order
+        # Merge matching meta files in level-order
         for file, defaults in self.meta.items():
             if not page.file.src_path.startswith(os.path.dirname(file)):
                 continue
