@@ -45,17 +45,19 @@ class MetaPlugin(BasePlugin[MetaConfig]):
         self.meta = dict()
 
         # Resolve and load meta files in docs directory
-        path = os.path.join(config.docs_dir, self.config.meta_file)
-        for file in sorted(glob(path, recursive = True)):
+        path = os.path.relpath(config.docs_dir)
+        for file in sorted(glob(
+            os.path.join(path, self.config.meta_file),
+            recursive = True
+        )):
             with open(file, encoding = "utf-8") as f:
+                file = os.path.relpath(file, path)
                 try:
                     self.meta[file] = load(f, SafeLoader)
 
                 # The meta file could not be loaded because of a syntax error,
                 # which we display to the user with a nice error message
                 except Exception as e:
-                    file = os.path.relpath(file, config.docs_dir)
-                    path = os.path.relpath(config.docs_dir)
                     raise PluginError(
                         f"Error reading meta file '{file}' in '{path}':"
                         f"\n\n"
@@ -68,24 +70,26 @@ class MetaPlugin(BasePlugin[MetaConfig]):
         if not self.config.enabled:
             return
 
-        # Merge all matching metadata from the mapping in descending order
-        path = page.file.abs_src_path
+        # Merge matching meta files in descending order
         for file, defaults in self.meta.items():
-            if path.startswith(os.path.dirname(file)):
-                strategy = Strategy.TYPESAFE_ADDITIVE
-                try:
-                    merge(page.meta, defaults, strategy = strategy)
+            if not page.file.src_path.startswith(os.path.dirname(file)):
+                continue
 
-                # The metadata could not be merged with the given strategy,
-                # which we display to the user with a nice error message
-                except Exception as e:
-                    file = os.path.relpath(file, config.docs_dir)
-                    path = os.path.relpath(config.docs_dir)
-                    raise PluginError(
-                        f"Error merging meta file '{file}' in '{path}':"
-                        f"\n\n"
-                        f"{e}"
-                    )
+            # Try to merge metadata
+            strategy = Strategy.TYPESAFE_ADDITIVE
+            try:
+                merge(page.meta, defaults, strategy = strategy)
+
+            # The metadata could not be merged with the given strategy,
+            # which we display to the user with a nice error message
+            except Exception as e:
+                path = os.path.relpath(config.docs_dir)
+                file = os.path.relpath(file, path)
+                raise PluginError(
+                    f"Error merging meta file '{file}' in '{path}':"
+                    f"\n\n"
+                    f"{e}"
+                )
 
 # -----------------------------------------------------------------------------
 # Data
