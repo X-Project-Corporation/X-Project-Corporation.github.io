@@ -23,11 +23,7 @@ from markdown.extensions.toc import slugify
 from mkdocs.config.config_options import Optional, Type
 from mkdocs.config.base import Config
 
-<<<<<<< HEAD
-from material.plugins.tags import casefold, page_title
-=======
-from . import casefold
->>>>>>> upstream/master
+from . import casefold, page_title
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -45,10 +41,7 @@ class TagsConfig(Config):
     tags_compare = Optional(Type(type(casefold)))
     tags_compare_reverse = Type(bool, default = False)
     tags_allowed = Type(list, default = [])
-<<<<<<< HEAD
 
     # Options for pages
     tags_pages_compare = Optional(Type(type(page_title)))
     tags_pages_compare_reverse = Type(bool, default = False)
-=======
->>>>>>> upstream/master
