@@ -439,7 +439,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         with open(file, encoding = "utf-8") as f:
             config: Authors = Authors(os.path.abspath(file))
             try:
-                config.load_dict(yaml.load(f, SafeLoader))
+                config.load_dict(yaml.load(f, SafeLoader) or {})
 
             # The authors file could not be loaded because of a syntax error,
             # which we display to the user with a nice error message
@@ -451,6 +451,19 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
         # Validate authors and throw if errors occurred
         errors, warnings = config.validate()
+        if not config.authors and warnings:
+            log.warning(
+                f"Action required: the format of the authors file changed.\n"
+                f"All authors must now be located under the 'authors' key.\n"
+                f"Please adjust '{file}' to match:\n"
+                f"\n"
+                f"authors:\n"
+                f"  squidfunk:\n"
+                f"    avatar: https://avatars.githubusercontent.com/u/932156\n"
+                f"    description: Creator\n"
+                f"    name: Martin Donath\n"
+                f"\n"
+            )
         for _, w in warnings:
             log.warning(w)
         for _, e in errors:

@@ -75,7 +75,7 @@ class Post(Page):
 
             # Extract metadata and parse as YAML
             try:
-                self.meta = yaml.load(match.group(1), SafeLoader)
+                self.meta = yaml.load(match.group(1), SafeLoader) or {}
                 self.markdown = self.markdown[match.end():].lstrip("\n")
 
             # The post's metadata could not be parsed because of a syntax error,

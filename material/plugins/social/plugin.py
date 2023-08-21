@@ -648,7 +648,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             # Open file and parse as YAML
             with open(path, encoding = "utf-8") as f:
                 layout: Layout = Layout()
-                layout.load_dict(yaml.load(f, SafeLoader))
+                layout.load_dict(yaml.load(f, SafeLoader) or {})
 
                 # Validate layout and abort if errors occurred
                 errors, warnings = layout.validate()
