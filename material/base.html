@@ -37,7 +37,7 @@
         <link rel="alternate" type="application/rss+xml" title="{{ lang.t('rss.updated') }}" href="{{ 'feed_rss_updated.xml' | url }}">
       {% endif %}
       <link rel="icon" href="{{ config.theme.favicon | url }}">
-      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-9.1.21+insiders-4.39.0">
+      <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-material-9.2.0+insiders-4.39.0">
     {% endblock %}
     {% block htmltitle %}
       {% if page.meta and page.meta.title %}
@@ -49,14 +49,18 @@
       {% endif %}
     {% endblock %}
     {% block styles %}
-      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.7c2e0b1b.min.css' | url }}">
+      <link rel="stylesheet" href="{{ 'assets/stylesheets/main.b13eea88.min.css' | url }}">
       {% if config.theme.palette %}
         {% set palette = config.theme.palette %}
-        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.ecc776e4.min.css' | url }}">
+        <link rel="stylesheet" href="{{ 'assets/stylesheets/palette.da3f46a0.min.css' | url }}">
       {% endif %}
       {% include "partials/icons.html" %}
     {% endblock %}
-    {% block libs %}{% endblock %}
+    {% block libs %}
+      {% for script in config.extra.polyfills %}
+        {{ script | script_tag }}
+      {% endfor %}
+    {% endblock %}
     {% block fonts %}
       {% if config.theme.font != false %}
         {% set text = config.theme.font.get("text", "Roboto") %}
@@ -109,7 +113,8 @@
           <div class="md-banner__inner md-grid md-typeset">
             {% if "announce.dismiss" in features %}
               <button class="md-banner__button md-icon" aria-label="{{ lang.t('announce.dismiss') }}">
-                {% include ".icons/material/close.svg" %}
+                {% set icon = config.theme.icon.close or "material/close" %}
+                {% include ".icons/" ~ icon ~ ".svg" %}
               </button>
             {% endif %}
             {% block announce %}{% endblock %}
@@ -188,7 +193,8 @@
         </div>
         {% if "navigation.top" in features %}
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
-            {% include ".icons/material/arrow-up.svg" %}
+            {% set icon = config.theme.icon.top or "material/arrow-up" %}
+            {% include ".icons/" ~ icon ~ ".svg" %}
             {{ lang.t("top") }}
           </button>
         {% endif %}
@@ -216,7 +222,7 @@
         "base": base_url,
         "features": features,
         "translations": {},
-        "search": "assets/javascripts/workers/search.6c7302c4.min.js" | url
+        "search": "assets/javascripts/workers/search.f2da59ea.min.js" | url
       } -%}
       {%- for key in ["annotate", "tags", "version"] -%}
         {%- if config.extra[key] -%}
@@ -243,13 +249,9 @@
       </script>
     {% endblock %}
     {% block scripts %}
-      <script src="{{ 'assets/javascripts/bundle.7c5c0157.min.js' | url }}"></script>
+      <script src="{{ 'assets/javascripts/bundle.6fc684e3.min.js' | url }}"></script>
       {% for script in config.extra_javascript %}
-        {% if script.path %}
-          {{ script | script_tag }}
-        {% else %}
-          <script src="{{ script | url }}"></script>
-        {% endif %}
+        {{ script | script_tag }}
       {% endfor %}
     {% endblock %}
   </body>

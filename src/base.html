@@ -126,7 +126,11 @@
     {% endblock %}
 
     <!-- JavaScript libraries -->
-    {% block libs %}{% endblock %}
+    {% block libs %}
+      {% for script in config.extra.polyfills %}
+        {{ script | script_tag }}
+      {% endfor %}
+    {% endblock %}
 
     <!-- Webfonts -->
     {% block fonts %}
@@ -234,7 +238,8 @@
                 class="md-banner__button md-icon"
                 aria-label="{{ lang.t('announce.dismiss') }}"
               >
-                {% include ".icons/material/close.svg" %}
+                {% set icon = config.theme.icon.close or "material/close" %}
+                {% include ".icons/" ~ icon ~ ".svg" %}
               </button>
             {% endif %}
 
@@ -358,7 +363,8 @@
             data-md-component="top"
             hidden
           >
-            {% include ".icons/material/arrow-up.svg" %}
+            {% set icon = config.theme.icon.top or "material/arrow-up" %}
+            {% include ".icons/" ~ icon ~ ".svg" %}
             {{ lang.t("top") }}
           </button>
         {% endif %}
@@ -435,13 +441,7 @@
 
       <!-- Custom JavaScript -->
       {% for script in config.extra_javascript %}
-
-        <!-- Detected MkDocs 1.5+ which has `script.path` and `script_tag` -->
-        {% if script.path %}
-          {{ script | script_tag }}
-        {% else %}
-          <script src="{{ script | url }}"></script>
-        {% endif %}
+        {{ script | script_tag }}
       {% endfor %}
     {% endblock %}
   </body>

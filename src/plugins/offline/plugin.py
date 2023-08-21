@@ -41,6 +41,12 @@ class OfflinePlugin(BasePlugin[OfflineConfig]):
         # file system by disabling directory URLs
         config.use_directory_urls = False
 
+        # Append iframe-worker to polyfills/shims
+        config.extra.polyfills = config.extra.get("polyfills", [])
+        if not any("iframe-worker" in url for url in config.extra.polyfills):
+            worker = "https://unpkg.com/iframe-worker/shim"
+            config.extra.polyfills.append(worker)
+
     # Add support for offline search (run latest) - the search index is copied
     # and inlined into a script, so that it can be used without a server
     @event_priority(-100)

@@ -20,30 +20,30 @@
   IN THE SOFTWARE.
 -->
 
-<!-- Tags -->
-{% if "material/tags" in config.plugins and tags %}
-  {% include "partials/tags.html" %}
-{% endif %}
-
-<!-- Actions -->
-{% include "partials/actions.html" %}
-
-<!--
-  Hack: check whether the content contains a h1 headline. If it doesn't, the
-  page title (or respectively site name) is used as the main headline.
--->
-{% if "\x3ch1" not in page.content %}
-  <h1>{{ page.title | d(config.site_name, true)}}</h1>
-{% endif %}
-
-<!-- Page content -->
-{{ page.content }}
-
-<!-- Source file information -->
-{% include "partials/source-file.html" %}
-
-<!-- Was this page helpful? -->
-{% include "partials/feedback.html" %}
-
-<!-- Comment system -->
-{% include "partials/comments.html" %}
+<!-- Site language selector -->
+<div class="md-header__option">
+  <div class="md-select">
+    {% set icon = config.theme.icon.alternate or "material/translate" %}
+    <button
+      class="md-header__button md-icon"
+      aria-label="{{ lang.t('select.language') }}"
+    >
+      {% include ".icons/" ~ icon ~ ".svg" %}
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        {% for alt in config.extra.alternate %}
+          <li class="md-select__item">
+            <a
+              href="{{ alt.link | url }}"
+              hreflang="{{ alt.lang }}"
+              class="md-select__link"
+            >
+              {{ alt.name }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>

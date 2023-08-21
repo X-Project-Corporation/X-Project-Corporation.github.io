@@ -201,7 +201,7 @@ export function setupInstantLoading(
         .subscribe(link => link.remove())
 
   // Before fetching for the first time, resolve the absolute favicon position,
-  // as the browser will try to fetch the icon immediately.
+  // as the browser will try to fetch the icon immediately
   instant$.pipe(take(1))
     .subscribe(() => {
       const favicon = getOptionalElement<HTMLLinkElement>("link[rel=icon]")

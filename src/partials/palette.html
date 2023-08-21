@@ -20,30 +20,36 @@
   IN THE SOFTWARE.
 -->
 
-<!-- Tags -->
-{% if "material/tags" in config.plugins and tags %}
-  {% include "partials/tags.html" %}
-{% endif %}
-
-<!-- Actions -->
-{% include "partials/actions.html" %}
-
-<!--
-  Hack: check whether the content contains a h1 headline. If it doesn't, the
-  page title (or respectively site name) is used as the main headline.
--->
-{% if "\x3ch1" not in page.content %}
-  <h1>{{ page.title | d(config.site_name, true)}}</h1>
-{% endif %}
-
-<!-- Page content -->
-{{ page.content }}
-
-<!-- Source file information -->
-{% include "partials/source-file.html" %}
-
-<!-- Was this page helpful? -->
-{% include "partials/feedback.html" %}
-
-<!-- Comment system -->
-{% include "partials/comments.html" %}
+<!-- Color palette toggle -->
+<form class="md-header__option" data-md-component="palette">
+  {% for option in config.theme.palette %}
+    {% set scheme  = option.scheme  | d("default", true) %}
+    {% set primary = option.primary | d("indigo", true) %}
+    {% set accent  = option.accent  | d("indigo", true) %}
+    <input
+      class="md-option"
+      data-md-color-media="{{ option.media }}"
+      data-md-color-scheme="{{ scheme | replace(' ', '-') }}"
+      data-md-color-primary="{{ primary | replace(' ', '-') }}"
+      data-md-color-accent="{{ accent | replace(' ', '-') }}"
+      {% if option.toggle %}
+        aria-label="{{ option.toggle.name }}"
+      {% else  %}
+        aria-hidden="true"
+      {% endif %}
+      type="radio"
+      name="__palette"
+      id="__palette_{{ loop.index }}"
+    />
+    {% if option.toggle %}
+      <label
+        class="md-header__button md-icon"
+        title="{{ option.toggle.name }}"
+        for="__palette_{{ loop.index0 or loop.length }}"
+        hidden
+      >
+        {% include ".icons/" ~ option.toggle.icon ~ ".svg" %}
+      </label>
+    {% endif %}
+  {% endfor %}
+</form>
