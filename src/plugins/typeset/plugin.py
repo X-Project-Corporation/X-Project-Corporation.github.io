@@ -22,10 +22,10 @@ import re
 
 from mkdocs.plugins import BasePlugin
 
-from material.plugins.typeset.config import TypesetConfig
+from .config import TypesetConfig
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
 # Typeset plugin

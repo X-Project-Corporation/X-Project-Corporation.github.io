@@ -53,12 +53,11 @@ from threading import Lock
 from yaml import SafeLoader
 from zipfile import ZipFile
 
-from material.plugins.social.config import SocialConfig
-from material.plugins.social.layout import Layer, Layout, Line
-from material.plugins.social.layout import get_size, get_offset
+from .config import SocialConfig
+from .layout import Layer, Layout, Line, get_offset, get_size
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
 # Social plugin
@@ -145,7 +144,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return
 
         # Skip if cards should not be generated
-        if not self._config("cards", page) or self._is_excluded(page):
+        if self._is_excluded(page):
             return
 
         # Resolve card layout - we also preload the layout here, so we're not
@@ -167,7 +166,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return
 
         # Skip if cards should not be generated
-        if not self._config("cards", page) or self._is_excluded(page):
+        if self._is_excluded(page):
             return
 
         # Reconcile concurrent jobs - we need to wait for the card job to finish
@@ -221,7 +220,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if not self.config.enabled:
             return
 
-        # Shutdown thread pools if we're not serving
+        # Shutdown thread pools if we're not serving the site
         if not self.is_serve:
             for pool in [self.card_layer_pool, self.card_pool]:
                 pool.shutdown()
@@ -235,11 +234,15 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # -------------------------------------------------------------------------
 
     # Check if the given page is excluded - giving the author the option to
-    # include and exclude specific pages is important, as it allows control
-    # which pages should generate social cards, and which don't. Different
+    # include and exclude specific pages is important, as it allows to control
+    # which pages should generate social cards, and which shouldn't. Different
     # cards can be built by using multiple instances of the plugin.
     def _is_excluded(self, page: Page):
         path = page.file.src_uri
+
+        # Check if card generation is disabled for the given page
+        if not self._config("cards", page):
+            return True
 
         # Check if page matches one of the inclusion patterns
         if self.config.cards_include:
@@ -265,7 +268,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # Generate card for the given page - generation of cards does not depend on
     # anything else than the page content (incl. metadata) and configuration,
     # which is why it is an embarrassingly parallel problem and can be solved
-    # by delegating the generation of each card to a thread pool.
+    # by delegating the generation of each card to a thread pool
     def _generate(self, name: str, page: Page, config: MkDocsConfig):
         layout, variables = self._resolve_layout(name, config)
 
@@ -320,7 +323,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
             # We need to use a hack here to avoid locking the thread pool while
             # we check if the layer was already dispatched. If we don't do this,
-            # layers might be dispatched multiple times. The track is to use a
+            # layers might be dispatched multiple times. The trick is to use a
             # sentinel value to check if the layer was already dispatched.
             if sentinel == self.card_layer_pool_jobs.setdefault(h, sentinel):
                 self.card_layer_pool_jobs[h] = self.card_layer_pool.submit(
@@ -384,7 +387,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 raise PluginError(f"Couldn't find image '{background.image}'")
 
             # Open file and convert SVGs to PNGs
-            with open(background.image, "br") as f:
+            with open(background.image, "rb") as f:
                 data = f.read()
                 if background.image.endswith(".svg"):
                     data = svg2png(data, output_width = input.width)
@@ -467,7 +470,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # line. For every other than the first word, account for the whitespace
         # between words. If the next word would exceed the width of the input
         # image, and thus overflow the line, start a new one.
-        words = re.split(r"\s+", typography["content"])
+        words = re.split(r"\s+", typography.content)
         for word in words:
             length = context.textlength(word, font = font)
             lengths.append(length)
@@ -493,7 +496,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
             # If overflow mode is set to 'shrink', decrease the font size and
             # try to render the typography again to see if it fits
-            overflow = typography.get("overflow")
+            overflow = typography.overflow
             if overflow == "shrink":
                 typography.line.amount += 1
 
@@ -642,7 +645,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             if not os.path.isfile(path):
                 continue
 
-            # Open file and parse layout as YAML
+            # Open file and parse as YAML
             with open(path, encoding = "utf-8") as f:
                 layout: Layout = Layout()
                 layout.load_dict(yaml.load(f, SafeLoader))
@@ -691,8 +694,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             if not os.path.isfile(path):
                 continue
 
-            # Load and convert icon to PNG
-            with open(path) as f:
+            # Open and return icon
+            with open(path, encoding = "utf-8") as f:
                 return f.read()
 
         # Abort, since the icon could not be resolved

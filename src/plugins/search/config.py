@@ -29,17 +29,21 @@ from mkdocs.config.base import Config
 from mkdocs.contrib.search import LangOption
 
 # -----------------------------------------------------------------------------
-# Class
+# Options
 # -----------------------------------------------------------------------------
 
-# Search pipeline functions
+# Options for search pipeline
 pipeline = ("stemmer", "stopWordFilter", "trimmer")
 
-# Search field configuration scheme
+# -----------------------------------------------------------------------------
+# Classes
+# -----------------------------------------------------------------------------
+
+# Search field configuration
 class SearchFieldConfig(Config):
     boost = Type((int, float), default = 1.0)
 
-# Search plugin configuration scheme
+# Search plugin configuration
 class SearchConfig(Config):
     lang = Optional(LangOption())
     separator = Optional(Type(str))

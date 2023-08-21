@@ -41,11 +41,11 @@ from typing import Union
 from urllib.parse import ParseResult as URL, urlparse
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 
-from material.plugins.projects.config import ProjectsConfig
-from material.plugins.projects.nav.link import ProjectsLink
+from .config import ProjectsConfig
+from .structure import Project
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
 # Projects plugin
@@ -339,7 +339,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
             # Load and return project configuration file
             with open(file, encoding = "utf-8") as f:
-                config: MkDocsConfig = MkDocsConfig(config_file_path = file)
+                config: MkDocsConfig = MkDocsConfig(os.path.abspath(file))
                 config.load_file(f)
                 return config
 
@@ -457,7 +457,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # Resolve and return project link
         url = self._resolve_project_url(slug, url)
-        return ProjectsLink(title, url)
+        return Project(title, url)
 
 # -----------------------------------------------------------------------------
 # Helper functions

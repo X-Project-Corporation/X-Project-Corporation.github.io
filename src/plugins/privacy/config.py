@@ -24,10 +24,10 @@ from mkdocs.config.base import Config
 from mkdocs.config.config_options import Deprecated, Type
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
-# Privacy plugin configuration scheme
+# Privacy plugin configuration
 class PrivacyConfig(Config):
     enabled = Type(bool, default = True)
     concurrency = Type(int, default = max(1, os.cpu_count() - 1))

@@ -32,10 +32,10 @@ from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File
 from PIL import Image
 
-from material.plugins.optimize.config import OptimizeConfig
+from .config import OptimizeConfig
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
 # Optimize plugin
@@ -118,7 +118,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
                 file: File = future.result()
                 file.copy_file()
 
-        # Shutdown thread pool if we're not serving
+        # Shutdown thread pool if we're not serving the site
         if not self.is_serve:
             self.pool.shutdown()
 

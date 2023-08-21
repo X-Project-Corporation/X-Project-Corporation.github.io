@@ -18,14 +18,21 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from mkdocs.structure.nav import Link
+from mkdocs.config.base import Config
+from mkdocs.config.config_options import DictOfItems, SubConfig, Type
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
-# Extension of the link class to allow for marking project links
-class ProjectsLink(Link):
+# Author
+class Author(Config):
+    name = Type(str)
+    description = Type(str)
+    avatar = Type(str)
 
-    # Indicate that the link points to a project
-    is_project = True
+# -----------------------------------------------------------------------------
+
+# Authors
+class Authors(Config):
+    authors = DictOfItems(SubConfig(Author), default = {})

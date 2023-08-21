@@ -22,9 +22,9 @@ from mkdocs.config.config_options import Type
 from mkdocs.config.base import Config
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
-# Typeset plugin configuration scheme
+# Typeset plugin configuration
 class TypesetConfig(Config):
     enabled = Type(bool, default = True)

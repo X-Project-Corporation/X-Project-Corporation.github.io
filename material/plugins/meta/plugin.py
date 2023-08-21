@@ -27,10 +27,10 @@ from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, event_priority
 from yaml import SafeLoader, load
 
-from material.plugins.meta.config import MetaConfig
+from .config import MetaConfig
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
 # Meta plugin
@@ -45,22 +45,21 @@ class MetaPlugin(BasePlugin[MetaConfig]):
         self.meta = dict()
 
         # Resolve and load meta files in docs directory
-        path = os.path.relpath(config.docs_dir)
+        docs = os.path.relpath(config.docs_dir)
         for file in sorted(glob(
-            os.path.join(path, self.config.meta_file),
+            os.path.join(docs, self.config.meta_file),
             recursive = True
         )):
             with open(file, encoding = "utf-8") as f:
-                file = os.path.relpath(file, path)
+                path = os.path.relpath(file, docs)
                 try:
-                    self.meta[file] = load(f, SafeLoader)
+                    self.meta[path] = load(f, SafeLoader)
 
                 # The meta file could not be loaded because of a syntax error,
                 # which we display to the user with a nice error message
                 except Exception as e:
                     raise PluginError(
-                        f"Error reading meta file '{file}' in '{path}':"
-                        f"\n\n"
+                        f"Error reading meta file '{path}' in '{docs}':\n"
                         f"{e}"
                     )
 
@@ -71,8 +70,8 @@ class MetaPlugin(BasePlugin[MetaConfig]):
             return
 
         # Merge matching meta files in level-order
-        for file, defaults in self.meta.items():
-            if not page.file.src_path.startswith(os.path.dirname(file)):
+        for path, defaults in self.meta.items():
+            if not page.file.src_path.startswith(os.path.dirname(path)):
                 continue
 
             # Try to merge metadata
@@ -83,11 +82,9 @@ class MetaPlugin(BasePlugin[MetaConfig]):
             # Merging the metadata with the given strategy resulted in an error,
             # which we display to the user with a nice error message
             except Exception as e:
-                path = os.path.relpath(config.docs_dir)
-                file = os.path.relpath(file, path)
+                docs = os.path.relpath(config.docs_dir)
                 raise PluginError(
-                    f"Error merging meta file '{file}' in '{path}':"
-                    f"\n\n"
+                    f"Error merging meta file '{path}' in '{docs}':\n"
                     f"{e}"
                 )
 

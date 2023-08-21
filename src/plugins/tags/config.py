@@ -26,10 +26,10 @@ from mkdocs.config.base import Config
 from material.plugins.tags import casefold, page_title
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
-# Tags plugin configuration scheme
+# Tags plugin configuration
 class TagsConfig(Config):
     enabled = Type(bool, default = True)
 

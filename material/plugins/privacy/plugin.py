@@ -31,18 +31,18 @@ from concurrent.futures import Future, ThreadPoolExecutor, wait
 from fnmatch import fnmatch
 from hashlib import sha1
 from lxml.html import HtmlElement, fragment_fromstring, tostring
-from mkdocs import utils
 from mkdocs.config.config_options import ExtraScriptValue
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import File, Files
+from mkdocs.utils import is_error_template, write_file
 from re import Match
 from urllib.parse import ParseResult as URL, urlparse
 
-from material.plugins.privacy.config import PrivacyConfig
+from .config import PrivacyConfig
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
 # Privacy plugin
@@ -302,7 +302,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
 
         # Resolve callback
         def resolve(file: File):
-            if utils.is_error_template(initiator.src_uri):
+            if is_error_template(initiator.src_uri):
                 base = urlparse(config.site_url or "/")
                 return posixpath.join(base.path, file.url)
             else:
@@ -432,7 +432,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
                 path += extension
 
             # Write contents and create symlink if no extension was present
-            utils.write_file(res.content, path)
+            write_file(res.content, path)
             if path != file.abs_src_path:
 
                 # Creating symlinks might fail on Windows. Thus, we just print
@@ -523,7 +523,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
             expr = re.compile(self.assets_expr_map[extension], re.I | re.M)
 
             # Resolve links to external assets in file
-            utils.write_file(
+            write_file(
                 expr.sub(replace, f.read()).encode("utf8"),
                 initiator.abs_dest_path
             )

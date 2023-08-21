@@ -24,10 +24,10 @@ from mkdocs.config.config_options import Type
 from mkdocs.config.base import Config
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
-# Projects plugin configuration scheme
+# Projects plugin configuration
 class ProjectsConfig(Config):
     enabled = Type(bool, default = True)
     concurrency = Type(int, default = max(1, os.cpu_count() - 1))

@@ -29,7 +29,7 @@ from mkdocs import utils
 from mkdocs.config.config_options import SubConfig
 from mkdocs.plugins import BasePlugin
 
-from material.plugins.search.config import SearchConfig, SearchFieldConfig
+from .config import SearchConfig, SearchFieldConfig
 
 try:
     import jieba
@@ -37,7 +37,7 @@ except ImportError:
     jieba = None
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
 # Search plugin

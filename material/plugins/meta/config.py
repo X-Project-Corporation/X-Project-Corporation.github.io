@@ -22,10 +22,10 @@ from mkdocs.config.config_options import Type
 from mkdocs.config.base import Config
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
-# Meta plugin configuration scheme
+# Meta plugin configuration
 class MetaConfig(Config):
     enabled = Type(bool, default = True)
 

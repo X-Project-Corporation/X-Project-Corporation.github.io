@@ -24,10 +24,10 @@ from mkdocs.config.base import Config
 from mkdocs.config.config_options import Deprecated, Type
 
 # -----------------------------------------------------------------------------
-# Class
+# Classes
 # -----------------------------------------------------------------------------
 
-# Social plugin configuration scheme
+# Social plugin configuration
 class SocialConfig(Config):
     enabled = Type(bool, default = True)
     concurrency = Type(int, default = max(1, os.cpu_count() - 1))
