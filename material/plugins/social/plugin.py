@@ -198,7 +198,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         }
 
         # Find offset of closing head tag, so we can insert meta tags before
-        # it. This is a bit hacky, but much faster that regular expressions.
+        # it - a bit hacky, but much faster than regular expressions
         at = output.find("</head>")
         return "\n".join([
             output[:at],

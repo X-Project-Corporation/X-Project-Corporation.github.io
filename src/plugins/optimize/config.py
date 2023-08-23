@@ -32,20 +32,20 @@ class OptimizeConfig(Config):
     enabled = Type(bool, default = True)
     concurrency = Type(int, default = max(1, os.cpu_count() - 1))
 
-    # Options for caching
+    # Settings for caching
     cache = Type(bool, default = True)
     cache_dir = Type(str, default = ".cache/plugin/optimize")
 
-    # Options for PNG optimization
+    # Settings for PNG optimization
     optimize_png = Type(bool, default = True)
     optimize_png_speed = Type(int, default = 4)
     optimize_png_strip = Type(bool, default = True)
 
-    # Options for JPG optimization
+    # Settings for JPG optimization
     optimize_jpg = Type(bool, default = True)
     optimize_jpg_quality = Type(int, default = 60)
     optimize_jpg_progressive = Type(bool, default = True)
 
-    # Options for reporting
+    # Settings for reporting
     print_gain = Type(bool, default = True)
     print_gain_summary = Type(bool, default = True)

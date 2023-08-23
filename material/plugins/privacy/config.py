@@ -32,11 +32,11 @@ class PrivacyConfig(Config):
     enabled = Type(bool, default = True)
     concurrency = Type(int, default = max(1, os.cpu_count() - 1))
 
-    # Options for caching
+    # Settings for caching
     cache = Type(bool, default = True)
     cache_dir = Type(str, default = ".cache/plugin/privacy")
 
-    # Options for external assets
+    # Settings for external assets
     assets = Type(bool, default = True)
     assets_fetch = Type(bool, default = True)
     assets_fetch_dir = Type(str, default = "assets/external")
@@ -44,12 +44,12 @@ class PrivacyConfig(Config):
     assets_exclude = Type(list, default = [])
     assets_expr_map = Type(dict, default = {})
 
-    # Options for external links
+    # Settings for external links
     links = Type(bool, default = True)
     links_attr_map = Type(dict, default = {})
     links_noopener = Type(bool, default = True)
 
-    # Deprecated options
+    # Deprecated settings
     external_assets = Deprecated(message = "Deprecated, use 'assets_fetch'")
     external_assets_dir = Deprecated(moved_to = "assets_fetch_dir")
     external_assets_include = Deprecated(moved_to = "assets_include")

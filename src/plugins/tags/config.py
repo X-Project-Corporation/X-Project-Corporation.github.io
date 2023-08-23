@@ -33,7 +33,7 @@ from . import casefold, page_title
 class TagsConfig(Config):
     enabled = Type(bool, default = True)
 
-    # Options for tags
+    # Settings for tags
     tags_file = Optional(Type(str))
     tags_extra_files = Type(dict, default = {})
     tags_slugify = Type((type(slugify), partial), default = slugify)
@@ -42,6 +42,6 @@ class TagsConfig(Config):
     tags_compare_reverse = Type(bool, default = False)
     tags_allowed = Type(list, default = [])
 
-    # Options for pages
+    # Settings for pages
     tags_pages_compare = Optional(Type(type(page_title)))
     tags_pages_compare_reverse = Type(bool, default = False)

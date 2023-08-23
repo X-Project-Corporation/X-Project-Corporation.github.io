@@ -29,5 +29,5 @@ from mkdocs.config.base import Config
 class MetaConfig(Config):
     enabled = Type(bool, default = True)
 
-    # Options for meta files
+    # Settings for meta files
     meta_file = Type(str, default = "**/.meta.yml")

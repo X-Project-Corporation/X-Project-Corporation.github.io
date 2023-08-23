@@ -32,11 +32,11 @@ class SocialConfig(Config):
     enabled = Type(bool, default = True)
     concurrency = Type(int, default = max(1, os.cpu_count() - 1))
 
-    # Options for caching
+    # Settings for caching
     cache = Type(bool, default = True)
     cache_dir = Type(str, default = ".cache/plugin/social")
 
-    # Options for cards
+    # Settings for cards
     cards = Type(bool, default = True)
     cards_dir = Type(str, default = "assets/images/social")
     cards_layout_dir = Type(str, default = "layouts")
@@ -45,14 +45,14 @@ class SocialConfig(Config):
     cards_include = Type(list, default = [])
     cards_exclude = Type(list, default = [])
 
-    # Options for debugging
+    # Settings for debugging
     debug = Type(bool, default = False)
     debug_on_build = Type(bool, default = False)
     debug_grid = Type(bool, default = True)
     debug_grid_step = Type(int, default = 32)
     debug_color = Type(str, default = "grey")
 
-    # Deprecated options
+    # Deprecated settings
     cards_color = Deprecated(
         message =
             "Deprecated, use 'cards_layout_options.background_color' "

@@ -50,11 +50,11 @@ class SearchConfig(Config):
     pipeline = ListOfItems(Choice(pipeline), default = [])
     fields = Type(dict, default = {})
 
-    # Options for text segmentation (Chinese)
+    # Settings for text segmentation (Chinese)
     jieba_dict = Optional(Type(str))
     jieba_dict_user = Optional(Type(str))
 
-    # Unsupported options, originally implemented in MkDocs
+    # Unsupported settings, originally implemented in MkDocs
     indexing = Deprecated(message = "Unsupported option")
     prebuild_index = Deprecated(message = "Unsupported option")
     min_search_length = Deprecated(message = "Unsupported option")
