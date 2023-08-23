@@ -55,7 +55,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
 
         # Initialize thread pool
         self.pool = ThreadPoolExecutor(self.config.concurrency)
-        self.pool_jobs: dict[str, Future] = dict()
+        self.pool_jobs: dict[str, Future] = {}
 
     # Resolve and load manifest
     def on_config(self, config):
@@ -63,7 +63,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
             return
 
         # Initialize cache
-        self.cache: dict[str, str] = dict()
+        self.cache: dict[str, str] = {}
         self.cache_file = os.path.join(self.config.cache_dir, "manifest.json")
         self.cache_file = os.path.normpath(self.cache_file)
 

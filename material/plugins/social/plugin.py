@@ -86,11 +86,11 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # Initialize thread pool for cards
         self.card_pool = ThreadPoolExecutor(self.config.concurrency)
-        self.card_pool_jobs: dict[str, Future] = dict()
+        self.card_pool_jobs: dict[str, Future] = {}
 
         # Initialize thread pool for card layers
         self.card_layer_pool = ThreadPoolExecutor(self.config.concurrency)
-        self.card_layer_pool_jobs: dict[str, Future] = dict()
+        self.card_layer_pool_jobs: dict[str, Future] = {}
 
     # Resolve and load manifest and initialize environment
     def on_config(self, config):
@@ -98,7 +98,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return
 
         # Initialize cache
-        self.cache: dict[str, str] = dict()
+        self.cache: dict[str, str] = {}
         self.cache_file = os.path.join(self.config.cache_dir, "manifest.json")
         self.cache_file = os.path.normpath(self.cache_file)
 
@@ -115,8 +115,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         self.lock = Lock()
 
         # Initialize card layouts, variables and environment
-        self.card_layouts: dict[str, Layout] = dict()
-        self.card_variables: dict[str, list[list[str]]] = dict()
+        self.card_layouts: dict[str, Layout] = {}
+        self.card_variables: dict[str, list[list[str]]] = {}
         self.card_env = Environment()
 
         # Always print a warning when debug mode is active
@@ -280,7 +280,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # text boxes with author-provided metadata like tags or categories.
         # Thus, we generate a hash for each card, which is based on the layers
         # and the values of all variables that are used to generate the card.
-        layers: dict[str, Layer] = dict()
+        layers: dict[str, Layer] = {}
         for layer, templates in zip(layout.layers, variables):
             fingerprints = [self.config, layer]
 
@@ -790,7 +790,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # Retrieve configuration value - each page can override certain parts of
     # the site configuration, depending on the type and structure of the value
     def _config(self, name: str, page: Page):
-        meta = page.meta.get("social", dict())
+        meta = page.meta.get("social", {})
 
         # Primitive values: choose page- over site-level configuration
         if isinstance(self.config[name], (bool, str, int, float)):
@@ -798,7 +798,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # Dictionary values: merge site- with page-level configuration
         if isinstance(self.config[name], (dict)):
-            return { **self.config[name], **meta.get(name, dict()) }
+            return { **self.config[name], **meta.get(name, {}) }
 
     # Create a file for the given path
     def _path_to_file(self, path: str, config: MkDocsConfig):

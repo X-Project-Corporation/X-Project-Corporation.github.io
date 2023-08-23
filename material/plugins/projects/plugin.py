@@ -61,10 +61,10 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # Initialize process pool
         self.pool: ProcessPoolExecutor
-        self.pool_jobs: dict[str, Future] = dict()
+        self.pool_jobs: dict[str, Future] = {}
 
         # Initialize projects
-        self.projects: dict[str, MkDocsConfig] = dict()
+        self.projects: dict[str, MkDocsConfig] = {}
 
     # Determine whether we're serving the site
     def on_startup(self, *, command, dirty):

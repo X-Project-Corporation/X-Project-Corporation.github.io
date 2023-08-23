@@ -42,11 +42,11 @@ class PrivacyConfig(Config):
     assets_fetch_dir = Type(str, default = "assets/external")
     assets_include = Type(list, default = [])
     assets_exclude = Type(list, default = [])
-    assets_expr_map = Type(dict, default = dict())
+    assets_expr_map = Type(dict, default = {})
 
     # Options for external links
     links = Type(bool, default = True)
-    links_attr_map = Type(dict, default = dict())
+    links_attr_map = Type(dict, default = {})
     links_noopener = Type(bool, default = True)
 
     # Deprecated options

@@ -37,7 +37,7 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
             return
 
         # Initialize titles
-        self.title_map: dict[str, str] = dict()
+        self.title_map: dict[str, str] = {}
 
     # Extract source of page title before it's lost
     def on_pre_page(self, page, *, config, files):
@@ -111,7 +111,7 @@ class TypesetPlugin(BasePlugin[TypesetConfig]):
 
 # Flatten a tree of anchors
 def _flatten(items):
-    anchors = dict()
+    anchors = {}
     for item in items:
         anchors[item.id] = item
 

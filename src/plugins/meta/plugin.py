@@ -21,9 +21,10 @@
 import logging
 import os
 
-from glob import glob
+from fnmatch import fnmatch
 from mergedeep import Strategy, merge
 from mkdocs.exceptions import PluginError
+from mkdocs.structure.files import InclusionLevel
 from mkdocs.plugins import BasePlugin, event_priority
 from yaml import SafeLoader, load
 
@@ -37,21 +38,26 @@ from .config import MetaConfig
 class MetaPlugin(BasePlugin[MetaConfig]):
 
     # Construct metadata mapping
-    def on_pre_build(self, *, config):
+    def on_files(self, files, *, config):
         if not self.config.enabled:
             return
 
-        # Initialize metadata mapping
-        self.meta = dict()
+        # Initialize mapping
+        self.meta = {}
 
         # Resolve and load meta files in docs directory
         docs = os.path.relpath(config.docs_dir)
-        for file in sorted(glob(
-            os.path.join(docs, self.config.meta_file),
-            recursive = True
-        )):
-            with open(file, encoding = "utf-8") as f:
-                path = os.path.relpath(file, docs)
+        for file in files:
+            if not fnmatch(file.src_uri, self.config.meta_file):
+                continue
+
+            # Exclude meta file from site directory - explicitly excluding the
+            # meta file allows the author to use a file name without '.' prefix
+            file.inclusion = InclusionLevel.EXCLUDED
+
+            # Open file and parse as YAML
+            with open(file.abs_src_path, encoding = "utf-8") as f:
+                path = file.src_path
                 try:
                     self.meta[path] = load(f, SafeLoader)
 
