@@ -250,7 +250,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # which pages should generate social cards, and which shouldn't. Different
     # cards can be built by using multiple instances of the plugin.
     def _is_excluded(self, page: Page):
-        path = page.file.src_uri
+        path = page.file.src_path
 
         # Check if card generation is disabled for the given page
         if not self._config("cards", page):
@@ -259,17 +259,17 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Check if page matches one of the inclusion patterns
         if self.config.cards_include:
             for pattern in self.config.cards_include:
-                if fnmatch(path, pattern):
+                if fnmatch(page.file.src_uri, pattern):
                     return False
 
             # Page is not included
-            log.debug(f"Excluding page: {path}")
+            log.debug(f"Excluding page '{path}' due to inclusion patterns")
             return True
 
         # Check if page matches one of the exclusion patterns
         for pattern in self.config.cards_exclude:
-            if fnmatch(path, pattern):
-                log.debug(f"Excluding page: {path}")
+            if fnmatch(page.file.src_uri, pattern):
+                log.debug(f"Excluding page '{path}' due to exclusion patterns")
                 return True
 
         # Page is not excluded
@@ -645,10 +645,11 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             return self.card_layouts[name], self.card_variables[name]
 
         # If the user specified a custom directory, try to resolve the layout
-        # from this directory first, otherwise fall back to the default.
+        # from this directory first, otherwise fall back to the default
+        path = os.path.join(os.path.dirname(__file__), "templates")
         for base in [
-            os.path.abspath(self.config.cards_layout_dir),
-            os.path.join(os.path.dirname(__file__), "templates")
+            os.path.relpath(self.config.cards_layout_dir),
+            os.path.relpath(path)
         ]:
             path = os.path.join(base, f"{name}.yml")
             path = os.path.normpath(path)
@@ -659,15 +660,29 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
             # Open file and parse as YAML
             with open(path, encoding = "utf-8") as f:
-                layout: Layout = Layout()
-                layout.load_dict(yaml.load(f, SafeLoader) or {})
+                layout: Layout = Layout(config_file_path = path)
+                try:
+                    layout.load_dict(yaml.load(f, SafeLoader) or {})
+
+                # The layout could not be loaded because of a syntax error,
+                # which we display to the user with a nice error message
+                except Exception as e:
+                    path = os.path.relpath(path, base)
+                    raise PluginError(
+                        f"Error reading layout file '{path}' in '{base}':\n"
+                        f"{e}"
+                    )
 
                 # Validate layout and abort if errors occurred
                 errors, warnings = layout.validate()
                 for _, w in warnings:
                     log.warning(w)
                 for _, e in errors:
-                    raise e
+                    path = os.path.relpath(path, base)
+                    raise PluginError(
+                        f"Error reading layout file '{path}' in '{base}':\n"
+                        f"{e}"
+                    )
 
                 # Store layout and variables
                 self.card_layouts[name] = layout
@@ -814,6 +829,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
     # Create a file for the given path
     def _path_to_file(self, path: str, config: MkDocsConfig):
+        assert path.endswith(".png")
         return File(
             posixpath.join(self.config.cards_dir, path),
             os.path.abspath(self.config.cache_dir),
