@@ -42,7 +42,7 @@ from mkdocs.config.base import Config
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, event_priority
-from mkdocs.structure.files import File
+from mkdocs.structure.files import File, InclusionLevel
 from mkdocs.structure.pages import Page
 from mkdocs.utils import copy_file
 from PIL import Image, ImageColor, ImageDraw, ImageFont
@@ -135,6 +135,18 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 "The \"site_url\" option is not set. The cards are generated, "
                 "but not linked, so they won't be visible on social media."
             )
+
+    # Ensure card layouts are not copied to the site directory
+    def on_files(self, files, *, config):
+        if not self.config.enabled:
+            return
+
+        # We must exclude all files related to layouts from here on, so MkDocs
+        # doesn't copy them to the site directory when the project is built
+        path = os.path.join(os.path.dirname(__file__), "templates")
+        for file in files:
+            if file.abs_src_path.startswith(path):
+                file.inclusion = InclusionLevel.EXCLUDED
 
     # Generate card as soon as metadata is available (run latest) - run this
     # after all other plugins, so they can alter the card configuration
@@ -636,7 +648,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # from this directory first, otherwise fall back to the default.
         for base in [
             os.path.abspath(self.config.cards_layout_dir),
-            os.path.join(os.path.dirname(__file__), ".layouts")
+            os.path.join(os.path.dirname(__file__), "templates")
         ]:
             path = os.path.join(base, f"{name}.yml")
             path = os.path.normpath(path)
