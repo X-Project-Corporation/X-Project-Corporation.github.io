@@ -18,6 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from __future__ import annotations
+
 import logging
 import os
 import pickle
@@ -37,7 +39,6 @@ from mkdocs.structure.pages import Page
 from mkdocs.structure.nav import Link, Section
 from mkdocs.utils import get_theme_dir
 from mkdocs.utils.templates import url_filter
-from typing import Union
 from urllib.parse import ParseResult as URL, urlparse
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 
@@ -424,7 +425,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
     # -------------------------------------------------------------------------
 
     # Replace project links in the given list of navigaton items
-    def _replace(self, slug: str, items: "list[Union[Link, Page, Section]]"):
+    def _replace(self, slug: str, items: list[Link | Page | Section]):
         for index, item in enumerate(items):
             if isinstance(item, Link):
                 items[index] = self._replace_link(slug, item)

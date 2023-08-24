@@ -21,7 +21,7 @@
 import os
 
 from mkdocs.config.base import Config
-from mkdocs.config.config_options import Deprecated, Type
+from mkdocs.config.config_options import Deprecated, DictOfItems, Type
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -42,11 +42,11 @@ class PrivacyConfig(Config):
     assets_fetch_dir = Type(str, default = "assets/external")
     assets_include = Type(list, default = [])
     assets_exclude = Type(list, default = [])
-    assets_expr_map = Type(dict, default = {})
+    assets_expr_map = DictOfItems(Type(str), default = {})
 
     # Settings for external links
     links = Type(bool, default = True)
-    links_attr_map = Type(dict, default = {})
+    links_attr_map = DictOfItems(Type(str), default = {})
     links_noopener = Type(bool, default = True)
 
     # Deprecated settings

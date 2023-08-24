@@ -18,12 +18,15 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from __future__ import annotations
+
 import re
 
 from mkdocs.config.base import Config
-from mkdocs.config.config_options import Choice, ListOfItems, SubConfig, Type
+from mkdocs.config.config_options import (
+    Choice, DictOfItems, ListOfItems, SubConfig, Type
+)
 from PIL.Image import Image as _Image
-from typing import Union
 
 # -----------------------------------------------------------------------------
 # Options
@@ -108,7 +111,7 @@ class Layer(Config):
 # Layout
 class Layout(Config):
     definitions = ListOfItems(Type(str), default = [])
-    tags = Type(dict, default = {})
+    tags = DictOfItems(Type(str), default = {})
     size = SubConfig(Size)
     layers = ListOfItems(SubConfig(Layer), default = [])
 
@@ -117,7 +120,7 @@ class Layout(Config):
 # -----------------------------------------------------------------------------
 
 # Get layer or layout size as tuple
-def get_size(layer: Union[Layer, Layout]):
+def get_size(layer: Layer | Layout):
     return layer.size.width, layer.size.height
 
 # Get layer offset as tuple
