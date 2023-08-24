@@ -62,7 +62,7 @@ class MetaPlugin(BasePlugin[MetaConfig]):
                     self.meta[path] = load(f, SafeLoader)
 
                 # The meta file could not be loaded because of a syntax error,
-                # which we display to the user with a nice error message
+                # which we display to the author with a nice error message
                 except Exception as e:
                     raise PluginError(
                         f"Error reading meta file '{path}' in '{docs}':\n"
@@ -86,7 +86,7 @@ class MetaPlugin(BasePlugin[MetaConfig]):
                 merge(page.meta, defaults, strategy = strategy)
 
             # Merging the metadata with the given strategy resulted in an error,
-            # which we display to the user with a nice error message
+            # which we display to the author with a nice error message
             except Exception as e:
                 docs = os.path.relpath(config.docs_dir)
                 raise PluginError(

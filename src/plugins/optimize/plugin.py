@@ -110,7 +110,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         # Reconcile concurrent jobs - we need to wait for all jobs to finish
         # before we can copy the optimized files to the output directory. If an
         # exception occurred in one of the jobs, we raise it here, so the build
-        # fails and the user can fix the issue.
+        # fails and the author can fix the issue.
         for path, future in self.pool_jobs.items():
             if future.exception():
                 raise future.exception()

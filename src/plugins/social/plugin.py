@@ -124,8 +124,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             log.warning("Debug mode is enabled for \"social\" plugin.")
 
             # By default, debug mode is disabled when the documentation is
-            # built, but not when it is served. This should nicely align with
-            # the expected user experience when authoring documentation.
+            # built, but not when it is served, for a better user experience
             if not self.is_serve and not self.config.debug_on_build:
                 self.config.debug = False
 
@@ -184,7 +183,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Reconcile concurrent jobs - we need to wait for the card job to finish
         # before we can copy the generated files to the output directory. If an
         # exception occurred in one of the jobs, we raise it here, so the build
-        # fails and the user can fix the issue.
+        # fails and the author can fix the issue.
         future = self.card_pool_jobs[page.file.src_uri]
         if future.exception():
             raise future.exception()
@@ -644,7 +643,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if name in self.card_layouts:
             return self.card_layouts[name], self.card_variables[name]
 
-        # If the user specified a custom directory, try to resolve the layout
+        # If the author specified a custom directory, try to resolve the layout
         # from this directory first, otherwise fall back to the default
         path = os.path.join(os.path.dirname(__file__), "templates")
         for base in [
@@ -665,7 +664,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                     layout.load_dict(yaml.load(f, SafeLoader) or {})
 
                 # The layout could not be loaded because of a syntax error,
-                # which we display to the user with a nice error message
+                # which we display to the author with a nice error message
                 except Exception as e:
                     path = os.path.relpath(path, base)
                     raise PluginError(

@@ -90,7 +90,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             self.config.categories_toc = self.config.blog_toc
 
         # By default, drafts are rendered when the documentation is served,
-        # but not when it is built, for a better authoring experience
+        # but not when it is built, for a better user experience
         if self.is_serve and self.config.draft_on_serve:
             self.config.draft = True
 
@@ -434,7 +434,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                 config.load_dict(yaml.load(f, SafeLoader) or {})
 
             # The authors file could not be loaded because of a syntax error,
-            # which we display to the user with a nice error message
+            # which we display to the author with a nice error message
             except Exception as e:
                 raise PluginError(
                     f"Error reading authors file '{path}' in '{docs}':\n"
