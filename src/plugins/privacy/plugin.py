@@ -35,7 +35,7 @@ from mkdocs.config.config_options import ExtraScriptValue
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import File, Files
-from mkdocs.utils import is_error_template, write_file
+from mkdocs.utils import is_error_template
 from re import Match
 from urllib.parse import ParseResult as URL, urlparse
 
@@ -431,8 +431,8 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
             if extension and not path.endswith(extension):
                 path += extension
 
-            # Write contents and create symlink if no extension was present
-            write_file(res.content, path)
+            # Save to file and create symlink if no extension was present
+            self._save_to_file(path, res.content)
             if path != file.abs_src_path:
 
                 # Creating symlinks might fail on Windows. Thus, we just print
@@ -523,9 +523,9 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
             expr = re.compile(self.assets_expr_map[extension], re.I | re.M)
 
             # Resolve links to external assets in file
-            write_file(
-                expr.sub(replace, f.read()).encode("utf8"),
-                initiator.abs_dest_path
+            self._save_to_file(
+                initiator.abs_dest_path,
+                expr.sub(replace, f.read())
             )
 
     # -------------------------------------------------------------------------
@@ -559,6 +559,14 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
             config.site_dir,
             False
         )
+
+    # Write the content to the file located at the given path
+    def _save_to_file(self, path: str, content: str | bytes):
+        os.makedirs(os.path.dirname(path), exist_ok = True)
+        if isinstance(content, str):
+            content = bytes(content, "utf-8")
+        with open(path, "wb") as f:
+            f.write(content)
 
 # -----------------------------------------------------------------------------
 # Data
