@@ -55,6 +55,7 @@ from zipfile import ZipFile
 
 from .config import SocialConfig
 from .layout import Layer, Layout, Line, get_offset, get_size
+from .templates import x_filter
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -114,10 +115,13 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # Initialize lock for synchronizing downloading of fonts
         self.lock = Lock()
 
-        # Initialize card layouts, variables and environment
+        # Initialize card layouts and variables
         self.card_layouts: dict[str, Layout] = {}
         self.card_variables: dict[str, list[list[str]]] = {}
+
+        # Initialize card environment
         self.card_env = Environment()
+        self.card_env.filters["x"] = x_filter
 
         # Always print a warning when debug mode is active
         if self.config.debug:
