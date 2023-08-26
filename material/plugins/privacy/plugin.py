@@ -562,7 +562,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
             False
         )
 
-    # Write the content to the file located at the given path
+    # Create a file on the system with the given content
     def _save_to_file(self, path: str, content: str | bytes):
         os.makedirs(os.path.dirname(path), exist_ok = True)
         if isinstance(content, str):
