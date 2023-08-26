@@ -594,8 +594,9 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
             # Create and yield view - we don't explicitly set the title of
             # the view, so authors can override them in the page's content
-            yield Archive(None, file, config)
-            file.inclusion = InclusionLevel.INCLUDED
+            if not isinstance(file.page, Archive):
+                yield Archive(None, file, config)
+                file.inclusion = InclusionLevel.INCLUDED
 
             # Assign post to archive
             assert isinstance(file.page, Archive)
@@ -629,8 +630,9 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
                 # Create and yield view - we don't explicitly set the title of
                 # the view, so authors can override them in the page's content
-                yield Category(None, file, config)
-                file.inclusion = InclusionLevel.INCLUDED
+                if not isinstance(file.page, Category):
+                    yield Category(None, file, config)
+                    file.inclusion = InclusionLevel.INCLUDED
 
                 # Assign post to category and vice versa
                 assert isinstance(file.page, Category)
