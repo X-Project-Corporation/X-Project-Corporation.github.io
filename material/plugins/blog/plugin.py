@@ -353,7 +353,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         # Post might be a draft
         return bool(post.config.draft)
 
-    # Check if the given file is generated, i.e., a view
+    # Check if the given file is generated
     def _is_generated(self, file: File):
         for slug in [
             self.config.archive_url_format,
