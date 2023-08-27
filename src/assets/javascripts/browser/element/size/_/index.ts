@@ -76,7 +76,7 @@ const entry$ = new Subject<ResizeObserverEntry>()
  */
 const observer$ = defer(() => (
   typeof ResizeObserver === "undefined"
-    ? watchScript("https://unpkg.com/resize-observer-polyfill")
+    ? watchScript("https://unpkg.com/resize-observer-polyfill/dist/ResizeObserver.js")
     : of(undefined)
 ))
   .pipe(
