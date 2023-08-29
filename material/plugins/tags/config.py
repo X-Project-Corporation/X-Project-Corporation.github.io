@@ -20,7 +20,9 @@
 
 from functools import partial
 from markdown.extensions.toc import slugify
-from mkdocs.config.config_options import DictOfItems, Optional, Type
+from mkdocs.config.config_options import (
+    DictOfItems, ListOfItems, Optional, Type
+)
 from mkdocs.config.base import Config
 
 from . import casefold, page_title
@@ -35,7 +37,7 @@ class TagsConfig(Config):
 
     # Settings for tags
     tags_file = Optional(Type(str))
-    tags_extra_files = DictOfItems(Type(str), default = {})
+    tags_extra_files = DictOfItems(ListOfItems(Type(str)), default = {})
     tags_slugify = Type((type(slugify), partial), default = slugify)
     tags_slugify_separator = Type(str, default = "-")
     tags_compare = Optional(Type(type(casefold)))
