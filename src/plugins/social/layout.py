@@ -26,7 +26,10 @@ from mkdocs.config.base import Config
 from mkdocs.config.config_options import (
     Choice, DictOfItems, ListOfItems, SubConfig, Type
 )
-from PIL.Image import Image as _Image
+try:
+    from PIL.Image import Image as _Image
+except ImportError:
+    pass
 
 # -----------------------------------------------------------------------------
 # Options

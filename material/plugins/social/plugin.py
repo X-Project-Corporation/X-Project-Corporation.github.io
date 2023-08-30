@@ -18,6 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from __future__ import annotations
+
 import functools
 import html
 import json
@@ -29,7 +31,6 @@ import re
 import requests
 import yaml
 
-from cairosvg import svg2png
 from concurrent.futures import Future, ThreadPoolExecutor
 from copy import copy
 from fnmatch import fnmatch
@@ -45,13 +46,17 @@ from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import File, InclusionLevel
 from mkdocs.structure.pages import Page
 from mkdocs.utils import copy_file
-from PIL import Image, ImageColor, ImageDraw, ImageFont
-from PIL.Image import Image as _Image
 from statistics import stdev
 from tempfile import TemporaryFile, TemporaryDirectory
 from threading import Lock
 from yaml import SafeLoader
 from zipfile import ZipFile
+try:
+    from cairosvg import svg2png
+    from PIL import Image, ImageColor, ImageDraw, ImageFont
+    from PIL.Image import Image as _Image
+except ImportError:
+    pass
 
 from .config import SocialConfig
 from .layout import Layer, Layout, Line, get_offset, get_size
@@ -187,11 +192,18 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # Reconcile concurrent jobs - we need to wait for the card job to finish
         # before we can copy the generated files to the output directory. If an
-        # exception occurred in one of the jobs, we raise it here, so the build
-        # fails and the author can fix the issue.
+        # exception occurred in one of the jobs, we either log it as configured
+        # by the user, or raise it, so the build fails.
         future = self.card_pool_jobs[page.file.src_uri]
         if future.exception():
-            raise future.exception()
+            e = future.exception()
+            if self.config.log and isinstance(e, PluginError):
+                if self.config.log_level < logging.ERROR:
+                    log.log(self.config.log_level, e)
+                    return
+
+            # Otherwise, throw error
+            raise e
         else:
             file: File = future.result()
             file.copy_file()
@@ -331,6 +343,18 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         prev = self.cache.get(file.url, "")
         if hash == prev and os.path.isfile(file.abs_src_path):
             return file
+
+        # Check if the required dependencies for rendering are available, which
+        # is, at the absolute minimum, the 'pillow' package, and raise an error
+        # to the caller, so he can decide what to do with the error. The caller
+        # can treat this as a warning or an error to abort the build.
+        if not _supports("Image"):
+            docs = os.path.relpath(config.docs_dir)
+            path = os.path.relpath(page.file.abs_src_path, docs)
+            raise PluginError(
+                f"Couldn't render card for '{path}' in '{docs}': "
+                f"install required dependencies – pip install pillow cairosvg"
+            )
 
         # Spawn concurrent jobs to render layers - we only need to render layers
         # that we haven't already dispatched, reducing work by deduplication
@@ -845,12 +869,21 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 # Helper functions
 # -----------------------------------------------------------------------------
 
+# Check for presence of optional imports
+@functools.lru_cache(maxsize = None)
+def _supports(name: str):
+    return name in globals()
+
+# -----------------------------------------------------------------------------
+
 # Compute a stable hash from an object - since we're doing compositing, we can
 # leverage caching to omit re-generating layers when their parameters stay the
 # same. Additionally, we can identify identical layers between images, e.g.,
-# background, logos, or avatars, but also unchanged text.
+# background, logos, or avatars, but also unchanged text. Note that we need to
+# convert the data to a string prior to hashing, because configuration objects
+# are inherently unstable, always resulting in new hashes.
 def _digest(data: object):
-    return sha1(pickle.dumps(data)).hexdigest()
+    return sha1(pickle.dumps(str(data))).hexdigest()
 
 # -----------------------------------------------------------------------------
 

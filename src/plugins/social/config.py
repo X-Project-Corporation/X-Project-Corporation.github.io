@@ -21,7 +21,7 @@
 import os
 
 from mkdocs.config.base import Config
-from mkdocs.config.config_options import Deprecated, Type
+from mkdocs.config.config_options import _LogLevel, Deprecated, Type
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -35,6 +35,10 @@ class SocialConfig(Config):
     # Settings for caching
     cache = Type(bool, default = True)
     cache_dir = Type(str, default = ".cache/plugin/social")
+
+    # Settings for logging
+    log = Type(bool, default = True)
+    log_level = _LogLevel(default = "warn")
 
     # Settings for cards
     cards = Type(bool, default = True)
