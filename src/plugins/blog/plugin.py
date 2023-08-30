@@ -153,7 +153,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
         # Generate pages for views
         if self.config.pagination:
-            for view in self._resolve_views(self.blog, root = True):
+            for view in self._resolve_views(self.blog):
                 for page in self._generate_pages(view, config, files):
                     page.file.inclusion = InclusionLevel.EXCLUDED
                     view.pages.append(page)
@@ -189,7 +189,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             post.file.inclusion = InclusionLevel.NOT_IN_NAV
 
         # Revert temporary exclusion of views from navigation
-        for view in self._resolve_views(self.blog, root = True):
+        for view in self._resolve_views(self.blog):
             for page in view.pages:
                 page.file.inclusion = InclusionLevel.INCLUDED
 
@@ -212,7 +212,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
         # Attach pages for views
         if self.config.pagination:
-            for view in self._resolve_views(self.blog, root = True):
+            for view in self._resolve_views(self.blog):
                 for at in range(1, len(view.pages)):
                     self._attach_at(view.pages[at - 1], view, view.pages[at])
 
@@ -239,7 +239,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             # not keep the content of the original view on paginaged views
             if not self.config.pagination_keep_content:
                 view = page.pages[0] if isinstance(page, View) else page
-                if view in self._resolve_views(self.blog, root = True):
+                if view in self._resolve_views(self.blog):
                     assert isinstance(page, View)
                     if page.pages.index(page):
                         main = page.parent
@@ -327,7 +327,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         # Skip if page is not a view managed by this instance - this plugin has
         # support for multiple instances, which is why this check is necessary
         view = page.pages[0] if isinstance(page, View) else page
-        if view not in self._resolve_views(self.blog, root = True):
+        if view not in self._resolve_views(self.blog):
             return
 
         # Retrieve parent view or section
@@ -507,13 +507,12 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         return config.authors
 
     # Resolve views of the given view in pre-order
-    def _resolve_views(self, view: View, root = False):
-        if root:
-            yield view
+    def _resolve_views(self, view: View):
+        yield view
 
         # Resolve views recursively
         for page in view.views:
-            for next in self._resolve_views(page, root = True):
+            for next in self._resolve_views(page):
                 assert isinstance(next, View)
                 yield next
 
