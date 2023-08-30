@@ -537,7 +537,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
             # Create file for view, if it does not exist
             file = files.get_file_from_path(path)
-            if not file:
+            if not file or self.temp_dir not in file.abs_src_path:
                 file = self._path_to_file(path, config)
                 files.append(file)
 
@@ -572,7 +572,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
                 # Create file for view, if it does not exist
                 file = files.get_file_from_path(path)
-                if not file:
+                if not file or self.temp_dir not in file.abs_src_path:
                     file = self._path_to_file(path, config)
                     files.append(file)
 
