@@ -32,7 +32,6 @@ from colorama import Fore, Style
 from concurrent.futures import Future, ThreadPoolExecutor, wait
 from fnmatch import fnmatch
 from hashlib import sha1
-from lxml.html import HtmlElement, fragment_fromstring, tostring
 from mkdocs.config.config_options import ExtraScriptValue
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin, event_priority
@@ -40,8 +39,10 @@ from mkdocs.structure.files import File, Files
 from mkdocs.utils import is_error_template
 from re import Match
 from urllib.parse import ParseResult as URL, urlparse
+from xml.etree.ElementTree import Element, tostring
 
 from .config import PrivacyConfig
+from .parser import FragmentParser
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -149,8 +150,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
             r"<img[^>]+src=['\"]?http[^>]+>",
             html, flags = re.I | re.M
         ):
-            encoded = match.encode("unicode_escape")
-            el: HtmlElement = fragment_fromstring(encoded)
+            el = self._parse_fragment(match)
 
             # Create and enqueue job to fetch external image
             url = urlparse(el.get("src"))
@@ -284,6 +284,16 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
 
     # -------------------------------------------------------------------------
 
+    # Parse a fragment
+    def _parse_fragment(self, fragment: str):
+        parser = FragmentParser()
+        parser.feed(fragment)
+        parser.close()
+
+        # Return element
+        assert isinstance(parser.result, Element)
+        return parser.result
+
     # Parse and extract all external assets from a media file using a preset
     # regular expression, and return all URLs found.
     def _parse_media(self, initiator: File) -> "list[URL]":
@@ -312,8 +322,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
 
         # Replace callback
         def replace(match: Match):
-            encoded = match.group().encode("unicode_escape")
-            el: HtmlElement = fragment_fromstring(encoded)
+            el = self._parse_fragment(match.group())
 
             # Handle external link
             if self.config.links and el.tag == "a":
@@ -354,11 +363,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
 
             # Return void or opening tag as string, strip closing tag
             decoded = tostring(el).decode("unicode_escape")
-            if el.tag in void:
-                return decoded
-            else:
-                tail = 3 + len(el.tag)
-                return decoded[:-tail]
+            return decoded.replace(" />", ">")
 
         # Find and replace all external asset URLs in current page
         return re.sub(
@@ -589,21 +594,3 @@ extensions = dict({
     "text/javascript": ".js",
     "text/css": ".css"
 })
-
-# Tags that are self-closing
-void = set([
-    "area",                            # Image map areas
-    "base",                            # Document base
-    "br",                              # Line breaks
-    "col",                             # Table columns
-    "embed",                           # External content
-    "hr",                              # Horizontal rules
-    "img",                             # Images
-    "input",                           # Input fields
-    "link",                            # Links
-    "meta",                            # Metadata
-    "param",                           # External parameters
-    "source",                          # Image source sets
-    "track",                           # Text track
-    "wbr"                              # Line break opportunities
-])

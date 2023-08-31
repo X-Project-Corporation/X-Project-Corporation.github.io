@@ -18,18 +18,24 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-# Requirements for core
-jinja2>=3.0
-markdown>=3.2
-mkdocs>=1.5.2
-mkdocs-material-extensions>=1.1
-pygments>=2.14
-pymdown-extensions>=9.9.1
+from html.parser import HTMLParser
+from xml.etree.ElementTree import Element
 
-# Requirements for plugins
-babel>=2.10.3
-colorama>=0.4
-mergedeep>=1.3.4
-paginate>=0.5.6
-regex>=2022.4.24
-requests>=2.26
+# -----------------------------------------------------------------------------
+# Classes
+# -----------------------------------------------------------------------------
+
+# Fragment parser - previously, we used lxml for fault-tolerant HTML5 parsing,
+# but it blows up the size of the Docker image by 20 MB. We can't just use the
+# built-in XML parser, as it doesn't handle HTML5 (because, yeah, it's not XML),
+# so we use a streaming parser and construct the element ourselves.
+class FragmentParser(HTMLParser):
+
+    # Initialize parser
+    def __init__(self):
+        super().__init__(convert_charrefs = True)
+        self.result = None
+
+    # Create element
+    def handle_starttag(self, tag, attrs):
+        self.result = Element(tag, dict(attrs))
