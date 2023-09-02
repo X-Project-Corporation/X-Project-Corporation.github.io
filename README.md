@@ -227,10 +227,12 @@ For detailed installation instructions, configuration options, and a demo, visit
 
 ### ... industry leaders
 
+[ArXiv](https://info.arxiv.org),
 [Atlassian](https://atlassian.github.io/data-center-helm-charts/),
 [AWS](https://aws.github.io/copilot-cli/),
 [Bloomberg](https://bloomberg.github.io/selekt/),
 [CERN](http://abpcomputing.web.cern.ch/),
+[CloudFlare](https://cloudflare.github.io/itty-router-openapi/),
 [Datadog](https://datadoghq.dev/integrations-core/),
 [Google](https://google.github.io/accompanist/),
 [Hewlett Packard](https://hewlettpackard.github.io/squest/),
@@ -242,7 +244,7 @@ For detailed installation instructions, configuration options, and a demo, visit
 [Mozilla](https://mozillafoundation.github.io/engineering-handbook/),
 [Netflix](https://netflix.github.io/titus/),
 [Salesforce](https://policy-sentry.readthedocs.io/en/latest/),
-[SoundCloud](https://intervene.dev/),
+[Slack](https://slackhq.github.io/circuit/),
 [Square](https://square.github.io/okhttp/),
 [Zalando](https://opensource.zalando.com/skipper/)
 
