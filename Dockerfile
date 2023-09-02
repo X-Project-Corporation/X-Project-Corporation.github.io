@@ -48,6 +48,7 @@ RUN \
     git-fast-import \
     jpeg-dev \
     openssh \
+    pngquant \
     zlib-dev \
 && \
   apk add --no-cache --virtual .build \
