@@ -693,6 +693,13 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             if not url.fragment:
                 continue
 
+            # If we're running under dirty reload, MkDocs will reset all pages,
+            # so it's not possible to resolve anchor links. Thus, the only way
+            # to make this work is to skip the entire process of anchor link
+            # resolution in case of a dirty reload.
+            if self.is_dirty:
+                continue
+
             # Resolve anchor for fragment, and throw if the anchor could not be
             # found - authors can link to any anchor in the table of contents
             anchor = _find_anchor(file.page.toc, url.fragment)
