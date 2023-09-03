@@ -124,6 +124,12 @@
       // and the element will become unclickable. Setting `position: relative`
       // seems to fix the issue - see https://bit.ly/3HljM1T
       position: relative;
+
+      // Truncate overflowing code blocks in the navigation with ellipsis, as
+      // the full link title is always shown as a tooltip on focus/hover
+      code {
+        word-break: normal;
+      }
     }
 
     // Always align navigation icons to the right
