@@ -361,9 +361,8 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
                     file = self._queue(url, config)
                     el.set("src", resolve(file))
 
-            # Return void or opening tag as string, strip closing tag
-            decoded = tostring(el).decode("unicode_escape")
-            return decoded.replace(" />", ">")
+            # Return element as string
+            return self._print(el)
 
         # Find and replace all external asset URLs in current page
         return re.sub(
@@ -372,6 +371,20 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
         )
 
     # -------------------------------------------------------------------------
+
+    # Print element as string - what could possibly go wrong? We're parsing
+    # HTML5 with an XML parser, and XML doesn't allow for boolean attributes,
+    # which is why we must add a dummy value to all attributes that are not
+    # strings before printing the element as string.
+    def _print(self, el: Element):
+        temp = "__temp__"
+        for name in el.attrib:
+            if not isinstance(el.attrib[name], str):
+                el.attrib[name] = temp
+
+        # Return void or opening tag as string, strip closing tag
+        data = tostring(el, encoding = "unicode")
+        return data.replace(" />", ">").replace(f"\"{temp}\"", "")
 
     # Enqueue external asset for download, if not already done
     def _queue(self, url: URL, config: MkDocsConfig, concurrent = False):
