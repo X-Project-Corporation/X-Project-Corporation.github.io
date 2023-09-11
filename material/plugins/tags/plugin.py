@@ -40,6 +40,10 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         if not self.config.enabled:
             return
 
+        # Skip if tags should not be built
+        if not self.config.tags:
+            return
+
         # Initialize tags
         self.tags_map = defaultdict(list)
         self.tags_type_map = config.extra.get("tags")
@@ -51,6 +55,10 @@ class TagsPlugin(BasePlugin[TagsConfig]):
     # Resolve index pages (and extra files)
     def on_nav(self, nav, *, config, files):
         if not self.config.enabled:
+            return
+
+        # Skip if tags should not be built
+        if not self.config.tags:
             return
 
         # Resolve tags index page
@@ -67,6 +75,10 @@ class TagsPlugin(BasePlugin[TagsConfig]):
     # Build and render tags index(es) and link pages
     def on_page_markdown(self, markdown, *, page, config, files):
         if not self.config.enabled:
+            return
+
+        # Skip if tags should not be built
+        if not self.config.tags:
             return
 
         # Skip, if page is excluded
@@ -118,6 +130,10 @@ class TagsPlugin(BasePlugin[TagsConfig]):
     # Inject tags into page (after search and before minification)
     def on_page_context(self, context, *, page, config, nav):
         if not self.config.enabled:
+            return
+
+        # Skip if tags should not be built
+        if not self.config.tags:
             return
 
         # Provide tags for page

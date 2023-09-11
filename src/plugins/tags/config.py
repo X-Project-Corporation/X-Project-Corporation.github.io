@@ -36,6 +36,7 @@ class TagsConfig(Config):
     enabled = Type(bool, default = True)
 
     # Settings for tags
+    tags = Type(bool, default = True)
     tags_file = Optional(Type(str))
     tags_extra_files = DictOfItems(ListOfItems(Type(str)), default = {})
     tags_slugify = Type((type(slugify), partial), default = slugify)

@@ -122,17 +122,19 @@ plugins:
         reference/variables.md: https://mkdocs-macros-plugin.readthedocs.io/
         sponsorship.md: insiders/index.md
         upgrading.md: upgrade.md
-  - git-revision-date-localized:
-      enabled: !ENV [CI, false]
-      enable_creation_date: true
-      type: timeago
-  - git-committers:
-      enabled: !ENV [CI, false]
-      repository: squidfunk/mkdocs-material
-  - optimize:
-      enabled: !ENV [CI, false]
-  - minify:
-      minify_html: !ENV [CI, false]
+
+  # Continuous integration
+  - group:
+      enabled: !ENV CI
+      plugins:
+        - git-revision-date-localized:
+            enable_creation_date: true
+            type: timeago
+        - git-committers:
+            repository: squidfunk/mkdocs-material
+        - optimize
+        - minify:
+            minify_html: true
 
 # Hooks
 hooks:

@@ -18,31 +18,16 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from functools import partial
-from markdown.extensions.toc import slugify
-from mkdocs.config.config_options import (
-    DictOfItems, ListOfItems, Optional, Type
-)
-from mkdocs.config.base import Config
+from __future__ import annotations
 
-from . import casefold, page_title
+from mkdocs.config.config_options import Type
+from mkdocs.config.base import Config
 
 # -----------------------------------------------------------------------------
 # Classes
 # -----------------------------------------------------------------------------
 
-# Tags plugin configuration
-class TagsConfig(Config):
-    enabled = Type(bool, default = True)
-
-    # Settings for tags
-    tags = Type(bool, default = True)
-    tags_file = Optional(Type(str))
-    tags_extra_files = DictOfItems(ListOfItems(Type(str)), default = {})
-    tags_slugify = Type((type(slugify), partial), default = slugify)
-    tags_slugify_separator = Type(str, default = "-")
-    tags_compare = Optional(Type(type(casefold)))
-    tags_compare_reverse = Type(bool, default = False)
-    tags_pages_compare = Optional(Type(type(page_title)))
-    tags_pages_compare_reverse = Type(bool, default = False)
-    tags_allowed = Type(list, default = [])
+# Group plugin configuration
+class GroupConfig(Config):
+    enabled = Type(bool, default = False)
+    plugins = Type(list | dict)
