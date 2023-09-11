@@ -36,15 +36,16 @@ class OptimizeConfig(Config):
     cache = Type(bool, default = True)
     cache_dir = Type(str, default = ".cache/plugin/optimize")
 
-    # Settings for PNG optimization
+    # Settings for optimization
+    optimize = Type(bool, default = True)
     optimize_png = Type(bool, default = True)
     optimize_png_speed = Type(int, default = 3)
     optimize_png_strip = Type(bool, default = True)
-
-    # Settings for JPG optimization
     optimize_jpg = Type(bool, default = True)
     optimize_jpg_quality = Type(int, default = 60)
     optimize_jpg_progressive = Type(bool, default = True)
+    optimize_include = Type(list, default = [])
+    optimize_exclude = Type(list, default = [])
 
     # Settings for reporting
     print_gain = Type(bool, default = True)

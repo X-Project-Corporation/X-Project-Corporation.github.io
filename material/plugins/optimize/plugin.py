@@ -23,11 +23,11 @@ import logging
 import os
 import subprocess
 
+from fnmatch import fnmatch
 from colorama import Fore, Style
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha1
 from mkdocs import utils
-from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File
 from PIL import Image
@@ -81,12 +81,16 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         if not self.config.enabled:
             return
 
+        # Skip if media files should not be optimized
+        if not self.config.optimize:
+            return
+
         # Filter all optimizable media files and steal reponsibility from MkDocs
         # by removing them from the files collection. Then, start a concurrent
         # job that checks if an image was already optimized and can be returned
         # from the cache, or optimize it accordingly.
         for file in files.media_files():
-            if not self._is_optimizable(file):
+            if self._is_excluded(file):
                 continue
 
             # Compute path to cached image
@@ -105,6 +109,10 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
     # Finish optimization pipeline
     def on_post_build(self, *, config):
         if not self.config.enabled:
+            return
+
+        # Skip if media files should not be optimized
+        if not self.config.optimize:
             return
 
         # Reconcile concurrent jobs - we need to wait for all jobs to finish
@@ -174,6 +182,31 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
             return self.config.optimize_jpg
 
         # File can not be optimized by the plugin
+        return False
+
+    # Check if the given file is excluded
+    def _is_excluded(self, file: File):
+        if not self._is_optimizable(file):
+            return True
+
+        # Check if file matches one of the inclusion patterns
+        path = file.src_path
+        if self.config.optimize_include:
+            for pattern in self.config.optimize_include:
+                if fnmatch(file.src_uri, pattern):
+                    return False
+
+            # File is not included
+            log.debug(f"Excluding file '{path}' due to inclusion patterns")
+            return True
+
+        # Check if file matches one of the exclusion patterns
+        for pattern in self.config.optimize_exclude:
+            if fnmatch(file.src_uri, pattern):
+                log.debug(f"Excluding file '{path}' due to exclusion patterns")
+                return True
+
+        # File is not excluded
         return False
 
     # Optimize image and write to cache

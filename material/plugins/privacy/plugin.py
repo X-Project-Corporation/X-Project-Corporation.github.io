@@ -254,7 +254,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
         if initiator:
             via = "".join([
                 Fore.WHITE, Style.DIM,
-                f"in {initiator.src_uri}",
+                f"in '{initiator.src_uri}' ",
                 Style.RESET_ALL
             ])
 
@@ -265,13 +265,19 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
                     return False
 
             # File is not included
-            log.debug(f"Excluding external file: {url.geturl()} {via}")
+            log.debug(
+                f"Excluding external file '{url.geturl()}' {via}due to "
+                f"inclusion patterns"
+            )
             return True
 
         # Check if URL matches one of the exclusion patterns
         for pattern in self.config.assets_exclude:
             if fnmatch(self._path_from_url(url), pattern):
-                log.debug(f"Excluding external file: {url.geturl()} {via}")
+                log.debug(
+                    f"Excluding external file '{url.geturl()}' {via}due to "
+                    f"exclusion patterns"
+                )
                 return True
 
         # Print warning if fetching is not enabled
