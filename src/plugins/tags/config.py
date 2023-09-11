@@ -42,8 +42,6 @@ class TagsConfig(Config):
     tags_slugify_separator = Type(str, default = "-")
     tags_compare = Optional(Type(type(casefold)))
     tags_compare_reverse = Type(bool, default = False)
-    tags_allowed = Type(list, default = [])
-
-    # Settings for pages
     tags_pages_compare = Optional(Type(type(page_title)))
     tags_pages_compare_reverse = Type(bool, default = False)
+    tags_allowed = Type(list, default = [])
