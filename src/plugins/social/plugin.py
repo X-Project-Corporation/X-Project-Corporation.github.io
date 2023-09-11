@@ -439,6 +439,10 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # loaded to allow for transparent tints. How awesome is that?
         if background.color:
             color = background.color
+            if color == "transparent":
+                return input
+
+            # Create image filled with background color
             image = Image.new(mode = "RGBA", size = input.size, color = color)
             input.alpha_composite(image)
 
