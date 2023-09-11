@@ -38,7 +38,7 @@ class OptimizeConfig(Config):
 
     # Settings for PNG optimization
     optimize_png = Type(bool, default = True)
-    optimize_png_speed = Type(int, default = 4)
+    optimize_png_speed = Type(int, default = 3)
     optimize_png_strip = Type(bool, default = True)
 
     # Settings for JPG optimization
