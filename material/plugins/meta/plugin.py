@@ -20,8 +20,8 @@
 
 import logging
 import os
+import posixpath
 
-from fnmatch import fnmatch
 from mergedeep import Strategy, merge
 from mkdocs.exceptions import PluginError
 from mkdocs.structure.files import InclusionLevel
@@ -48,7 +48,8 @@ class MetaPlugin(BasePlugin[MetaConfig]):
         # Resolve and load meta files in docs directory
         docs = os.path.relpath(config.docs_dir)
         for file in files:
-            if not fnmatch(file.src_uri, self.config.meta_file):
+            name = posixpath.basename(file.src_uri)
+            if not name == self.config.meta_file:
                 continue
 
             # Exclude meta file from site directory - explicitly excluding the

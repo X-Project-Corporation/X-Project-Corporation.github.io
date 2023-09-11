@@ -30,4 +30,4 @@ class MetaConfig(Config):
     enabled = Type(bool, default = True)
 
     # Settings for meta files
-    meta_file = Type(str, default = "**/.meta.yml")
+    meta_file = Type(str, default = ".meta.yml")
