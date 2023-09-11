@@ -198,9 +198,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if future.exception():
             e = future.exception()
             if self.config.log and isinstance(e, PluginError):
-                if self.config.log_level < logging.ERROR:
-                    log.log(self.config.log_level, e)
-                    return
+                log.log(self.config.log_level, e)
+                return
 
             # Otherwise, throw error
             raise e
