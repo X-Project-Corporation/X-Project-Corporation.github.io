@@ -88,12 +88,6 @@ Funding = "https://github.com/sponsors/squidfunk"
 [project.entry-points."mkdocs.themes"]
 material = "material"
 
-[project.optional-dependencies]
-images = [
-  "pillow",
-  "cairosvg"
-]
-
 [tool.hatch.version]
 source = "nodejs"
 
