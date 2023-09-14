@@ -45,6 +45,9 @@ class SearchFieldConfig(Config):
 
 # Search plugin configuration
 class SearchConfig(Config):
+    enabled = Type(bool, default = True)
+
+    # Settings for search
     lang = Optional(LangOption())
     separator = Optional(Type(str))
     pipeline = ListOfItems(Choice(pipeline), default = [])

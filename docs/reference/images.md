@@ -4,8 +4,8 @@ icon: material/image-frame
 
 # Images
 
-While images are first-class citizens of Markdown and part of the core syntax, 
-it can be difficult to work with them. Material for MkDocs makes working with 
+While images are first-class citizens of Markdown and part of the core syntax,
+it can be difficult to work with them. Material for MkDocs makes working with
 images more comfortable, providing styles for image alignment and image
 captions.
 
@@ -31,10 +31,10 @@ See additional configuration options:
 
 ### Lightbox
 
-[:octicons-tag-24: 0.1.0][Lightbox support] ·
-[:octicons-cpu-24: Plugin][glightbox]
+<!-- md:version 0.1.0 -->
+<!-- md:plugin [glightbox] -->
 
-If you want to add image zoom functionality to your documentation, the 
+If you want to add image zoom functionality to your documentation, the
 [glightbox] plugin is an excellent choice, as it integrates perfectly
 with Material for MkDocs. Install it with `pip`:
 
@@ -52,7 +52,6 @@ plugins:
 We recommend checking out the available
 [configuration options][glightbox options].
 
-  [Lightbox support]: https://github.com/squidfunk/mkdocs-material/releases/tag/0.1.0
   [glightbox]: https://github.com/blueswen/mkdocs-glightbox
   [glightbox options]: https://github.com/blueswen/mkdocs-glightbox#usage
 
@@ -136,21 +135,6 @@ but it's always possible to use the [Markdown in HTML] extension with literal
   </figure>
 </div>
 
-
-Another option is to use [Markdown captions](https://github.com/Evidlo/markdown_captions) extension 
-which converts images with alt text to \<figure\> with \<figcaption\>.
-
-``` html title="Image with caption"
-  ![Image caption](https://dummyimage.com/600x400/){ width="300" }
-```
-
-<div class="result">
-  <figure>
-    <img src="https://dummyimage.com/600x400/f5f5f5/aaaaaa?text=–%20Image%20–" width="300" />
-    <figcaption>Image caption</figcaption>
-  </figure>
-</div>
-
 ### Image lazy-loading
 
 Modern browsers provide [native support for lazy-loading images][lazy-loading]
@@ -169,7 +153,7 @@ browsers without support:
 
 ### Light and dark mode
 
-[:octicons-tag-24: 8.1.1][Light and dark mode support]
+<!-- md:version 8.1.1 -->
 
 If you added a [color palette toggle] and want to show different images for
 light and dark color schemes, you can append a `#only-light` or `#only-dark`
@@ -215,7 +199,6 @@ hash fragment to the image URL:
     Remember to change `#!css "custom-light"` and `#!css "custom-dark"` to the
     name of your scheme.
 
-  [Light and dark mode support]: https://github.com/squidfunk/mkdocs-material/releases/tag/8.1.1
   [color palette toggle]: ../setup/changing-the-colors.md#color-palette-toggle
   [Zelda light world]: ../assets/images/zelda-light-world.png#only-light
   [Zelda dark world]: ../assets/images/zelda-dark-world.png#only-dark

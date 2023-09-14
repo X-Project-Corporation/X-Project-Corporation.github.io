@@ -351,8 +351,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             docs = os.path.relpath(config.docs_dir)
             path = os.path.relpath(page.file.abs_src_path, docs)
             raise PluginError(
-                f"Couldn't render card for '{path}' in '{docs}': "
-                f"install required dependencies – pip install pillow cairosvg"
+                f"Couldn't render card for '{path}' in '{docs}': install "
+                f"required dependencies – pip install 'mkdocs-material[imaging]'"
             )
 
         # Spawn concurrent jobs to render layers - we only need to render layers

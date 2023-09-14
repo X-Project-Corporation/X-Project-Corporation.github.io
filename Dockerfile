@@ -62,13 +62,9 @@ RUN \
 && \
   if [ "${WITH_PLUGINS}" = "true" ]; then \
     pip install --no-cache-dir \
-      "mkdocs-git-committers-plugin-2~=1.1" \
-      "mkdocs-git-revision-date-localized-plugin~=1.2" \
-      "mkdocs-minify-plugin~=0.7" \
-      "mkdocs-redirects~=1.2" \
-      "mkdocs-rss-plugin~=1.6" \
-      "pillow~=9.4" \
-      "cairosvg~=2.6"; \
+      mkdocs-material[recommended] \
+      mkdocs-material[git] \
+      mkdocs-material[imaging]; \
   fi \
 && \
   if [ -e user-requirements.txt ]; then \
