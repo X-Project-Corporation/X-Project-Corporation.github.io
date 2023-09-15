@@ -17,32 +17,3 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
-
-import logging
-import sys
-
-from shutil import which
-
-# -----------------------------------------------------------------------------
-# Checks
-# -----------------------------------------------------------------------------
-
-# Check for pillow
-try:
-    import PIL as _
-except ImportError:
-    log = logging.getLogger("mkdocs.material.optimize")
-    log.error(
-        "Required dependencies of \"optimize\" plugin not found. "
-        "Install with: pip install pillow"
-    )
-    sys.exit(1)
-
-# Check for pngquant
-if not which("pngquant"):
-    log = logging.getLogger("mkdocs.material.optimize")
-    log.error(
-        "Required dependencies of \"optimize\" plugin not found. "
-        "Make sure 'pngquant' is installed and in your path"
-    )
-    sys.exit(1)

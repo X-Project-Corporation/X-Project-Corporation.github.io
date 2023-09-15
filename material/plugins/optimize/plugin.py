@@ -18,6 +18,9 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from __future__ import annotations
+
+import functools
 import json
 import logging
 import os
@@ -28,9 +31,15 @@ from colorama import Fore, Style
 from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha1
 from mkdocs import utils
+from mkdocs.config.defaults import MkDocsConfig
+from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin
 from mkdocs.structure.files import File
-from PIL import Image
+from shutil import which
+try:
+    from PIL import Image
+except ImportError:
+    pass
 
 from .config import OptimizeConfig
 
@@ -100,7 +109,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
             # Spawn concurrent job to optimize the given image and add future
             # to job dictionary, as it returns the file we need to copy later
             self.pool_jobs[file.abs_src_path] = self.pool.submit(
-                self._optimize_image, file, path
+                self._optimize_image, file, path, config
             )
 
             # Steal responsibility from MkDocs
@@ -171,14 +180,13 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
 
     # Check if a file can be optimized
     def _is_optimizable(self, file: File):
-        _, extension = os.path.splitext(file.url)
 
         # Check if PNG images should be optimized
-        if extension in [".png"]:
+        if file.url.endswith((".png")):
             return self.config.optimize_png
 
         # Check if JPG images should be optimized
-        if extension in [".jpg", ".jpeg"]:
+        if file.url.endswith((".jpg", ".jpeg")):
             return self.config.optimize_jpg
 
         # File can not be optimized by the plugin
@@ -210,7 +218,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         return False
 
     # Optimize image and write to cache
-    def _optimize_image(self, file: File, path: str):
+    def _optimize_image(self, file: File, path: str, config: MkDocsConfig):
         with open(file.abs_src_path, "rb") as f:
             data = f.read()
             hash = sha1(data).hexdigest()
@@ -222,11 +230,11 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
 
                 # Optimize PNG image using pngquant
                 if file.url.endswith((".png")):
-                    self._optimize_image_png(file, path)
+                    self._optimize_image_png(file, path, config)
 
                 # Optimize JPG image using pillow
                 if file.url.endswith((".jpg", ".jpeg")):
-                    self._optimize_image_jpg(file, path)
+                    self._optimize_image_jpg(file, path, config)
 
                 # Compute size before and after optimization
                 size     = len(data)
@@ -266,7 +274,21 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
     # Optimize PNG image - we first tried to use libimagequant, but encountered
     # the occassional segmentation fault, which means it's probably not a good
     # choice. Instead, we just rely on pngquant which seems much more stable.
-    def _optimize_image_png(self, file: File, path: str):
+    def _optimize_image_png(self, file: File, path: str, config: MkDocsConfig):
+
+        # Check if the required dependencies for optimizing are available, which
+        # is, at the absolute minimum, the 'pngquant' binary, and raise an error
+        # to the caller, so he can decide what to do with the error. The caller
+        # can treat this as a warning or an error to abort the build.
+        if not which("pngquant"):
+            docs = os.path.relpath(config.docs_dir)
+            path = os.path.relpath(file.abs_src_path, docs)
+            raise PluginError(
+                f"Couldn't optimize image '{path}' in '{docs}': 'pngquant' "
+                f"not found. Make sure 'pngquant' is installed and in your path"
+            )
+
+        # Build command line arguments
         args = ["pngquant",
             "--force", "--skip-if-larger",
             "--output", path,
@@ -286,7 +308,21 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
             utils.copy_file(file.abs_src_path, path)
 
     # Optimize JPG image
-    def _optimize_image_jpg(self, file: File, path: str):
+    def _optimize_image_jpg(self, file: File, path: str, config: MkDocsConfig):
+
+        # Check if the required dependencies for optimizing are available, which
+        # is, at the absolute minimum, the 'pillow' package, and raise an error
+        # to the caller, so he can decide what to do with the error. The caller
+        # can treat this as a warning or an error to abort the build.
+        if not _supports("Image"):
+            docs = os.path.relpath(config.docs_dir)
+            path = os.path.relpath(file.abs_src_path, docs)
+            raise PluginError(
+                f"Couldn't optimize image '{path}' in '{docs}': install "
+                f"required dependencies – pip install 'mkdocs-material[imaging]'"
+            )
+
+        # Open and save optimized image
         image = Image.open(file.abs_src_path)
         image.save(path, "jpeg",
             quality     = self.config.optimize_jpg_quality,
@@ -295,6 +331,13 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
 
 # -----------------------------------------------------------------------------
 # Helper functions
+# -----------------------------------------------------------------------------
+
+# Check for presence of optional imports
+@functools.lru_cache(maxsize = None)
+def _supports(name: str):
+    return name in globals()
+
 # -----------------------------------------------------------------------------
 
 # Print human-readable size
