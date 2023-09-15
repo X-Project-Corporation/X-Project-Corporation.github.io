@@ -221,11 +221,11 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
                 os.makedirs(os.path.dirname(path), exist_ok = True)
 
                 # Optimize PNG image using pngquant
-                if file.url.endswith(".png"):
+                if file.url.endswith((".png")):
                     self._optimize_image_png(file, path)
 
                 # Optimize JPG image using pillow
-                if file.url.endswith(".jpg"):
+                if file.url.endswith((".jpg", ".jpeg")):
                     self._optimize_image_jpg(file, path)
 
                 # Compute size before and after optimization
