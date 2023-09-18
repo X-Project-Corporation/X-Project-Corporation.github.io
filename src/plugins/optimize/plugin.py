@@ -102,7 +102,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
             if self._is_excluded(file):
                 continue
 
-            # Compute path to cached image
+            # Compute and normalize path to cached image
             path = os.path.join(self.config.cache_dir, file.src_path)
             path = os.path.normpath(path)
 

@@ -223,7 +223,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
                     self._patch, file
                 ))
 
-            # Otherwise, just copy external asset to output directory, if we
+            # Otherwise just copy external asset to output directory, if we
             # haven't handed control to MkDocs in `on_env` before
             elif file not in self.assets_done:
                 file.copy_file()
@@ -241,7 +241,7 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
         return hostname != self.site.hostname
 
     # Check if the given URL is excluded
-    def _is_excluded(self, url: URL, initiator: File = None):
+    def _is_excluded(self, url: URL, initiator: File | None = None):
         if not self._is_external(url):
             return True
 

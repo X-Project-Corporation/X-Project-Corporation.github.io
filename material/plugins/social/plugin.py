@@ -34,7 +34,7 @@ import yaml
 from concurrent.futures import Future, ThreadPoolExecutor
 from copy import copy
 from fnmatch import fnmatch
-from glob import glob
+from glob import iglob
 from hashlib import sha1
 from io import BytesIO
 from jinja2 import Environment
@@ -201,7 +201,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 log.log(self.config.log_level, e)
                 return
 
-            # Otherwise, throw error
+            # Otherwise throw error
             raise e
         else:
             file: File = future.result()
@@ -732,7 +732,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             # Abort, since we're done
             break
 
-        # Abort, since the layout could not be resolved
+        # Abort if the layout could not be resolved
         if name not in self.card_layouts:
             raise PluginError(f"Couldn't find layout '{name}'")
 
@@ -756,7 +756,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             with open(path, encoding = "utf-8") as f:
                 return f.read()
 
-        # Abort, since the icon could not be resolved
+        # Abort if the icon could not be resolved
         raise PluginError(f"Couldn't find icon '{name}'")
 
     # Resolve font family with specific style - if we haven't already done it,
@@ -830,10 +830,9 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 ])
 
                 # Rename and move fonts to cache directory
-                for file in glob(
-                    os.path.join(temp, "**/*.[to]tf"),
-                    recursive = True
-                ):
+                glob = os.path.join(temp, "**", "*.[ot]tf")
+                glob = iglob(os.path.normpath(glob), recursive = True)
+                for file in glob:
                     font = ImageFont.truetype(file)
 
                     # Extract font family name and style

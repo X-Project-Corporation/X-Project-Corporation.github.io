@@ -31,12 +31,13 @@ from xml.etree.ElementTree import Element
 class ExcerptTreeprocessor(Treeprocessor):
 
     # Initialize excerpt tree processor
-    def __init__(self, page: Page, base: Page = None):
+    def __init__(self, page: Page, base: Page | None = None):
         self.page = page
         self.base = base
 
     # Transform HTML after Markdown processing
     def run(self, root: Element):
+        assert self.base
         main = True
 
         # We're only interested in anchors, which is why we continue when the

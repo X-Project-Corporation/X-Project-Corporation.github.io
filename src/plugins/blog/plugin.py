@@ -113,7 +113,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         root = posixpath.normpath(self.config.blog_dir)
         site = config.site_dir
 
-        # Compute path to posts directory
+        # Compute and normalize path to posts directory
         path = self.config.post_dir.format(blog = root)
         path = posixpath.normpath(path)
 

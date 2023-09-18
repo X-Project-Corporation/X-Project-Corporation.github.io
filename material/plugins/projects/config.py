@@ -23,6 +23,8 @@ import os
 from mkdocs.config.config_options import Type
 from mkdocs.config.base import Config
 
+from . import transform
+
 # -----------------------------------------------------------------------------
 # Classes
 # -----------------------------------------------------------------------------
@@ -39,9 +41,8 @@ class ProjectsConfig(Config):
     # Settings for projects
     projects = Type(bool, default = True)
     projects_dir = Type(str, default = "projects")
+    projects_config_files = Type(str, default ="*/mkdocs.yml")
+    projects_config_transform = Type(type(transform), default = transform)
 
     # Settings for hoisting
     hoisting = Type(bool, default = True)
-
-    # Internal options (don't use these)
-    internal_slug = Type(str, default = ".")
