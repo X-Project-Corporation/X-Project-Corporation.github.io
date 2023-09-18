@@ -31,6 +31,7 @@ For a list of all settings, please consult the [plugin documentation].
 
 <!-- md:version 8.5.0 -->
 <!-- md:flag experimental -->
+<!-- md:download tags-with-icons -->
 
 Each tag can be associated with an icon, which is then rendered inside the tag.
 Before assigning icons to tags, associate each tag with a unique identifier,
@@ -147,8 +148,8 @@ search preview, which now allows to __find pages by tags__.
     and then add specific tags for each page. The tags in `.meta.yml` are
     appended.
 
-  [built-in tags plugin]: #built-in-tags-plugin
-  [built-in meta plugin]: ../reference/index.md#built-in-meta-plugin
+  [built-in tags plugin]: ../plugins/tags.md
+  [built-in meta plugin]: ../plugins/meta.md
 
 ### Adding a tags index
 
