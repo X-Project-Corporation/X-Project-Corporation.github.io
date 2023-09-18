@@ -37,6 +37,7 @@ from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import Abort, PluginError
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure import StructureItem
+from mkdocs.structure.files import Files
 from mkdocs.structure.nav import Link, Section
 from mkdocs.utils import get_relative_url, get_theme_dir
 from mkdocs.utils.templates import url_filter
@@ -172,13 +173,13 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # files that are provided by the theme and hoist them to the top
         if self.config.hoisting:
             theme = get_theme_dir(config.theme.name)
-            paths: list[str] = []
+            hoist = Files([])
 
             # Remove all media files that are provided by the theme
             for file in files.media_files():
                 if file.abs_src_path.startswith(theme):
                     files.remove(file)
-                    paths.append(file.url)
+                    hoist.append(file)
 
             # Retrieve top-level project
             project = self.projects["."]
@@ -195,10 +196,10 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             # to the top-level that we identified in the previous step
             @pass_context
             def url_filter_with_hoisting(context: Context, value: str):
-                if value not in paths:
-                    return url_filter(context, value)
-                else:
+                if hoist.get_file_from_path(value):
                     return posixpath.join(path, url_filter(context, value))
+                else:
+                    return url_filter(context, value)
 
             # Override template URL filter to allow for hoisting
             env.filters["url"] = url_filter_with_hoisting
