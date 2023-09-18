@@ -222,6 +222,12 @@ The following configuration options are supported:
           enable_creation_date: true
     ```
 
+    !!! note "When using build environments"
+
+        If you are deploying through a CI system, you might need to adjust your
+        CI settings when fetching the code. For more information, see
+        [git-revision-date-localized].
+
 <!-- md:option git-revision-date-localized.fallback_to_build_date -->
 
 :   <!-- md:default `false` --> Enables falling back to
