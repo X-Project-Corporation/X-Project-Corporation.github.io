@@ -195,8 +195,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             # Wrap template URL filter to correctly resolve media files hoisted
             # to the top-level that we identified in the previous step
             @pass_context
-            def url_filter_with_hoisting(context: Context, value: str):
-                if hoist.get_file_from_path(value):
+            def url_filter_with_hoisting(context: Context, value: str | None):
+                if value and hoist.get_file_from_path(value):
                     return posixpath.join(path, url_filter(context, value))
                 else:
                     return url_filter(context, value)
