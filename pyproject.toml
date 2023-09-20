@@ -86,7 +86,7 @@ Funding = "https://github.com/sponsors/squidfunk"
 "material/typeset" = "material.plugins.typeset.plugin:TypesetPlugin"
 
 [project.entry-points."mkdocs.themes"]
-material = "material"
+material = "material.templates"
 
 [tool.hatch.version]
 source = "nodejs"
@@ -102,4 +102,4 @@ include = ["/material"]
 
 [tool.hatch.build.targets.sdist]
 include = ["/material", "/package.json", "/requirements.txt"]
-exclude = ["/material/.overrides"]
+exclude = ["/material/overrides"]
