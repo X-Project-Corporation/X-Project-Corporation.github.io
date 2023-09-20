@@ -40,7 +40,6 @@ from mkdocs.structure import StructureItem
 from mkdocs.structure.files import Files
 from mkdocs.structure.nav import Link, Section
 from mkdocs.utils import get_relative_url, get_theme_dir
-from mkdocs.utils.templates import url_filter
 from urllib.parse import ParseResult as URL, urlparse
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 
@@ -192,16 +191,20 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 self._path_from_slug(slug, project)
             )
 
-            # Wrap template URL filter to correctly resolve media files hoisted
-            # to the top-level that we identified in the previous step
-            @pass_context
-            def url_filter_with_hoisting(context: Context, value: str | None):
-                if value and hoist.get_file_from_path(value):
-                    return posixpath.join(path, url_filter(context, value))
-                else:
-                    return url_filter(context, value)
+            # Fetch URL template filter from environment - the filter might
+            # be overridden by other plugins, so we must retrieve and wrap it
+            url_filter = env.filters["url"]
 
-            # Override template URL filter to allow for hoisting
+            # Patch URL template filter to add support for correctly resolving
+            # media files that were hoisted to the top-level project
+            @pass_context
+            def url_filter_with_hoisting(context: Context, url: str | None):
+                if url and hoist.get_file_from_path(url):
+                    return posixpath.join(path, url_filter(context, url))
+                else:
+                    return url_filter(context, url)
+
+            # Register custom template filters
             env.filters["url"] = url_filter_with_hoisting
 
     # Adjust project navigation in page (run latest) - as always, allow

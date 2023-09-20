@@ -28,6 +28,8 @@ import yaml
 from babel.dates import format_date
 from copy import copy
 from datetime import datetime
+from jinja2 import pass_context
+from jinja2.runtime import Context
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, event_priority
@@ -47,7 +49,6 @@ from .author import Authors
 from .config import BlogConfig
 from .structure import Archive, Category, Excerpt, Reference, Post, View
 from .readtime import readtime
-from .templates import url_filter
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -320,9 +321,28 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         def date_filter(date: datetime):
             return self._format_date_for_post(date, config)
 
+        # Fetch URL template filter from environment - the filter might
+        # be overridden by other plugins, so we must retrieve and wrap it
+        url_filter = env.filters["url"]
+
+        # Patch URL template filter to add support for paginated views, i.e.,
+        # that paginated views never link to themselves but to the main vie
+        @pass_context
+        def url_filter_with_pagination(context: Context, url: str | None):
+            page = context["page"]
+
+            # If the current page is a view, check if the URL links to the page
+            # itself, and replace it with the URL of the main view
+            if isinstance(page, View):
+                if page.url == url:
+                    url = page.pages[0].url
+
+            # Forward to original template filter
+            return url_filter(context, url)
+
         # Register custom template filters
         env.filters["date"] = date_filter
-        env.filters["url"]  = url_filter
+        env.filters["url"]  = url_filter_with_pagination
 
     # Prepare view for rendering (run latest) - views are rendered last, as we
     # need to mutate the navigation to account for pagination. The main problem
