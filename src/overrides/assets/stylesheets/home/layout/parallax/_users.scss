@@ -81,8 +81,8 @@
     // Testimonial quote
     cite {
       display: block;
-      text-align: justify;
       hyphens: auto;
+      text-align: justify;
     }
 
     // Testimonial is hidden
@@ -90,14 +90,14 @@
 
       // Testimonial image
       img {
-        transform: scale(0.75);
         opacity: 0;
+        transform: scale(0.75);
       }
 
       // Testimonial content
       figcaption {
-        transform: translateY(px2rem(32px));
         opacity: 0;
+        transform: translateY(px2rem(32px));
       }
     }
   }

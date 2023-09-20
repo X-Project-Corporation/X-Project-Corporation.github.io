@@ -100,14 +100,14 @@
 
       // Spotlight feature image link
       > a > img {
-        transform: translateY(px2rem(32px));
         opacity: 0;
+        transform: translateY(px2rem(32px));
       }
 
       // Spotlight feature description
       > figcaption {
-        transform: translateX(px2rem(32px));
         opacity: 0;
+        transform: translateX(px2rem(32px));
       }
 
       // Reverse direction for every other feature

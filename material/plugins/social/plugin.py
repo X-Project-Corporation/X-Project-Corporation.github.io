@@ -62,7 +62,6 @@ from .config import SocialConfig
 from .layout import Layer, Layout, Line, get_offset, get_size
 from .templates import x_filter
 
-
 # -----------------------------------------------------------------------------
 # Classes
 # -----------------------------------------------------------------------------

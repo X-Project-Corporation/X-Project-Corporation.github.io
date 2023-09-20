@@ -90,6 +90,7 @@
     z-index: calc(10 - var(--md-parallax-depth, 0));
     width: 100vw;
     height: max(120vh, 100vw);
+    pointer-events: none;
     transform:
       translateZ(
         calc(
@@ -103,7 +104,6 @@
         )
       );
     transform-origin: 50vw 50vh;
-    pointer-events: none;
   }
 
   // Parallax layer: image - we use `object-fit` and `object-position` so we

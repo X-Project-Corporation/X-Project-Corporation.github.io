@@ -34,7 +34,7 @@
 
   // Section is hidden
   .js &[hidden] {
-    transform: translateY(px2rem(32px));
     opacity: 0;
+    transform: translateY(px2rem(32px));
   }
 }
