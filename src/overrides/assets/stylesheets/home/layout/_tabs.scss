@@ -25,7 +25,7 @@
 // ----------------------------------------------------------------------------
 
 // Navigation tabs
-.md-tabs {
+[data-md-color-primary] .md-tabs {
   position: absolute;
   top: px2rem(48px);
   background-color: transparent;
