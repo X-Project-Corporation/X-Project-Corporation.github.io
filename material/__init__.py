@@ -18,4 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+<<<<<<< HEAD
 __version__ = "9.3.2+insiders-4.42.0"
+=======
+__version__ = "9.4.0"
+>>>>>>> upstream/master
