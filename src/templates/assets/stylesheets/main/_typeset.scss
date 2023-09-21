@@ -182,6 +182,11 @@ kbd {
       color: var(--md-typeset-a-color);
     }
 
+    // Strong text
+    strong {
+      color: currentcolor;
+    }
+
     // Show outline for keyboard devices
     &.focus-visible {
       outline-color: var(--md-accent-fg-color);
