@@ -93,6 +93,7 @@
   // Navigation link
   &__link {
     display: flex;
+    gap: px2rem(8px);
     align-items: flex-start;
     margin-top: 0.625em;
     transition: color 125ms;
@@ -148,11 +149,6 @@
       flex-shrink: 0;
       height: 1.3em;
       fill: currentcolor;
-
-      // Adjust spacing of next child
-      + * {
-        margin-inline-start: px2rem(8px);
-      }
     }
 
     // Navigation link on focus/hover
@@ -200,6 +196,9 @@
     // Stretch first child
     &:first-child {
       flex-grow: 1;
+      // Hack: if a very long word is used, it can push the arrow out of sight.
+      // Setting this property contains the text - see https://t.ly/E02vp
+      min-width: 0;
     }
   }
 
@@ -409,7 +408,7 @@
       background-color: transparent;
     }
 
-    // Toggle for nested navigation
+    // Hide nested navigation
     &__toggle ~ & {
       display: flex;
       opacity: 0;
@@ -546,14 +545,32 @@
       }
     }
 
-    // Hide toggle for nested navigation
+    // Hide nested navigation
     &__toggle ~ & {
-      display: none;
+      display: grid;
+      grid-template-rows: 0fr;
+      visibility: collapse;
+      opacity: 0;
+      transition:
+        grid-template-rows 250ms cubic-bezier(0.86, 0, 0.07, 1),
+        opacity            250ms,
+        visibility           0ms 250ms;
+
+      // Navigation list
+      > .md-nav__list {
+        overflow: hidden;
+      }
     }
 
     // Show nested navigation when toggle is active or indeterminate
     &__toggle:is(:checked, :indeterminate) ~ & {
-      display: block;
+      grid-template-rows: 1fr;
+      visibility: visible;
+      opacity: 1;
+      transition:
+        grid-template-rows 250ms cubic-bezier(0.86, 0, 0.07, 1),
+        opacity            150ms 100ms,
+        visibility           0ms;
     }
 
     // Hide navigation title in nested navigation
