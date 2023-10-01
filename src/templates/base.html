@@ -357,16 +357,7 @@
 
         <!-- Back-to-top button -->
         {% if "navigation.top" in features %}
-          <button
-            type="button"
-            class="md-top md-icon"
-            data-md-component="top"
-            hidden
-          >
-            {% set icon = config.theme.icon.top or "material/arrow-up" %}
-            {% include ".icons/" ~ icon ~ ".svg" %}
-            {{ lang.t("top") }}
-          </button>
+          {% include "partials/top.html" %}
         {% endif %}
       </main>
 
@@ -380,6 +371,11 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
+
+    <!-- Progress indicator -->
+    {% if "navigation.instant.progress" in features %}
+      {% include "partials/progress.html" %}
+    {% endif %}
 
     <!-- Consent -->
     {% if config.extra.consent %}

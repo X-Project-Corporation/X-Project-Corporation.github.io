@@ -65,6 +65,7 @@ import {
   mountHeader,
   mountHeaderTitle,
   mountPalette,
+  mountProgress,
   mountSearch,
   mountSearchHiglight,
   mountSidebar,
@@ -144,9 +145,12 @@ const index$ = document.forms.namedItem("search")
 const alert$ = new Subject<string>()
 setupClipboardJS({ alert$ })
 
+/* Set up progress indicator */
+const progress$ = new Subject<number>()
+
 /* Set up instant navigation, if enabled */
 if (feature("navigation.instant"))
-  setupInstantNavigation({ location$, viewport$ })
+  setupInstantNavigation({ location$, viewport$, progress$ })
     .subscribe(document$)
 
 /* Set up version selector */
@@ -229,6 +233,10 @@ const control$ = merge(
   ...getComponentElements("palette")
     .map(el => mountPalette(el)),
 
+  /* Progress bar */
+  ...getComponentElements("progress")
+    .map(el => mountProgress(el, { progress$ })),
+
   /* Search */
   ...getComponentElements("search")
     .map(el => mountSearch(el, { index$, keyboard$ })),
@@ -306,4 +314,5 @@ window.tablet$    = tablet$            /* Media tablet observable */
 window.screen$    = screen$            /* Media screen observable */
 window.print$     = print$             /* Media print observable */
 window.alert$     = alert$             /* Alert subject */
+window.progress$  = progress$          /* Progress indicator subject */
 window.component$ = component$         /* Component observable */

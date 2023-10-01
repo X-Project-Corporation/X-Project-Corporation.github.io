@@ -52,6 +52,7 @@ theme:
     - navigation.indexes
     # - navigation.instant
     # - navigation.instant.prefetch
+    # - navigation.instant.progress
     # - navigation.path
     # - navigation.prune
     - navigation.sections
@@ -314,7 +315,7 @@ nav:
   - Insiders:
     - insiders/index.md
     - Getting started: insiders/getting-started.md
-    - Changelog: 
+    - Changelog:
       - insiders/changelog/index.md
       - How to upgrade: insiders/upgrade.md
   - Blog:

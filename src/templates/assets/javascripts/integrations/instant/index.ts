@@ -70,8 +70,9 @@ import { Sitemap, fetchSitemap } from "../sitemap"
  * Setup options
  */
 interface SetupOptions {
-  location$: Subject<URL>              /* Location subject */
-  viewport$: Observable<Viewport>      /* Viewport observable */
+  location$: Subject<URL>              // Location subject
+  viewport$: Observable<Viewport>      // Viewport observable
+  progress$: Subject<number>           // Progress suject
 }
 
 /* ----------------------------------------------------------------------------
@@ -194,7 +195,7 @@ function lookup(head: HTMLHeadElement): Map<string, HTMLElement> {
  * @returns Document observable
  */
 export function setupInstantNavigation(
-  { location$, viewport$ }: SetupOptions
+  { location$, viewport$, progress$ }: SetupOptions
 ): Observable<Document> {
   const config = configuration()
   if (location.protocol === "file:")
@@ -306,7 +307,7 @@ export function setupInstantNavigation(
       startWith(getLocation()),
       distinctUntilKeyChanged("pathname"),
       skip(1),
-      switchMap(url => request(url)
+      switchMap(url => request(url, { progress$ })
         .pipe(
           catchError(() => {
             setLocation(url, true)
