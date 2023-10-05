@@ -93,6 +93,7 @@ jobs:
 
   python:
     runs-on: ubuntu-latest
+    if: github.event.repository.fork == false
     steps:
 
       - name: Checkout repository
