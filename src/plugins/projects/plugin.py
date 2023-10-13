@@ -311,7 +311,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 # Remove finished job from pool to schedule rebuild and return
                 # early, as we don't need to rebuild other projects
                 log.debug(f"Detected file changes in '{slug}'")
-                del self.pool_jobs[slug]
+                self.pool_jobs.pop(slug, None)
                 return
 
         # Initialize file system event handler
