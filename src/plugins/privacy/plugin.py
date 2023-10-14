@@ -426,6 +426,11 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
             # Register external asset as file
             self.assets.append(file)
 
+        # If the URL of the external asset includes a hash fragment, add it to
+        # the returned file, e.g. for dark/light images - see https://t.ly/7b16Y
+        if url.fragment:
+            file.url += f"#{url.fragment}"
+
         # Return file associated with external asset
         return file
 
