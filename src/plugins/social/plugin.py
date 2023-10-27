@@ -239,23 +239,22 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             output[at:]
         ])
 
-    # Reconcile jobs (run latest) - all other plugins do not depend on the
-    # generated cards, so we can run this after all of them
-    @event_priority(-100)
-    def on_post_build(self, *, config):
-        if not self.config.enabled:
-            return
-
-        # Shutdown thread pools if we're not serving the site
-        if not self.is_serve:
-            for pool in [self.card_layer_pool, self.card_pool]:
-                pool.shutdown()
-
     # Add custom layout directory to watched files
     def on_serve(self, server, *, config, builder):
         path = os.path.abspath(self.config.cards_layout_dir)
         if os.path.isdir(path):
             server.watch(path, recursive = True)
+
+    # Reconcile jobs (run latest) - all other plugins do not depend on the
+    # generated cards, so we can run this after all of them
+    @event_priority(-100)
+    def on_shutdown(self):
+        if not self.config.enabled:
+            return
+
+        # Shutdown thread pools
+        for pool in [self.card_layer_pool, self.card_pool]:
+            pool.shutdown()
 
     # -------------------------------------------------------------------------
 
