@@ -36,8 +36,7 @@
   width: 100vw;
   height: 100vh;
   margin-top: px2rem(-48px);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
   perspective: var(--md-parallax-perspective);
   overscroll-behavior-y: none;
   scroll-behavior: smooth;
