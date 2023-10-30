@@ -81,10 +81,19 @@ class MetaPlugin(BasePlugin[MetaConfig]):
             if not page.file.src_path.startswith(os.path.dirname(path)):
                 continue
 
+            # Skip if meta file was already merged - this happens in case of
+            # blog posts, as they need to be merged when posts are constructed,
+            # which is why we need to keep track of which meta files are applied
+            # to what pages using the `__extends` key.
+            page.meta.setdefault("__extends", [])
+            if path in page.meta["__extends"]:
+                continue
+
             # Try to merge metadata
             strategy = Strategy.TYPESAFE_ADDITIVE
             try:
                 merge(page.meta, defaults, strategy = strategy)
+                page.meta["__extends"].append(path)
 
             # Merging the metadata with the given strategy resulted in an error,
             # which we display to the author with a nice error message

@@ -27,6 +27,7 @@ import yaml
 from copy import copy
 from markdown import Markdown
 from material.plugins.blog.author import Author
+from material.plugins.meta.plugin import MetaPlugin
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import PluginError
 from mkdocs.structure.files import File, Files
@@ -85,6 +86,19 @@ class Post(Page):
                 raise PluginError(
                     f"Error reading metadata of post '{path}' in '{docs}':\n"
                     f"{e}"
+                )
+
+            # Hack: if the meta plugin is registered, we need to move the call
+            # to `on_page_markdown` here, because we need to merge the metadata
+            # of the post with the metadata of any meta files prior to creating
+            # the post configuration. To our current knowledge, it's the only
+            # way to allow posts to receive metadata from meta files, because
+            # posts must be loaded prior to constructing the navigation in
+            # `on_files` but the meta plugin first runs in `on_page_markdown`.
+            plugin: MetaPlugin = config.plugins.get("material/meta")
+            if plugin:
+                plugin.on_page_markdown(
+                    self.markdown, page = self, config = config, files = None
                 )
 
         # Initialize post configuration, but remove all keys that this plugin

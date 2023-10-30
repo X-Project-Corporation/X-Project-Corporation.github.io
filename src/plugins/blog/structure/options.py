@@ -20,6 +20,7 @@
 
 from datetime import date, datetime, time
 from mkdocs.config.base import BaseConfigOption, Config, ValidationError
+from mkdocs.config.config_options import ListOfItems, T
 from mkdocs.structure.files import Files
 from mkdocs.structure.nav import (
     Navigation, _add_parent_links, _data_to_navigation
@@ -103,3 +104,13 @@ class PostLinks(BaseConfigOption[Navigation]):
 
         # Return navigation
         return Navigation(items, [])
+
+# -----------------------------------------------------------------------------
+
+# Unique list of items
+class UniqueListOfItems(ListOfItems[T]):
+
+    # Ensure that each item is unique
+    def run_validation(self, value: object):
+        data = super().run_validation(value)
+        return list(set(data))
