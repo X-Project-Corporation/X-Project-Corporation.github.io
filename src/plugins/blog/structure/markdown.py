@@ -18,6 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from __future__ import annotations
+
 from markdown.treeprocessors import Treeprocessor
 from mkdocs.structure.pages import Page
 from mkdocs.utils import get_relative_url
