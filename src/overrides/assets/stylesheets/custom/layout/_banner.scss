@@ -39,10 +39,15 @@
 
     &:focus,
     &:hover {
-      color: currentcolor;
+      color: var(--md-footer-fg-color);
+
+      strong {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
 
       .twemoji {
-        background-color: var(--md-footer-fg-color);
+        background-color: var(--md-footer-bg-color);
         box-shadow: none;
       }
     }
