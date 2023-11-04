@@ -115,7 +115,7 @@ plugins:
         blog/2021/search-better-faster-smaller.md: blog/posts/search-better-faster-smaller.md
         bug-report/index.md: contributing/reporting-a-bug.md
         bug-report/reproduction.md: guides/creating-a-reproduction.md
-        changelog/insiders.md: insiders/changelog.md
+        changelog/insiders.md: insiders/changelog/index.md
         reference/abbreviations.md: reference/tooltips.md
         reference/mathjax.md: reference/math.md
         reference/meta-tags.md: reference/index.md
@@ -132,6 +132,7 @@ plugins:
             type: timeago
         - git-committers:
             repository: squidfunk/mkdocs-material
+            token: !ENV GH_TOKEN
         - optimize
         - minify:
             minify_html: true
