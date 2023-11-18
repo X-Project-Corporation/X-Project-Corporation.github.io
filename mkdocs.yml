@@ -116,6 +116,7 @@ plugins:
         bug-report/index.md: contributing/reporting-a-bug.md
         bug-report/reproduction.md: guides/creating-a-reproduction.md
         changelog/insiders.md: insiders/changelog/index.md
+        faq/sponsoring.md: insiders/faq/sponsoring.md
         reference/abbreviations.md: reference/tooltips.md
         reference/mathjax.md: reference/math.md
         reference/meta-tags.md: reference/index.md
