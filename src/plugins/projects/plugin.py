@@ -97,7 +97,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         if self.is_root:
             self.pool = ProcessPoolExecutor(self.config.concurrency)
 
-        # Compute and normalize path to persist project configurations
+        # Compute and normalize path to project configurations
         path = os.path.join(self.config.cache_dir, "config.pickle")
         path = os.path.normpath(path)
 
@@ -304,10 +304,22 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                     continue
 
                 # If the project configuration file changed, reload it for a
-                # better user experience, as we need to do a rebuild it anyway
+                # better user experience, as we need to do a rebuild anyway
                 if event.src_path == project.config_file_path:
                     project = self._resolve_config(project.config_file_path)
                     self._prepare(slug, project, config)
+
+                    # Compute and normalize path to project configurations
+                    path = os.path.join(self.config.cache_dir, "config.pickle")
+                    path = os.path.normpath(path)
+
+                    # Update project configuration and write to the cache, to
+                    # make sure that we're using the latest configuration. If
+                    # we would not do that, changes to the configuration of a
+                    # project will not be detected - see https://t.ly/kmeDH
+                    self.projects[slug] = project
+                    with open(path, "wb") as f:
+                        pickle.dump(self.projects, f)
 
                 # Remove finished job from pool to schedule rebuild and return
                 # early, as we don't need to rebuild other projects
