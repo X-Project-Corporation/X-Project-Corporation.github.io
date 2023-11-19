@@ -402,11 +402,19 @@
       } -%}
 
       <!-- Extra configuration -->
-      {%- for key in ["annotate", "tags", "version"] -%}
+      {%- for key in ["annotate", "tags"] -%}
         {%- if config.extra[key] -%}
           {%- set _ = app.update({ key: config.extra[key] }) -%}
         {%- endif -%}
       {%- endfor -%}
+
+      <!-- Versioning -->
+      {%- if config.extra.version -%}
+        {%- set mike = config.plugins.get("mike") -%}
+        {%- if not mike or mike.config.version_selector -%}
+          {%- set _ = app.update({ "version": config.extra.version }) -%}
+        {%- endif -%}
+      {%- endif -%}
 
       <!-- Translations -->
       {%- set translations = app.translations -%}
