@@ -24,6 +24,7 @@ import logging
 import os
 import pickle
 import posixpath
+import re
 
 from copy import deepcopy
 from concurrent.futures import Future, ProcessPoolExecutor
@@ -411,7 +412,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # always stick to the syntaxes allowed by MkDocs (list and dictionary).
         plugins = Plugins._parse_configs(deepcopy(project.plugins))
         for index, (key, config) in enumerate(plugins):
-            if key != "projects":
+            if not re.match(r"^(material\/)?projects$", key):
                 continue
 
             # Forward some settings of the plugin configuration to the project,
@@ -435,7 +436,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # If no plugin configuration was found, add the default configuration
         # and call this function recursively, so we ensure that it's present
-        project.plugins.append("projects")
+        project.plugins.append("material/projects")
         return self._resolve_project_plugin(slug, project)
 
     # Resolve project URL and slug
