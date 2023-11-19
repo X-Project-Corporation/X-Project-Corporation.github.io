@@ -412,7 +412,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # always stick to the syntaxes allowed by MkDocs (list and dictionary).
         plugins = Plugins._parse_configs(deepcopy(project.plugins))
         for index, (key, config) in enumerate(plugins):
-            if not re.match(r"^(material\/)?projects$", key):
+            if not re.match(r"^(material/)?projects$", key):
                 continue
 
             # Forward some settings of the plugin configuration to the project,
