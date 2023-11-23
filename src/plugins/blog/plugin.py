@@ -39,6 +39,7 @@ from mkdocs.structure.nav import Link, Navigation, Section
 from mkdocs.structure.pages import Page
 from mkdocs.structure.toc import AnchorLink, TableOfContents
 from mkdocs.utils import copy_file, get_relative_url
+from mkdocs.utils.templates import url_filter
 from paginate import Page as Pagination
 from shutil import rmtree
 from tempfile import mkdtemp
@@ -47,8 +48,8 @@ from yaml import SafeLoader
 
 from .author import Authors
 from .config import BlogConfig
-from .structure import Archive, Category, Excerpt, Reference, Post, View
 from .readtime import readtime
+from .structure import Archive, Category, Excerpt, Reference, Post, View
 
 # -----------------------------------------------------------------------------
 # Classes
