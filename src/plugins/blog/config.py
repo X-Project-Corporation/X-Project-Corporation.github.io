@@ -56,6 +56,8 @@ class BlogConfig(Config):
     archive_date_format = Type(str, default = "yyyy")
     archive_url_date_format = Type(str, default = "yyyy")
     archive_url_format = Type(str, default = "archive/{date}")
+    archive_pagination = Optional(Type(bool))
+    archive_pagination_per_page = Optional(Type(int))
     archive_toc = Optional(Type(bool))
 
     # Settings for categories
@@ -65,6 +67,8 @@ class BlogConfig(Config):
     categories_slugify = Type((type(slugify), partial), default = slugify)
     categories_slugify_separator = Type(str, default = "-")
     categories_allowed = Type(list, default = [])
+    categories_pagination = Optional(Type(bool))
+    categories_pagination_per_page = Optional(Type(int))
     categories_toc = Optional(Type(bool))
 
     # Settings for pagination

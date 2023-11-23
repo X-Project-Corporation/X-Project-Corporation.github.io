@@ -86,12 +86,6 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         if self.config.authors:
             self.authors = self._resolve_authors(config)
 
-        # Initialize table of contents settings
-        if not isinstance(self.config.archive_toc, bool):
-            self.config.archive_toc = self.config.blog_toc
-        if not isinstance(self.config.categories_toc, bool):
-            self.config.categories_toc = self.config.blog_toc
-
         # By default, drafts are rendered when the documentation is served,
         # but not when it is built, for a better user experience
         if self.is_serve and self.config.draft_on_serve:
@@ -149,10 +143,9 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             self.blog.views.extend(views)
 
         # Generate pages for views
-        if self.config.pagination:
-            for view in self._resolve_views(self.blog):
+        for view in self._resolve_views(self.blog):
+            if self._config_pagination(view):
                 for page in self._generate_pages(view, config, files):
-                    page.file.inclusion = InclusionLevel.EXCLUDED
                     view.pages.append(page)
 
         # Ensure that entrypoint is always included in navigation
@@ -184,6 +177,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
         # Revert temporary exclusion of views from navigation
         for view in self._resolve_views(self.blog):
+            view.file.inclusion = self.blog.file.inclusion
             for page in view.pages:
                 page.file.inclusion = self.blog.file.inclusion
 
@@ -206,8 +200,8 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                 self._attach_to(self.blog, Section(title, views), nav)
 
         # Attach pages for views
-        if self.config.pagination:
-            for view in self._resolve_views(self.blog):
+        for view in self._resolve_views(self.blog):
+            if self._config_pagination(view):
                 for at in range(1, len(view.pages)):
                     self._attach_at(view.parent, view, view.pages[at])
 
@@ -223,7 +217,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         # Skip if page is not a post managed by this instance - this plugin has
         # support for multiple instances, which is why this check is necessary
         if page not in self.blog.posts:
-            if not self.config.pagination:
+            if not self._config_pagination(page):
                 return
 
             # We set the contents of the view to its title if pagination should
@@ -320,8 +314,9 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             # If the current page is a view, check if the URL links to the page
             # itself, and replace it with the URL of the main view
             if isinstance(page, View):
+                view = self._resolve_original(page)
                 if page.url == url:
-                    url = page.pages[0].url
+                    url = view.url
 
             # Forward to original template filter
             return url_filter(context, url)
@@ -555,7 +550,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
     # Resolve original page or view (e.g. for paginated views)
     def _resolve_original(self, page: Page):
-        if isinstance(page, View):
+        if isinstance(page, View) and page.pages:
             return page.pages[0]
         else:
             return page
@@ -578,8 +573,10 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                 file = self._path_to_file(path, config)
                 files.append(file)
 
-                # Create file in temporary directory
+                # Create file in temporary directory and temporarily remove
+                # from navigation, as we'll add it at a specific location
                 self._save_to_file(file.abs_src_path, f"# {name}")
+                file.inclusion = InclusionLevel.EXCLUDED
 
             # Create and yield view - we don't explicitly set the title of
             # the view, so authors can override them in the page's content
@@ -613,8 +610,10 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                     file = self._path_to_file(path, config)
                     files.append(file)
 
-                    # Create file in temporary directory
+                    # Create file in temporary directory and temporarily remove
+                    # from navigation, as we'll add it at a specific location
                     self._save_to_file(file.abs_src_path, f"# {name}")
+                    file.inclusion = InclusionLevel.EXCLUDED
 
                 # Create and yield view - we don't explicitly set the title of
                 # the view, so authors can override them in the page's content
@@ -633,7 +632,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
         # Compute pagination boundaries and create pages - pages are internally
         # handled as copies of a view, as they map to the same source location
-        step = self.config.pagination_per_page
+        step = self._config_pagination_per_page(view)
         for at in range(step, len(view.posts), step):
             path = self._format_path_for_pagination(view, 1 + at // step)
 
@@ -643,8 +642,10 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                 file = self._path_to_file(path, config)
                 files.append(file)
 
-                # Copy file to temporary directory
+                # Copy file to temporary directory  and temporarily remove
+                # from navigation, as we'll add it at a specific location
                 copy_file(view.file.abs_src_path, file.abs_src_path)
+                file.inclusion = InclusionLevel.EXCLUDED
 
             # Create and yield view
             if not isinstance(file.page, View):
@@ -775,11 +776,11 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         posts, pagination = view.posts, None
 
         # Create pagination, if enabled
-        if self.config.pagination:
+        if self._config_pagination(view):
             at = view.pages.index(view)
 
             # Compute pagination boundaries
-            step = self.config.pagination_per_page
+            step = self._config_pagination_per_page(view)
             p, q = at * step, at * step + step
 
             # Extract posts in pagination boundaries
@@ -799,18 +800,9 @@ class BlogPlugin(BasePlugin[BlogConfig]):
     def _render_post(self, excerpt: Excerpt, view: View):
         excerpt.render(view, self.config.post_excerpt_separator)
 
-        # Determine whether to add posts to the table of contents of the view -
-        # note that those settings can be changed individually for each type of
-        # view, which is why we need to check the type of view and the table of
-        # contents setting for that type of view
-        toc = self.config.blog_toc
-        if isinstance(view, Archive):
-            toc = self.config.archive_toc
-        if isinstance(view, Category):
-            toc = self.config.categories_toc
-
         # Attach top-level table of contents item to view if it should be added
         # and both, the view and excerpt contain table of contents items
+        toc = self._config_toc(view)
         if toc and excerpt.toc.items and view.toc.items:
             view.toc.items[0].children.append(excerpt.toc.items[0])
 
@@ -831,6 +823,42 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             items_per_page = q - p,
             url_maker = url_maker
         )
+
+    # -------------------------------------------------------------------------
+
+    # Retrieve configuration value or return default
+    def _config(self, key: str, default: any):
+        return default if self.config[key] is None else self.config[key]
+
+    # Retrieve configuration value for table of contents
+    def _config_toc(self, view: View):
+        default = self.config.blog_toc
+        if isinstance(view, Archive):
+            return self._config("archive_toc", default)
+        if isinstance(view, Category):
+            return self._config("categories_toc", default)
+        else:
+            return default
+
+    # Retrieve configuration value for pagination
+    def _config_pagination(self, view: View):
+        default = self.config.pagination
+        if isinstance(view, Archive):
+            return self._config("archive_pagination", default)
+        if isinstance(view, Category):
+            return self._config("categories_pagination", default)
+        else:
+            return default
+
+    # Retrieve configuration value for pagination per page
+    def _config_pagination_per_page(self, view: View):
+        default = self.config.pagination_per_page
+        if isinstance(view, Archive):
+            return self._config("archive_pagination_per_page", default)
+        if isinstance(view, Category):
+            return self._config("categories_pagination_per_page", default)
+        else:
+            return default
 
     # -------------------------------------------------------------------------
 
