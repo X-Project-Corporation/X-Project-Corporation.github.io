@@ -19,11 +19,11 @@
 # IN THE SOFTWARE.
 
 from functools import partial
-from markdown.extensions.toc import slugify
 from mkdocs.config.config_options import (
     DictOfItems, ListOfItems, Optional, Type
 )
 from mkdocs.config.base import Config
+from pymdownx.slugs import slugify
 
 from . import casefold, page_title
 
@@ -39,7 +39,7 @@ class TagsConfig(Config):
     tags = Type(bool, default = True)
     tags_file = Optional(Type(str))
     tags_extra_files = DictOfItems(ListOfItems(Type(str)), default = {})
-    tags_slugify = Type((type(slugify), partial), default = slugify)
+    tags_slugify = Type(partial, default = slugify(case = "lower"))
     tags_slugify_separator = Type(str, default = "-")
     tags_compare = Optional(Type(type(casefold)))
     tags_compare_reverse = Type(bool, default = False)
