@@ -18,10 +18,13 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from collections.abc import Callable
 from functools import partial
 from mkdocs.config.config_options import Choice, Deprecated, Optional, Type
 from mkdocs.config.base import Config
 from pymdownx.slugs import slugify
+
+from . import view_name
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -69,6 +72,8 @@ class BlogConfig(Config):
     categories_allowed = Type(list, default = [])
     categories_pagination = Optional(Type(bool))
     categories_pagination_per_page = Optional(Type(int))
+    categories_sort_by = Type(Callable, default = view_name)
+    categories_sort_reverse = Type(bool, default = False)
     categories_toc = Optional(Type(bool))
 
     # Settings for pagination

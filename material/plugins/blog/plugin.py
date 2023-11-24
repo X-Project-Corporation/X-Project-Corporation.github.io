@@ -39,13 +39,13 @@ from mkdocs.structure.nav import Link, Navigation, Section
 from mkdocs.structure.pages import Page
 from mkdocs.structure.toc import AnchorLink, TableOfContents
 from mkdocs.utils import copy_file, get_relative_url
-from mkdocs.utils.templates import url_filter
 from paginate import Page as Pagination
 from shutil import rmtree
 from tempfile import mkdtemp
 from urllib.parse import urlparse
 from yaml import SafeLoader
 
+from . import view_name
 from .author import Authors
 from .config import BlogConfig
 from .readtime import readtime
@@ -135,16 +135,21 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
         # Generate views for archive
         if self.config.archive:
-            self.blog.views.extend(
-                self._generate_archive(config, files)
-            )
+            views = self._generate_archive(config, files)
+            self.blog.views.extend(views)
 
         # Generate views for categories
         if self.config.categories:
+            views = self._generate_categories(config, files)
+
+            # We always sort the list of categories by name first, so that any
+            # custom sorting function that returns the same value for two items
+            # returns them in a predictable and logical order, because sorting
+            # in Python is stable, i.e., order of equal items is preserved.
             self.blog.views.extend(sorted(
-                self._generate_categories(config, files),
-                key = lambda view: view.name,
-                reverse = False
+                sorted(views, key = view_name),
+                key     = self.config.categories_sort_by,
+                reverse = self.config.categories_sort_reverse
             ))
 
         # Generate pages for views
