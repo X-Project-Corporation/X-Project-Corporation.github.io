@@ -113,4 +113,4 @@ class UniqueListOfItems(ListOfItems[T]):
     # Ensure that each item is unique
     def run_validation(self, value: object):
         data = super().run_validation(value)
-        return list(set(data))
+        return list(dict.fromkeys(data))
