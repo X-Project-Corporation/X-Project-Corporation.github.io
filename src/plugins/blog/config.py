@@ -69,11 +69,11 @@ class BlogConfig(Config):
     categories_url_format = Type(str, default = "category/{slug}")
     categories_slugify = Type(partial, default = slugify(case = "lower"))
     categories_slugify_separator = Type(str, default = "-")
+    categories_sort_by = Type(Callable, default = view_name)
+    categories_sort_reverse = Type(bool, default = False)
     categories_allowed = Type(list, default = [])
     categories_pagination = Optional(Type(bool))
     categories_pagination_per_page = Optional(Type(int))
-    categories_sort_by = Type(Callable, default = view_name)
-    categories_sort_reverse = Type(bool, default = False)
     categories_toc = Optional(Type(bool))
 
     # Settings for pagination
