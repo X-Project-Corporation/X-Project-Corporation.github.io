@@ -49,7 +49,11 @@ from . import view_name
 from .author import Authors
 from .config import BlogConfig
 from .readtime import readtime
-from .structure import Archive, Category, Excerpt, Reference, Post, View
+from .structure import (
+  Archive, Category, Profile,
+  Excerpt, Post, View,
+  Reference
+)
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -152,6 +156,11 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                 reverse = self.config.categories_sort_reverse
             ))
 
+        # Generate views for profiles
+        if self.config.authors_profiles:
+            views = self._generate_profiles(config, files)
+            self.blog.views.extend(views)
+
         # Generate pages for views
         for view in self._resolve_views(self.blog):
             if self._config_pagination(view):
@@ -209,6 +218,15 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             if self.blog.file.inclusion.is_in_nav() and views:
                 self._attach_to(self.blog, Section(title, views), nav)
 
+        # Attach views for profiles
+        if self.config.authors_profiles:
+            title = self._translate(self.config.authors_profiles_name, config)
+            views = [_ for _ in self.blog.views if isinstance(_, Profile)]
+
+            # Attach and link views for categories, if any
+            if self.blog.file.inclusion.is_in_nav() and views:
+                self._attach_to(self.blog, Section(title, views), nav)
+
         # Attach pages for views
         for view in self._resolve_views(self.blog):
             if self._config_pagination(view):
@@ -250,12 +268,12 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
         # Extract and assign authors to post, if enabled
         if self.config.authors:
-            for name in page.config.authors:
-                if name not in self.authors:
-                    raise PluginError(f"Couldn't find author '{name}'")
+            for slug in page.config.authors:
+                if slug not in self.authors:
+                    raise PluginError(f"Couldn't find author '{slug}'")
 
                 # Append to list of authors
-                page.authors.append(self.authors[name])
+                page.authors.append(self.authors[slug])
 
         # Extract settings for excerpts
         separator      = self.config.post_excerpt_separator
@@ -603,6 +621,37 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                 file.page.posts.append(post)
                 post.categories.append(file.page)
 
+    # Generate views for profiles - analyze posts and generate the necessary
+    # views to provide a profile page for each author listing all posts
+    def _generate_profiles(self, config: MkDocsConfig, files: Files):
+        for post in self.blog.posts:
+            for name in post.config.authors:
+                path = self._format_path_for_profile(name)
+                user = self.authors[name]
+
+                # Create file for view, if it does not exist
+                file = files.get_file_from_path(path)
+                if not file:
+                    file = self._path_to_file(path, config)
+                    files.append(file)
+
+                    # Create file in temporary directory and temporarily remove
+                    # from navigation, as we'll add it at a specific location
+                    self._save_to_file(file.abs_src_path, f"# {user.name}")
+                    file.inclusion = InclusionLevel.EXCLUDED
+
+                    # Assign profile URL to author, if none is set
+                    if not user.url:
+                        user.url = file.url
+
+                # Create and yield view
+                if not isinstance(file.page, Profile):
+                    yield Profile(user.name, file, config)
+
+                # Assign post to profile
+                assert isinstance(file.page, Profile)
+                file.page.posts.append(post)
+
     # Generate pages for pagination - analyze view and generate the necessary
     # pages, creating a chain of views for simple rendering and replacement
     def _generate_pages(self, view: View, config: MkDocsConfig, files: Files):
@@ -815,6 +864,8 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             return self._config("archive_toc", default)
         if isinstance(view, Category):
             return self._config("categories_toc", default)
+        if isinstance(view, Profile):
+            return self._config("authors_profiles_toc", default)
         else:
             return default
 
@@ -825,6 +876,8 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             return self._config("archive_pagination", default)
         if isinstance(view, Category):
             return self._config("categories_pagination", default)
+        if isinstance(view, Profile):
+            return self._config("authors_profiles_pagination", default)
         else:
             return default
 
@@ -835,6 +888,8 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             return self._config("archive_pagination_per_page", default)
         if isinstance(view, Category):
             return self._config("categories_pagination_per_page", default)
+        if isinstance(view, Profile):
+            return self._config("authors_profiles_pagination_per_page", default)
         else:
             return default
 
@@ -873,6 +928,16 @@ class BlogPlugin(BasePlugin[BlogConfig]):
     def _format_path_for_category(self, name: str):
         path = self.config.categories_url_format.format(
             slug = self._slugify_category(name)
+        )
+
+        # Normalize path and strip slashes at the beginning and end
+        path = posixpath.normpath(path.strip("/"))
+        return posixpath.join(self.config.blog_dir, f"{path}.md")
+
+    # Format path for profile
+    def _format_path_for_profile(self, name: str):
+        path = self.config.authors_profiles_url_format.format(
+            name = name
         )
 
         # Normalize path and strip slashes at the beginning and end
