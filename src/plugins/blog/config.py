@@ -76,14 +76,6 @@ class BlogConfig(Config):
     categories_pagination_per_page = Optional(Type(int))
     categories_toc = Optional(Type(bool))
 
-    # Settings for pagination
-    pagination = Type(bool, default = True)
-    pagination_per_page = Type(int, default = 10)
-    pagination_url_format = Type(str, default = "page/{page}")
-    pagination_format = Type(str, default = "~2~")
-    pagination_if_single_page = Type(bool, default = False)
-    pagination_keep_content = Type(bool, default = False)
-
     # Settings for authors
     authors = Type(bool, default = True)
     authors_file = Type(str, default = "{blog}/.authors.yml")
@@ -93,6 +85,14 @@ class BlogConfig(Config):
     authors_profiles_pagination = Optional(Type(bool))
     authors_profiles_pagination_per_page = Optional(Type(int))
     authors_profiles_toc = Optional(Type(bool))
+
+    # Settings for pagination
+    pagination = Type(bool, default = True)
+    pagination_per_page = Type(int, default = 10)
+    pagination_url_format = Type(str, default = "page/{page}")
+    pagination_format = Type(str, default = "~2~")
+    pagination_if_single_page = Type(bool, default = False)
+    pagination_keep_content = Type(bool, default = False)
 
     # Settings for drafts
     draft = Type(bool, default = False)
