@@ -571,10 +571,11 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                 file = self._path_to_file(path, config)
                 files.append(file)
 
-                # Create file in temporary directory and temporarily remove
-                # from navigation, as we'll add it at a specific location
+                # Create file in temporary directory
                 self._save_to_file(file.abs_src_path, f"# {name}")
-                file.inclusion = InclusionLevel.EXCLUDED
+
+            # Temporarily remove view from navigation
+            file.inclusion = InclusionLevel.EXCLUDED
 
             # Create and yield view
             if not isinstance(file.page, Archive):
@@ -607,10 +608,11 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                     file = self._path_to_file(path, config)
                     files.append(file)
 
-                    # Create file in temporary directory and temporarily remove
-                    # from navigation, as we'll add it at a specific location
+                    # Create file in temporary directory
                     self._save_to_file(file.abs_src_path, f"# {name}")
-                    file.inclusion = InclusionLevel.EXCLUDED
+
+                # Temporarily remove view from navigation
+                file.inclusion = InclusionLevel.EXCLUDED
 
                 # Create and yield view
                 if not isinstance(file.page, Category):
@@ -635,14 +637,14 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                     file = self._path_to_file(path, config)
                     files.append(file)
 
-                    # Create file in temporary directory and temporarily remove
-                    # from navigation, as we'll add it at a specific location
+                    # Create file in temporary directory
                     self._save_to_file(file.abs_src_path, f"# {author.name}")
-                    file.inclusion = InclusionLevel.EXCLUDED
 
-                    # Assign profile URL to author, if none is set
-                    if not author.url:
-                        author.url = file.url
+                # Temporarily remove view from navigation and assign profile
+                # URL to author, if not explicitly set
+                file.inclusion = InclusionLevel.EXCLUDED
+                if not author.url:
+                    author.url = file.url
 
                 # Create and yield view
                 if not isinstance(file.page, Profile):
@@ -669,10 +671,11 @@ class BlogPlugin(BasePlugin[BlogConfig]):
                 file = self._path_to_file(path, config)
                 files.append(file)
 
-                # Copy file to temporary directory  and temporarily remove
-                # from navigation, as we'll add it at a specific location
+                # Copy file to temporary directory
                 copy_file(view.file.abs_src_path, file.abs_src_path)
-                file.inclusion = InclusionLevel.EXCLUDED
+
+            # Temporarily remove view from navigation
+            file.inclusion = InclusionLevel.EXCLUDED
 
             # Create and yield view
             if not isinstance(file.page, View):

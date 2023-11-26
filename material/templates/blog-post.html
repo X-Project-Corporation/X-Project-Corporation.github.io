@@ -29,7 +29,7 @@
                     <span class="md-profile__description">
                       <strong>
                         {% if author.url %}
-                          <a href="{{ author.url }}">{{ author.name }}</a>
+                          <a href="{{ author.url | url }}">{{ author.name }}</a>
                         {% else %}
                           {{ author.name }}
                         {% endif %}
