@@ -89,7 +89,7 @@ class BlogConfig(Config):
     authors_file = Type(str, default = "{blog}/.authors.yml")
     authors_profiles = Type(bool, default = False)
     authors_profiles_name = Type(str, default = "blog.authors")
-    authors_profiles_url_format = Type(str, default = "author/{name}")
+    authors_profiles_url_format = Type(str, default = "author/{slug}")
     authors_profiles_pagination = Optional(Type(bool))
     authors_profiles_pagination_per_page = Optional(Type(int))
     authors_profiles_toc = Optional(Type(bool))

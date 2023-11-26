@@ -46,7 +46,7 @@ from urllib.parse import urlparse
 from yaml import SafeLoader
 
 from . import view_name
-from .author import Authors
+from .author import Author, Authors
 from .config import BlogConfig
 from .readtime import readtime
 from .structure import (
@@ -268,12 +268,12 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
         # Extract and assign authors to post, if enabled
         if self.config.authors:
-            for slug in page.config.authors:
-                if slug not in self.authors:
-                    raise PluginError(f"Couldn't find author '{slug}'")
+            for id in page.config.authors:
+                if id not in self.authors:
+                    raise PluginError(f"Couldn't find author '{id}'")
 
                 # Append to list of authors
-                page.authors.append(self.authors[slug])
+                page.authors.append(self.authors[id])
 
         # Extract settings for excerpts
         separator      = self.config.post_excerpt_separator
@@ -625,9 +625,9 @@ class BlogPlugin(BasePlugin[BlogConfig]):
     # views to provide a profile page for each author listing all posts
     def _generate_profiles(self, config: MkDocsConfig, files: Files):
         for post in self.blog.posts:
-            for name in post.config.authors:
-                path = self._format_path_for_profile(name)
-                user = self.authors[name]
+            for id in post.config.authors:
+                author = self.authors[id]
+                path = self._format_path_for_profile(id, author)
 
                 # Create file for view, if it does not exist
                 file = files.get_file_from_path(path)
@@ -637,16 +637,16 @@ class BlogPlugin(BasePlugin[BlogConfig]):
 
                     # Create file in temporary directory and temporarily remove
                     # from navigation, as we'll add it at a specific location
-                    self._save_to_file(file.abs_src_path, f"# {user.name}")
+                    self._save_to_file(file.abs_src_path, f"# {author.name}")
                     file.inclusion = InclusionLevel.EXCLUDED
 
                     # Assign profile URL to author, if none is set
-                    if not user.url:
-                        user.url = file.url
+                    if not author.url:
+                        author.url = file.url
 
                 # Create and yield view
                 if not isinstance(file.page, Profile):
-                    yield Profile(user.name, file, config)
+                    yield Profile(author.name, file, config)
 
                 # Assign post to profile
                 assert isinstance(file.page, Profile)
@@ -935,9 +935,10 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         return posixpath.join(self.config.blog_dir, f"{path}.md")
 
     # Format path for profile
-    def _format_path_for_profile(self, name: str):
+    def _format_path_for_profile(self, id: str, author: Author):
         path = self.config.authors_profiles_url_format.format(
-            name = name
+            slug = author.slug or id,
+            name = author.name
         )
 
         # Normalize path and strip slashes at the beginning and end
