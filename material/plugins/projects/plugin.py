@@ -177,14 +177,17 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             theme = get_theme_dir(config.theme.name)
             hoist = Files([])
 
+            # Retrieve top-level project and check if the current project uses
+            # the same theme as the top-level project - if not, don't hoist
+            project = self.projects["."]
+            if config.theme.name != project.theme["name"]:
+                return
+
             # Remove all media files that are provided by the theme
             for file in files.media_files():
                 if file.abs_src_path.startswith(theme):
                     files.remove(file)
                     hoist.append(file)
-
-            # Retrieve top-level project
-            project = self.projects["."]
 
             # Compute slug from configuration of project and relative path for
             # hoisting all media files provided by the theme to the top
