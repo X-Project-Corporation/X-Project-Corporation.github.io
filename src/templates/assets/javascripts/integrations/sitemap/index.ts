@@ -89,19 +89,13 @@ function preprocess(urls: Sitemap): Sitemap {
  * @returns Sitemap observable
  */
 export function fetchSitemap(base?: URL): Observable<Sitemap> {
-  const cached = __md_get<Sitemap>("__sitemap", sessionStorage, base)
-  if (cached) {
-    return of(cached)
-  } else {
-    const config = configuration()
-    return requestXML(new URL("sitemap.xml", base || config.base))
-      .pipe(
-        map(sitemap => preprocess(getElements("loc", sitemap)
-          .map(node => node.textContent!)
-        )),
-        catchError(() => EMPTY), // @todo refactor instant loading
-        defaultIfEmpty([]),
-        tap(sitemap => __md_set("__sitemap", sitemap, sessionStorage, base))
-      )
-  }
+  const config = configuration()
+  return requestXML(new URL("sitemap.xml", base || config.base))
+    .pipe(
+      map(sitemap => preprocess(getElements("loc", sitemap)
+        .map(node => node.textContent!)
+      )),
+      catchError(() => EMPTY), // @todo refactor instant loading
+      defaultIfEmpty([])
+    )
 }

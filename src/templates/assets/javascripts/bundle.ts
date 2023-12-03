@@ -77,6 +77,7 @@ import {
 } from "./components"
 import {
   SearchIndex,
+  setupAlternate,
   setupClipboardJS,
   setupInstantNavigation,
   setupVersionSelector
@@ -144,6 +145,9 @@ const index$ = document.forms.namedItem("search")
 /* Set up Clipboard.js integration */
 const alert$ = new Subject<string>()
 setupClipboardJS({ alert$ })
+
+/* Set up language selector */
+setupAlternate({ document$ })
 
 /* Set up progress indicator */
 const progress$ = new Subject<number>()
