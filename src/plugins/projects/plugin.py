@@ -26,11 +26,13 @@ import pickle
 import posixpath
 import re
 
+from click import style
 from copy import deepcopy
 from concurrent.futures import Future, ProcessPoolExecutor
 from glob import iglob
 from jinja2 import pass_context
 from jinja2.runtime import Context
+from mkdocs.__main__ import ColorFormatter
 from mkdocs.commands.build import build
 from mkdocs.config.base import Config, ConfigErrors, ConfigWarnings
 from mkdocs.config.config_options import Plugins
@@ -156,7 +158,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         for slug, project in self._resolve_projects():
             if slug not in self.pool_jobs:
                 self.pool_jobs[slug] = self.pool.submit(
-                    _build, project, self.is_dirty
+                    _build, slug, project, self.is_dirty
                 )
 
     # Patch environment to allow for hoisting of media files provided by the
@@ -321,9 +323,18 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                     with open(path, "wb") as f:
                         pickle.dump(self.projects, f)
 
+                # Compute project root and base directory
+                root = os.path.dirname(project.config_file_path)
+                base = os.path.join(root, project.docs_dir)
+
+                # Resolve path relative to docs directory
+                path = os.path.relpath(event.src_path, base)
+                docs = os.path.relpath(base, os.curdir)
+
                 # Remove finished job from pool to schedule rebuild and return
                 # early, as we don't need to rebuild other projects
-                log.debug(f"Detected file changes in '{slug}'")
+                log = _logger_for(slug)
+                log.info(f"Rebuild due to changed file '{path}' in '{docs}'")
                 self.pool_jobs.pop(slug, None)
                 return
 
@@ -598,10 +609,12 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 # -----------------------------------------------------------------------------
 
 # Build project - note that regardless of whether MkDocs was started in build
-# or serve mode, projects must always be built, as they're served by the root.
-# Additionally, since we can't use the configured logger from a child process,
-# we must stop the build once errors are encountered and log them outside.
-def _build(config: Config, dirty: bool):
+# or serve mode, projects must always be built, as they're served by the root
+def _build(slug: str, config: Config, dirty: bool):
+    log = logging.getLogger("mkdocs")
+    log.addHandler(_logger_handler_for(slug))
+
+    # Validate configuration
     errors, warnings = config.validate()
     if not errors:
 
@@ -615,24 +628,45 @@ def _build(config: Config, dirty: bool):
     # Return errors and warnings for printing
     return errors, warnings
 
-# Print errors and warnings resulting from building a project
+# Print errors and warnings resulting from building a project -
 def _print(slug: str, errors: ConfigErrors, warnings: ConfigWarnings):
+    log = _logger_for(slug)
 
     # Print warnings
     for value, message in warnings:
-        log.warning(f"[{slug}] Config value '{value}': {message}")
+        log.warning(f"Config value '{value}': {message}")
 
     # Print errors
     for value, message in errors:
-        log.error(f"[{slug}] Config value '{value}': {message}")
+        log.error(f"Config value '{value}': {message}")
 
-    # Abort if there were errors
+    # Abort if there were errors after removing handler
     if errors:
         raise Abort(f"Aborted with {len(errors)} configuration errors")
 
 # -----------------------------------------------------------------------------
-# Data
-# -----------------------------------------------------------------------------
 
-# Set up logging
-log = logging.getLogger("mkdocs.material.projects")
+# Create logger for slug
+def _logger_for(slug: str):
+    log = logging.getLogger("".join(["mkdocs.material.projects", slug]))
+
+    # Ensure logger does not propagate to parent logger, or messages will be
+    # printed multiple times, and attach handler with prefixed color formatter
+    log.propagate = False
+    if not log.hasHandlers():
+        handler = _logger_handler_for(slug)
+        log.addHandler(handler)
+
+    # Return logger
+    return log
+
+# Create logger handler for slug
+def _logger_handler_for(slug: str):
+    prefix = style(f"project://{slug}", underline = True)
+
+    # Create handler to prefix log messages with slug
+    handler = logging.StreamHandler()
+    handler.setFormatter(ColorFormatter(f"[{prefix}] %(message)s"))
+
+    # Return handler
+    return handler
