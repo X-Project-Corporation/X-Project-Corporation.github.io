@@ -103,10 +103,20 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if not self.config.enabled:
             return
 
+        # Resolve cache directory (once) - this is necessary, so the cache is
+        # always relative to the configuration file, and thus project, and not
+        # relative to the current working directory, or it would not work with
+        # the projects plugin.
+        path = os.path.abspath(self.config.cache_dir)
+        if path != self.config.cache_dir:
+            self.config.cache_dir = os.path.join(
+                os.path.dirname(config.config_file_path),
+                os.path.normpath(self.config.cache_dir)
+            )
+
         # Initialize cache
         self.cache: dict[str, str] = {}
         self.cache_file = os.path.join(self.config.cache_dir, "manifest.json")
-        self.cache_file = os.path.normpath(self.cache_file)
 
         # Load cache map, if it exists and the cache should be used
         os.makedirs(os.path.dirname(self.cache_file), exist_ok = True)
@@ -763,7 +773,6 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # must abort with an error.
     def _resolve_font(self, family: str, styles: "set[str]"):
         path = os.path.join(self.config.cache_dir, "fonts", family)
-        path = os.path.normpath(path)
 
         # Fetch font family, if it hasn't been fetched yet - we use a lock to
         # synchronize access, so the font is not downloaded multiple times, but
@@ -803,7 +812,6 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # Fetch font family from Google Fonts
     def _fetch_font_from_google_fonts(self, family: str):
         path = os.path.join(self.config.cache_dir, "fonts")
-        path = os.path.normpath(path)
 
         # Download archive from Google Fonts to in-memory archive
         with TemporaryFile() as f:
@@ -860,7 +868,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         assert path.endswith(".png")
         return File(
             posixpath.join(self.config.cards_dir, path),
-            os.path.abspath(self.config.cache_dir),
+            self.config.cache_dir,
             config.site_dir,
             False
         )
