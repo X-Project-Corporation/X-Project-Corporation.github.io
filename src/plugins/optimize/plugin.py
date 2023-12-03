@@ -71,13 +71,25 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         if not self.config.enabled:
             return
 
+        # Resolve cache directory (once) - this is necessary, so the cache is
+        # always relative to the configuration file, and thus project, and not
+        # relative to the current working directory, or it would not work with
+        # the projects plugin.
+        path = os.path.abspath(self.config.cache_dir)
+        if path != self.config.cache_dir:
+            self.config.cache_dir = os.path.join(
+                os.path.dirname(config.config_file_path),
+                os.path.normpath(self.config.cache_dir)
+            )
+
+            # Ensure cache directory exists
+            os.makedirs(self.config.cache_dir, exist_ok = True)
+
         # Initialize cache
         self.cache: dict[str, str] = {}
         self.cache_file = os.path.join(self.config.cache_dir, "manifest.json")
-        self.cache_file = os.path.normpath(self.cache_file)
 
         # Load cache map, if it exists and the cache should be used
-        os.makedirs(os.path.dirname(self.cache_file), exist_ok = True)
         if self.config.cache and os.path.isfile(self.cache_file):
             with open(self.cache_file) as f:
                 try:
@@ -102,12 +114,9 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
             if self._is_excluded(file):
                 continue
 
-            # Compute and normalize path to cached image
-            path = os.path.join(self.config.cache_dir, file.src_path)
-            path = os.path.normpath(path)
-
             # Spawn concurrent job to optimize the given image and add future
             # to job dictionary, as it returns the file we need to copy later
+            path = os.path.join(self.config.cache_dir, file.src_path)
             self.pool_jobs[file.abs_src_path] = self.pool.submit(
                 self._optimize_image, file, path, config
             )
@@ -264,9 +273,12 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
                 with open(self.cache_file, "w") as f:
                     f.write(json.dumps(self.cache, indent = 2))
 
+        # Compute project root
+        root = os.path.dirname(config.config_file_path)
+
         # Compute source file system path
-        file.src_path     = path
-        file.abs_src_path = os.path.abspath(path)
+        file.abs_src_path = path
+        file.src_path     = os.path.relpath(path, root)
 
         # Return file to be copied from cache
         return file
