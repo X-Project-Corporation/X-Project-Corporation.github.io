@@ -114,12 +114,14 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 os.path.normpath(self.config.cache_dir)
             )
 
+            # Ensure cache directory exists
+            os.makedirs(self.config.cache_dir, exist_ok = True)
+
         # Initialize cache
         self.cache: dict[str, str] = {}
         self.cache_file = os.path.join(self.config.cache_dir, "manifest.json")
 
         # Load cache map, if it exists and the cache should be used
-        os.makedirs(os.path.dirname(self.cache_file), exist_ok = True)
         if self.config.cache and os.path.isfile(self.cache_file):
             with open(self.cache_file) as f:
                 try:
