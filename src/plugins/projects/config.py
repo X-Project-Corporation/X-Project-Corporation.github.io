@@ -52,7 +52,7 @@ class ProjectsConfig(Config):
 
     # Settings for logging
     log = Type(bool, default = True)
-    log_level = Choice(LogLevel, default = "warn")
+    log_level = Choice(LogLevel, default = "info")
 
     # Settings for projects
     projects = Type(bool, default = True)
