@@ -652,15 +652,14 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 # Build project - note that regardless of whether MkDocs was started in build
 # or serve mode, projects must always be built, as they're served by the root
 def _build(slug: str, config: Config, dirty: bool, level = logging.WARN):
-
-    # Retrieve and configure MkDocs logger
-    log = logging.getLogger("mkdocs")
-    log.addHandler(_handler(slug))
-    log.setLevel(level)
-
-    # Validate configuration
     errors, warnings = config.validate()
     if not errors:
+        handler = _handler(slug)
+
+        # Retrieve and configure MkDocs' logger
+        log = logging.getLogger("mkdocs")
+        log.addHandler(handler)
+        log.setLevel(level)
 
         # Build project and dispatch startup and shutdown plugin events
         config.plugins.run_event("startup", command = "build", dirty = dirty)
@@ -668,6 +667,7 @@ def _build(slug: str, config: Config, dirty: bool, level = logging.WARN):
             build(config, dirty = dirty)
         finally:
             config.plugins.run_event("shutdown")
+            log.removeHandler(handler)
 
     # Return errors and warnings for printing
     return errors, warnings
