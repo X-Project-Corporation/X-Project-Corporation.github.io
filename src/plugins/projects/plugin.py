@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-import functools
 import logging
 import os
 import pickle
@@ -608,7 +607,6 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
     # -------------------------------------------------------------------------
 
     # Compute log level for nested projects
-    @functools.lru_cache(maxsize = None)
     def _get_logger(self, slug: str):
         log = logging.getLogger("".join(["mkdocs.material.projects", slug]))
 
@@ -623,7 +621,6 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         return log
 
     # Compute log level for nested projects
-    @functools.lru_cache(maxsize = None)
     def _get_logger_level(self):
         level = logging.INFO
 
