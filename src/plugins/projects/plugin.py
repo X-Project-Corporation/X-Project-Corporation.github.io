@@ -652,6 +652,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 # Build project - note that regardless of whether MkDocs was started in build
 # or serve mode, projects must always be built, as they're served by the root
 def _build(slug: str, config: Config, dirty: bool, level = logging.WARN):
+
+    # Validate configuration
     errors, warnings = config.validate()
     if not errors:
         handler = _handler(slug)
