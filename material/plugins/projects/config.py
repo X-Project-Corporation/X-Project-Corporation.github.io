@@ -20,10 +20,22 @@
 
 import os
 
-from mkdocs.config.config_options import Type
+from mkdocs.config.config_options import Choice, Type
 from mkdocs.config.base import Config
 
 from . import transform
+
+# -----------------------------------------------------------------------------
+# Options
+# -----------------------------------------------------------------------------
+
+# Options for log level
+LogLevel = (
+    "error",
+    "warn",
+    "info",
+    "debug"
+)
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -37,6 +49,10 @@ class ProjectsConfig(Config):
     # Settings for caching
     cache = Type(bool, default = True)
     cache_dir = Type(str, default = ".cache/plugin/projects")
+
+    # Settings for logging
+    log = Type(bool, default = True)
+    log_level = Choice(LogLevel, default = "warn")
 
     # Settings for projects
     projects = Type(bool, default = True)

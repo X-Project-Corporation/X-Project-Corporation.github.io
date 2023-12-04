@@ -20,6 +20,7 @@
 
 from __future__ import annotations
 
+import functools
 import logging
 import os
 import pickle
@@ -32,6 +33,7 @@ from concurrent.futures import Future, ProcessPoolExecutor
 from glob import iglob
 from jinja2 import pass_context
 from jinja2.runtime import Context
+from logging import Logger
 from mkdocs.__main__ import ColorFormatter
 from mkdocs.commands.build import build
 from mkdocs.config.base import Config, ConfigErrors, ConfigWarnings
@@ -125,16 +127,6 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             for slug, project in self._resolve_projects():
                 self._prepare(slug, project, config)
 
-            # When we're serving the site, we must ensure that the site URL of
-            # the top-level project matches the current site URL. Note that we
-            # must set this here, because when we're preparing projects for
-            # building, we only consider nested projects. Otherwise, we'd have
-            # to branch when preparing projects and that would be kind of ugly,
-            # so we just inherit the setting from the current configuration.
-            if self.is_serve:
-                project = self.projects["."]
-                project.site_url = config.site_url
-
             # Reverse projects to adhere to post-order and write them to cache,
             # so the projects don't need to be resolved in spawned jobs
             self.projects = dict(reversed(self.projects.items()))
@@ -151,6 +143,9 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         if not self.config.projects or not self.is_root:
             return
 
+        # Retrieve log level for nested projects
+        level = self._get_logger_level()
+
         # Spawn concurrent job to build each project and add a future to the
         # projects dictionary to associate build results to built projects.
         # In order to support efficient incremental builds, only build projects
@@ -158,7 +153,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         for slug, project in self._resolve_projects():
             if slug not in self.pool_jobs:
                 self.pool_jobs[slug] = self.pool.submit(
-                    _build, slug, project, self.is_dirty
+                    _build, slug, project, self.is_dirty, level
                 )
 
     # Patch environment to allow for hoisting of media files provided by the
@@ -259,7 +254,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             if future.exception():
                 raise future.exception()
             else:
-                _print(slug, *future.result())
+                _print(self._get_logger(slug), *future.result())
 
                 # We only need to create symbolic links when serving the site
                 if not self.is_serve:
@@ -334,10 +329,13 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 path = os.path.relpath(event.src_path, base)
                 docs = os.path.relpath(base, os.curdir)
 
+                # Print message that we're scheduling a rebuild - we're using
+                # MkDocs' default logger here, as we're at the top-level
+                log = logging.getLogger("mkdocs")
+                log.info(f"Schedule build due to '{path}' in '{docs}'")
+
                 # Remove finished job from pool to schedule rebuild and return
                 # early, as we don't need to rebuild other projects
-                log = _logger_for(slug)
-                log.info(f"Rebuild due to changed file '{path}' in '{docs}'")
                 self.pool_jobs.pop(slug, None)
                 return
 
@@ -387,7 +385,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             # file system paths or URLs when necessary. Each slug starts with
             # a dot to denote that it is resolved from the top-level project,
             # which also allows for resolving slugs in nested projects.
-            base = "" if base == "." else base
+            base = base.rstrip(".")
             slug = f"{base}.{slug}"
 
             # Resolve project configuration and yield project
@@ -457,7 +455,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
             # Validate plugin configuration, print errors and warnings and
             # return validated configuration to be used by the plugin
-            _print(slug, *plugin.validate())
+            _print(self._get_logger(slug), *plugin.validate())
             return plugin
 
         # If no plugin configuration was found, add the default configuration
@@ -598,7 +596,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         dest = urlparse(project.site_url)
 
         # Compute and strip common path to only return suffix
-        at = len(posixpath.commonpath([base.path, dest.path]))
+        at = len(posixpath.commonpath([base.path or "/", dest.path]))
         return dest.path[at:].lstrip("/") or "/"
 
     # Compute slug from given configuration (reverse lookup)
@@ -607,15 +605,61 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             if project.config_file_path == config.config_file_path:
                 return slug
 
+    # -------------------------------------------------------------------------
+
+    # Compute log level for nested projects
+    @functools.lru_cache(maxsize = None)
+    def _get_logger(self, slug: str):
+        log = logging.getLogger("".join(["mkdocs.material.projects", slug]))
+
+        # Ensure logger does not propagate to parent logger, or messages will
+        # be printed multiple times, and attach handler with color formatter
+        log.propagate = False
+        if not log.hasHandlers():
+            log.addHandler(_handler(slug))
+            log.setLevel(self._get_logger_level())
+
+        # Return logger
+        return log
+
+    # Compute log level for nested projects
+    @functools.lru_cache(maxsize = None)
+    def _get_logger_level(self):
+        level = logging.INFO
+
+        # Determine log level as set in MkDocs - if the build is started with
+        # the `--quiet` flag, the log level is set to `ERROR` to suppress all
+        # log messages, except for errors. If it's started with `--verbose`,
+        # MkDocs sets the log level to `DEBUG`.
+        log = logging.getLogger("mkdocs")
+        for handler in log.handlers:
+            level = handler.level
+            break
+
+        # Determine if MkDocs was invoked with the `--quiet` flag and the log
+        # level as configured in the plugin configuration. When `--quiet` is
+        # set, or logging was disabled in the projects plugin, ignore the
+        # configured log level and set it to `ERROR` to suppress logging.
+        quiet = level == logging.ERROR
+        level = self.config.log_level.upper()
+        if quiet or not self.config.log:
+            level = logging.ERROR
+
+        # Retun log level
+        return level
+
 # -----------------------------------------------------------------------------
 # Helper functions
 # -----------------------------------------------------------------------------
 
 # Build project - note that regardless of whether MkDocs was started in build
 # or serve mode, projects must always be built, as they're served by the root
-def _build(slug: str, config: Config, dirty: bool):
+def _build(slug: str, config: Config, dirty: bool, level = logging.WARN):
+
+    # Retrieve and configure MkDocs logger
     log = logging.getLogger("mkdocs")
-    log.addHandler(_logger_handler_for(slug))
+    log.addHandler(_handler(slug))
+    log.setLevel(level)
 
     # Validate configuration
     errors, warnings = config.validate()
@@ -631,9 +675,8 @@ def _build(slug: str, config: Config, dirty: bool):
     # Return errors and warnings for printing
     return errors, warnings
 
-# Print errors and warnings resulting from building a project -
-def _print(slug: str, errors: ConfigErrors, warnings: ConfigWarnings):
-    log = _logger_for(slug)
+# Print errors and warnings resulting from building a project
+def _print(log: Logger, errors: ConfigErrors, warnings: ConfigWarnings):
 
     # Print warnings
     for value, message in warnings:
@@ -649,22 +692,8 @@ def _print(slug: str, errors: ConfigErrors, warnings: ConfigWarnings):
 
 # -----------------------------------------------------------------------------
 
-# Create logger for slug
-def _logger_for(slug: str):
-    log = logging.getLogger("".join(["mkdocs.material.projects", slug]))
-
-    # Ensure logger does not propagate to parent logger, or messages will be
-    # printed multiple times, and attach handler with prefixed color formatter
-    log.propagate = False
-    if not log.hasHandlers():
-        handler = _logger_handler_for(slug)
-        log.addHandler(handler)
-
-    # Return logger
-    return log
-
-# Create logger handler for slug
-def _logger_handler_for(slug: str):
+# Create log handler for slug
+def _handler(slug: str):
     prefix = style(f"project://{slug}", underline = True)
 
     # Create handler to prefix log messages with slug
