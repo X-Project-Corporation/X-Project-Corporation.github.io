@@ -173,8 +173,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
             # Retrieve top-level project and check if the current project uses
             # the same theme as the top-level project - if not, don't hoist
-            project = self.projects["."]
-            if config.theme.name != project.theme["name"]:
+            root = self.projects["."]
+            if config.theme.name != root.theme["name"]:
                 return
 
             # Remove all media files that are provided by the theme
@@ -183,12 +183,12 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                     files.remove(file)
                     hoist.append(file)
 
-            # Compute slug from configuration of project and relative path for
-            # hoisting all media files provided by the theme to the top
-            slug = self._slug_from_config(config)
+            # Compute path for slug from current and top-level project, and get
+            # relative path for hoisting all of the theme's assets to the top
+            slug = self._slug_for_config(config)
             path = get_relative_url(
-                self._path_from_slug(slug, config),
-                self._path_from_slug(slug, project)
+                self._path_for(slug, config),
+                self._path_for(slug, root)
             )
 
             # Fetch URL template filter from environment - the filter might
@@ -259,9 +259,9 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 if not self.is_serve:
                     continue
 
-                # Compute path from slug or site URL - normalize the path, as
-                # paths computed from slugs or site URLs use forward slashes
-                path = self._path_from_slug(slug, config)
+                # Compute path for slug from current projet - normalize path,
+                # as paths computed from slugs or site URLs use forward slashes
+                path = self._path_for(slug, config)
                 path = os.path.normpath(path)
 
                 # Map path to slug
@@ -482,16 +482,16 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         if not project:
             raise PluginError(f"Couldn't find project '{slug}'")
 
-        # Compute path from slug or site URL and path of current project
-        path = self._path_from_slug(slug, config)
-        base = self._path_from_slug(self._slug_from_config(config), project)
+        # Compute path for slug from source and target project
+        source = self._path_for(self._slug_for_config(config), project)
+        target = self._path_for(slug, config)
 
         # Append file name if directory URLs are disabled
         if not project.use_directory_urls:
-            path += "index.html"
+            target += "index.html"
 
         # Return project slug and path
-        return slug, get_relative_url(path, base)
+        return slug, get_relative_url(target, source)
 
     # Resolve projects
     def _resolve_projects(self):
@@ -508,10 +508,14 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # If the top-level project defines a site URL, we need to make sure that
         # the site URL of the project is set as well, setting it to the path we
-        # derive from the slug. This allows to define the URL independent of
-        # the entire project's directory structure.
+        # derive from the slug. This allows to define the URL independent of the
+        # entire project's directory structure. If the top-level project doesn't
+        # define a site URL, it might be the case that the author is building a
+        # consolidated project of several nested projects that are independent,
+        # but which should be bundled together for distribution. As this is a
+        # case that is quite common, we're not raising a warning or error.
+        path = self._path_for(slug, config)
         if config.site_url:
-            path = self._path_from_slug(slug, config)
 
             # If the project doesn't have a site URL, compute it from the site
             # URL of the top-level project and the path derived from the slug
@@ -530,11 +534,6 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 # Update site URL with dev server address
                 project.site_url = url.geturl()
 
-        # Compute path from slug or site URL - normalize the path, as paths
-        # computed from slugs or site URLs always use forward slashes
-        path = self._path_from_slug(slug, config)
-        path = os.path.normpath(path)
-
         # Adjust the project's site directory and associate the project to the
         # computed path derived from the slug, or from comparing the site URLs
         # of the project and the top-level project, but if and only if we're
@@ -543,10 +542,11 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # every time it performs a build, and thus resolve the site directory
         # within the project itself to an absolute path, as otherwise MkDocs
         # will try to resolve it from the project directory.
-        root = os.path.dirname(project.config_file_path)
         if not self.is_serve:
+            path = os.path.normpath(path)
             project.site_dir = os.path.join(config.site_dir, path)
         else:
+            root = os.path.dirname(project.config_file_path)
             project.site_dir = os.path.join(root, project.site_dir)
 
     # Transform project configuration
@@ -578,35 +578,57 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
     # -------------------------------------------------------------------------
 
-    # Compute path from given slug
-    def _path_from_slug(self, slug: str, config: MkDocsConfig):
+    # Compute path for given slug of project configuration
+    def _path_for(self, slug: str, config: MkDocsConfig):
         project = self.projects.get(slug)
         if not project:
             raise PluginError(f"Couldn't find project '{slug}'")
 
-        # Compute path from slug if no configuration is given (when preparing
-        # for building) or if the configuration doesn't define a site URL
-        if not config.site_url or not project.site_url:
-            _, *segments = slug.split(".")
-            return posixpath.join(*segments, "")
+        # If both, the top-level and the current project have a site URL set,
+        # compute slug from the common path of both site URLs
+        if config.site_url and project.site_url:
+            source = self._path_for_config(config)
+            target = self._path_for_config(project)
 
-        # Extract URLs for computing common path
-        base = urlparse(config.site_url)
-        dest = urlparse(project.site_url)
+        # Otherwise, always compute the path from the slugs of both projects,
+        # as we want to support building unrelated consolidated projects
+        else:
+            source = self._path_for_slug(self._slug_for_config(config))
+            target = self._path_for_slug(slug)
 
-        # Compute and strip common path to only return suffix
-        at = len(posixpath.commonpath([base.path or "/", dest.path]))
-        return dest.path[at:].lstrip("/") or "/"
+        # Compute and strip common path to only return suffix, and add trailing
+        # slash, as we're using the path to compute relative URLs
+        at = len(posixpath.commonpath([source, target]))
+        path = posixpath.join(target[at:])
+        return f"{path}/"
 
-    # Compute slug from given configuration (reverse lookup)
-    def _slug_from_config(self, config: MkDocsConfig):
+    # Compute path for given slug
+    def _path_for_slug(self, slug: str):
+        _, *segments = slug.split(".")
+        return posixpath.join(*segments)
+
+    # Compute path for given project configuration
+    def _path_for_config(self, config: MkDocsConfig):
+        assert config.site_url
+
+        # Parse URL and return canonicalized path - note that paths will always
+        # start with a slash, and trailing slashes are always removed. This is
+        # necessary to that we can compute the common path correctly, as the
+        # common path doesn't include the trailing slash.
+        url = urlparse(config.site_url)
+        return posixpath.normpath(url.path or "/")
+
+    # -------------------------------------------------------------------------
+
+    # Compute slug for given configuration (reverse lookup)
+    def _slug_for_config(self, config: MkDocsConfig):
         for slug, project in self.projects.items():
             if project.config_file_path == config.config_file_path:
                 return slug
 
     # -------------------------------------------------------------------------
 
-    # Compute log level for nested projects
+    # Retrieve logger
     def _get_logger(self, slug: str):
         log = logging.getLogger("".join(["mkdocs.material.projects", slug]))
 
@@ -620,7 +642,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # Return logger
         return log
 
-    # Compute log level for nested projects
+    # Retrieve log level
     def _get_logger_level(self):
         level = logging.INFO
 
