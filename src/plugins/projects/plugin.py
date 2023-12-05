@@ -328,9 +328,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 path = os.path.relpath(event.src_path, base)
                 docs = os.path.relpath(base, os.curdir)
 
-                # Print message that we're scheduling a rebuild - we're using
-                # MkDocs' default logger here, as we're at the top-level
-                log = logging.getLogger("mkdocs")
+                # Print message that we're scheduling a rebuild
                 log.info(f"Schedule build due to '{path}' in '{docs}'")
 
                 # Remove finished job from pool to schedule rebuild and return
@@ -413,9 +411,12 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                     os.path.normpath(plugin.projects_dir)
                 )
 
+                # Create projects directory, if it does not exist
+                if not os.path.isdir(path):
+                    os.makedirs(path, exist_ok = True)
+
                 # Continue with nested projects if projects directory exists
-                if os.path.isdir(path):
-                    stack.extend(self._find(path, slug))
+                stack.extend(self._find(path, slug))
 
     # -------------------------------------------------------------------------
 
@@ -745,3 +746,10 @@ def _log_handler(slug: str):
     handler = logging.StreamHandler()
     handler.setFormatter(_log_formatter(slug))
     return handler
+
+# -----------------------------------------------------------------------------
+# Data
+# -----------------------------------------------------------------------------
+
+# Set up logging
+log = logging.getLogger("mkdocs.material.projects")
