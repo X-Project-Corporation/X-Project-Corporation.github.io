@@ -590,6 +590,13 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             source = self._path_for_config(config)
             target = self._path_for_config(project)
 
+            # Edge case: the author has set a site URL that does not include a
+            # path, so the path of the project is equal to that the top-level
+            # project. In that case, we need to fall back to the path computed
+            # from the slug - see https://t.ly/5vqMr
+            if target == "/":
+                target = self._path_for_slug(slug)
+
         # Otherwise, always compute the path from the slugs of both projects,
         # as we want to support building unrelated consolidated projects
         else:
@@ -597,24 +604,28 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             target = self._path_for_slug(slug)
 
         # Compute and strip common path, as we only need to return the suffix,
-        # remove the leading slash of the suffix (+1), and ensure the presence
-        # of a trailing slash, as we're using the path to compute relative URLs
-        at = 1 + len(posixpath.commonpath([source, target]))
-        return f"{posixpath.join(target[at:])}/"
+        # remove the leading slash of the suffix, and ensure the presence of a
+        # trailing slash, as we're using the path to compute relative URLs. Note
+        # that there are some cases where there is and isn't a leading slash.
+        at = len(posixpath.commonpath([source, target]))
+        path = posixpath.join(target[at:]).lstrip("/")
+        return f"{path}/"
 
-    # Compute path for given slug
+    # Compute path for given slug - split slug at dots, ignoring the first one,
+    # and join the segments to a path, prefixed with a slash. This is necessary
+    # to compute the common path correctly, so we can use the same logic for
+    # when the path is computed from the site URL (see below).
     def _path_for_slug(self, slug: str):
         _, *segments = slug.split(".")
-        return posixpath.join(*segments)
+        return f"/{posixpath.join(*segments)}"
 
-    # Compute path for given project configuration
+    # Compute path for given project configuration - parse site URL and return
+    # canonicalized path - note that paths will always start with a slash, and
+    # trailing slashes are always removed. This is necessary so that we can
+    # compute the common path correctly, since the site URL might or might not
+    # contain a trailing slash. For this reason, we just normalize the returned
+    # path to always have a leading but no trailing slash.
     def _path_for_config(self, config: MkDocsConfig):
-        assert config.site_url
-
-        # Parse URL and return canonicalized path - note that paths will always
-        # start with a slash, and trailing slashes are always removed. This is
-        # necessary to that we can compute the common path correctly, as the
-        # common path doesn't include the trailing slash.
         url = urlparse(config.site_url)
         return posixpath.normpath(url.path or "/")
 
