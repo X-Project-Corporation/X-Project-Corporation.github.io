@@ -596,11 +596,11 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             source = self._path_for_slug(self._slug_for_config(config))
             target = self._path_for_slug(slug)
 
-        # Compute and strip common path to only return suffix, and add trailing
-        # slash, as we're using the path to compute relative URLs
-        at = len(posixpath.commonpath([source, target]))
-        path = posixpath.join(target[at:])
-        return f"{path}/"
+        # Compute and strip common path, as we only need to return the suffix,
+        # remove the leading slash of the suffix (+1), and ensure the presence
+        # of a trailing slash, as we're using the path to compute relative URLs
+        at = 1 + len(posixpath.commonpath([source, target]))
+        return f"{posixpath.join(target[at:])}/"
 
     # Compute path for given slug
     def _path_for_slug(self, slug: str):
