@@ -143,7 +143,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             return
 
         # Retrieve log level for nested projects
-        level = self._get_logger_level()
+        level = self._get_log_level()
 
         # Spawn concurrent job to build each project and add a future to the
         # projects dictionary to associate build results to built projects.
@@ -253,7 +253,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             if future.exception():
                 raise future.exception()
             else:
-                _print(self._get_logger(slug), *future.result())
+                _print(self._get_log(slug), *future.result())
 
                 # We only need to create symbolic links when serving the site
                 if not self.is_serve:
@@ -454,7 +454,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
             # Validate plugin configuration, print errors and warnings and
             # return validated configuration to be used by the plugin
-            _print(self._get_logger(slug), *plugin.validate())
+            _print(self._get_log(slug), *plugin.validate())
             return plugin
 
         # If no plugin configuration was found, add the default configuration
@@ -640,21 +640,21 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
     # -------------------------------------------------------------------------
 
     # Retrieve logger
-    def _get_logger(self, slug: str):
+    def _get_log(self, slug: str):
         log = logging.getLogger("".join(["mkdocs.material.projects", slug]))
 
         # Ensure logger does not propagate to parent logger, or messages will
         # be printed multiple times, and attach handler with color formatter
         log.propagate = False
         if not log.hasHandlers():
-            log.addHandler(_handler(slug))
-            log.setLevel(self._get_logger_level())
+            log.addHandler(_log_handler(slug))
+            log.setLevel(self._get_log_level())
 
         # Return logger
         return log
 
     # Retrieve log level
-    def _get_logger_level(self):
+    def _get_log_level(self):
         level = logging.INFO
 
         # Determine log level as set in MkDocs - if the build is started with
@@ -689,12 +689,23 @@ def _build(slug: str, config: Config, dirty: bool, level = logging.WARN):
     # Validate configuration
     errors, warnings = config.validate()
     if not errors:
-        handler = _handler(slug)
 
         # Retrieve and configure MkDocs' logger
         log = logging.getLogger("mkdocs")
-        log.addHandler(handler)
         log.setLevel(level)
+
+        # Hack: there seems to be an inconsistency between operating systems,
+        # and it's yet unclear where this is coming from - on macOS, the MkDocs
+        # default logger has no designated handler registered, but on Linux it
+        # does. If there's no handler, we need to create one. If there is, we
+        # must only set the formatter, as otherwise we'll end up with the same
+        # message printed on two log handlers - see https://t.ly/q7UEq
+        handler = _log_handler(slug)
+        if not log.hasHandlers():
+            log.addHandler(handler)
+        else:
+            for handler in log.handlers:
+                handler.setFormatter(_log_formatter(slug))
 
         # Build project and dispatch startup and shutdown plugin events
         config.plugins.run_event("startup", command = "build", dirty = dirty)
@@ -724,13 +735,13 @@ def _print(log: Logger, errors: ConfigErrors, warnings: ConfigWarnings):
 
 # -----------------------------------------------------------------------------
 
-# Create log handler for slug
-def _handler(slug: str):
+# Create log formatter for slug
+def _log_formatter(slug: str):
     prefix = style(f"project://{slug}", underline = True)
+    return ColorFormatter(f"[{prefix}] %(message)s")
 
-    # Create handler to prefix log messages with slug
+# Create log handler for slug
+def _log_handler(slug: str):
     handler = logging.StreamHandler()
-    handler.setFormatter(ColorFormatter(f"[{prefix}] %(message)s"))
-
-    # Return handler
+    handler.setFormatter(_log_formatter(slug))
     return handler
