@@ -223,9 +223,14 @@ export function mountCodeBlock(
     })
 
     // Code block sequence number
-    const id = sequence++
     const buttons: HTMLElement[] = []
     const parent = el.closest("pre")!
+
+    // Check if there's a parent element with an id, and use that id, otherwise
+    // generate a new one. This is necessary to allow for authors to define
+    // unique ids for code blocks - see https://t.ly/q7UEq
+    const unique = parent.closest("[id]")
+    const id = unique ? unique.id : sequence++
     parent.id = `__code_${id}`
 
     /* Handle code annotations and highlights */
