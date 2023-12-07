@@ -82,13 +82,19 @@ import {
  * ------------------------------------------------------------------------- */
 
 /**
- * Code block
+ * Code block overflow
  */
 export interface Overflow {
   scrollable: boolean                  /* Code block overflows */
 }
 
-export type CodeBlock = Overflow | Annotation | Tooltip
+/**
+ * Code block
+ */
+export type CodeBlock =
+  | Overflow
+  | Annotation
+  | Tooltip
 
 /* ----------------------------------------------------------------------------
  * Helper types

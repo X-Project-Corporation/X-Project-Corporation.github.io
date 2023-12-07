@@ -28,6 +28,10 @@ import { Viewport, getElements } from "~/browser"
 import { Component } from "../../_"
 import { Tooltip, mountTooltip } from "../../tooltip"
 import {
+  Tooltip,
+  mountTooltip
+} from "../../tooltip"
+import {
   Annotation,
   mountAnnotationBlock
 } from "../annotation"
