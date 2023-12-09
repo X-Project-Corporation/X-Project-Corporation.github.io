@@ -28,7 +28,7 @@ import subprocess
 
 from fnmatch import fnmatch
 from colorama import Fore, Style
-from concurrent.futures import Future, ThreadPoolExecutor, wait
+from concurrent.futures import Future, ThreadPoolExecutor
 from hashlib import sha1
 from mkdocs import utils
 from mkdocs.config.defaults import MkDocsConfig

@@ -276,14 +276,14 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if not self.config.enabled:
             return
 
+        # Shutdown thread pools
+        for pool in [self.card_layer_pool, self.card_pool]:
+            pool.shutdown(cancel_futures = True)
+
         # Save manifest if cache should be used
         if self.config.cache:
             with open(self.manifest_file, "w") as f:
                 f.write(json.dumps(self.manifest, indent = 2, sort_keys = True))
-
-        # Shutdown thread pools
-        for pool in [self.card_layer_pool, self.card_pool]:
-            pool.shutdown()
 
     # -------------------------------------------------------------------------
 
