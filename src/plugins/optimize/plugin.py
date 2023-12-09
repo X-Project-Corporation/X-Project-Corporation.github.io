@@ -28,7 +28,7 @@ import subprocess
 
 from fnmatch import fnmatch
 from colorama import Fore, Style
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from hashlib import sha1
 from mkdocs import utils
 from mkdocs.config.defaults import MkDocsConfig
@@ -146,10 +146,6 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
                 file: File = future.result()
                 file.copy_file()
 
-        # Shutdown thread pool if we're not serving the site
-        if not self.is_serve:
-            self.pool.shutdown()
-
         # Save manifest if cache should be used
         if self.config.cache:
             with open(self.manifest_file, "w") as f:
@@ -196,6 +192,9 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
     def on_shutdown(self):
         if not self.config.enabled:
             return
+
+        # Shutdown thread pool
+        self.pool.shutdown(cancel_futures = True)
 
         # Save manifest if cache should be used
         if self.config.cache:
