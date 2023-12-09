@@ -25,6 +25,7 @@ import json
 import logging
 import os
 import subprocess
+import sys
 
 from fnmatch import fnmatch
 from colorama import Fore, Style
@@ -193,8 +194,12 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         if not self.config.enabled:
             return
 
-        # Shutdown thread pool
-        self.pool.shutdown(cancel_futures = True)
+        # Shutdown thread pool - if we're on Python 3.9 and above, cancel all
+        # pending futures that have not yet been scheduled
+        if sys.version_info >= (3, 9):
+            self.pool.shutdown(cancel_futures = True)
+        else:
+            self.pool.shutdown()
 
         # Save manifest if cache should be used
         if self.config.cache:

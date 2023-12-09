@@ -29,6 +29,7 @@ import pickle
 import posixpath
 import re
 import requests
+import sys
 import yaml
 
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -276,9 +277,13 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         if not self.config.enabled:
             return
 
-        # Shutdown thread pools
+        # Shutdown thread pools - if we're on Python 3.9 and above, cancel all
+        # pending futures that have not yet been scheduled
         for pool in [self.card_layer_pool, self.card_pool]:
-            pool.shutdown(cancel_futures = True)
+            if sys.version_info >= (3, 9):
+                self.pool.shutdown(cancel_futures = True)
+            else:
+                self.pool.shutdown()
 
         # Save manifest if cache should be used
         if self.config.cache:
