@@ -281,9 +281,9 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # pending futures that have not yet been scheduled
         for pool in [self.card_layer_pool, self.card_pool]:
             if sys.version_info >= (3, 9):
-                self.pool.shutdown(cancel_futures = True)
+                pool.shutdown(cancel_futures = True)
             else:
-                self.pool.shutdown()
+                pool.shutdown()
 
         # Save manifest if cache should be used
         if self.config.cache:
