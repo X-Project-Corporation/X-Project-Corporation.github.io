@@ -153,7 +153,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         # Save manifest if cache should be used
         if self.config.cache:
             with open(self.manifest_file, "w") as f:
-                f.write(json.dumps(self.manifest, indent = 2))
+                f.write(json.dumps(self.manifest, indent = 2, sort_keys = True))
 
         # Compute and print gains through optimization
         if self.config.print_gain_summary:
@@ -200,7 +200,7 @@ class OptimizePlugin(BasePlugin[OptimizeConfig]):
         # Save manifest if cache should be used
         if self.config.cache:
             with open(self.manifest_file, "w") as f:
-                f.write(json.dumps(self.manifest, indent = 2))
+                f.write(json.dumps(self.manifest, indent = 2, sort_keys = True))
 
     # -------------------------------------------------------------------------
 

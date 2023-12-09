@@ -117,17 +117,19 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             # Ensure cache directory exists
             os.makedirs(self.config.cache_dir, exist_ok = True)
 
-        # Initialize cache
-        self.cache: dict[str, str] = {}
-        self.cache_file = os.path.join(self.config.cache_dir, "manifest.json")
+        # Initialize manifest
+        self.manifest: dict[str, str] = {}
+        self.manifest_file = os.path.join(
+            self.config.cache_dir, "manifest.json"
+        )
 
-        # Load cache map, if it exists and the cache should be used
-        if self.config.cache and os.path.isfile(self.cache_file):
-            with open(self.cache_file) as f:
-                try:
-                    self.cache = json.load(f)
-                except:
-                    pass
+        # Load manifest if it exists and the cache should be used
+        if os.path.isfile(self.manifest_file) and self.config.cache:
+            try:
+                with open(self.manifest_file) as f:
+                    self.manifest = json.load(f)
+            except:
+                pass
 
         # Initialize lock for synchronizing downloading of fonts
         self.lock = Lock()
@@ -251,6 +253,16 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             output[at:]
         ])
 
+    # Save manifest after build
+    def on_post_build(self, *, config):
+        if not self.config.enabled:
+            return
+
+        # Save manifest if cache should be used
+        if self.config.cache:
+            with open(self.manifest_file, "w") as f:
+                f.write(json.dumps(self.manifest, indent = 2, sort_keys = True))
+
     # Add custom layout directory to watched files
     def on_serve(self, server, *, config, builder):
         path = os.path.abspath(self.config.cards_layout_dir)
@@ -263,6 +275,11 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     def on_shutdown(self):
         if not self.config.enabled:
             return
+
+        # Save manifest if cache should be used
+        if self.config.cache:
+            with open(self.manifest_file, "w") as f:
+                f.write(json.dumps(self.manifest, indent = 2, sort_keys = True))
 
         # Shutdown thread pools
         for pool in [self.card_layer_pool, self.card_pool]:
@@ -347,9 +364,9 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         path = page.file.dest_uri.replace(suffix, ".png")
         file = self._path_to_file(path, config)
 
-        # Check if file hash changed, so we need to re-generate the card. If
-        # the hash didn't change, we can return the existing file.
-        prev = self.cache.get(file.url, "")
+        # Check if file hash changed, so we need to re-generate the card - if
+        # the hash didn't change, we can just return the existing file
+        prev = self.manifest.get(file.url, "")
         if hash == prev and os.path.isfile(file.abs_src_path):
             return file
 
@@ -399,11 +416,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         os.makedirs(os.path.dirname(file.abs_src_path), exist_ok = True)
         image.save(file.abs_src_path)
 
-        # Update cache map and write it immediately, so we keep intermediate
-        # results when doing incremental builds
-        self.cache[file.url] = hash
-        with open(self.cache_file, "w") as f:
-            f.write(json.dumps(self.cache, indent = 2))
+        # Update manifest by associating file with hash
+        self.manifest[file.url] = hash
 
         # Return file for generated card
         return file
