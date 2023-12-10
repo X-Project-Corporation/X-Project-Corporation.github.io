@@ -149,7 +149,9 @@ definitions:
 
   # Logo (icon)
   - &logo_icon >-
-    {{ config.theme.icon.logo | x }}
+    {%- if not layout.logo -%}
+      {{ config.theme.icon.logo | x }}
+    {%- endif -%}
 
 # Meta tags
 tags:
