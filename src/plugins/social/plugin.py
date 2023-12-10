@@ -71,6 +71,9 @@ from .templates import x_filter
 class SocialPlugin(BasePlugin[SocialConfig]):
     supports_multiple_instances = True
 
+    # Manifest
+    manifest: dict[str, str] = {}
+
     # Initialize plugin
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -119,7 +122,6 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             os.makedirs(self.config.cache_dir, exist_ok = True)
 
         # Initialize manifest
-        self.manifest: dict[str, str] = {}
         self.manifest_file = os.path.join(
             self.config.cache_dir, "manifest.json"
         )
@@ -286,7 +288,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 pool.shutdown()
 
         # Save manifest if cache should be used
-        if self.config.cache:
+        if self.manifest and self.config.cache:
             with open(self.manifest_file, "w") as f:
                 f.write(json.dumps(self.manifest, indent = 2, sort_keys = True))
 
