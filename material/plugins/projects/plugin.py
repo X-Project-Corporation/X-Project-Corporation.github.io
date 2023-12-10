@@ -33,7 +33,7 @@ from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure import StructureItem
 from mkdocs.structure.files import Files
 from mkdocs.structure.nav import Link, Section
-from mkdocs.utils import get_relative_url, get_theme_dir
+from mkdocs.utils import get_theme_dir
 from urllib.parse import ParseResult as URL, urlparse
 
 from .builder import ProjectsBuilder
@@ -167,12 +167,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 if "." == ref:
                     target = Project(file, self.config, ref)
 
-            # Compute paths for slug from source and target project
-            x = target.relative(root)
-            y = source.relative(root)
-
-            # Return project slug and path
-            path = get_relative_url(x, y)
+            # Compute path for slug from source and target project
+            path = target.path(source)
 
             # Fetch URL template filter from environment - the filter might
             # be overridden by other plugins, so we must retrieve and wrap it
@@ -272,16 +268,9 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             if slug == ref:
                 target = Project(file, self.config, ref)
 
-        # Resolve root project
-        root = Project("mkdocs.yml", self.config)
-
         # Abort if slug doesn't match a known project
         if not target:
             raise PluginError(f"Couldn't find project '{slug}'")
 
-        # Compute paths for slug from source and target project
-        x = target.relative(root)
-        y = source.relative(root)
-
         # Return project slug and path
-        return target, get_relative_url(x, y)
+        return target, target.path(source)

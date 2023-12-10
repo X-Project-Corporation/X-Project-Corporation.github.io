@@ -137,7 +137,7 @@ class ProjectsBuilder:
 
         # Compute path for slug from current project - normalize path,
         # as paths computed from slugs or site URLs use forward slashes
-        path = project.relative(self.root)
+        path = project.path(self.root)
         path = os.path.normpath(path)
 
         # Create symbolic link, if we haven't already
@@ -204,7 +204,7 @@ def _setup(project: Project, root: Project, serve: bool):
     # project of several nested projects that are independent, but which should
     # be bundled together for distribution. As this is a case that is quite
     # common, we're not raising a warning or error.
-    path = project.relative(root)
+    path = project.path(root)
     if root.config.site_url:
 
         # If the project doesn't have a site URL, compute it from the site URL

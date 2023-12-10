@@ -46,7 +46,7 @@ class Project:
 
         # The slug should not be changed after initialization, as it's used for
         # correct resolution of projects and nested projects
-        self._slug = slug
+        self.slug = slug
 
     # Find and yield nested projects of the current project - the project's
     # slug is prepended to the computed slug for a simple resolution of nested
@@ -93,7 +93,7 @@ class Project:
 
     # Compute project hash
     def __hash__(self):
-        return hash(self._slug)
+        return hash(self.slug)
 
     # Find and yield all nested projects (excluding this project) in reverse
     # topological order, by performing a post-order traversal on the tree of
@@ -111,8 +111,8 @@ class Project:
             stack.extend(dependencies)
             yield ProjectJob(project, dependencies)
 
-    # Compute relative path from a project
-    def relative(self, that: Project):
+    # Compute relative path between two projects
+    def path(self, that: Project):
 
         # If both, the top-level and the current project have a site URL set,
         # compute slug from the common path of both site URLs
@@ -133,20 +133,9 @@ class Project:
             source = self._path_from_slug(that.slug)
             target = self._path_from_slug(self.slug)
 
-        # Compute and strip common path, as we only need to return the suffix,
-        # remove the leading slash of the suffix, and ensure the presence of a
-        # trailing slash, as we're using the path to compute relative URLs. Note
-        # that there are some cases where there is and isn't a leading slash.
-        at = len(posixpath.commonpath([source, target]))
-        path = posixpath.join(target[at:]).lstrip("/")
-        return f"{path}/"
-
-    # -------------------------------------------------------------------------
-
-    # Project slug
-    @property
-    def slug(self):
-        return self._slug
+        # Compute path between projects, and add trailing slash
+        path = posixpath.relpath(target, source)
+        return posixpath.join(path, "")
 
     # -------------------------------------------------------------------------
 
@@ -191,7 +180,7 @@ class Project:
                     settings[name] = plugin[name]
 
             # Initialize and expand the plugin configuration, and mutate the
-            # plugin collection to persist the configuration for hoisting
+            # plugin collection to persist the patched configuration
             plugin: ProjectsConfig = ProjectsConfig()
             plugin.load_dict(settings)
             if isinstance(config.plugins, list):
@@ -210,22 +199,20 @@ class Project:
     # -------------------------------------------------------------------------
 
     # Compute path from given slug - split slug at dots, ignoring the first one,
-    # and join the segments to a path, prefixed with a slash. This is necessary
+    # and join the segments to a path, prefixed with a dot. This is necessary
     # to compute the common path correctly, so we can use the same logic for
     # when the path is computed from the site URL (see below).
     def _path_from_slug(self, slug: str):
         _, *segments = slug.split(".")
-        return f"/{posixpath.join(*segments)}"
+        return posixpath.join(".", *segments)
 
     # Compute path from given project configuration - parse site URL and return
-    # canonicalized path. Note that paths will always start with a slash, and
-    # trailing slashes are always removed. This is necessary so that we can
-    # compute the common path correctly, since the site URL might or might not
-    # contain a trailing slash. For this reason, we just normalize the returned
-    # path to always have a leading but not a trailing slash.
+    # canonicalized path. Paths always start with a dot and trailing slashes are
+    # always removed. This is necessary so that we can compute the common path
+    # correctly, since the site URL might or might not contain a trailing slash.
     def _path_from_config(self, config: MkDocsConfig):
         url = urlparse(config.site_url)
-        return posixpath.normpath(url.path or "/")
+        return posixpath.join(".", posixpath.normpath(url.path))
 
 # -----------------------------------------------------------------------------
 
