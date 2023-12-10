@@ -20,35 +20,25 @@
 
 from __future__ import annotations
 
-import logging
+import json
 import os
-import pickle
 import posixpath
-import re
 
-from click import style
-from copy import deepcopy
-from concurrent.futures import Future, ProcessPoolExecutor
-from glob import iglob
 from jinja2 import pass_context
 from jinja2.runtime import Context
-from logging import Logger
-from mkdocs.__main__ import ColorFormatter
-from mkdocs.commands.build import build
-from mkdocs.config.base import Config, ConfigErrors, ConfigWarnings
-from mkdocs.config.config_options import Plugins
 from mkdocs.config.defaults import MkDocsConfig
-from mkdocs.exceptions import Abort, PluginError
+from mkdocs.exceptions import PluginError
+from mkdocs import utils
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure import StructureItem
 from mkdocs.structure.files import Files
 from mkdocs.structure.nav import Link, Section
 from mkdocs.utils import get_relative_url, get_theme_dir
 from urllib.parse import ParseResult as URL, urlparse
-from watchdog.events import FileSystemEvent, FileSystemEventHandler
 
+from .builder import ProjectsBuilder
 from .config import ProjectsConfig
-from .structure import Project
+from .structure import Project, ProjectLink
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -56,6 +46,9 @@ from .structure import Project
 
 # Projects plugin
 class ProjectsPlugin(BasePlugin[ProjectsConfig]):
+
+    # Projects builder
+    builder: ProjectsBuilder = None
 
     # Initialize plugin
     def __init__(self, *args, **kwargs):
@@ -65,12 +58,11 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         self.is_serve = False
         self.is_dirty = False
 
-        # Initialize process pool
-        self.pool: ProcessPoolExecutor
-        self.pool_jobs: dict[str, Future] = {}
-
-        # Initialize projects
-        self.projects: dict[str, MkDocsConfig] = {}
+        # Hack: Since we're building in topological order, we cannot let MkDocs
+        # clean the directory, because it means that nested projects are always
+        # deleted before a project is built. We also don't need to restore this
+        # functionality, because it's only used once in the process.
+        utils.clean_directory = lambda _: _
 
     # Determine whether we're serving the site
     def on_startup(self, *, command, dirty):
@@ -89,71 +81,54 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # Skip if projects should not be built - we can only exit here if we're
         # at the top-level, but not when building a nested project
-        self.is_root = os.path.dirname(config.config_file_path) == os.getcwd()
-        if not self.config.projects and self.is_root:
+        root = os.path.dirname(config.config_file_path) == os.getcwd()
+        if root and not self.config.projects:
             return
 
-        # Initialize process pool - we must initialize a new process pool for
-        # every build and get rid of it when we're done, because the process
-        # pool executor doesn't allow to ignore keyboard interrupts. Otherwise,
-        # each process errors when we stop serving the site.
-        if self.is_root:
-            self.pool = ProcessPoolExecutor(self.config.concurrency)
+        # Initialize manifest
+        self.manifest: dict[str, str] = {}
+        self.manifest_file = os.path.join(
+            self.config.cache_dir, "manifest.json"
+        )
 
-        # Compute and normalize path to project configurations
-        path = os.path.join(self.config.cache_dir, "config.pickle")
-        path = os.path.normpath(path)
+        # Load manifest if it exists and the cache should be used
+        if os.path.isfile(self.manifest_file):
+            try:
+                with open(self.manifest_file) as f:
+                    self.manifest = json.load(f)
+            except:
+                pass
 
-        # If caching is enabled or we're building a project, we try to load all
-        # adjacent project configurations from the cache, as they are necessary
-        # for correct link resolution between projects. Note that the only sane
-        # reason to disable caching is for debugging purposes.
-        os.makedirs(os.path.dirname(path), exist_ok = True)
-        if self.config.cache or not self.is_root:
-            if os.path.isfile(path):
-                with open(path, "rb") as f:
-                    self.projects = pickle.load(f)
+        # Building the top-level project, we must resolve and load all project
+        # configurations, as we need all information upfront to build them in
+        # the correct order, and to resolve links between projects. Furthermore,
+        # the author might influence a project's path by setting the site URL.
+        if root:
+            if not self.builder:
+                self.builder = ProjectsBuilder(config, self.config)
 
-        # Traverse projects directory and load the configuration for each
-        # project, as the author may use the site URL to specify the path at
-        # which a project should be stored. If the configuration file changes,
-        # settings are reloaded before starting the next build.
-        if not self.projects:
-            for slug, project in self._find_all(config.config_file_path):
-                self.projects[slug] = project
+            # @todo: detach project resolution from build
+            self.manifest = { ".": os.path.relpath(config.config_file_path) }
+            for job in self.builder.root.jobs():
+                path = os.path.relpath(job.project.config.config_file_path)
+                self.manifest[job.project.slug] = path
 
-            # Prepare projects for building
-            for slug, project in self._resolve_projects():
-                self._prepare(slug, project, config)
-
-            # Reverse projects to adhere to post-order and write them to cache,
-            # so the projects don't need to be resolved in spawned jobs
-            self.projects = dict(reversed(self.projects.items()))
-            with open(path, "wb") as f:
-                pickle.dump(self.projects, f)
+            # Save manifest, a we need it in nested projects
+            with open(self.manifest_file, "w") as f:
+                f.write(json.dumps(self.manifest, indent = 2, sort_keys = True))
 
     # Schedule projects for building - the general case is that all projects
     # can be considered independent of each other, so we build them in parallel
-    def on_pre_build(self, *, config):
+    def on_pre_build(self, config):
         if not self.config.enabled:
             return
 
         # Skip if projects should not be built or we're not at the top-level
-        if not self.config.projects or not self.is_root:
+        if not self.config.projects or not self.builder:
             return
 
-        # Retrieve log level for nested projects
-        level = self._get_log_level()
-
-        # Spawn concurrent job to build each project and add a future to the
-        # projects dictionary to associate build results to built projects.
-        # In order to support efficient incremental builds, only build projects
-        # we haven't built yet or that have changed since the last build.
-        for slug, project in self._resolve_projects():
-            if slug not in self.pool_jobs:
-                self.pool_jobs[slug] = self.pool.submit(
-                    _build, slug, project, self.is_dirty, level
-                )
+        # Build projects
+        self.builder.build(self.is_serve, self.is_dirty)
 
     # Patch environment to allow for hoisting of media files provided by the
     # theme itself, which will also work for other themes, not only this one
@@ -162,7 +137,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             return
 
         # Skip if projects should not be built or we're at the top-level
-        if not self.config.projects or self.is_root:
+        if not self.config.projects or self.builder:
             return
 
         # If hoisting is enabled and we're building a project, remove all media
@@ -173,8 +148,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
             # Retrieve top-level project and check if the current project uses
             # the same theme as the top-level project - if not, don't hoist
-            root = self.projects["."]
-            if config.theme.name != root.theme["name"]:
+            root = Project("mkdocs.yml", self.config)
+            if config.theme.name != root.config.theme["name"]:
                 return
 
             # Remove all media files that are provided by the theme
@@ -183,13 +158,21 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                     files.remove(file)
                     hoist.append(file)
 
-            # Compute path for slug from current and top-level project, and get
-            # relative path for hoisting all of the theme's assets to the top
-            slug = self._slug_for_config(config)
-            path = get_relative_url(
-                self._path_for(slug, config),
-                self._path_for(slug, root)
-            )
+            # Resolve source and target project
+            source: Project | None = None
+            target: Project | None = None
+            for ref, file in self.manifest.items():
+                if file == os.path.relpath(config.config_file_path):
+                    source = Project(file, self.config, ref)
+                if "." == ref:
+                    target = Project(file, self.config, ref)
+
+            # Compute paths for slug from source and target project
+            x = target.relative(root)
+            y = source.relative(root)
+
+            # Return project slug and path
+            path = get_relative_url(x, y)
 
             # Fetch URL template filter from environment - the filter might
             # be overridden by other plugins, so we must retrieve and wrap it
@@ -235,233 +218,35 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         # Replace project URLs in navigation
         self._replace(context["nav"].items, config)
 
-    # Reconcile jobs and copy projects to output directory
-    def on_post_build(self, *, config):
-        if not self.config.enabled:
-            return
-
-        # Skip if projects should not be built or we're not at the top-level
-        if not self.config.projects or not self.is_root:
-            return
-
-        # Reconcile concurrent jobs - when we're serving the site, we create a
-        # symbolic link for each project in its parent site directory to ensure
-        # that incremental builds work correctly, since MkDocs clears the site
-        # directory on every build, except for when using the dirty build flag
-        slugs: dict[str, str] = {}
-        for slug, future in self.pool_jobs.items():
-            if future.exception():
-                raise future.exception()
-            else:
-                _print(self._get_log(slug), *future.result())
-
-                # We only need to create symbolic links when serving the site
-                if not self.is_serve:
-                    continue
-
-                # Compute path for slug from current projet - normalize path,
-                # as paths computed from slugs or site URLs use forward slashes
-                path = self._path_for(slug, config)
-                path = os.path.normpath(path)
-
-                # Map path to slug
-                slugs[path] = slug
-
-        # When we're serving the site, we must make sure to order slugs before
-        # starting to create symbolic links, so we deterministically create the
-        # necessary directories and symbolic links in the correct order to make
-        # sure that MkDocs can serve the site correctly
-        for path in sorted(slugs.keys()):
-            project = self.projects[slugs[path]]
-
-            # Create symbolic link, if we haven't already
-            path = os.path.join(config.site_dir, path)
-            if not os.path.islink(path):
-                os.makedirs(os.path.dirname(path), exist_ok = True)
-                os.symlink(project.site_dir, path)
-
-        # Shutdown process pool
-        self.pool.shutdown()
-
-    # Register projects to detect changes and schedule rebuilds
+    # Serve projects
     def on_serve(self, server, *, config, builder):
-        if not self.config.enabled:
-            return
-
-        # Skip if projects should not be built or we're not at the top-level
-        if not self.config.projects or not self.is_root:
-            return
-
-        # Resolve callback - if a file changes, we need to resolve the project
-        # that contains the file and rebuild it. As projects are in post-order,
-        # we can be sure that leafs will always be checked before projects that
-        # are higher up the tree, so a simple prefix check is enough.
-        def resolve(event: FileSystemEvent):
-            for slug, project in self._resolve_projects():
-                root = os.path.dirname(project.config_file_path)
-                if not event.src_path.startswith(root):
-                    continue
-
-                # If the project configuration file changed, reload it for a
-                # better user experience, as we need to do a rebuild anyway
-                if event.src_path == project.config_file_path:
-                    project = self._resolve_config(project.config_file_path)
-                    self._prepare(slug, project, config)
-
-                    # Compute and normalize path to project configurations
-                    path = os.path.join(self.config.cache_dir, "config.pickle")
-                    path = os.path.normpath(path)
-
-                    # Update project configuration and write to the cache, to
-                    # make sure that we're using the latest configuration. If
-                    # we would not do that, changes to the configuration of a
-                    # project will not be detected - see https://t.ly/kmeDH
-                    self.projects[slug] = project
-                    with open(path, "wb") as f:
-                        pickle.dump(self.projects, f)
-
-                # Compute project root and base directory
-                root = os.path.dirname(project.config_file_path)
-                base = os.path.join(root, project.docs_dir)
-
-                # Resolve path relative to docs directory
-                path = os.path.relpath(event.src_path, base)
-                docs = os.path.relpath(base, os.curdir)
-
-                # Print message that we're scheduling a rebuild
-                log.info(f"Schedule build due to '{path}' in '{docs}'")
-
-                # Remove finished job from pool to schedule rebuild and return
-                # early, as we don't need to rebuild other projects
-                self.pool_jobs.pop(slug, None)
-                return
-
-        # Initialize file system event handler
-        handler = FileSystemEventHandler()
-        handler.on_any_event = resolve
-
-        # Add projects to watch list - we watch the project's configuration file
-        # and its docs directory to trigger a rebuild if something changes
-        for _, project in self._resolve_projects():
-            root = os.path.dirname(project.config_file_path)
-            for path in [
-                os.path.join(root, project.docs_dir),
-                project.config_file_path
-            ]:
-                server.observer.schedule(handler, path, recursive = True)
-                server.watch(path)
+        self.builder.serve(server, self.is_dirty)
 
     # -------------------------------------------------------------------------
 
-    # Find and yield projects in the given projects directory - the given base
-    # slug is prepended to the computed slug for a simple resolution of nested
-    # projects, allowing authors to use the project:// protocol for linking to
-    # projects from the top-level project or nested projects.
-    def _find(self, path: str, base: str):
-        paths: list[str] = []
+    # Replace project links in the given list of navigation items
+    def _replace(self, items: list[StructureItem], config: MkDocsConfig):
+        for index, item in enumerate(items):
 
-        # Find and yield all projects with their configurations - note that we
-        # need to filter nested projects at this point, as we're only interested
-        # in the projects of the next level, not in projects inside projects as
-        # they are resolved recursively to preserve ordering
-        glob = os.path.join(path, self.config.projects_config_files)
-        glob = iglob(os.path.normpath(glob), recursive = True)
-        for file in sorted(glob, key = os.path.dirname):
-            root = os.path.dirname(file)
-            if any(root.startswith(_) for _ in paths):
-                continue
+            # Handle section
+            if isinstance(item, Section):
+                self._replace(item.children, config)
 
-            # Extract the first level of the project's directory relative to
-            # the projects directory as the computed slug of the project. Note
-            # that slugs might be explicitly overwritten if the author sets the
-            # project's site URL, but this is done when preparing the project.
-            slug = os.path.relpath(file, path)
-            slug, *_ = slug.split(os.path.sep)
+            # Handle link
+            if isinstance(item, Link):
+                url = urlparse(item.url)
+                if url.scheme == "project":
+                    project, url = self._resolve_project_url(url, config)
 
-            # Normalize slug to an internal dot notation which we convert to
-            # file system paths or URLs when necessary. Each slug starts with
-            # a dot to denote that it is resolved from the top-level project,
-            # which also allows for resolving slugs in nested projects.
-            base = base.rstrip(".")
-            slug = f"{base}.{slug}"
+                    # Append file name if directory URLs are disabled
+                    if not project.config.use_directory_urls:
+                        url += "index.html"
 
-            # Resolve project configuration and yield project
-            project = self._resolve_config(file)
-            yield slug, project
-
-    # Find and yield all projects recursively for the given configuration file -
-    # traverse the projects directory recursively, yielding projects and nested
-    # projects in reverse post-order. The caller needs to reverse all yielded
-    # values, so that projects can be built in the correct order.
-    def _find_all(self, file: str):
-
-        # Add the top-level project to the stack, and perform a post-order
-        # traversal, resolving and yielding all projects in reverse
-        stack = [(".", self._resolve_config(file))]
-        while stack:
-            slug, project = stack.pop()
-            yield slug, project
-
-            # Resolve project configuration and check if the current project
-            # has a projects directory. If yes, add all projects to the stack.
-            plugin = self._resolve_project_plugin(slug, project)
-            if plugin and plugin.projects:
-                path = os.path.join(
-                    os.path.dirname(project.config_file_path),
-                    os.path.normpath(plugin.projects_dir)
-                )
-
-                # Create projects directory, if it does not exist
-                if not os.path.isdir(path):
-                    os.makedirs(path, exist_ok = True)
-
-                # Continue with nested projects if projects directory exists
-                stack.extend(self._find(path, slug))
-
-    # -------------------------------------------------------------------------
-
-    # Resolve project configuration for the given path
-    def _resolve_config(self, file: str):
-        with open(file, encoding = "utf-8") as f:
-            config: MkDocsConfig = MkDocsConfig(config_file_path = file)
-            config.load_file(f)
-            return config
-
-    # Resolve project plugin configuration
-    def _resolve_project_plugin(self, slug: str, project: MkDocsConfig):
-
-        # Make sure that every project has a plugin configuration set - we need
-        # to deep copy the configuration object, as it's mutated during parsing.
-        # We're using an internal method of the Plugins class to ensure that we
-        # always stick to the syntaxes allowed by MkDocs (list and dictionary).
-        plugins = Plugins._parse_configs(deepcopy(project.plugins))
-        for index, (key, config) in enumerate(plugins):
-            if not re.match(r"^(material/)?projects$", key):
-                continue
-
-            # Forward some settings of the plugin configuration to the project,
-            # as we need to build nested projects consistently
-            for setting in ["cache", "projects", "hoisting"]:
-                config[setting] = self.config[setting]
-
-            # Initialize and expand the plugin configuration, and mutate the
-            # plugin collection to persist the configuration for hoisting
-            plugin: ProjectsConfig = ProjectsConfig()
-            plugin.load_dict(config)
-            if isinstance(project.plugins, list):
-                project.plugins[index] = { key: dict(plugin.items()) }
-            else:
-                project.plugins[key] = dict(plugin.items())
-
-            # Validate plugin configuration, print errors and warnings and
-            # return validated configuration to be used by the plugin
-            _print(self._get_log(slug), *plugin.validate())
-            return plugin
-
-        # If no plugin configuration was found, add the default configuration
-        # and call this function recursively, so we ensure that it's present
-        project.plugins.append("material/projects")
-        return self._resolve_project_plugin(slug, project)
+                    # Replace link with project link
+                    items[index] = ProjectLink(
+                        item.title or project.config.site_name,
+                        url
+                    )
 
     # Resolve project URL and slug
     def _resolve_project_url(self, url: URL, config: MkDocsConfig):
@@ -478,278 +263,25 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         slug = url.hostname
         slug = slug if slug.startswith(".") else f".{slug}"
 
+        # Resolve source and target project
+        source: Project | None = None
+        target: Project | None = None
+        for ref, file in self.manifest.items():
+            if file == os.path.relpath(config.config_file_path):
+                source = Project(file, self.config, ref)
+            if slug == ref:
+                target = Project(file, self.config, ref)
+
+        # Resolve root project
+        root = Project("mkdocs.yml", self.config)
+
         # Abort if slug doesn't match a known project
-        project = self.projects.get(slug)
-        if not project:
+        if not target:
             raise PluginError(f"Couldn't find project '{slug}'")
 
-        # Compute path for slug from source and target project
-        source = self._path_for(self._slug_for_config(config), project)
-        target = self._path_for(slug, config)
-
-        # Append file name if directory URLs are disabled
-        if not project.use_directory_urls:
-            target += "index.html"
+        # Compute paths for slug from source and target project
+        x = target.relative(root)
+        y = source.relative(root)
 
         # Return project slug and path
-        return slug, get_relative_url(target, source)
-
-    # Resolve projects
-    def _resolve_projects(self):
-        for slug, project in self.projects.items():
-            if slug != ".":
-                yield slug, project
-
-    # -------------------------------------------------------------------------
-
-    # Prepare project configuration to be used by the plugin
-    def _prepare(self, slug: str, project: MkDocsConfig, config: MkDocsConfig):
-        self._transform(project, config)
-        assert slug != "."
-
-        # If the top-level project defines a site URL, we need to make sure that
-        # the site URL of the project is set as well, setting it to the path we
-        # derive from the slug. This allows to define the URL independent of the
-        # entire project's directory structure. If the top-level project doesn't
-        # define a site URL, it might be the case that the author is building a
-        # consolidated project of several nested projects that are independent,
-        # but which should be bundled together for distribution. As this is a
-        # case that is quite common, we're not raising a warning or error.
-        path = self._path_for(slug, config)
-        if config.site_url:
-
-            # If the project doesn't have a site URL, compute it from the site
-            # URL of the top-level project and the path derived from the slug
-            if not project.site_url:
-                project.site_url = posixpath.join(config.site_url, path)
-
-            # If we're serving the site, replace the project's host name with
-            # the dev server address, so we can serve nested projects as well
-            if self.is_serve:
-                url = urlparse(project.site_url)
-                url = url._replace(
-                    scheme = "http",
-                    netloc = str(config.dev_addr)
-                )
-
-                # Update site URL with dev server address
-                project.site_url = url.geturl()
-
-        # Adjust the project's site directory and associate the project to the
-        # computed path derived from the slug, or from comparing the site URLs
-        # of the project and the top-level project, but if and only if we're
-        # building the site. If we're serving the site, we must fall back to
-        # symbolic links, because MkDocs will empty the site directory each and
-        # every time it performs a build, and thus resolve the site directory
-        # within the project itself to an absolute path, as otherwise MkDocs
-        # will try to resolve it from the project directory.
-        if not self.is_serve:
-            path = os.path.normpath(path)
-            project.site_dir = os.path.join(config.site_dir, path)
-        else:
-            root = os.path.dirname(project.config_file_path)
-            project.site_dir = os.path.join(root, project.site_dir)
-
-    # Transform project configuration
-    def _transform(self, project: MkDocsConfig, config: MkDocsConfig):
-        self.config.projects_config_transform(project, config)
-
-    # -------------------------------------------------------------------------
-
-    # Replace project links in the given list of navigation items
-    def _replace(self, items: list[StructureItem], config: MkDocsConfig):
-        for index, item in enumerate(items):
-
-            # Handle section
-            if isinstance(item, Section):
-                self._replace(item.children, config)
-
-            # Handle link
-            if isinstance(item, Link):
-                url = urlparse(item.url)
-                if url.scheme == "project":
-                    slug, url = self._resolve_project_url(url, config)
-
-                    # Replace link with project link
-                    project = self.projects[slug]
-                    items[index] = Project(
-                        item.title or project.site_name,
-                        url
-                    )
-
-    # -------------------------------------------------------------------------
-
-    # Compute path for given slug of project configuration
-    def _path_for(self, slug: str, config: MkDocsConfig):
-        project = self.projects.get(slug)
-        if not project:
-            raise PluginError(f"Couldn't find project '{slug}'")
-
-        # If both, the top-level and the current project have a site URL set,
-        # compute slug from the common path of both site URLs
-        if config.site_url and project.site_url:
-            source = self._path_for_config(config)
-            target = self._path_for_config(project)
-
-            # Edge case: the author has set a site URL that does not include a
-            # path, so the path of the project is equal to that the top-level
-            # project. In that case, we need to fall back to the path computed
-            # from the slug - see https://t.ly/5vqMr
-            if target == "/":
-                target = self._path_for_slug(slug)
-
-        # Otherwise, always compute the path from the slugs of both projects,
-        # as we want to support building unrelated consolidated projects
-        else:
-            source = self._path_for_slug(self._slug_for_config(config))
-            target = self._path_for_slug(slug)
-
-        # Compute and strip common path, as we only need to return the suffix,
-        # remove the leading slash of the suffix, and ensure the presence of a
-        # trailing slash, as we're using the path to compute relative URLs. Note
-        # that there are some cases where there is and isn't a leading slash.
-        at = len(posixpath.commonpath([source, target]))
-        path = posixpath.join(target[at:]).lstrip("/")
-        return f"{path}/"
-
-    # Compute path for given slug - split slug at dots, ignoring the first one,
-    # and join the segments to a path, prefixed with a slash. This is necessary
-    # to compute the common path correctly, so we can use the same logic for
-    # when the path is computed from the site URL (see below).
-    def _path_for_slug(self, slug: str):
-        _, *segments = slug.split(".")
-        return f"/{posixpath.join(*segments)}"
-
-    # Compute path for given project configuration - parse site URL and return
-    # canonicalized path - note that paths will always start with a slash, and
-    # trailing slashes are always removed. This is necessary so that we can
-    # compute the common path correctly, since the site URL might or might not
-    # contain a trailing slash. For this reason, we just normalize the returned
-    # path to always have a leading but no trailing slash.
-    def _path_for_config(self, config: MkDocsConfig):
-        url = urlparse(config.site_url)
-        return posixpath.normpath(url.path or "/")
-
-    # -------------------------------------------------------------------------
-
-    # Compute slug for given configuration (reverse lookup)
-    def _slug_for_config(self, config: MkDocsConfig):
-        for slug, project in self.projects.items():
-            if project.config_file_path == config.config_file_path:
-                return slug
-
-    # -------------------------------------------------------------------------
-
-    # Retrieve logger
-    def _get_log(self, slug: str):
-        log = logging.getLogger("".join(["mkdocs.material.projects", slug]))
-
-        # Ensure logger does not propagate to parent logger, or messages will
-        # be printed multiple times, and attach handler with color formatter
-        log.propagate = False
-        if not log.hasHandlers():
-            log.addHandler(_log_handler(slug))
-            log.setLevel(self._get_log_level())
-
-        # Return logger
-        return log
-
-    # Retrieve log level
-    def _get_log_level(self):
-        level = logging.INFO
-
-        # Determine log level as set in MkDocs - if the build is started with
-        # the `--quiet` flag, the log level is set to `ERROR` to suppress all
-        # log messages, except for errors. If it's started with `--verbose`,
-        # MkDocs sets the log level to `DEBUG`.
-        log = logging.getLogger("mkdocs")
-        for handler in log.handlers:
-            level = handler.level
-            break
-
-        # Determine if MkDocs was invoked with the `--quiet` flag and the log
-        # level as configured in the plugin configuration. When `--quiet` is
-        # set, or logging was disabled in the projects plugin, ignore the
-        # configured log level and set it to `ERROR` to suppress logging.
-        quiet = level == logging.ERROR
-        level = self.config.log_level.upper()
-        if quiet or not self.config.log:
-            level = logging.ERROR
-
-        # Retun log level
-        return level
-
-# -----------------------------------------------------------------------------
-# Helper functions
-# -----------------------------------------------------------------------------
-
-# Build project - note that regardless of whether MkDocs was started in build
-# or serve mode, projects must always be built, as they're served by the root
-def _build(slug: str, config: Config, dirty: bool, level = logging.WARN):
-
-    # Validate configuration
-    errors, warnings = config.validate()
-    if not errors:
-
-        # Retrieve and configure MkDocs' logger
-        log = logging.getLogger("mkdocs")
-        log.setLevel(level)
-
-        # Hack: there seems to be an inconsistency between operating systems,
-        # and it's yet unclear where this is coming from - on macOS, the MkDocs
-        # default logger has no designated handler registered, but on Linux it
-        # does. If there's no handler, we need to create one. If there is, we
-        # must only set the formatter, as otherwise we'll end up with the same
-        # message printed on two log handlers - see https://t.ly/q7UEq
-        handler = _log_handler(slug)
-        if not log.hasHandlers():
-            log.addHandler(handler)
-        else:
-            for handler in log.handlers:
-                handler.setFormatter(_log_formatter(slug))
-
-        # Build project and dispatch startup and shutdown plugin events
-        config.plugins.run_event("startup", command = "build", dirty = dirty)
-        try:
-            build(config, dirty = dirty)
-        finally:
-            config.plugins.run_event("shutdown")
-            log.removeHandler(handler)
-
-    # Return errors and warnings for printing
-    return errors, warnings
-
-# Print errors and warnings resulting from building a project
-def _print(log: Logger, errors: ConfigErrors, warnings: ConfigWarnings):
-
-    # Print warnings
-    for value, message in warnings:
-        log.warning(f"Config value '{value}': {message}")
-
-    # Print errors
-    for value, message in errors:
-        log.error(f"Config value '{value}': {message}")
-
-    # Abort if there were errors after removing handler
-    if errors:
-        raise Abort(f"Aborted with {len(errors)} configuration errors")
-
-# -----------------------------------------------------------------------------
-
-# Create log formatter for slug
-def _log_formatter(slug: str):
-    prefix = style(f"project://{slug}", underline = True)
-    return ColorFormatter(f"[{prefix}] %(message)s")
-
-# Create log handler for slug
-def _log_handler(slug: str):
-    handler = logging.StreamHandler()
-    handler.setFormatter(_log_formatter(slug))
-    return handler
-
-# -----------------------------------------------------------------------------
-# Data
-# -----------------------------------------------------------------------------
-
-# Set up logging
-log = logging.getLogger("mkdocs.material.projects")
+        return target, get_relative_url(x, y)

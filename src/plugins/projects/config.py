@@ -20,10 +20,9 @@
 
 import os
 
-from mkdocs.config.config_options import Choice, Type
+from collections.abc import Callable
+from mkdocs.config.config_options import Choice, Optional, Type
 from mkdocs.config.base import Config
-
-from . import transform
 
 # -----------------------------------------------------------------------------
 # Options
@@ -58,7 +57,7 @@ class ProjectsConfig(Config):
     projects = Type(bool, default = True)
     projects_dir = Type(str, default = "projects")
     projects_config_files = Type(str, default ="*/mkdocs.yml")
-    projects_config_transform = Type(type(transform), default = transform)
+    projects_config_transform = Optional(Type(Callable))
 
     # Settings for hoisting
     hoisting = Type(bool, default = True)

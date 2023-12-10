@@ -18,7 +18,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from functools import partial
+from collections.abc import Callable
 from mkdocs.config.config_options import (
     DictOfItems, ListOfItems, Optional, Type
 )
@@ -39,10 +39,10 @@ class TagsConfig(Config):
     tags = Type(bool, default = True)
     tags_file = Optional(Type(str))
     tags_extra_files = DictOfItems(ListOfItems(Type(str)), default = {})
-    tags_slugify = Type(partial, default = slugify(case = "lower"))
+    tags_slugify = Type(Callable, default = slugify(case = "lower"))
     tags_slugify_separator = Type(str, default = "-")
-    tags_compare = Optional(Type(type(casefold)))
+    tags_compare = Optional(Type(Callable))
     tags_compare_reverse = Type(bool, default = False)
-    tags_pages_compare = Optional(Type(type(page_title)))
+    tags_pages_compare = Optional(Type(Callable))
     tags_pages_compare_reverse = Type(bool, default = False)
     tags_allowed = Type(list, default = [])
