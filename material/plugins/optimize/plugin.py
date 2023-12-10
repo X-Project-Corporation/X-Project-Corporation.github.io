@@ -29,7 +29,8 @@ import sys
 
 from fnmatch import fnmatch
 from colorama import Fore, Style
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future
+from concurrent.futures.thread import ThreadPoolExecutor
 from hashlib import sha1
 from mkdocs import utils
 from mkdocs.config.defaults import MkDocsConfig

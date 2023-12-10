@@ -32,7 +32,8 @@ import requests
 import sys
 import yaml
 
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future
+from concurrent.futures.thread import ThreadPoolExecutor
 from copy import copy
 from fnmatch import fnmatch
 from glob import iglob
