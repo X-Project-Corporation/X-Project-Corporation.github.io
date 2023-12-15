@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+import multiprocessing
 import os
 import posixpath
 
@@ -74,7 +75,10 @@ class ProjectsBuilder:
 
     # Build projects
     def build(self, serve: bool = False, dirty: bool = False):
-        self.pool = ProcessPoolExecutor(self.root.plugin.concurrency)
+        self.pool = ProcessPoolExecutor(
+            self.root.plugin.concurrency,
+            mp_context = multiprocessing.get_context("spawn")
+        )
 
         # Determine projects in topological order and prepare for building
         built: list[str] = []
