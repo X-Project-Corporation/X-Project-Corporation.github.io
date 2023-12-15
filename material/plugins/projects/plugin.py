@@ -114,6 +114,7 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
                 self.manifest[job.project.slug] = path
 
             # Save manifest, a we need it in nested projects
+            os.makedirs(os.path.dirname(self.manifest_file), exist_ok = True)
             with open(self.manifest_file, "w") as f:
                 f.write(json.dumps(self.manifest, indent = 2, sort_keys = True))
 
