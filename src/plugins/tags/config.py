@@ -25,8 +25,6 @@ from mkdocs.config.config_options import (
 from mkdocs.config.base import Config
 from pymdownx.slugs import slugify
 
-from . import casefold, page_title
-
 # -----------------------------------------------------------------------------
 # Classes
 # -----------------------------------------------------------------------------
