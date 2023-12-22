@@ -68,7 +68,7 @@ class Project:
         glob = os.path.join(base, self.plugin.projects_config_files)
         glob = iglob(os.path.normpath(glob), recursive = True)
         for file in sorted(glob, key = os.path.dirname):
-            path = os.path.dirname(file)
+            path = os.path.join(os.path.dirname(file), "")
             if any(path.startswith(_) for _ in seen):
                 continue
             else:
