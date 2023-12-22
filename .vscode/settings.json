@@ -4,6 +4,11 @@
     "reportGeneralTypeIssues": "none",
     "reportOptionalMemberAccess": "none"
   },
+  "python.analysis.autoFormatStrings": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.completeFunctionParens": true,
+  "python.analysis.exclude": ["src"],
+  "python.analysis.typeCheckingMode": "basic",
   "search.exclude": {
     "**/material": true,
     "**/node_modules": true,

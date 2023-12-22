@@ -19,11 +19,16 @@
 # IN THE SOFTWARE.
 
 from collections.abc import Callable
+from material.utilities.filter import FilterConfig
 from mkdocs.config.config_options import (
-    DictOfItems, ListOfItems, Optional, Type
+    DictOfItems, Deprecated, ListOfItems, SubConfig, Type
 )
 from mkdocs.config.base import Config
 from pymdownx.slugs import slugify
+
+from . import item_title, tag_name
+from .structure.listing import ListingConfig
+from .structure.tag.options import TagSet
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -33,14 +38,47 @@ from pymdownx.slugs import slugify
 class TagsConfig(Config):
     enabled = Type(bool, default = True)
 
+    # Settings for filtering
+    filters = SubConfig(FilterConfig)
+
     # Settings for tags
     tags = Type(bool, default = True)
-    tags_file = Optional(Type(str))
-    tags_extra_files = DictOfItems(ListOfItems(Type(str)), default = {})
     tags_slugify = Type(Callable, default = slugify(case = "lower"))
     tags_slugify_separator = Type(str, default = "-")
-    tags_compare = Optional(Type(Callable))
-    tags_compare_reverse = Type(bool, default = False)
-    tags_pages_compare = Optional(Type(Callable))
-    tags_pages_compare_reverse = Type(bool, default = False)
-    tags_allowed = Type(list, default = [])
+    tags_slugify_format = Type(str, default = "tag:{slug}")
+    tags_hierarchy = Type(bool, default = False)
+    tags_hierarchy_separator = Type(str, default = "/")
+    tags_sort_by = Type(Callable, default = tag_name)
+    tags_sort_reverse = Type(bool, default = False)
+    tags_name_property = Type(str, default = "tags")
+    tags_name_variable = Type(str, default = "tags")
+    tags_allowed = TagSet()
+
+    # Settings for listings
+    listings = Type(bool, default = True)
+    listings_map = DictOfItems(SubConfig(ListingConfig), default = {})
+    listings_sort_by = Type(Callable, default = item_title)
+    listings_sort_reverse = Type(bool, default = False)
+    listings_tags_sort_by = Type(Callable, default = tag_name)
+    listings_tags_sort_reverse = Type(bool, default = False)
+
+    # Settings for shadow tags
+    shadow = Type(bool, default = False)
+    shadow_on_serve = Type(bool, default = True)
+    shadow_tags = TagSet()
+    shadow_tags_prefix = Type(str, default = "")
+    shadow_tags_suffix = Type(str, default = "")
+
+    # Deprecated settings
+    tags_compare = Deprecated(moved_to = "tags_sort_by")
+    tags_compare_reverse = Deprecated(moved_to = "tags_sort_reverse")
+    tags_pages_compare = Deprecated(moved_to = "listings_items_sort_by")
+    tags_pages_compare_reverse = Deprecated(moved_to = "listings_items_sort_reverse")
+    tags_file = Deprecated(
+        message = "This option is not necessary anymore, please just use <!-- @tags -->",
+        option_type = Type(str)
+    )
+    tags_extra_files = Deprecated(
+        message = "This option is not necessary anymore, please just use <!-- @tags -->",
+        option_type = DictOfItems(ListOfItems(Type(str)), default = {})
+    )
