@@ -90,7 +90,7 @@ class ProjectsBuilder:
 
         # Schedule projects for building
         for job in reversed(queue):
-            if self._schedule(job, dirty):
+            if self._schedule(job, serve, dirty):
                 queue.remove(job)
                 built.append(job.project.slug)
 
@@ -101,7 +101,7 @@ class ProjectsBuilder:
 
             # Schedule projects for building
             for job in reversed(queue):
-                if self._schedule(job, dirty):
+                if self._schedule(job, serve, dirty):
                     queue.remove(job)
                     built.append(job.project.slug)
 
@@ -152,7 +152,7 @@ class ProjectsBuilder:
 
     # Schedule project for building - spawn concurrent job to build the project
     # and add a future to the jobs dictionary to link build results to projects
-    def _schedule(self, job: ProjectJob, dirty: bool):
+    def _schedule(self, job: ProjectJob, serve: bool, dirty: bool):
         self.projects.add(job.project)
 
         # Exit early, if project doesn't need to be re built
@@ -181,7 +181,8 @@ class ProjectsBuilder:
         # the project itself by spawning a concurrent job
         if not job.dependencies:
             self.pool_jobs[job.project.slug] = self.pool.submit(
-                _build, job.project, dirty, get_log_level_for(job.project)
+                _build, job.project, serve, dirty,
+                get_log_level_for(job.project)
             )
 
         # Return whether the project has been scheduled
@@ -249,7 +250,7 @@ def _setup(project: Project, root: Project, serve: bool):
 
 # Build project - note that regardless of whether MkDocs was started in build
 # or serve mode, projects must always be built, as they're served by the root
-def _build(project: Project, dirty: bool, level = logging.WARN):
+def _build(project: Project, serve: bool, dirty: bool, level = logging.WARN):
     config = project.config
 
     # Validate configuration
@@ -273,8 +274,12 @@ def _build(project: Project, dirty: bool, level = logging.WARN):
             for handler in log.handlers:
                 handler.setFormatter(get_log_formatter(project))
 
-        # Build project and dispatch startup and shutdown plugin events
-        config.plugins.run_event("startup", command = "build", dirty = dirty)
+        # Build project and dispatch startup and shutdown plugin events - note
+        # that we must pass the correct command to the event handler, but run
+        # the build command anyway, because otherwise some plugins will not
+        # run in serve mode.
+        command = "serve" if serve else "build"
+        config.plugins.run_event("startup", command = command, dirty = dirty)
         try:
             build(config, dirty = dirty)
         finally:
