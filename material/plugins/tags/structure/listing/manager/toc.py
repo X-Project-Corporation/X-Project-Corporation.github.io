@@ -47,7 +47,7 @@ Returns:
 
 def populate(listing: Listing, slugify: Slugify) -> dict[Tag, AnchorLink]:
     """
-    Populate the page the listing is embedded in with anchor links.
+    Populate the table of contents of the page the listing is embedded.
 
     Arguments:
         listing: The listing.
@@ -58,8 +58,8 @@ def populate(listing: Listing, slugify: Slugify) -> dict[Tag, AnchorLink]:
     """
     anchors: dict[Tag, AnchorLink] = {}
 
-    # Find injection point
-    host, at = find(listing.page, f"{listing.id}/slug")
+    # Find injection point for listing
+    host, at = find(listing)
     if at == -1:
         return anchors
 
@@ -91,9 +91,9 @@ def populate(listing: Listing, slugify: Slugify) -> dict[Tag, AnchorLink]:
 
 # -----------------------------------------------------------------------------
 
-def find(page: Page, id: str) -> tuple[AnchorLink | None, int]:
+def find(listing: Listing) -> tuple[AnchorLink | None, int]:
     """
-    Find anchor for the given identifier.
+    Find anchor link for the given listing.
 
     This function traverses the table of contents of the given page and returns
     the anchor's parent and index of the anchor with the given identifier. If
@@ -101,19 +101,21 @@ def find(page: Page, id: str) -> tuple[AnchorLink | None, int]:
     injection point, an anchor to host the tags is created and returned.
 
     Arguments:
-        page: The page.
-        id: The anchor identifier.
+        lising: The listing.
 
     Returns:
         The anchor and index.
     """
+    page = listing.page
+
+    # Traverse table of contents
     stack = list(page.toc)
     while stack:
         anchor = stack.pop()
 
         # Traverse children
         for i, child in enumerate(anchor.children):
-            if child.id == id:
+            if child.id.startswith(listing.id):
                 return anchor, i
 
             # Add child to stack
@@ -121,7 +123,7 @@ def find(page: Page, id: str) -> tuple[AnchorLink | None, int]:
 
     # Check if anchor is on the root level
     for i, anchor in enumerate(page.toc):
-        if anchor.id == id:
+        if anchor.id.startswith(listing.id):
 
             # Create anchor link
             host = AnchorLink(page.title, page.url, 1)

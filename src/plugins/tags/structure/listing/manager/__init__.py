@@ -66,6 +66,15 @@ class ListingManager:
         self.config = config
         self.data = set()
 
+    def __repr__(self) -> str:
+        """
+        Return a string representation of the listing manager for debugging.
+
+        Returns:
+            String representation.
+        """
+        return _print(self)
+
     def __iter__(self) -> Iterator[Listing]:
         """
         Iterate over listings.
@@ -450,6 +459,32 @@ class ListingManager:
             key = self.config.tags_sort_by,
             reverse = self.config.tags_sort_reverse
         )
+
+# -----------------------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------------------
+
+def _print(manager: ListingManager, indent: int = 0) -> str:
+    """
+    Return a string representation of a listing manager for debugging.
+
+    Arguments:
+        manager: The listing manager.
+        indent: The indentation level.
+
+    Returns:
+        String representation.
+    """
+    lines: list[str] = []
+    lines.append(" " * indent + f"ListingManager()")
+
+    # Print listings
+    for listing in manager:
+        lines.append(" " * (indent + 2) + repr(listing))
+
+    # Concatenate everything
+    return "\n".join(lines)
+
 
 # -----------------------------------------------------------------------------
 # Data

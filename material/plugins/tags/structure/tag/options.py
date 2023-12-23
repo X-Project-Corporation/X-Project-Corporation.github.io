@@ -32,15 +32,15 @@ class TagSet(BaseConfigOption[set[Tag]]):
     """
     Setting for a set of tags.
 
-    This setting is used to define a set of tags, and is used to validate the
-    actual tags as defined in the front matter of pages, as well as for filters
-    that are used to include or exclude pages from a listing and to check if a
-    tag is allowed to be used.
+    This setting describes a set of tags, and is used to validate the actual
+    tags as defined in the front matter of pages, as well as for filters that
+    are used to include or exclude pages from a listing and to check if a tag
+    is allowed to be used.
     """
 
     def __init__(self, *, allowed: set[Tag] = set()):
         """
-        Initialize the tag set.
+        Initialize the setting.
 
         Arguments:
             allowed: The tags allowed to be used.
@@ -59,7 +59,7 @@ class TagSet(BaseConfigOption[set[Tag]]):
 
     def run_validation(self, value: object) -> set[Tag]:
         """
-        Validate a tag set.
+        Validate the setting.
 
         If the value is `None`, an empty set is returned. Otherwise, the value
         is expected to be a list of tags, which is converted to a set of tags.
