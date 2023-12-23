@@ -238,10 +238,8 @@ class TagsPlugin(BasePlugin[TagsConfig]):
             )
 
         # Try to find the directive and add it if not present
-        if not re.search(
-            r"<!--\s+{directive}".format(directive = directive),
-            page.markdown
-        ):
+        pattern = r"<!--\s+{directive}".format(directive = directive)
+        if not re.search(pattern, page.markdown):
             page.markdown += f"\n<!-- {directive} -->"
 
     def _handle_deprecated_tags_extra_files(self, page: Page) -> None:
@@ -267,10 +265,8 @@ class TagsPlugin(BasePlugin[TagsConfig]):
             )
 
         # Try to find the directive and add it if not present
-        if not re.search(
-            r"<!--\s+{directive}".format(directive = directive),
-            page.markdown
-        ):
+        pattern = r"<!--\s+{directive}".format(directive = directive)
+        if not re.search(pattern, page.markdown):
             page.markdown += f"\n<!-- {directive} -->"
 
 # -----------------------------------------------------------------------------
