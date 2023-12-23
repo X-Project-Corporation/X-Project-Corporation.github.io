@@ -27,7 +27,6 @@ import re
 from material.utilities.filter import PageFilter
 from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, event_priority
-from mkdocs.structure.pages import Page
 
 from .config import TagsConfig
 from .renderer import Renderer
@@ -101,6 +100,8 @@ class TagsPlugin(BasePlugin[TagsConfig]):
     # metadata automatically @docs
     @event_priority(-50)
     def on_page_markdown(self, markdown, *, page, config, files):
+        """
+        """
         if not self.config.enabled:
             return
 
@@ -155,15 +156,17 @@ class TagsPlugin(BasePlugin[TagsConfig]):
 
     @event_priority(100)
     def on_env(self, env, *, config, files):
+        """
+        """
         if not self.config.enabled:
             return
 
         #
-        renderer = Renderer(env, config)
-        for listing in self.listings:
-            self.listings.populate(listing, self.mappings, renderer)
+        self.listings.populate_all(self.mappings, Renderer(env, config))
 
     def on_page_context(self, context, *, page, config, nav):
+        """
+        """
         if not self.config.enabled:
             return
 
@@ -179,7 +182,7 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         mapping = self.mappings.get(page)
         if mapping:
             tags = self.config.tags_name_variable
-            context[tags] = self.listings.get_references(mapping)
+            context[tags] = list(self.listings & mapping)
 
 # -----------------------------------------------------------------------------
 # Data

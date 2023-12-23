@@ -47,7 +47,7 @@ Returns:
 
 def populate(listing: Listing, slugify: Slugify) -> dict[Tag, AnchorLink]:
     """
-    Populate page in which the listing is embedded with anchor links.
+    Populate the page the listing is embedded in with anchor links.
 
     Arguments:
         listing: The listing.

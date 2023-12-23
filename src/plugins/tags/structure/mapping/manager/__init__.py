@@ -96,13 +96,13 @@ class MappingManager:
         """
         Add page.
 
-        The mapping manager is responsible for building the tag structure, which
-        involves parsing the tags in the front matter of a page, and adding them
-        to the tag structure. If no tags are found, the page can be skipped from
-        processing, which means it won't be handled by the manager.
+        This method is called by the tags plugin to retrieve all tags of a page.
+        It extracts all tags from the front matter of the given page, and adds
+        them to the mapping. If no tags are found, no mapping is created and
+        nothing is returned.
 
         Note that this method is intended to be called with the page during the
-        `on_page_markdown` event, as it will modify the page's Markdown.
+        `on_page_markdown` event, as it reads the front matter of a page.
 
         Arguments:
             page: The page.
@@ -110,6 +110,9 @@ class MappingManager:
         Returns:
             The mapping or nothing.
         """
+        assert isinstance(page.markdown, str)
+
+        # Return nothing if page doesn't have tags
         tags = self.config.tags_name_property
         if tags not in page.meta:
             return

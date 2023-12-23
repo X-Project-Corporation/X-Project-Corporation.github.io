@@ -30,6 +30,7 @@ from collections.abc import Iterable, Iterator
 from material.plugins.tags.config import TagsConfig
 from material.plugins.tags.renderer import Renderer
 from material.plugins.tags.structure.listing import Listing, ListingConfig
+from material.plugins.tags.structure.listing.tree import ListingTree
 from material.plugins.tags.structure.mapping import Mapping
 from material.plugins.tags.structure.tag import Tag
 from material.plugins.tags.structure.tag.reference import TagReference
@@ -37,9 +38,9 @@ from mkdocs.exceptions import PluginError
 from mkdocs.structure.pages import Page
 from mkdocs.structure.nav import Link
 from re import Match
+from urllib.parse import urlparse
 
 from .anchors import populate
-from .helper import ListingHelper
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -48,6 +49,11 @@ from .helper import ListingHelper
 class ListingManager:
     """
     A listing manager.
+
+    The listing manager collects all listings from the Markdown of pages, then
+    populates them with mappings, and renders them. Furthermore, the listing
+    manager allows to obtain tag references for a given mapping, which are
+    tags annotated with links to listings.
     """
 
     def __init__(self, config: TagsConfig):
@@ -56,10 +62,8 @@ class ListingManager:
 
         Arguments:
             config: The configuration.
-            renderer: The renderer.
         """
         self.config = config
-        self.helper = ListingHelper(config)
         self.data = set()
 
     def __iter__(self) -> Iterator[Listing]:
@@ -71,16 +75,45 @@ class ListingManager:
         """
         return iter(self.data)
 
+    def __and__(self, mapping: Mapping) -> Iterator[TagReference]:
+        """
+        Iterate over the tag references for the mapping.
+
+        Arguments:
+            mapping: The mapping.
+
+        Yields:
+            The current tag reference.
+        """
+        assert isinstance(mapping, Mapping)
+
+        # Iterate over sorted tags and associate tags with listings - note that
+        # we sort the listings for the mapping by closeness, so that the first
+        # listing in the list is the closest one to the page or link the
+        # mapping is associated with
+        listings = self.closest(mapping)
+        for tag in self._sort_tags(mapping.tags):
+            ref = TagReference(tag)
+
+            # Iterate over listings and add links
+            for listing in listings:
+                if tag in listing & mapping:
+                    url = urlparse(listing.page.url, allow_fragments = False)
+                    url = url._replace(fragment = self._slugify(tag))
+
+                    # Add listing link to tag reference
+                    ref.links.append(
+                        Link(listing.page.title, url.geturl())
+                    )
+
+            # Yield tag reference
+            yield ref
+
     # -------------------------------------------------------------------------
 
     config: TagsConfig
     """
     The configuration.
-    """
-
-    helper: ListingHelper
-    """
-    The listing helper.
     """
 
     data: set[Listing]
@@ -100,7 +133,7 @@ class ListingManager:
         actual listing later on.
 
         Note that this method is intended to be called with the page during the
-        `on_page_markdown` event, as it will modify the page's Markdown.
+        `on_page_markdown` event, as it modifies the page's Markdown.
 
         Arguments:
             page: The page.
@@ -111,7 +144,7 @@ class ListingManager:
         assert isinstance(page.markdown, str)
 
         # Replace callback
-        def replace(match: Match):
+        def replace(match: Match) -> str:
             config = self._resolve(page, match.group(2))
 
             # Compute listing identifier - as the author might include multiple
@@ -121,12 +154,12 @@ class ListingManager:
             id = f"{page.file.src_uri}:{match.start()}-{match.end()}"
             self.data.add(Listing(page, id, config))
 
-            # Replace tags marker with h6 headline
+            # Replace directive with h6 headline
             return f"###### {id}/name {{ #{id}/slug }}"
 
-        # Hack: replace tags markers with a h6 headline to mark the injection
+        # Hack: replace directive with an h6 headline to mark the injection
         # point for the anchor links we will generate after parsing all pages.
-        # By using a h6 headline, we can make sure that the injection point
+        # By using an h6 headline, we can make sure that the injection point
         # will always be a child of the preceding headline.
         directive = self.config.listings_directive
         return re.sub(
@@ -134,94 +167,13 @@ class ListingManager:
             replace, page.markdown, flags = re.I | re.M | re.S
         )
 
-    def populate(
-        self, listing: Listing, mappings: Iterable[Mapping], renderer: Renderer
-    ) -> None:
+    def closest(self, mapping: Mapping) -> list[Listing]:
         """
-        Populate listing with tags featured in the mappings.
-
-        This method is called by the tags plugin to populate the given listing
-        with the given mappings. It will also remove the injection points from
-        the page's Markdown. Note that this method is intended to be called
-        during the `on_env` event, after all pages have been rendered.
-
-        Arguments:
-            listing: The listing.
-            mappings: The mappings.
-            renderer: The renderer.
-        """
-        page = listing.page
-        assert isinstance(page.content, str)
-
-        # Add mappings to listing, respecting shadow tag configuration
-        for mapping in mappings:
-            listing.add(mapping, hidden = listing.config.shadow)
-
-        # Sort listings and tags - we can only do this after all mappings have
-        # been added to the listing, because the tags inside the mappings do
-        # not have a proper order yet, and we need to order them by the settings
-        # as specified in the configuration.
-        listing.tags = self.helper.sort_listing_tags(listing.tags)
-
-        # Render tags for listing headlines
-        name = os.path.join(listing.config.layout, "tag.html")
-        for tree in listing:
-            tree.content = renderer.render(page, name, tag = tree.tag)
-
-            # Sort the mappings and tags of a listing
-            tree.mappings = self.helper.sort_listings(tree.mappings)
-            tree.children = self.helper.sort_listing_tags(tree.children)
-
-        # Replace callback
-        def replace(match: Match):
-            hx = match.group()
-
-            # Populate listing with anchor links to tags
-            anchors = populate(listing, self.helper.slugify)
-            if not anchors:
-                return
-
-            # Get reference to first tag in listing
-            head = next(iter(anchors.values()))
-
-            # Replace h6 with actual level of listing and listing ids with
-            # placeholders to create a format string for the headline
-            hx = re.sub(r"<(/?)h6\b", r"<\g<1>h{}".format(head.level), hx)
-            hx = re.sub(
-                r"{id}\/(\w+)".format(id = listing.id),
-                r"{\1}", hx, flags = re.I | re.M
-            )
-
-            # Render listing headlines - this is recursive
-            for tree in listing:
-                tree.content = hx.format(
-                    slug = anchors[tree.tag].id,
-                    name = tree.content
-                )
-
-            # Render listing
-            name = os.path.join(listing.config.layout, "listing.html")
-            return "\n".join([
-                renderer.render(page, name, listing = tree)
-                    for tree in listing.tags.values()
-            ])
-
-        # Hack: replace injection points (h6 headlines) we added when parsing
-        # the page's Markdown with the actual listing content. Additionally,
-        # replace anchor links in the table of contents with the hierarchy
-        # generated from mapping over the listing.
-        page.content = re.sub(
-            r"<h6[^>]+{id}.*?</h6>".format(id = f"{listing.id}/slug"),
-            replace, page.content, flags = re.I | re.M
-        )
-
-    def get(self, mapping: Mapping) -> list[Listing]:
-        """
-        Get listings for a mapping.
+        Get listings for the mapping ordered by closeness.
 
         Listings are sorted by closeness to the given page, i.e. the number of
         common path components. This is useful for hierarchical listings, where
-        the tags of a page link to the closest listing featuring that tag, with
+        the tags of a page point to the closest listing featuring the tag, with
         the option to show all listings featuring that tag.
 
         Arguments:
@@ -237,50 +189,109 @@ class ListingManager:
             if any(listing & mapping):
                 listings.append(listing)
 
-        # Rank listings by closeness to mapping
-        listings.sort(
-            key = lambda listing: self._rank(mapping, listing),
-            reverse = True
-        )
+        # Ranking callback
+        def rank(listing: Listing) -> int:
+            path = posixpath.commonpath([mapping.item.url, listing.page.url])
+            return len(path)
 
-        # Return listings
-        return listings
+        # Return listings ordered by closeness to mapping
+        return sorted(listings, key = rank, reverse = True)
 
-    def get_references(self, mapping: Mapping) -> list[TagReference]:
+    def populate(
+        self, listing: Listing, mappings: Iterable[Mapping], renderer: Renderer
+    ) -> None:
         """
-        Get tag references for a mapping.
+        Populate listing with tags featured in the mappings.
 
         Arguments:
-            mapping: The mapping.
-
-        Returns:
-            The tag references.
+            listing: The listing.
+            mappings: The mappings.
+            renderer: The renderer.
         """
-        tags: dict[Tag, TagReference] = {}
-        for listing in self.get(mapping):
+        page = listing.page
+        assert isinstance(page.content, str)
 
-            # @todo: find a better method to check tags
-            for tag in listing & mapping:
-                if tag not in tags:
-                    tags[tag] = TagReference(tag)
+        # Add mappings to listing, passing shadow configuration
+        for mapping in mappings:
+            listing.add(mapping, hidden = listing.config.shadow)
 
-                # @todo move link generation into extra function
-                tags[tag].links.append(Link(
-                    listing.page.title,
-                    "#".join([
-                        listing.page.url or ".",
-                        self.helper.slugify(tag)
-                    ])
-                ))
+        # Sort listings and tags - we can only do this after all mappings have
+        # been added to the listing, because the tags inside the mappings do
+        # not have a proper order yet, and we need to order them as specified
+        # in the listing configuration.
+        listing.tags = self._sort_listing_tags(listing.tags)
 
-        # Add missing tag references
-        for tag in mapping.tags:
-            if tag not in tags:
-                tags[tag] = TagReference(tag)
+        # Render tags for listing headlines - the listing configuration allows
+        # tp specify a custom layout, so we resolve the template for tags here
+        name = os.path.join(listing.config.layout, "tag.html")
+        for tree in listing:
+            tree.content = renderer.render(page, name, tag = tree.tag)
 
+            # Sort mappings and subtrees of  listing tree
+            tree.mappings = self._sort_listing(tree.mappings)
+            tree.children = self._sort_listing_tags(tree.children)
 
-        # Sort and return tags
-        return self.helper.sort_tags(tags.values())
+        # Replace callback
+        def replace(match: Match) -> str:
+            hx = match.group()
+
+            # Populate listing with anchor links to tags
+            anchors = populate(listing, self._slugify)
+            if not anchors:
+                return
+
+            # Get reference to first tag in listing
+            head = next(iter(anchors.values()))
+
+            # Replace h6 with actual level of listing and listing ids with
+            # placeholders to create a format string for the headline
+            hx = re.sub(r"<(/?)h6\b", r"<\g<1>h{}".format(head.level), hx)
+            hx = re.sub(
+                r"{id}\/(\w+)".format(id = listing.id),
+                r"{\1}", hx, flags = re.I | re.M
+            )
+
+            # Render listing headlines
+            for tree in listing:
+                tree.content = hx.format(
+                    slug = anchors[tree.tag].id,
+                    name = tree.content
+                )
+
+            # Render listing - the listing configuration allows to specify a
+            # custom layout, so we resolve the template for listings here
+            name = os.path.join(listing.config.layout, "listing.html")
+            return "\n".join([
+                renderer.render(page, name, listing = tree)
+                    for tree in listing.tags.values()
+            ])
+
+        # Hack: replace h6 headlines (injection points) we added when parsing
+        # the page's Markdown with the actual listing content. Additionally,
+        # replace anchor links in the table of contents with the hierarchy
+        # generated from mapping over the listing, or remove them.
+        page.content = re.sub(
+            r"<h6[^>]+{id}.*?</h6>".format(id = f"{listing.id}/slug"),
+            replace, page.content, flags = re.I | re.M
+        )
+
+    def populate_all(
+        self, mappings: Iterable[Mapping], renderer: Renderer
+    ) -> None:
+        """
+        Populate all listings with tags featured in the mappings.
+
+        This method is called by the tags plugin to populate all listings with
+        the given mappings. It will also remove the injection points from the
+        page's Markdown. Note that this method is intended to be called during
+        the `on_env` event, after all pages have been rendered.
+
+        Arguments:
+            mappings: The mappings.
+            renderer: The renderer.
+        """
+        for listing in self.data:
+            self.populate(listing, mappings, renderer)
 
     # -------------------------------------------------------------------------
 
@@ -308,7 +319,7 @@ class ListingManager:
                     f"configurations: {keys}"
                 )
 
-        # Otherwise, parse listing configuration
+        # Otherwise, handle inline listing configuration
         else:
             config = ListingConfig(config_file_path = path)
             config.load_dict(data or {})
@@ -328,32 +339,113 @@ class ListingManager:
                     f"{e}"
                 )
 
-        # Inherit shadow configuration, if not set
+        # Inherit shadow configuration, unless explicitly set
         if not isinstance(config.shadow, bool):
             config.shadow = self.config.shadow
 
-        # Inherit layout configuration, if not set
+        # Inherit layout configuration, unless explicitly set
         if not isinstance(config.layout, str):
             config.layout = self.config.listings_layout
 
         # Return listing configuration
         return config
 
-    def _rank(self, mapping: Mapping, listing: Listing) -> int:
+    # -------------------------------------------------------------------------
+
+    def _slugify(self, tag: Tag) -> str:
         """
-        Rank listing according to listing closeness.
+        Slugify tag.
+
+        If the tag hierarchy setting is enabled, the tag is expanded into a
+        hierarchy of tags, all of which are then slugified and joined with the
+        configured separator. Otherwise, the tag is slugified directly. This is
+        necessary to keep the tag hierarchy in the slug.
 
         Arguments:
-            mapping: The mapping.
-            listing: The listing.
+            tag: The tag.
 
         Returns:
-            The rank.
+            The slug.
         """
-        return len(posixpath.commonpath([
-            mapping.item.url,
-            listing.page.url
-        ]))
+        slugify = self.config.tags_slugify
+        tags = [tag.name]
+
+        # Compute tag hierarchy, if configured
+        hierarchy = self.config.tags_hierarchy_separator
+        if self.config.tags_hierarchy:
+            tags = tag.name.split(hierarchy)
+
+        # Slugify tag hierarchy and join with separator
+        separator = self.config.tags_slugify_separator
+        return self.config.tags_slugify_format.format(
+            slug = hierarchy.join(slugify(name, separator) for name in tags)
+        )
+
+    # -------------------------------------------------------------------------
+
+    def _sort_listing(
+        self, mappings: Iterable[Mapping]
+    ) -> list[Mapping]:
+        """
+        Sort listing.
+
+        When sorting a listing, we sort the mappings of the listing, which is
+        why the caller must pass the mappings of the listing. That way, we can
+        keep this implementation to be purely functional, without having to
+        mutate the listing, which makes testing simpler.
+
+        Arguments:
+            mappings: The mappings.
+
+        Returns:
+            The sorted mappings.
+        """
+        return sorted(
+            mappings,
+            key = self.config.listings_sort_by,
+            reverse = self.config.listings_sort_reverse
+        )
+
+    def _sort_listing_tags(
+        self, children: dict[Tag, ListingTree]
+    ) -> dict[Tag, ListingTree]:
+        """
+        Sort listing tags.
+
+        When sorting a listing's tags, we sort the immediate subtrees of the
+        listing, which is why the caller must pass the children of the listing.
+        That way, we can keep this implementation to be purely functional,
+        without having to mutate the listing.
+
+        Arguments:
+            children: The listing trees, each of which associated with a tag.
+
+        Returns:
+            The sorted listing trees.
+        """
+        return dict(sorted(
+            children.items(),
+            key = lambda item: self.config.listings_tags_sort_by(*item),
+            reverse = self.config.listings_tags_sort_reverse
+        ))
+
+    def _sort_tags(
+        self, tags: Iterable[Tag]
+    ) -> list[Tag]:
+        """
+        Sort tags.
+
+        Arguments:
+            tags: The tags.
+
+        Returns:
+            The sorted tags.
+        """
+        return sorted(
+            tags,
+            key = self.config.tags_sort_by,
+            reverse = self.config.tags_sort_reverse
+        )
 
 # -----------------------------------------------------------------------------
 # Data

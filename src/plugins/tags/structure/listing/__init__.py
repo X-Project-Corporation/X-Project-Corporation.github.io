@@ -84,6 +84,15 @@ class Listing:
         """
         return f"Listing({repr(self.page)})"
 
+    def __hash__(self) -> int:
+        """
+        Return the hash of the listing.
+
+        Returns:
+            The hash.
+        """
+        return hash(self.id)
+
     def __iter__(self) -> Iterator[ListingTree]:
         """
         Iterate over the listing in pre-order.

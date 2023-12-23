@@ -121,7 +121,7 @@ class Tag:
             yield tag
             tag = tag.parent
 
-    def __contains__(self, other: object) -> bool:
+    def __contains__(self, other: Tag) -> bool:
         """
         Check if the tag contains another tag.
 
@@ -130,17 +130,11 @@ class Tag:
 
         Returns:
             Whether the tag contains the other tag.
-
-        Raises:
-            NotImplementedError: If the other object is not a Tag.
         """
-        if not isinstance(other, Tag):
-            raise NotImplementedError
-
-        # Check if the tag contains the other tag
+        assert isinstance(other, Tag)
         return any(tag == other for tag in self)
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: Tag) -> bool:
         """
         Check if the tag is equal to another tag.
 
@@ -149,17 +143,11 @@ class Tag:
 
         Returns:
             Whether the tags are equal.
-
-        Raises:
-            NotImplementedError: If the other object is not a Tag.
         """
-        if not isinstance(other, Tag):
-            raise NotImplementedError
-
-        # Check if both tags are equal
+        assert isinstance(other, Tag)
         return self.name == other.name
 
-    def __lt__(self, other: object) -> bool:
+    def __lt__(self, other: Tag) -> bool:
         """
         Check if the tag is less than another tag.
 
@@ -168,14 +156,8 @@ class Tag:
 
         Returns:
             Whether the tag is less than the other tag.
-
-        Raises:
-            NotImplementedError: If the other object is not a Tag.
         """
-        if not isinstance(other, Tag):
-            raise NotImplementedError
-
-        # Check ordering of tags
+        assert isinstance(other, Tag)
         return self.name < other.name
 
     # -------------------------------------------------------------------------
