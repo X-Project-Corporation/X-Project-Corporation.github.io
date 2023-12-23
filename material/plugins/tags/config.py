@@ -76,11 +76,7 @@ class TagsConfig(Config):
     tags_compare_reverse = Deprecated(moved_to = "tags_sort_reverse")
     tags_pages_compare = Deprecated(moved_to = "listings_items_sort_by")
     tags_pages_compare_reverse = Deprecated(moved_to = "listings_items_sort_reverse")
-    tags_file = Deprecated(
-        message = "This option is not necessary anymore, please just use <!-- @tags -->",
-        option_type = Type(str)
-    )
+    tags_file = Deprecated(option_type = Type(str))
     tags_extra_files = Deprecated(
-        message = "This option is not necessary anymore, please just use <!-- @tags -->",
         option_type = DictOfItems(ListOfItems(Type(str)), default = {})
     )
