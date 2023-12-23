@@ -20,6 +20,8 @@
 
 from __future__ import annotations
 
+import logging
+import os
 import posixpath
 import re
 import yaml
@@ -153,7 +155,7 @@ class ListingManager:
 
         # Add mappings to listing, respecting shadow tag configuration
         for mapping in mappings:
-            listing.add(mapping, hidden = self.config.shadow)
+            listing.add(mapping, hidden = listing.config.shadow)
 
         # Sort listings and tags - we can only do this after all mappings have
         # been added to the listing, because the tags inside the mappings do
@@ -162,8 +164,9 @@ class ListingManager:
         listing.tags = self.helper.sort_listing_tags(listing.tags)
 
         # Render tags for listing headlines
+        name = os.path.join(listing.config.layout, "tag.html")
         for tree in listing:
-            tree.content = renderer.render(page, "tag.html", tag = tree.tag)
+            tree.content = renderer.render(page, name, tag = tree.tag)
 
             # Sort the mappings and tags of a listing
             tree.mappings = self.helper.sort_listings(tree.mappings)
@@ -197,8 +200,9 @@ class ListingManager:
                 )
 
             # Render listing
+            name = os.path.join(listing.config.layout, "listing.html")
             return "\n".join([
-                renderer.render(page, "listing.html", listing = tree)
+                renderer.render(page, name, listing = tree)
                     for tree in listing.tags.values()
             ])
 
@@ -308,7 +312,29 @@ class ListingManager:
         else:
             config = ListingConfig(config_file_path = path)
             config.load_dict(data or {})
-            config.validate()
+
+            # Validate listing configuration
+            errors, warnings = config.validate()
+            for _, w in warnings:
+                path = os.path.relpath(path)
+                log.warning(
+                    f"Error reading listing configuration in '{path}':\n"
+                    f"{w}"
+                )
+            for _, e in errors:
+                path = os.path.relpath(path)
+                raise PluginError(
+                    f"Error reading listing configuration in '{path}':\n"
+                    f"{e}"
+                )
+
+        # Inherit shadow configuration, if not set
+        if not isinstance(config.shadow, bool):
+            config.shadow = self.config.shadow
+
+        # Inherit layout configuration, if not set
+        if not isinstance(config.layout, str):
+            config.layout = self.config.listings_layout
 
         # Return listing configuration
         return config
@@ -328,3 +354,10 @@ class ListingManager:
             mapping.item.url,
             listing.page.url
         ]))
+
+# -----------------------------------------------------------------------------
+# Data
+# -----------------------------------------------------------------------------
+
+# Set up logging
+log = logging.getLogger("mkdocs.material.plugins.tags")

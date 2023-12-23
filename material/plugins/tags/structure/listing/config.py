@@ -20,7 +20,7 @@
 
 from material.plugins.tags.structure.tag.options import TagSet
 from mkdocs.config.base import Config
-from mkdocs.config.config_options import Type
+from mkdocs.config.config_options import Optional, Type
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -35,10 +35,26 @@ class ListingConfig(Config):
     """
     Whether to only include pages in the current subsection.
 
-    Enabling this option will only include pages that are on the same level or
+    Enabling this setting will only include pages that are on the same level or
     on a lower level than the page the listing is on. This allows to create a
     listing of tags on a page that only includes pages that are in the same
     subsection of the documentation.
+    """
+
+    shadow = Optional(Type(bool))
+    """
+    Whether to include shadow tags.
+
+    This setting allows to override the global setting for shadow tags. If this
+    setting is not specified, the global `shadow` setting is used.
+    """
+
+    layout = Optional(Type(str))
+    """
+    The layout to use for rendering the listing.
+
+    This setting allows to override the global setting for the layout. If this
+    setting is not specified, the global `listings_layout` setting is used.
     """
 
     include = TagSet()
