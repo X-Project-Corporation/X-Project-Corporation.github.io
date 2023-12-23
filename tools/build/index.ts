@@ -44,7 +44,7 @@ import { optimize } from "svgo"
 import { IconSearchIndex } from "_/components"
 
 import { base, read, resolve, watch, write } from "./_"
-import { copyAll } from "./copy"
+import { copyAll, linkAll } from "./copy"
 import {
   transformScript,
   transformStyle
@@ -158,20 +158,30 @@ const assets$ = concat(
     }))
 )
 
-/* Copy plugins and extensions */
-const sources$ = copyAll("**/*.{py,yml}", {
-  from: "src",
-  to: base,
-  watch: process.argv.includes("--watch"),
-  transform: async (data, name) => {
-    if (path.basename(name) === "__init__.py") {
-      const metadata = require("../../package.json")
-      return data.replace("$md-version$", metadata.version)
-    } else {
-      return data
-    }
-  }
-})
+/* Handle plugins and extensions */
+const sources$ =
+  process.argv.includes("--watch")
+
+    /* Link sources */
+    ? linkAll("**/*.{py,yml}", {
+        from: "src",
+        to: base,
+        watch: process.argv.includes("--watch")
+      })
+
+    /* Copy sources */
+    : copyAll("**/*.{py,yml}", {
+        from: "src",
+        to: base,
+        transform: async (data, name) => {
+          if (path.basename(name) === "__init__.py") {
+            const metadata = require("../../package.json")
+            return data.replace("$md-version$", metadata.version)
+          } else {
+            return data
+          }
+        }
+      })
 
 /* ------------------------------------------------------------------------- */
 

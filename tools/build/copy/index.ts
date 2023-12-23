@@ -23,7 +23,11 @@
 import * as fs from "fs/promises"
 import * as path from "path"
 import {
+  EMPTY,
   Observable,
+  catchError,
+  concat,
+  defer,
   from,
   map,
   mergeMap,
@@ -103,6 +107,53 @@ export function copyAll(
   return resolve(pattern, { ...options, cwd: options.from })
     .pipe(
       mergeMap(file => copy({
+        ...options,
+        from: `${options.from}/${file}`,
+        to:   `${options.to}/${file.replace(/(\.{2}\/)+/, "")}`
+      }), 16)
+    )
+}
+
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Symlink a file
+ *
+ * @param options - Options
+ *
+ * @returns File observable
+ */
+export function link(
+  options: Omit<CopyOptions, "transform">
+): Observable<string> {
+  return mkdir(path.dirname(options.to))
+    .pipe(
+      map(directory => path.relative(directory, options.from)),
+      switchMap(from => concat(
+        defer(() => fs.unlink(options.to)).pipe(catchError(() => EMPTY)),
+        defer(() => fs.symlink(from, options.to)))
+      ),
+      map(() => options.to)
+    )
+}
+
+/**
+ * Symlink all files matching the given pattern
+ *
+ * Note that this function rebases all files that match the pattern to the
+ * target folder, even if the pattern resolves to a parent folder.
+ *
+ * @param pattern - Pattern
+ * @param options - Options
+ *
+ * @returns File observable
+ */
+export function linkAll(
+  pattern: string, options: Omit<CopyOptions, "transform">
+): Observable<string> {
+  return resolve(pattern, { ...options, cwd: options.from })
+    .pipe(
+      mergeMap(file => link({
         ...options,
         from: `${options.from}/${file}`,
         to:   `${options.to}/${file.replace(/(\.{2}\/)+/, "")}`

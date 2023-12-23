@@ -21,7 +21,9 @@
 import os
 
 from mkdocs.config.base import Config
-from mkdocs.config.config_options import _LogLevel, Deprecated, Type
+from mkdocs.config.config_options import (
+  _LogLevel, Deprecated, ListOfItems, Type
+)
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -46,8 +48,8 @@ class SocialConfig(Config):
     cards_layout_dir = Type(str, default = "layouts")
     cards_layout = Type(str, default = "default")
     cards_layout_options = Type(dict, default = {})
-    cards_include = Type(list, default = [])
-    cards_exclude = Type(list, default = [])
+    cards_include = ListOfItems(Type(str), default = [])
+    cards_exclude = ListOfItems(Type(str), default = [])
 
     # Settings for debugging
     debug = Type(bool, default = False)

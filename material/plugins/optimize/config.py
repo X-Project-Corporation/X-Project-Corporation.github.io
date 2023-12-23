@@ -21,7 +21,7 @@
 import os
 
 from mkdocs.config.base import Config
-from mkdocs.config.config_options import Type
+from mkdocs.config.config_options import ListOfItems, Type
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -44,8 +44,8 @@ class OptimizeConfig(Config):
     optimize_jpg = Type(bool, default = True)
     optimize_jpg_quality = Type(int, default = 60)
     optimize_jpg_progressive = Type(bool, default = True)
-    optimize_include = Type(list, default = [])
-    optimize_exclude = Type(list, default = [])
+    optimize_include = ListOfItems(Type(str), default = [])
+    optimize_exclude = ListOfItems(Type(str), default = [])
 
     # Settings for reporting
     print_gain = Type(bool, default = True)
