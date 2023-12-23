@@ -56,6 +56,7 @@ class TagsConfig(Config):
 
     # Settings for listings
     listings = Type(bool, default = True)
+    listings_directive = Type(str, default = "material/tags")
     listings_map = DictOfItems(SubConfig(ListingConfig), default = {})
     listings_sort_by = Type(Callable, default = item_title)
     listings_sort_reverse = Type(bool, default = False)

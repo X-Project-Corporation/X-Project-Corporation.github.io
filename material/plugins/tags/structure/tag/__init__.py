@@ -33,9 +33,11 @@ class Tag:
     A tag.
 
     Tags can be used to categorize pages and group them into a tag structure. A
-    tag is a simple string, which can be split into multiple parts by using the
-    hierarchical separator defined as `hierarchy_separator` in `mkdocs.yml`.
-    A tag that is a parent of another tag contains the other tag. Example:
+    tag is a simple string, which can be split into a hierarchy of tags by using
+    the character or string as defined in the `hierarchy_separator` setting in
+    `mkdocs.yml`. Each parent tag contains their child tags.
+
+    Example:
 
     ```yaml
     tags:
@@ -54,10 +56,10 @@ class Tag:
     └─ qux
     ```
 
-    Note that this class does not split the tag name into multiple parts, but
-    rather provides a simple interface to iterate over the tag and its parents.
-    Splitting is left to the caller, in order to allow for changing the tag
-    separator in `mkdocs.yml`.
+    Note that this class does not split the tag name into a hierarchy of tags
+    by itself, but rather provides a simple interface to iterate over the tag
+    and its parents. Splitting is left to the caller, in order to allow for
+    changing the separator in `mkdocs.yml`.
     """
 
     def __init__(
@@ -69,6 +71,7 @@ class Tag:
         Arguments:
             name: The tag name.
             parent: The parent tag.
+            hidden: Whether the tag is hidden.
         """
         self.name = name
         self.parent = parent

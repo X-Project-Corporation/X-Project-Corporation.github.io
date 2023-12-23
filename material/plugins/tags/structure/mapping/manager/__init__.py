@@ -34,6 +34,9 @@ from mkdocs.structure.pages import Page
 class MappingManager:
     """
     A mapping manager.
+
+    The mapping manager is responsible for collecting all tags from the front
+    matter of pages, and for building a tag structure from them, nothing more.
     """
 
     def __init__(self, config: TagsConfig):
@@ -79,7 +82,7 @@ class MappingManager:
     This is the validator that is used to check if tags are valid, including
     the tags in the front matter of pages, as well as the tags defined in the
     configuration. Numbers and booleans are always converted to strings before
-    creating tags, and the allow list is checked as well, if any.
+    creating tags, and the allow list is checked as well, if given.
     """
 
     data: dict[str, Mapping]
@@ -228,7 +231,7 @@ def _print(manager: MappingManager, indent: int = 0) -> str:
     Return a string representation of a mapping manager for debugging.
 
     Arguments:
-        manager: Mapping manager.
+        manager: The mapping manager.
         indent: The indentation level.
 
     Returns:

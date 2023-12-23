@@ -31,6 +31,14 @@ from material.plugins.tags.structure.tag import Tag
 class ListingTree:
     """
     A listing tree.
+
+    Listing trees are a tree structure that represent the hierarchy of tags
+    and mappings. Each tree node is a tag, and each tag can have multiple
+    mappings. Additionally, each tree can have subtrees, which are typically
+    called nested tags.
+
+    This is an internal data structure that is used to render listings. It is
+    also the immediate structure that is passed to the template.
     """
 
     def __init__(self, tag: Tag):
@@ -54,15 +62,6 @@ class ListingTree:
         """
         return _print(self)
 
-    def __hash__(self) -> int:
-        """
-        Return the hash of the listing tree.
-
-        Returns:
-            The hash.
-        """
-        return hash(self.tag)
-
     def __iter__(self) -> Iterator[ListingTree]:
         """
         Iterate over subtrees of the listing tree.
@@ -82,6 +81,11 @@ class ListingTree:
     content: str | None
     """
     The rendered content of the listing tree.
+
+    This attribute holds the result of rendering the `tag.html` template, which
+    is the rendered tag as displayed in the listing. It is essential that this
+    is done for all tags (and nested tags) before rendering the tree, as the
+    rendering process of the listing tree relies on this attribute.
     """
 
     mappings: list[Mapping]

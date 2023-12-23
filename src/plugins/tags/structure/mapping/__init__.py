@@ -33,18 +33,18 @@ class Mapping:
     """
     A mapping between a page or link and a set of tags.
 
-    We use this class to store the mapping between a link or page and a set of
+    We use this class to store the mapping between a page or link and a set of
     tags. This is necessary as we don't want to store the tags directly on the
-    link or page object, in order not to clutter the internal data structures
-    of MkDocs.
+    page or link object, in order not to clutter the internal data structures
+    of MkDocs, keeping the plugin as unobtrusive as possible.
 
-    Links are primarily used when integating with tags from external projects,
+    Links are primarily used when integrating with tags from external projects,
     as we can't construct a page object for them as we do for local files.
     """
 
     def __init__(self, item: Page | Link, *, tags: Iterable[Tag] | None = None):
         """
-        Initializes the mapping.
+        Initialize the mapping.
 
         Tags can be passed upon initialization, but can also be added later on
         using the `add` or `update` method. of the `tags` attribute.

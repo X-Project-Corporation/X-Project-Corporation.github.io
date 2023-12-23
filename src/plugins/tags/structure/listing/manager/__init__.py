@@ -126,8 +126,9 @@ class ListingManager:
         # point for the anchor links we will generate after parsing all pages.
         # By using a h6 headline, we can make sure that the injection point
         # will always be a child of the preceding headline.
+        directive = self.config.listings_directive
         return re.sub(
-            r"(<!--\s*?@tags(.*?)\s*-->)",
+            r"(<!--\s*?{directive}(.*?)\s*-->)".format(directive = directive),
             replace, page.markdown, flags = re.I | re.M | re.S
         )
 

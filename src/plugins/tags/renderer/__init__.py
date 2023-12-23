@@ -31,7 +31,18 @@ from mkdocs.utils import get_relative_url
 
 class Renderer:
     """
-    A renderer.
+    A renderer for tags and listings.
+
+    This class implements a simple tag and listing renderer, leveraging the
+    Jinja environment and the MkDocs configuration as provided to plugins.
+
+    Note that the templates must be stored in the `fragments` and not `partials`
+    directory, because in order to render tags and listings, we must wait for
+    all pages to be read and processed, as we first need to collect all tags
+    before we can render listings. Tags induce a graph, not a tree.
+
+    For this reason, we consider the templates to be fragments, as they are
+    not implicitly rendered by MkDocs, but explicitly by the plugin.
     """
 
     def __init__(self, env: Environment, config: MkDocsConfig):
@@ -63,6 +74,9 @@ class Renderer:
         """
         Render a template.
 
+        Templates are resolved from `fragments/tags`, so if you want to override
+        templates or provide additional ones place them in this directory.
+
         Arguments:
             page: The page.
             name: The name of the template.
@@ -71,7 +85,7 @@ class Renderer:
         Returns:
             The rendered template.
         """
-        template = self.env.get_template(f"fragments/tags/directory/{name}")
+        template = self.env.get_template(f"fragments/tags/{name}")
         return template.render(
             config = self.config, page = page,
             base_url = get_relative_url(".", page.url),

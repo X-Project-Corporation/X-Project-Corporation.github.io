@@ -118,16 +118,16 @@ class TagsPlugin(BasePlugin[TagsConfig]):
             #
             if "[TAGS]" in page.markdown:
                 page.markdown = page.markdown.replace(
-                    "[TAGS]", "<!-- @tags -->"
+                    "[TAGS]", f"<!-- {self.config.listings_directive} -->"
                 )
 
             #
-            if not re.search(r"<!--\s+@tags", page.markdown):
-                page.markdown += "\n<!-- @tags -->"
+            if not re.search(r"<!--\s+{directive}".format(directive = self.config.listings_directive), page.markdown):
+                page.markdown += f"\n<!-- {self.config.listings_directive} -->"
 
         if page.file.src_uri in self.config.tags_extra_files:
             tags = self.config.tags_extra_files[page.file.src_uri]
-            placeholder = f"<!-- @tags {{ include: [{', '.join(tags)}] }} -->"
+            placeholder = f"<!-- {self.config.listings_directive} {{ include: [{', '.join(tags)}] }} -->"
             #
             if "[TAGS]" in page.markdown:
                 page.markdown = page.markdown.replace(

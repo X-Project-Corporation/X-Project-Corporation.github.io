@@ -38,7 +38,7 @@ class ListingConfig(Config):
     Enabling this option will only include pages that are on the same level or
     on a lower level than the page the listing is on. This allows to create a
     listing of tags on a page that only includes pages that are in the same
-    subsection of the documentation as the page the listing is on.
+    subsection of the documentation.
     """
 
     include = TagSet()

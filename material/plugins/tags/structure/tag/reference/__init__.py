@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from material.plugins.tags.structure.tag import Tag
 from mkdocs.structure.nav import Link
 
@@ -32,12 +31,15 @@ class TagReference(Tag):
     """
     A tag reference.
 
-    @docs
+    Tag references are a subclass of tags that can have associated links, which
+    is primarily used for linking tags to listings. The first link is used as
+    the canonical link, which by default points to the closest listing that
+    features the tag. This is considered to be the canonical listing.
     """
 
     def __init__(self, tag: Tag, links: list[Link] | None = None):
         """
-        Initialize the tag.
+        Initialize the tag reference.
 
         Arguments:
             tag: The tag.
@@ -70,6 +72,9 @@ class TagReference(Tag):
         Return the URL of the tag reference.
 
         Returns:
-            URL of the tag reference.
+            The URL of the tag reference.
         """
-        return self.links[0].url or "." if self.links else None
+        if self.links:
+            return self.links[0].url or "."
+        else:
+            return None

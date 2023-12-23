@@ -38,10 +38,27 @@ class Listing:
     """
     A listing of tags.
 
-    Listings can be included on any page by using the `<!-- @tags [args] -->`
+    Listings can be included on a page with the `<!-- material/tags [args] -->`
     directive. The arguments are passed to a YAML parser, and are expected to
-    either be a valid listing configuration, or an dentifier that points to a
-    valid listing configuration in the `listings_map` setting in `mkdocs.yml`.
+    either be an inline listing configuration, or an identifier that points to
+    a listing configuration in the `listings_map` setting in `mkdocs.yml`.
+
+    Example 1: use inline listing configuration
+
+    ``` markdown
+    <!-- material/tags { include: [foo, bar] } -->
+    ```
+
+    Example 2: use listing configuration from `listings_map.qux`
+
+    ``` markdown
+    <!-- material/tags qux -->
+    ```
+
+    If no arguments are given, the default listing configuration is used,
+    rendering all tags and mappings. In case you're using multiple instances
+    of the tags plugin, you can use the `listings_directive` setting to change
+    the directive name.
     """
 
     def __init__(self, page: Page, id: str, config: ListingConfig):
@@ -88,8 +105,8 @@ class Listing:
 
         When hierarchical tags are used, the set of tags is expanded to include
         all parent tags, but only for the inclusion check. The returned tags are
-        always the actual tags of the mapping. This is done to avoid duplicate
-        entries in the listing.
+        always the actual tags (= leaves) of the mapping. This is done to avoid
+        duplicate entries in the listing.
 
         If a mapping features one of the tags excluded from the listing, the
         entire mapping is excluded from the listing. Additionally, if a listing
@@ -111,7 +128,7 @@ class Listing:
             if not mapping.item.url.startswith(base):
                 return iter([])
 
-            # If the mapping on the same page as the listing, we skip it, as
+            # If the mapping is on the same page as the listing, we skip it, as
             # it makes no sense to link to the listing on the same page
             if mapping.item == self.page:
                 return iter([])
@@ -141,6 +158,9 @@ class Listing:
     id: str
     """
     The listing identifier.
+
+    As authors may place an arbitrary number of listings on any page, we need
+    to be able to distinguish between them. This is done automatically.
     """
 
     config: ListingConfig
@@ -160,7 +180,9 @@ class Listing:
         Add mapping to listing.
 
         Mappings are only added to listings, if the listing features tags that
-        are also featured in the mapping, and which are not explicitly hidden.
+        are also featured in the mapping. The caller can decide whether hidden
+        tags should be rendered or not, e.g., automatically set by the plugin
+        when shadow tags are disabled.
 
         Arguments:
             mapping: The mapping.
@@ -183,6 +205,6 @@ class Listing:
                 if tag == leaf:
                     tree[tag].mappings.append(mapping)
 
-                # Otherwise, we continue traversing the tree
+                # Otherwise, we continue walking down the tree
                 else:
                     tree = tree[tag].children
