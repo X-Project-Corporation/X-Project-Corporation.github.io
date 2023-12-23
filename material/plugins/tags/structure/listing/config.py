@@ -57,6 +57,14 @@ class ListingConfig(Config):
     setting is not specified, the global `listings_layout` setting is used.
     """
 
+    toc = Optional(Type(bool))
+    """
+    Whether to populate the table of contents with anchor links to tags.
+
+    This setting allows to override the global setting for the layout. If this
+    setting is not specified, the global `listings_toc` setting is used.
+    """
+
     include = TagSet()
     """
     Tags to include in the listing.

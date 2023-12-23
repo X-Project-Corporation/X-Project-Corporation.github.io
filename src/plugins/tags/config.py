@@ -56,13 +56,14 @@ class TagsConfig(Config):
 
     # Settings for listings
     listings = Type(bool, default = True)
-    listings_directive = Type(str, default = "material/tags")
-    listings_layout = Type(str, default = "default")
     listings_map = DictOfItems(SubConfig(ListingConfig), default = {})
     listings_sort_by = Type(Callable, default = item_title)
     listings_sort_reverse = Type(bool, default = False)
     listings_tags_sort_by = Type(Callable, default = tag_name)
     listings_tags_sort_reverse = Type(bool, default = False)
+    listings_directive = Type(str, default = "material/tags")
+    listings_layout = Type(str, default = "default")
+    listings_toc = Type(bool, default = True)
 
     # Settings for shadow tags
     shadow = Type(bool, default = False)
@@ -74,8 +75,8 @@ class TagsConfig(Config):
     # Deprecated settings
     tags_compare = Deprecated(moved_to = "tags_sort_by")
     tags_compare_reverse = Deprecated(moved_to = "tags_sort_reverse")
-    tags_pages_compare = Deprecated(moved_to = "listings_items_sort_by")
-    tags_pages_compare_reverse = Deprecated(moved_to = "listings_items_sort_reverse")
+    tags_pages_compare = Deprecated(moved_to = "listings_sort_by")
+    tags_pages_compare_reverse = Deprecated(moved_to = "listings_sort_reverse")
     tags_file = Deprecated(option_type = Type(str))
     tags_extra_files = Deprecated(
         option_type = DictOfItems(ListOfItems(Type(str)), default = {})

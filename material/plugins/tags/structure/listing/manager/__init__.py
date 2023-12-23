@@ -40,7 +40,7 @@ from mkdocs.structure.nav import Link
 from re import Match
 from urllib.parse import urlparse
 
-from .anchors import populate
+from . import toc
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -211,7 +211,7 @@ class ListingManager:
         page = listing.page
         assert isinstance(page.content, str)
 
-        # Add mappings to listing, passing shadow configuration
+        # Add mappings to listing, passing shadow tags configuration
         for mapping in mappings:
             listing.add(mapping, hidden = listing.config.shadow)
 
@@ -236,7 +236,7 @@ class ListingManager:
             hx = match.group()
 
             # Populate listing with anchor links to tags
-            anchors = populate(listing, self._slugify)
+            anchors = toc.populate(listing, self._slugify)
             if not anchors:
                 return
 
@@ -339,13 +339,17 @@ class ListingManager:
                     f"{e}"
                 )
 
-        # Inherit shadow configuration, unless explicitly set
+        # Inherit shadow tags configuration, unless explicitly set
         if not isinstance(config.shadow, bool):
             config.shadow = self.config.shadow
 
         # Inherit layout configuration, unless explicitly set
         if not isinstance(config.layout, str):
             config.layout = self.config.listings_layout
+
+        # Inherit table of contents configuration, unless explicitly set
+        if not isinstance(config.toc, bool):
+            config.toc = self.config.listings_toc
 
         # Return listing configuration
         return config
