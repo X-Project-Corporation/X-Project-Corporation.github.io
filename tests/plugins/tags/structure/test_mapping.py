@@ -37,7 +37,7 @@ class TestMapping(unittest.TestCase):
         """
         Should initialize the mapping.
         """
-        link = Link(title = "link", url =" url")
+        link = Link(title = "link",  url = "url")
         tags = [Tag("tag_1"), Tag("tag_2")]
 
         # Initialize mapping and perform assertions
@@ -49,7 +49,7 @@ class TestMapping(unittest.TestCase):
         """
         Should initialize the mapping with duplicate tags.
         """
-        link = Link(title = "link", url =" url")
+        link = Link(title = "link",  url = "url")
         tags = [Tag("tag_1"), Tag("tag_2"), Tag("tag_2")]
 
         # Initialize mapping and perform assertions
@@ -61,7 +61,7 @@ class TestMapping(unittest.TestCase):
         """
         Should return a printable representation of the mapping.
         """
-        link = Link(title = "link", url =" url")
+        link = Link(title = "link",  url = "url")
         tags = [Tag("tag_1"), Tag("tag_2")]
 
         # Initialize mapping and perform assertions
@@ -72,7 +72,7 @@ class TestMapping(unittest.TestCase):
         """
         Should iterate over the tags featured in the mapping.
         """
-        link = Link(title = "link", url =" url")
+        link = Link(title = "link",  url = "url")
         parent = Tag("parent")
         tag = Tag("tag", parent = parent)
 
@@ -87,7 +87,7 @@ class TestMapping(unittest.TestCase):
         This test ensures that, albeit the tag is expanded and the parent tags
         of a tag are tested, it is always the tag itself that is returned.
         """
-        link = Link(title = "link", url =" url")
+        link = Link(title = "link",  url = "url")
         parent = Tag("parent")
         tag = Tag("tag", parent = parent)
 
