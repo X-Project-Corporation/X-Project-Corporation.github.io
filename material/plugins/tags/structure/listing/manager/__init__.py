@@ -58,7 +58,7 @@ class ListingManager:
 
     def __init__(self, config: TagsConfig):
         """
-        Initialize listing manager.
+        Initialize the listing manager.
 
         Arguments:
             config: The configuration.

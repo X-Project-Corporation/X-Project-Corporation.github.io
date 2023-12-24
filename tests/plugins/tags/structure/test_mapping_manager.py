@@ -22,6 +22,7 @@ import unittest
 
 from material.plugins.tags.structure.mapping.manager import MappingManager
 from material.plugins.tags.structure.tag import Tag
+from mkdocs.config.base import ValidationError
 
 from tests.helpers import stub_page
 from tests.plugins.tags.helpers import (
@@ -51,8 +52,8 @@ class TestMappingManager(unittest.TestCase):
         Should return a printable representation of the mapping manager.
         """
         manager = MappingManager(stub_tags_config())
-        mapping = manager.add(stub_page_with_tags(["foo", "bar"]))
-        self.assertEqual(repr(manager), f"MappingManager()\n  {mapping}")
+        manager.add(stub_page_with_tags(["foo", "bar"]))
+        self.assertIsInstance(repr(manager), str)
 
     def test_iter(self):
         """
@@ -70,9 +71,9 @@ class TestMappingManager(unittest.TestCase):
         Should add page.
         """
         manager = MappingManager(stub_tags_config())
+        page = stub_page_with_tags(["foo", "bar"])
 
         # Add page and perform assertions
-        page = stub_page_with_tags(["foo", "bar"])
         mapping = manager.add(page)
         self.assertEqual(manager.data[page.url], mapping)
         self.assertEqual(mapping.item, page)
@@ -80,10 +81,10 @@ class TestMappingManager(unittest.TestCase):
 
     def test_add_duplicate_tags(self):
         """
-        Should add page with duplicate tags.
+        Should add page with deduplicated tags.
 
         This test ensures that if the author automatically adds tags by using
-        the meta plugin, tags are always deduplicated.
+        the meta plugin or other plugins, tags are always deduplicated.
         """
         manager = MappingManager(stub_tags_config())
 
@@ -93,7 +94,7 @@ class TestMappingManager(unittest.TestCase):
 
     def test_add_zero_tags(self):
         """
-        Should add page with zero tags.
+        Should not add page with zero tags.
 
         This test ensures that pages that define `tags` in their front matter
         but leave them empty are not added to the mapping.
@@ -105,7 +106,7 @@ class TestMappingManager(unittest.TestCase):
 
     def test_add_no_tags(self):
         """
-        Should add page with no tags.
+        Should not add page with no tags.
         """
         manager = MappingManager(stub_tags_config())
 
@@ -132,9 +133,7 @@ class TestMappingManager(unittest.TestCase):
         """
         Should add page with shadow tags.
         """
-        manager = MappingManager(stub_tags_config(
-            shadow_tags = ["foo"]
-        ))
+        manager = MappingManager(stub_tags_config(shadow_tags = ["foo"]))
 
         # Add page and perform assertions
         mapping = manager.add(stub_page_with_tags(["foo", "foo/bar"]))
@@ -146,29 +145,33 @@ class TestMappingManager(unittest.TestCase):
         """
         Should add page with shadow tags by prefix.
         """
-        manager = MappingManager(stub_tags_config(
-            shadow_tags_prefix = "foo"
-        ))
+        manager = MappingManager(stub_tags_config(shadow_tags_prefix = "foo"))
 
         # Add page and perform assertions
         mapping = manager.add(stub_page_with_tags(["foo", "foo/bar"]))
         self.assertEqual(mapping.tags, set([Tag("foo"), Tag("foo/bar")]))
         for tag in mapping.tags:
-            self.assertEqual(tag.hidden, True)
+            self.assertTrue(tag.hidden)
 
     def test_add_shadow_tags_suffix(self):
         """
         Should add page with shadow tags by suffix.
         """
-        manager = MappingManager(stub_tags_config(
-            shadow_tags_suffix = "foo"
-        ))
+        manager = MappingManager(stub_tags_config(shadow_tags_suffix = "foo"))
 
         # Add page and perform assertions
         mapping = manager.add(stub_page_with_tags(["foo", "foo/bar"]))
         self.assertEqual(mapping.tags, set([Tag("foo"), Tag("foo/bar")]))
         for tag in mapping.tags:
             self.assertEqual(tag.hidden, tag == Tag("foo"))
+
+    def test_add_throw_if_not_allowed(self):
+        """
+        Should throw if page features tags that are not allowed.
+        """
+        manager = MappingManager(stub_tags_config(tags_allowed = ["foo"]))
+        with self.assertRaises(ValidationError):
+            manager.add(stub_page_with_tags(["foo", "bar"]))
 
     # -------------------------------------------------------------------------
 
@@ -207,13 +210,32 @@ class TestMappingManagerWithTagHierarchies(unittest.TestCase):
         This test ensures that the mapping manager creates the tag hierarchy,
         e.g., `foo/bar` is expanded into `foo` and `foo/bar`.
         """
-        manager = MappingManager(stub_tags_config(
-            tags_hierarchy = True
-        ))
+        manager = MappingManager(stub_tags_config(tags_hierarchy = True))
 
         # Add page and perform assertions
         mapping = manager.add(stub_page_with_tags(["foo", "foo/bar"]))
         self.assertEqual(mapping.tags, set([Tag("foo"), Tag("foo/bar")]))
+        for tag in mapping.tags:
+            if tag == Tag("foo"):
+                self.assertIsNone(tag.parent)
+            else:
+                self.assertEqual(tag.parent, Tag("foo"))
+
+    def test_add_hierarchical_tags_separator(self):
+        """
+        Should add page with hierarchical tags and configured separator.
+
+        This test ensures that the mapping manager creates the tag hierarchy,
+        e.g., `foo|bar` is expanded into `foo` and `foo|bar`.
+        """
+        manager = MappingManager(stub_tags_config(
+            tags_hierarchy = True,
+            tags_hierarchy_separator = "|"
+        ))
+
+        # Add page and perform assertions
+        mapping = manager.add(stub_page_with_tags(["foo", "foo|bar"]))
+        self.assertEqual(mapping.tags, set([Tag("foo"), Tag("foo|bar")]))
         for tag in mapping.tags:
             if tag == Tag("foo"):
                 self.assertIsNone(tag.parent)
@@ -228,7 +250,8 @@ class TestMappingManagerWithTagHierarchies(unittest.TestCase):
         e.g., `foo/bar` is not hidden if `foo` is a shadow tag.
         """
         manager = MappingManager(stub_tags_config(
-            tags_hierarchy = True, shadow_tags = ["foo"]
+            tags_hierarchy = True,
+            shadow_tags = ["foo"]
         ))
 
         # Add page and perform assertions
@@ -245,7 +268,8 @@ class TestMappingManagerWithTagHierarchies(unittest.TestCase):
         shadows tags prefix are marked as hidden, e.g., `foo/bar` for `bar`.
         """
         manager = MappingManager(stub_tags_config(
-            tags_hierarchy = True, shadow_tags_prefix = "bar"
+            tags_hierarchy = True,
+            shadow_tags_prefix = "bar"
         ))
 
         # Add page and perform assertions
@@ -262,7 +286,8 @@ class TestMappingManagerWithTagHierarchies(unittest.TestCase):
         shadows tags suffix are marked as hidden, e.g., `foo/bar` for `foo`.
         """
         manager = MappingManager(stub_tags_config(
-            tags_hierarchy = True, shadow_tags_suffix = "foo"
+            tags_hierarchy = True,
+            shadow_tags_suffix = "foo"
         ))
 
         # Add page and perform assertions

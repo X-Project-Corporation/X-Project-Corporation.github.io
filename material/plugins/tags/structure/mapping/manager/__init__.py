@@ -41,7 +41,7 @@ class MappingManager:
 
     def __init__(self, config: TagsConfig):
         """
-        Initialize mapping manager.
+        Initialize the mapping manager.
 
         Arguments:
             config: The configuration.

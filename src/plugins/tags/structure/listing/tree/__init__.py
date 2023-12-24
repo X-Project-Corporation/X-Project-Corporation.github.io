@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from functools import total_ordering
 from material.plugins.tags.structure.mapping import Mapping
 from material.plugins.tags.structure.tag import Tag
 
@@ -28,6 +29,7 @@ from material.plugins.tags.structure.tag import Tag
 # Classes
 # -----------------------------------------------------------------------------
 
+@total_ordering
 class ListingTree:
     """
     A listing tree.
@@ -43,7 +45,7 @@ class ListingTree:
 
     def __init__(self, tag: Tag):
         """
-        Initialize listing tree.
+        Initialize the listing tree.
 
         Arguments:
             tag: The tag.
@@ -62,6 +64,15 @@ class ListingTree:
         """
         return _print(self)
 
+    def __hash__(self) -> int:
+        """
+        Return the hash of the listing tree.
+
+        Returns:
+            The hash.
+        """
+        return hash(self.tag)
+
     def __iter__(self) -> Iterator[ListingTree]:
         """
         Iterate over subtrees of the listing tree.
@@ -70,6 +81,32 @@ class ListingTree:
             The current subtree.
         """
         return iter(self.children.values())
+
+    def __eq__(self, other: ListingTree) -> bool:
+        """
+        Check if the listing tree is equal to another listing tree.
+
+        Arguments:
+            other: The other listing tree to check.
+
+        Returns:
+            Whether the listing trees are equal.
+        """
+        assert isinstance(other, ListingTree)
+        return self.tag == other.tag
+
+    def __lt__(self, other: ListingTree) -> bool:
+        """
+        Check if the listing tree is less than another listing tree.
+
+        Arguments:
+            other: The other listing tree to check.
+
+        Returns:
+            Whether the listing tree is less than the other listing tree.
+        """
+        assert isinstance(other, ListingTree)
+        return self.tag < other.tag
 
     # -------------------------------------------------------------------------
 

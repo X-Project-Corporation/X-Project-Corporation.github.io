@@ -130,16 +130,16 @@ class Listing:
         """
         assert isinstance(mapping, Mapping)
 
+        # If the mapping is on the same page as the listing, we skip it, as
+        # it makes no sense to link to a listing on the same page
+        if mapping.item == self.page:
+            return iter([])
+
         # If the listing should only include tags within the current scope, we
         # check if the page is a child of the page the listing is embedded in
         if self.config.scope:
             base = posixpath.dirname(self.page.url)
             if not mapping.item.url.startswith(base):
-                return iter([])
-
-            # If the mapping is on the same page as the listing, we skip it, as
-            # it makes no sense to link to the listing on the same page
-            if mapping.item == self.page:
                 return iter([])
 
         # If an exclusion list is given, expand each tag to check if the tag

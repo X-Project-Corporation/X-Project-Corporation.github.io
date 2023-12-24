@@ -56,8 +56,8 @@ class TestTagSet(unittest.TestCase):
         """
         setting = TagSet()
         self.assertEqual(
-            setting.validate(["tag_1", "tag_2"]),
-            set([Tag("tag_1"), Tag("tag_2")])
+            setting.validate(["foo", "bar"]),
+            set([Tag("foo"), Tag("bar")])
         )
 
     def test_validate_empty(self):
@@ -85,7 +85,7 @@ class TestTagSet(unittest.TestCase):
 
     def test_validate_throw_if_not_allowed(self):
         """
-        Should throw if value is not allowed.
+        Should throw if value is not in allowed tags.
         """
         setting = TagSet(allowed = set([Tag("foo")]))
         with self.assertRaises(ValidationError):

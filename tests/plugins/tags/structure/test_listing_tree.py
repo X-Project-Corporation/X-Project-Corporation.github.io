@@ -20,78 +20,76 @@
 
 import unittest
 
+from material.plugins.tags.structure.mapping import Mapping
+from material.plugins.tags.structure.listing.tree import ListingTree
 from material.plugins.tags.structure.tag import Tag
+
+from tests.helpers import stub_page
 
 # -----------------------------------------------------------------------------
 # Classes
 # -----------------------------------------------------------------------------
 
-class TestTag(unittest.TestCase):
+class TestListingTree(unittest.TestCase):
     """
-    Test cases for tag.
+    Test cases for listing tree.
     """
 
     def test_init(self):
         """
-        Should initialize the tag.
+        Should initialize the listing tree.
         """
-        tag = Tag("tag")
-        self.assertEqual(tag.name, "tag")
-        self.assertEqual(tag.parent, None)
-        self.assertEqual(tag.hidden, False)
+        tree = ListingTree(Tag("tag"))
+        self.assertEqual(tree.tag, Tag("tag"))
+        self.assertEqual(tree.content, None)
+        self.assertEqual(tree.mappings, [])
+        self.assertEqual(tree.children, {})
 
     def test_repr(self):
         """
         Should return a printable representation of the tag.
         """
-        tag = Tag("tag")
-        self.assertIsInstance(repr(tag), str)
-
-    def test_str(self):
-        """
-        Should return a string representation of the tag.
-        """
-        tag = Tag("tag")
-        self.assertEqual(str(tag), "tag")
+        tree = ListingTree(Tag("foo"))
+        tree.mappings.append(Mapping(stub_page()))
+        tree.children.setdefault(Tag("bar"), ListingTree(Tag("bar")))
+        self.assertIsInstance(repr(tree), str)
 
     def test_hash(self):
         """
-        Should return the hash of the tag.
+        Should return the hash of the listing tree.
         """
-        tag = Tag("tag")
-        self.assertEqual(hash(tag), hash("tag"))
+        tree = ListingTree(Tag("tag"))
+        self.assertEqual(hash(tree), hash("tag"))
 
     def test_iter(self):
         """
-        Should iterate over the tag and its parent tags.
+        Iterate over subtrees of the listing tree.
         """
-        parent = Tag("parent")
-        tag = Tag("tag", parent = parent)
-        self.assertEqual(list(tag), [tag, parent])
+        tree = ListingTree(Tag("tag"))
+        for tag in [Tag("foo"), Tag("bar")]:
+            tree.children[tag] = ListingTree(tag)
 
-    def test_contains(self):
-        """
-        Should check if the tag contains another tag.
-        """
-        parent = Tag("parent")
-        tag = Tag("tag", parent = parent)
-        self.assertTrue(tag not in parent)
-        self.assertTrue(parent in tag)
+        # Iterate over subtrees and perform assertions
+        self.assertEqual(list(tree), [
+            ListingTree(Tag("foo")),
+            ListingTree(Tag("bar")),
+        ])
 
     def test_eq(self):
         """
-        Should check if the tag is equal to another tag.
+        Should check if the listing tree is equal to another listing tree.
         """
-        parent = Tag("parent")
-        tag = Tag("tag", parent = parent)
-        self.assertTrue(parent == Tag("parent"))
+        parent = ListingTree(Tag("parent"))
+        tag = ListingTree(Tag("tag", parent = parent))
+        self.assertTrue(parent == ListingTree(Tag("parent")))
         self.assertTrue(parent != tag)
 
     def test_lt(self):
         """
-        Should check if the tag is less than another tag.
+        Should check if the listing tree is less than another listing tree.
         """
-        parent = Tag("parent")
-        tag = Tag("tag", parent = parent)
+        parent = ListingTree(Tag("parent"))
+        tag = ListingTree(Tag("tag", parent = parent))
         self.assertTrue(parent < tag)
         self.assertTrue(tag >= parent)
+

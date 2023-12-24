@@ -20,6 +20,7 @@
 
 from collections.abc import Iterable
 from material.plugins.tags.config import TagsConfig
+from material.plugins.tags.structure.listing import ListingConfig
 from mkdocs.structure.pages import Page
 
 from tests.helpers import stub_page
@@ -39,6 +40,25 @@ def stub_tags_config(**settings: dict) -> TagsConfig:
         The tags configuration.
     """
     config = TagsConfig()
+    if settings:
+        config.load_dict(settings)
+
+    # Validate and return configuration
+    result = config.validate()
+    assert result == ([], []), result
+    return config
+
+def stub_listing_config(**settings: dict) -> ListingConfig:
+    """
+    Create a listing configuration.
+
+    Arguments:
+        **settings: Configuration settings.
+
+    Returns:
+        The listing configuration.
+    """
+    config = ListingConfig()
     if settings:
         config.load_dict(settings)
 

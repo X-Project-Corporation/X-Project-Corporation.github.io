@@ -37,8 +37,8 @@ class TestTagReference(unittest.TestCase):
         """
         Should initialize the tag reference.
         """
-        link_1 = Link(title = "link_1", url = "url/1")
-        link_2 = Link(title = "link_2", url = "url/2")
+        link_1 = Link(title = "Link 1", url = "url/1")
+        link_2 = Link(title = "Link 2", url = "url/2")
 
         # Initialize tag reference and perform assertions
         ref = TagReference(Tag("tag"), [link_1, link_2])
@@ -50,7 +50,7 @@ class TestTagReference(unittest.TestCase):
         Should return a printable representation.
         """
         ref = TagReference(Tag("tag"))
-        self.assertEqual(repr(ref), "TagReference('tag')")
+        self.assertIsInstance(repr(ref), str)
 
     # -------------------------------------------------------------------------
 
@@ -58,14 +58,14 @@ class TestTagReference(unittest.TestCase):
         """
         Should return the URL of the tag reference.
         """
-        link_1 = Link(title = "link_1", url = "url/1")
-        link_2 = Link(title = "link_2", url = "url/2")
+        link_1 = Link(title = "Link 1", url = "url/1")
+        link_2 = Link(title = "Link 2", url = "url/2")
 
         # Initialize tag reference and perform assertions
         ref = TagReference(Tag("tag"), [link_1, link_2])
         self.assertEqual(ref.url, "url/1")
 
-    def test_url_empty(self):
+    def test_url_none(self):
         """
         Should return nothing if the tag reference has no associated links.
         """

@@ -50,7 +50,7 @@ def stub_config(**settings: dict) -> MkDocsConfig:
 # -----------------------------------------------------------------------------
 
 def stub_file(
-    path: str | None = None,
+    *, path: str | None = None,
     config: MkDocsConfig | None = None
 ) -> File:
     """
@@ -72,7 +72,7 @@ def stub_file(
     )
 
 def stub_page(
-    title = "Page", path: str | None = None,
+    *, title = "Page", path: str | None = None,
     config: MkDocsConfig | None = None
 ) -> Page:
     """
