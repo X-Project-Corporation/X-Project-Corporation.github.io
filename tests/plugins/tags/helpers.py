@@ -18,6 +18,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import yaml
+
 from collections.abc import Iterable
 from material.plugins.tags.config import TagsConfig
 from material.plugins.tags.structure.listing import ListingConfig
@@ -84,4 +86,25 @@ def stub_page_with_tags(
     """
     page = page or stub_page()
     page.meta["tags"] = list(tags)
+    return page
+
+def stub_page_with_listing(
+    page: Page | None = None, **settings: dict
+) -> Page:
+    """
+    Create a page with a listing configuration.
+
+    Arguments:
+        page: The page.
+        settings: Configuration settings.
+
+    Returns:
+        The page.
+    """
+    page = page or stub_page()
+    config = stub_listing_config(**settings)
+
+    # Serialize listing configuration as YAML
+    args = yaml.dump(config, default_flow_style = True)
+    page.markdown += f"\n<!-- material/tags {args.strip()} -->"
     return page

@@ -18,9 +18,12 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import yaml
+
 from material.plugins.tags.structure.tag.options import TagSet
 from mkdocs.config.base import Config
 from mkdocs.config.config_options import Optional, Type
+from yaml import Dumper
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -80,3 +83,33 @@ class ListingConfig(Config):
     If this set is empty, the listing does not filter pages by tags. Otherwise,
     all pages that have at least one of the tags in this set will be excluded.
     """
+
+# -----------------------------------------------------------------------------
+# Functions
+# -----------------------------------------------------------------------------
+
+def _representer(dumper: Dumper, config: ListingConfig):
+    """
+    Return a serializable representation of a listing configuration.
+
+    Arguments:
+        dumper: The YAML dumper.
+        config: The listing configuration.
+
+    Returns:
+        Serializable representation.
+    """
+    copy = config.copy()
+
+    # Convert the include and exclude tag sets to lists of strings
+    copy.include = list(map(str, copy.include)) if copy.include else None
+    copy.exclude = list(map(str, copy.exclude)) if copy.exclude else None
+
+    # Return serializable listing configuration
+    data = { k: v for k, v in copy.items() if v is not None }
+    return dumper.represent_dict(data)
+
+# -----------------------------------------------------------------------------
+
+# Register listing configuration representer
+yaml.add_representer(ListingConfig, _representer)

@@ -72,7 +72,7 @@ def stub_file(
     )
 
 def stub_page(
-    *, title = "Page", path: str | None = None,
+    *, title: str = "Page", path: str | None = None,
     config: MkDocsConfig | None = None
 ) -> Page:
     """
@@ -87,6 +87,9 @@ def stub_page(
         The page.
     """
     config = config or stub_config()
-    page = Page(title, stub_file(path = path, config = config), config)
-    page.markdown = "Markdown"
+    file = stub_file(path = path, config = config)
+
+    # Create page
+    page = Page(title, file, config)
+    page.markdown = ""
     return page

@@ -19,8 +19,11 @@
 # IN THE SOFTWARE.
 
 import unittest
+import yaml
 
-from material.plugins.tags.structure.listing import ListingConfig
+from material.plugins.tags.structure.listing.config import ListingConfig
+
+from tests.plugins.tags.helpers import stub_listing_config
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -42,3 +45,35 @@ class TestListingConfig(unittest.TestCase):
         """
         config = ListingConfig()
         self.assertEqual(config.validate(), ([], []))
+
+    # -------------------------------------------------------------------------
+
+    def test_representer(self):
+        """
+        Should serialize a listing configuration.
+        """
+        config = stub_listing_config()
+        self.assertEqual(
+            yaml.dump(config, default_flow_style = True),
+            "{scope: false}\n"
+        )
+
+    def test_representer_include(self):
+        """
+        Should serialize a listing configuration with includes.
+        """
+        config = stub_listing_config(include = ["foo"])
+        self.assertEqual(
+            yaml.dump(config, default_flow_style = True),
+            "{include: [foo], scope: false}\n"
+        )
+
+    def test_representer_exclude(self):
+        """
+        Should serialize a listing configuration with excludes.
+        """
+        config = stub_listing_config(exclude = ["foo"])
+        self.assertEqual(
+            yaml.dump(config, default_flow_style = True),
+            "{exclude: [foo], scope: false}\n"
+        )
