@@ -65,7 +65,7 @@ class TestTagReference(unittest.TestCase):
         ref = TagReference(Tag("tag"), [link_1, link_2])
         self.assertEqual(ref.url, "url/1")
 
-    def test_url_none(self):
+    def test_url_empty(self):
         """
         Should return nothing if the tag reference has no associated links.
         """

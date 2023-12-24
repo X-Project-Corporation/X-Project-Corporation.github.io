@@ -60,30 +60,30 @@ class TestTagSet(unittest.TestCase):
             set([Tag("tag_1"), Tag("tag_2")])
         )
 
-    def test_validate_none(self):
+    def test_validate_empty(self):
         """
         Should return empty set of tags when nothing is given.
         """
         setting = TagSet()
         self.assertEqual(setting.validate(None), set())
 
-    def test_validate_fail_invalid_type(self):
-        """
-        Should throw if value is not a list.
-        """
-        setting = TagSet()
-        with self.assertRaises(ValidationError):
-            setting.validate({})
-
-    def test_validate_fail_invalid_tag_type(self):
+    def test_validate_throw_if_invalid_type(self):
         """
         Should throw if value is not a supported type.
         """
         setting = TagSet()
         with self.assertRaises(ValidationError):
+            setting.validate("foo")
+
+    def test_validate_throw_if_invalid_item_type(self):
+        """
+        Should throw if value is not a supported item type.
+        """
+        setting = TagSet()
+        with self.assertRaises(ValidationError):
             setting.validate([{}])
 
-    def test_validate_fail_not_allowed(self):
+    def test_validate_throw_if_not_allowed(self):
         """
         Should throw if value is not allowed.
         """
