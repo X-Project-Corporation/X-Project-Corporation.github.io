@@ -18,53 +18,50 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-# -----------------------------------------------------------------------------
-# Node, TypeScript, Python
-# -----------------------------------------------------------------------------
+from collections.abc import Iterable
+from material.plugins.tags.config import TagsConfig
+from mkdocs.structure.pages import Page
 
-# Dependencies
-node_modules
-__pycache__
-venv
-.venv
-
-# Build files
-build
-site
-
-# Distribution files
-dist
-mkdocs_material.egg-info
-
-# Reports
-.coverage
-
-# Caches and logs
-*.cpuprofile
-*.log
-*.tsbuildinfo
-.cache
-.eslintcache
-__pycache__
-
-# Examples
-example
-example.zip
+from tests.helpers import stub_page
 
 # -----------------------------------------------------------------------------
-# General
+# Functions
 # -----------------------------------------------------------------------------
 
-# Never ignore .gitkeep files
-!**/.gitkeep
+def stub_tags_config(**settings: dict) -> TagsConfig:
+    """
+    Create a tags configuration.
 
-# macOS internals
-.DS_Store
+    Arguments:
+        **settings: Configuration settings.
 
-# Temporary files
-TODO
-tmp
+    Returns:
+        The tags configuration.
+    """
+    config = TagsConfig()
+    if settings:
+        config.load_dict(settings)
 
-# IDEs & Editors
-.idea
-*~
+    # Validate and return configuration
+    result = config.validate()
+    assert result == ([], []), result
+    return config
+
+# -----------------------------------------------------------------------------
+
+def stub_page_with_tags(
+    tags: Iterable[str], page: Page | None = None
+) -> Page:
+    """
+    Create a page with the given tags.
+
+    Arguments:
+        tags: The tags.
+        page: The page.
+
+    Returns:
+        The page.
+    """
+    page = page or stub_page()
+    page.meta["tags"] = list(tags)
+    return page

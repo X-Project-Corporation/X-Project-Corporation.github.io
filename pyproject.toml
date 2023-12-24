@@ -106,3 +106,21 @@ include = ["/material"]
 [tool.hatch.build.targets.sdist]
 include = ["/material", "/package.json", "/requirements.txt"]
 exclude = ["/material/overrides"]
+
+[tool.hatch.envs.test]
+dependencies = ["coverage"]
+
+[tool.hatch.envs.test.scripts]
+test = "coverage run -m unittest discover -v -s tests -p test_*.py"
+_coverage = ["test", "coverage report --show-missing"]
+with-coverage = "test"
+
+[[tool.hatch.envs.test.matrix]]
+#python = ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy3"]
+python = ["3.11"]
+type = ["default"]
+
+[tool.hatch.envs.test.overrides]
+matrix.type.scripts = [
+  { key = "with-coverage", value = "_coverage", if = ["default"] },
+]

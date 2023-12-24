@@ -52,10 +52,10 @@ class MappingManager:
 
     def __repr__(self) -> str:
         """
-        Return a string representation of the mapping manager for debugging.
+        Return a printable representation of the mapping manager.
 
         Returns:
-            String representation.
+            Printable representation.
         """
         return _print(self)
 
@@ -114,7 +114,7 @@ class MappingManager:
 
         # Return nothing if page doesn't have tags
         tags = self.config.tags_name_property
-        if tags not in page.meta:
+        if not page.meta.get(tags, []):
             return
 
         # Create mapping and associate with page
@@ -231,14 +231,14 @@ class MappingManager:
 
 def _print(manager: MappingManager, indent: int = 0) -> str:
     """
-    Return a string representation of a mapping manager for debugging.
+    Return a printable representation of a mapping manager.
 
     Arguments:
         manager: The mapping manager.
         indent: The indentation level.
 
     Returns:
-        String representation.
+        Printable representation.
     """
     lines: list[str] = []
     lines.append(" " * indent + f"MappingManager()")

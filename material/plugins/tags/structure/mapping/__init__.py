@@ -58,12 +58,12 @@ class Mapping:
 
     def __repr__(self) -> str:
         """
-        Return a string representation of the mapping for debugging.
+        Return a printable representation of the mapping.
 
         Returns:
-            String representation.
+            Printable representation.
         """
-        return f"Mapping({repr(self.item)}, tags = {self.tags})"
+        return f"Mapping({repr(self.item)}, tags={self.tags})"
 
     def __and__(self, tags: set[Tag]) -> Iterator[Tag]:
         """

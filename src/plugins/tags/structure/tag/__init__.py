@@ -79,10 +79,10 @@ class Tag:
 
     def __repr__(self) -> str:
         """
-        Return a string representation of the tag for debugging.
+        Return a printable representation of the tag.
 
         Returns:
-            String representation.
+            Printable representation.
         """
         return f"Tag('{self.name}')"
 

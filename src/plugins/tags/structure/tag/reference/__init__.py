@@ -50,10 +50,10 @@ class TagReference(Tag):
 
     def __repr__(self) -> str:
         """
-        Return a string representation of the tag reference for debugging.
+        Return a printable representation of the tag reference.
 
         Returns:
-            String representation.
+            Printable representation.
         """
         return f"TagReference('{self.name}')"
 

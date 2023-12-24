@@ -77,10 +77,10 @@ class Listing:
 
     def __repr__(self) -> str:
         """
-        Return a string representation of the listing for debugging.
+        Return a printable representation of the listing.
 
         Returns:
-            String representation.
+            Printable representation.
         """
         return f"Listing({repr(self.page)})"
 

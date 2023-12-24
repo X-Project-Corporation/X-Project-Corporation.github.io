@@ -18,63 +18,64 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from __future__ import annotations
+import unittest
 
 from material.plugins.tags.structure.tag import Tag
+from material.plugins.tags.structure.tag.reference import TagReference
 from mkdocs.structure.nav import Link
 
 # -----------------------------------------------------------------------------
 # Classes
 # -----------------------------------------------------------------------------
 
-class TagReference(Tag):
+class TestTagReference(unittest.TestCase):
     """
-    A tag reference.
-
-    Tag references are a subclass of tags that can have associated links, which
-    is primarily used for linking tags to listings. The first link is used as
-    the canonical link, which by default points to the closest listing that
-    features the tag. This is considered to be the canonical listing.
+    Test cases for tag reference.
     """
 
-    def __init__(self, tag: Tag, links: list[Link] | None = None):
+    def test_init(self):
         """
-        Initialize the tag reference.
+        Should initialize the tag reference.
+        """
+        link_1 = Link(title = "link_1", url = "url/1")
+        link_2 = Link(title = "link_2", url = "url/2")
 
-        Arguments:
-            tag: The tag.
-            links: The links associated with the tag.
-        """
-        super().__init__(**vars(tag))
-        self.links = links or []
+        # Initialize tag reference and perform assertions
+        ref = TagReference(Tag("tag"), [link_1, link_2])
+        self.assertEqual(ref.name, "tag")
+        self.assertEqual(ref.links, [link_1, link_2])
 
-    def __repr__(self) -> str:
+    def test_repr(self):
         """
-        Return a printable representation of the tag reference.
-
-        Returns:
-            Printable representation.
+        Should return a printable representation.
         """
-        return f"TagReference('{self.name}')"
+        ref = TagReference(Tag("tag"))
+        self.assertEqual(repr(ref), "TagReference('tag')")
 
     # -------------------------------------------------------------------------
 
-    links: list[Link]
-    """
-    The links associated with the tag.
-    """
+    def test_url(self):
+        """
+        Should return the URL of the tag reference.
+        """
+        link_1 = Link(title = "link_1", url = "url/1")
+        link_2 = Link(title = "link_2", url = "url/2")
+
+        # Initialize tag reference and perform assertions
+        ref = TagReference(Tag("tag"), [link_1, link_2])
+        self.assertEqual(ref.url, "url/1")
+
+    def test_url_none(self):
+        """
+        Should return nothing if the tag reference has no associated links.
+        """
+        ref = TagReference(Tag("tag"))
+        self.assertIsNone(ref.url)
 
     # -------------------------------------------------------------------------
 
-    @property
-    def url(self) -> str | None:
+    def test_issubclass(self):
         """
-        Return the URL of the tag reference.
-
-        Returns:
-            The URL of the tag reference.
+        Should be a subclass of tag.
         """
-        if self.links:
-            return self.links[0].url or "."
-        else:
-            return None
+        self.assertTrue(issubclass(TagReference, Tag))

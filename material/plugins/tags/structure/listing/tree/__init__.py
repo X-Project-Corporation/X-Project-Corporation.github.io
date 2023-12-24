@@ -55,10 +55,10 @@ class ListingTree:
 
     def __repr__(self) -> str:
         """
-        Return a string representation of the listing tree for debugging.
+        Return a printable representation of the listing tree.
 
         Returns:
-            String representation.
+            Printable representation.
         """
         return _print(self)
 
@@ -104,14 +104,14 @@ class ListingTree:
 
 def _print(tree: ListingTree, indent: int = 0) -> str:
     """
-    Return a string representation of a listing tree for debugging.
+    Return a printable representation of a listing tree.
 
     Arguments:
         tree: The listing tree.
         indent: The indentation level.
 
     Returns:
-        String representation.
+        Printable representation.
     """
     lines: list[str] = []
     lines.append(" " * indent + f"ListingTree({repr(tree.tag)})")

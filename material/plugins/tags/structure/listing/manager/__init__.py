@@ -68,10 +68,10 @@ class ListingManager:
 
     def __repr__(self) -> str:
         """
-        Return a string representation of the listing manager for debugging.
+        Return a printable representation of the listing manager.
 
         Returns:
-            String representation.
+            Printable representation.
         """
         return _print(self)
 
@@ -466,14 +466,14 @@ class ListingManager:
 
 def _print(manager: ListingManager, indent: int = 0) -> str:
     """
-    Return a string representation of a listing manager for debugging.
+    Return a printable representation of a listing manager.
 
     Arguments:
         manager: The listing manager.
         indent: The indentation level.
 
     Returns:
-        String representation.
+        Printable representation.
     """
     lines: list[str] = []
     lines.append(" " * indent + f"ListingManager()")

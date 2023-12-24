@@ -9,6 +9,14 @@
   "python.analysis.completeFunctionParens": true,
   "python.analysis.exclude": ["src"],
   "python.analysis.typeCheckingMode": "basic",
+  "python.testing.unittestEnabled": true,
+  "python.testing.unittestArgs": [
+    "-v",
+    "-s",
+    "tests",
+    "-p",
+    "test_*.py"
+  ],
   "search.exclude": {
     "**/material": true,
     "**/node_modules": true,
