@@ -163,8 +163,12 @@ class ListingManager:
             id = f"{page.file.src_uri}:{match.start()}-{match.end()}"
             self.data.add(Listing(page, id, config))
 
-            # Replace directive with h6 headline
-            return f"###### {id}/name {{ #{id}/slug }}"
+            # Replace directive with h6 headline if listings are enabled, or
+            # remove the listing entirely from the page and table of contents
+            if self.config.listings:
+                return f"###### {id}/name {{ #{id}/slug }}"
+            else:
+                return
 
         # Hack: replace directive with an h6 headline to mark the injection
         # point for the anchor links we will generate after parsing all pages.

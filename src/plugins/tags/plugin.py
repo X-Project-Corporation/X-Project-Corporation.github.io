@@ -143,10 +143,6 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         if not self.filter(page):
             return
 
-        # Skip if tags should not be built
-        if not self.config.tags:
-            return
-
         # Handle deprecation of `tags_file` setting
         if self.config.tags_file:
             self._handle_deprecated_tags_file(page)
