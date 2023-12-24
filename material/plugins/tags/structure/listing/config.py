@@ -111,5 +111,5 @@ def _representer(dumper: Dumper, config: ListingConfig):
 
 # -----------------------------------------------------------------------------
 
-# Register listing configuration representer
+# Register listing configuration YAML representer
 yaml.add_representer(ListingConfig, _representer)

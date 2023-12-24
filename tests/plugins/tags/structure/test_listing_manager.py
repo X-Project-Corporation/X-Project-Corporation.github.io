@@ -51,3 +51,5 @@ class TestListingManager(unittest.TestCase):
         manager = ListingManager(stub_tags_config())
         manager.add(stub_page_with_listing(include = ["foo"]))
         self.assertIsInstance(repr(manager), str)
+
+    # @todo: add missing test cases
