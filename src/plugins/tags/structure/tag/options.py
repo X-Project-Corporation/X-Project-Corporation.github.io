@@ -20,6 +20,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from mkdocs.config.base import BaseConfigOption, ValidationError
 
 from . import Tag
@@ -59,7 +60,7 @@ class TagSet(BaseConfigOption[set[Tag]]):
 
     def run_validation(self, value: object) -> set[Tag]:
         """
-        Validate the setting.
+        Validate list of tags.
 
         If the value is `None`, an empty set is returned. Otherwise, the value
         is expected to be a list of tags, which is converted to a set of tags.
@@ -76,9 +77,9 @@ class TagSet(BaseConfigOption[set[Tag]]):
             return set()
 
         # Ensure tags are iterable
-        if not isinstance(value, list):
+        if not isinstance(value, Iterable) or isinstance(value, str):
             raise ValidationError(
-                f"Expected a list of tags, but received: {value}"
+                f"Expected iterable tags, but received: {value}"
             )
 
         # Ensure tags are valid
