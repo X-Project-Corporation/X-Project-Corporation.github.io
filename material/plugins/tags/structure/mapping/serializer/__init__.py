@@ -71,7 +71,8 @@ class MappingSerializer:
         """
         os.makedirs(os.path.dirname(path), exist_ok = True)
         with open(path, "w", encoding = "utf-8") as f:
-            json.dump([_mapping_to_json(mapping) for mapping in mappings], f)
+            data = [_mapping_to_json(mapping) for mapping in mappings]
+            json.dump(dict(mappings = data), f)
 
     def load(self, path: str) -> Iterable[Mapping]:
         """
@@ -86,14 +87,21 @@ class MappingSerializer:
         with open(path, "r", encoding = "utf-8") as f:
             data = json.load(f)
 
-            # Ensure mappings are iterable
-            if not isinstance(data, list):
+            # Ensure root dictionary
+            if not isinstance(data, dict):
                 raise ValidationError(
-                    f"Expected mapping list, but received: {data}"
+                    f"Expected dictionary, but received: {data}"
+                )
+
+            # Ensure mappings are iterable
+            mappings = data.get("mappings")
+            if not isinstance(mappings, list):
+                raise ValidationError(
+                    f"Expected list, but received: {mappings}"
                 )
 
             # Create and yield mappings
-            for mapping in data:
+            for mapping in mappings:
                 yield _mapping_from_json(mapping)
 
 # -----------------------------------------------------------------------------
@@ -141,21 +149,21 @@ def _mapping_from_json(data: object) -> Mapping:
     """
     if not isinstance(data, dict):
         raise ValidationError(
-            f"Expected mapping, but received: {data}"
+            f"Expected dictionary, but received: {data}"
         )
 
     # Ensure tags are iterable
     tags = data.get("tags")
     if not isinstance(tags, list):
         raise ValidationError(
-            f"Expected tags, but received: {tags}"
+            f"Expected list, but received: {tags}"
         )
 
     # Ensure tags are valid
     for tag in tags:
         if not isinstance(tag, str):
             raise ValidationError(
-                f"Expected tag, but received: {tag}"
+                f"Expected string, but received: {tag}"
             )
 
     # Create and return mapping
@@ -179,21 +187,21 @@ def _mapping_item_from_json(data: object) -> Link:
     """
     if not isinstance(data, dict):
         raise ValidationError(
-            f"Expected item, but received: {data}"
+            f"Expected dictionary, but received: {data}"
         )
 
     # Ensure item has URL
     url = data.get("url")
     if not isinstance(url, str):
         raise ValidationError(
-            f"Expected item URL, but received: {url}"
+            f"Expected string, but received: {url}"
         )
 
     # Ensure item has title
     title = data.get("title")
     if not isinstance(title, str):
         raise ValidationError(
-            f"Expected item title, but received: {title}"
+            f"Expected string, but received: {title}"
         )
 
     # Create and return item
