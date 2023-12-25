@@ -36,15 +36,15 @@ from .config import TagsConfig
 from .renderer import Renderer
 from .structure.listing.manager import ListingManager
 from .structure.mapping.manager import MappingManager
+from .structure.mapping.serializer import MappingSerializer
 
 # -----------------------------------------------------------------------------
 # Classes
 # -----------------------------------------------------------------------------
 
-# Tags plugin
 class TagsPlugin(BasePlugin[TagsConfig]):
     """
-    Tags plugin.
+    A tags plugin.
 
     This plugin collects tags from the front matter of pages, and builds a tag
     structure from them. The tag structure can be used to render tag listings
@@ -59,7 +59,7 @@ class TagsPlugin(BasePlugin[TagsConfig]):
 
     def __init__(self, *args, **kwargs):
         """
-        Initialize plugin.
+        Initialize the plugin.
         """
         super().__init__(*args, **kwargs)
 
@@ -111,8 +111,14 @@ class TagsPlugin(BasePlugin[TagsConfig]):
 
         # Initialize page filter - the page filter can be used to include or
         # exclude entire subsections of the documentation, allowing for using
-        # multiple instances of the plugin alongside each other.
+        # multiple instances of the plugin alongside each other
         self.filter = PageFilter(self.config.filters)
+
+        # If the author only wants to extract and export mappings, we allow to
+        # disable the rendering of all tags and listings with a single setting
+        if self.config.export_only:
+            self.config.tags = False
+            self.config.listings = False
 
         # By default, shadow tags are rendered when the documentation is served,
         # but not when it is built, for a better user experience
@@ -185,6 +191,15 @@ class TagsPlugin(BasePlugin[TagsConfig]):
 
         # Populate and render all listings
         self.listings.populate_all(self.mappings, Renderer(env, config))
+
+        # Export mappings to file, if enabled
+        if self.config.export:
+            path = os.path.join(config.site_dir, self.config.export_file)
+            path = os.path.normpath(path)
+
+            # Serialize mappings and save to file
+            serializer = MappingSerializer(self.config)
+            serializer.save(path, self.mappings)
 
     def on_page_context(
         self, context: TemplateContext, *, page: Page, **kwargs

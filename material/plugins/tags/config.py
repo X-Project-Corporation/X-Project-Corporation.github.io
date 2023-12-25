@@ -72,6 +72,11 @@ class TagsConfig(Config):
     shadow_tags_prefix = Type(str, default = "")
     shadow_tags_suffix = Type(str, default = "")
 
+    # Settings for export
+    export = Type(bool, default = True)
+    export_file = Type(str, default = "tags.json")
+    export_only = Type(bool, default = False)
+
     # Deprecated settings
     tags_compare = Deprecated(moved_to = "tags_sort_by")
     tags_compare_reverse = Deprecated(moved_to = "tags_sort_reverse")
