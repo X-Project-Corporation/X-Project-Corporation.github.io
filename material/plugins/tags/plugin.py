@@ -36,7 +36,7 @@ from .config import TagsConfig
 from .renderer import Renderer
 from .structure.listing.manager import ListingManager
 from .structure.mapping.manager import MappingManager
-from .structure.mapping.serializer import MappingSerializer
+from .structure.mapping.storage import MappingStorage
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -198,8 +198,8 @@ class TagsPlugin(BasePlugin[TagsConfig]):
             path = os.path.normpath(path)
 
             # Serialize mappings and save to file
-            serializer = MappingSerializer(self.config)
-            serializer.save(path, self.mappings)
+            storage = MappingStorage(self.config)
+            storage.save(path, self.mappings)
 
     def on_page_context(
         self, context: TemplateContext, *, page: Page, **kwargs

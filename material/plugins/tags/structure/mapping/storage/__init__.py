@@ -35,17 +35,17 @@ from mkdocs.structure.pages import Page
 # Classes
 # -----------------------------------------------------------------------------
 
-class MappingSerializer:
+class MappingStorage:
     """
-    A mapping serializer.
+    A mapping storage.
 
-    The serializer allows to save and load mappings to and from a JSON file,
-    which allows for sharing tags across multiple MkDocs projects.
+    The mapping storage allows to save and load mappings to and from a JSON
+    file, which allows for sharing tags across multiple MkDocs projects.
     """
 
     def __init__(self, config: TagsConfig):
         """
-        Initialize the mapping serializer.
+        Initialize the mapping storage.
 
         Arguments:
             config: The configuration.
@@ -69,7 +69,10 @@ class MappingSerializer:
             path: The file path.
             mappings: The mappings.
         """
+        path = os.path.abspath(path)
         os.makedirs(os.path.dirname(path), exist_ok = True)
+
+        # Save serialized mappings to file
         with open(path, "w", encoding = "utf-8") as f:
             data = [_mapping_to_json(mapping) for mapping in mappings]
             json.dump(dict(mappings = data), f)
@@ -183,7 +186,7 @@ def _mapping_item_from_json(data: object) -> Link:
         data: Serialized representation.
 
     Returns:
-        The page or link.
+        The link.
     """
     if not isinstance(data, dict):
         raise ValidationError(
