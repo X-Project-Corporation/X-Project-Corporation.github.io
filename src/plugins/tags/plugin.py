@@ -102,9 +102,6 @@ class TagsPlugin(BasePlugin[TagsConfig]):
     def on_config(self, *args) -> None:
         """
         Create mapping and listing managers.
-
-        Arguments:
-            config: The MkDocs configuration.
         """
         self.mappings = MappingManager(self.config)
         self.listings = ListingManager(self.config)

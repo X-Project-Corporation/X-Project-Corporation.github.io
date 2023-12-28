@@ -75,6 +75,6 @@ class TagReference(Tag):
             The URL of the tag reference.
         """
         if self.links:
-            return self.links[0].url or "."
+            return self.links[0].url
         else:
             return None

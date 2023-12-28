@@ -107,7 +107,13 @@ class ListingManager:
             # Iterate over listings and add links
             for listing in listings:
                 if tag in listing & mapping:
-                    url = urlparse(listing.page.url, allow_fragments = False)
+                    value = listing.page.url or "."
+
+                    # Compute URL for link - make sure to remove fragments, as
+                    # they may be present in links extracted from remote tags.
+                    # Additionally, we need to fallback to `.` if the URL is
+                    # empty (= homepage) or the links will be incorrect.
+                    url = urlparse(value, allow_fragments = False)
                     url = url._replace(fragment = self._slugify(tag))
 
                     # Add listing link to tag reference
