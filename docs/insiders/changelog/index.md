@@ -2,15 +2,22 @@
 
 ## Material for MkDocs Insiders
 
+### 4.49.0 <small>December 29, 2023</small> { id="4.49.0" }
+
+- Added support for exporting tags and mappings
+- Added support for disabling tags and/or listings or both
+- Fixed tag links from pages to listings on homepage
+
 ### 4.48.0 <small>December 23, 2023</small> { id="4.48.0" }
 
 - Rewrite of tags plugin, now much more powerful
 - Added support for nested tags (tag hierarchies, e.g. foo/bar)
 - Added support for shadow tags (by list, prefix or suffix)
 - Added support for custom tag layouts and templates
-- Added support for configurable inline tag listings
 - Added support for hiding tags in table of contents
+- Added support for configurable inline tag listings
 - Added support for automatically linking to closest tag listing
+- Added support for scoped listings (limit to subsection of site)
 - Added support for multiple instances of tags plugin
 - Added support for changing front matter property and template variable
 - Added support for tag slugification format strings
