@@ -121,14 +121,14 @@ class Project:
             target = self._path_from_config(self.config)
 
             # Edge case: the author has set a site URL that does not include a
-            # path, so the path of the project is equal the top-level projects'
-            # path. In this case, we need to fall back to the path computed
-            # from the slug - see https://t.ly/5vqMr
+            # path, so the path of the project is equal to the top-level path.
+            # In this case, we need to fall back to the path computed from the
+            # slug - see https://t.ly/5vqMr
             if target == "/":
                 target = self._path_from_slug(self.slug)
 
         # Otherwise, always compute the path from the slugs of both projects,
-        # as we want to support consolidate seemingly unrelated projects
+        # as we want to support consolidation of unrelated projects
         else:
             source = self._path_from_slug(that.slug)
             target = self._path_from_slug(self.slug)
