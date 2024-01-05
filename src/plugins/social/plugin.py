@@ -169,9 +169,8 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # We must exclude all files related to layouts from here on, so MkDocs
         # doesn't copy them to the site directory when the project is built
-        path = os.path.join(os.path.dirname(__file__), "templates")
         for file in files:
-            if file.abs_src_path.startswith(path):
+            if file.abs_src_path.startswith(_templates_dirpath()):
                 file.inclusion = InclusionLevel.EXCLUDED
 
     # Generate card as soon as metadata is available (run latest) - run this
@@ -709,10 +708,9 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # If the author specified a custom directory, try to resolve the layout
         # from this directory first, otherwise fall back to the default
-        path = os.path.join(os.path.dirname(__file__), "templates")
         for base in [
             os.path.relpath(self.config.cards_layout_dir),
-            os.path.relpath(path)
+            _templates_dirpath()
         ]:
             path = os.path.join(base, f"{name}.yml")
             path = os.path.normpath(path)
@@ -973,6 +971,13 @@ def _replace(data: any, env: Environment, config: MkDocsConfig, **kwargs):
 @functools.lru_cache(maxsize = None)
 def _compile(data: str, env: Environment):
     return env.from_string(html.unescape(data))
+    
+# Compute absolute path to internal templates directory,
+# we need to do it this way to assure compatibility with Python 3.8,
+# and also to allow users to install their Python site-packages 
+# to a different mount root than their documentation - see https://t.ly/GMeYP
+def _templates_dirpath():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
 
 # -----------------------------------------------------------------------------
 
