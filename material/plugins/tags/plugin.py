@@ -156,7 +156,7 @@ class TagsPlugin(BasePlugin[TagsConfig]):
 
         # Collect tags from page
         try:
-            self.mappings.add(page)
+            self.mappings.add(page, markdown)
 
         # Raise exception if tags could not be read
         except Exception as e:
@@ -168,7 +168,7 @@ class TagsPlugin(BasePlugin[TagsConfig]):
                 )
 
         # Collect listings from page
-        return self.listings.add(page)
+        return self.listings.add(page, markdown)
 
     @event_priority(100)
     def on_env(

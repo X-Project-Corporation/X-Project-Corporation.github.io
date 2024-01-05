@@ -138,7 +138,7 @@ class ListingManager:
 
     # -------------------------------------------------------------------------
 
-    def add(self, page: Page) -> str:
+    def add(self, page: Page, markdown: str) -> str:
         """
         Add page.
 
@@ -148,15 +148,18 @@ class ListingManager:
         actual listing later on.
 
         Note that this method is intended to be called with the page during the
-        `on_page_markdown` event, as it modifies the page's Markdown.
+        `on_page_markdown` event, as it modifies the page's Markdown. Moreover,
+        the Markdown must be explicitly passed, as we could otherwise run into
+        inconsistencies when other plugins modify the Markdown.
 
         Arguments:
             page: The page.
+            markdown: The page's Markdown.
 
         Returns:
             The page's Markdown with injection points.
         """
-        assert isinstance(page.markdown, str)
+        assert isinstance(markdown, str)
 
         # Replace callback
         def replace(match: Match) -> str:
@@ -183,7 +186,7 @@ class ListingManager:
         directive = self.config.listings_directive
         return re.sub(
             r"(<!--\s*?{directive}(.*?)\s*-->)".format(directive = directive),
-            replace, page.markdown, flags = re.I | re.M | re.S
+            replace, markdown, flags = re.I | re.M | re.S
         )
 
     def closest(self, mapping: Mapping) -> list[Listing]:

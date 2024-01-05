@@ -92,7 +92,7 @@ class MappingManager:
 
     # -------------------------------------------------------------------------
 
-    def add(self, page: Page) -> Mapping | None:
+    def add(self, page: Page, markdown: str) -> Mapping | None:
         """
         Add page.
 
@@ -102,15 +102,18 @@ class MappingManager:
         nothing is returned.
 
         Note that this method is intended to be called with the page during the
-        `on_page_markdown` event, as it reads the front matter of a page.
+        `on_page_markdown` event, as it reads the front matter of a page. Also,
+        the Markdown must be explicitly passed, as we could otherwise run into
+        inconsistencies when other plugins modify the Markdown.
 
         Arguments:
             page: The page.
+            markdown: The page's Markdown.
 
         Returns:
             The mapping or nothing.
         """
-        assert isinstance(page.markdown, str)
+        assert isinstance(markdown, str)
 
         # Return nothing if page doesn't have tags
         tags = self.config.tags_name_property
