@@ -78,9 +78,6 @@
   <a href="https://kx.com/" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-kx.png" height="58"
   /></a>
-  <a href="https://www.manticoregames.com/" target=_blank><img
-    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-manticore-games.png" height="58"
-  /></a>
   <a href="https://orion-docs.prefect.io/" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-prefect.png" height="58"
   /></a>
@@ -291,7 +288,7 @@ For detailed installation instructions, configuration options, and a demo, visit
 
 **MIT License**
 
-Copyright (c) 2016-2023 Martin Donath
+Copyright (c) 2016-2024 Martin Donath
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to
