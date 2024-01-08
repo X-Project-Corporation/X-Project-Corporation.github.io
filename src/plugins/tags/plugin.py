@@ -99,7 +99,7 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         """
         self.is_serve = command == "serve"
 
-    def on_config(self, *args) -> None:
+    def on_config(self, config: MkDocsConfig) -> None:
         """
         Create mapping and listing managers.
         """
@@ -110,6 +110,13 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         # exclude entire subsections of the documentation, allowing for using
         # multiple instances of the plugin alongside each other
         self.filter = PageFilter(self.config.filters)
+
+        # Ensure presence of attribute lists extension
+        for extension in config.markdown_extensions:
+            if isinstance(extension, str) and extension.endswith("attr_list"):
+                break
+        else:
+            config.markdown_extensions.append("attr_list")
 
         # If the author only wants to extract and export mappings, we allow to
         # disable the rendering of all tags and listings with a single setting
