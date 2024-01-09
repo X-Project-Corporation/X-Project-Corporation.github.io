@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from mkdocs.config.base import BaseConfigOption, ValidationError
+from typing import Set
 
 from . import Tag
 
@@ -29,7 +30,7 @@ from . import Tag
 # Classes
 # -----------------------------------------------------------------------------
 
-class TagSet(BaseConfigOption[set[Tag]]):
+class TagSet(BaseConfigOption[Set[Tag]]):
     """
     Setting for a set of tags.
 
