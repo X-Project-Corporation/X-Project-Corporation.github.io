@@ -93,7 +93,7 @@ function resolve(
     return EMPTY
 
   // Skip, as target is not within a link - clicks on non-link elements are
-  // also captured, which we need to exclude from processing.
+  // also captured, which we need to exclude from processing
   const el = ev.target.closest("a")
   if (el === null)
     return EMPTY
@@ -101,7 +101,7 @@ function resolve(
   // Skip, as link opens in new window - we now know we have captured a click
   // on a link, but the link either has a `target` property defined, or the
   // user pressed the `meta` or `ctrl` key to open it in a new window. Thus,
-  // we need to filter those events, too.
+  // we need to filter this event as well.
   if (el.target || ev.metaKey || ev.ctrlKey)
     return EMPTY
 
@@ -252,14 +252,10 @@ export function setupInstantNavigation(
       )
         .subscribe(link => link.remove())
 
-  // Before fetching for the first time, resolve the absolute favicon position,
-  // as the browser will try to fetch the icon immediately
-  instant$.pipe(take(1))
-    .subscribe(() => {
-      const favicon = getOptionalElement<HTMLLinkElement>("link[rel=icon]")
-      if (typeof favicon !== "undefined")
-        favicon.href = favicon.href
-    })
+  // Resolve all relative links to be absolute - @todo: refactor this together
+  // with the logic when fetching, as we must do that repeatedly
+  for (const el of getElements<HTMLLinkElement>("[href^='.']"))
+    el.href = el.href
 
   // Enable scroll restoration before window unloads - this is essential to
   // ensure that full reloads (F5) restore the viewport offset correctly. If
@@ -365,6 +361,10 @@ export function setupInstantNavigation(
             document.head.appendChild(el)
           }
         }
+
+        // Resolve all relative links to be absolute
+        for (const el of getElements<HTMLLinkElement>("[href^='.']"))
+          el.href = el.href
 
         // Remove meta tags that are not present in the new document
         for (const el of source.values())
