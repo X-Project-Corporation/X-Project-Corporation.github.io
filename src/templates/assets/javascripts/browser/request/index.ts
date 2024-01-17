@@ -66,7 +66,7 @@ export function request(
 ): Observable<Blob> {
   return new Observable<Blob>(observer => {
     const req = new XMLHttpRequest()
-    req.open("GET",  `${url}`)
+    req.open("GET", `${url}`)
     req.responseType = "blob"
 
     // Handle response

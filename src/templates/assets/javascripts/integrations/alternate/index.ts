@@ -82,11 +82,11 @@ export function setupAlternate(
       // entirely different domains, but as long a proper cross-origin policy
       // is set, we can still navigate to them. Also, remove the trailing slash
       // to normalize the URL
-      .subscribe(([url, sitemap]) => (
+      .subscribe(([url, sitemap]) => {
         alternate.set(url.toString().replace(/\/$/, ""), sitemap)
-      ))
+      })
 
-  // Intercept alternate navigation - when refactoring instant loading later,
+  // Intercept alternate navigation - when refactoring instant navigation later,
   // we should provide a single stream of events that we all subscribe to, and
   // from which we implement version and alternate language navigation
   fromEvent<MouseEvent>(document.body, "click")
