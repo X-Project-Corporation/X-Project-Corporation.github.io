@@ -92,20 +92,18 @@ function resolve(url: URL, base: URL) {
  */
 function extract(document: Document, base: URL): Sitemap {
   const sitemap: Sitemap = new Map()
-
-  // Extract all URLs from sitemap
   for (const el of getElements("url", document)) {
     const url = getElement("loc", el)
 
-    // Add links to sitemap
-    const alternatives = [resolve(new URL(url.textContent!), base)]
-    sitemap.set(`${alternatives[0]}`, alternatives)
+    // Create entry for location and add it to the list of links
+    const links = [resolve(new URL(url.textContent!), base)]
+    sitemap.set(`${links[0]}`, links)
 
-    // Extract alternate paths
+    // Attach alternate links to current entry
     for (const link of getElements("[rel=alternate]", el)) {
       const href = link.getAttribute("href")
       if (href != null)
-        alternatives.push(resolve(new URL(href), base))
+        links.push(resolve(new URL(href), base))
     }
   }
 

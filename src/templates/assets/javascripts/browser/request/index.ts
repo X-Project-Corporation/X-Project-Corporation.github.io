@@ -59,7 +59,7 @@ interface Options {
  * @param url - Request URL
  * @param options - Options
  *
- * @returns Blob observable
+ * @returns Data observable
  */
 export function request(
   url: URL | string, options?: Options
@@ -134,6 +134,26 @@ export function requestJSON<T>(
     .pipe(
       switchMap(res => res.text()),
       map(body => JSON.parse(body) as T),
+      shareReplay(1)
+    )
+}
+
+/**
+ * Fetch HTML from the given URL
+ *
+ * @param url - Request URL
+ * @param options - Options
+ *
+ * @returns Data observable
+ */
+export function requestHTML(
+  url: URL | string, options?: Options
+): Observable<Document> {
+  const dom = new DOMParser()
+  return request(url, options)
+    .pipe(
+      switchMap(res => res.text()),
+      map(res => dom.parseFromString(res, "text/html")),
       shareReplay(1)
     )
 }

@@ -28,17 +28,22 @@ import {
   combineLatestWith,
   concat,
   debounceTime,
+  distinct,
+  distinctUntilChanged,
   distinctUntilKeyChanged,
   endWith,
+  exhaustMap,
   filter,
   fromEvent,
   ignoreElements,
   map,
+  merge,
   of,
   share,
-  skip,
   startWith,
   switchMap,
+  take,
+  tap,
   withLatestFrom
 } from "rxjs"
 
@@ -48,7 +53,7 @@ import {
   getElements,
   getLocation,
   getOptionalElement,
-  request,
+  requestHTML,
   setLocation,
   setLocationHash
 } from "~/browser"
@@ -175,6 +180,97 @@ function lookup(head: HTMLHeadElement): Map<string, HTMLElement> {
   return tags
 }
 
+/**
+ * Create a map of head elements for lookup and replacement
+ *
+ * @param next - Next document
+ *
+ * @returns Document observable
+ */
+function inject(next: Document): Observable<Document> {
+  for (const selector of [
+    "[data-md-component=announce]",
+    "[data-md-component=container]",
+    "[data-md-component=header-topic]",
+    "[data-md-component=outdated]",
+    "[data-md-component=logo]",
+    "[data-md-component=skip]",
+    ...feature("navigation.tabs.sticky")
+      ? ["[data-md-component=tabs]"]
+      : []
+  ]) {
+    const source = getOptionalElement(selector)
+    const target = getOptionalElement(selector, next)
+    if (
+      typeof source !== "undefined" &&
+      typeof target !== "undefined"
+    ) {
+      source.replaceWith(target)
+    }
+  }
+
+  // Update meta tags
+  const source = lookup(document.head)
+  const target = lookup(next.head)
+  for (const [html, el] of target) {
+
+    // Hack: skip stylesheets and scripts until we manage to replace them
+    // entirely in order to omit flashes of white content @todo refactor
+    if (
+      el.getAttribute("rel") === "stylesheet" ||
+      el.hasAttribute("src")
+    )
+      continue
+
+    if (source.has(html)) {
+      source.delete(html)
+    } else {
+      document.head.appendChild(el)
+    }
+  }
+
+  // Remove meta tags that are not present in the new document
+  for (const el of source.values())
+
+    // Hack: skip stylesheets and scripts until we manage to replace them
+    // entirely in order to omit flashes of white content @todo refactor
+    if (
+      el.getAttribute("rel") === "stylesheet" ||
+      el.hasAttribute("src")
+    )
+      continue
+    else
+      el.remove()
+
+  // After components and meta tags were replaced, re-evaluate scripts
+  // that were provided by the author as part of Markdown files
+  const container = getComponentElement("container")
+  return concat(getElements("script", container))
+    .pipe(
+      switchMap(el => {
+        const script = next.createElement("script")
+        if (el.src) {
+          for (const name of el.getAttributeNames())
+            script.setAttribute(name, el.getAttribute(name)!)
+          el.replaceWith(script)
+
+          // Complete when script is loaded
+          return new Observable(observer => {
+            script.onload = () => observer.complete()
+          })
+
+        // Complete immediately
+        } else {
+          script.textContent = el.textContent
+          el.replaceWith(script)
+          return EMPTY
+        }
+      }),
+      ignoreElements(),
+      endWith(next)
+    )
+}
+
 /* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
@@ -197,9 +293,7 @@ export function setupInstantNavigation(
     return EMPTY
 
   // Load sitemap immediately, so we have it available when the user initiates
-  // the first instant navigation request, and canonicalize URLs to the current
-  // base URL. The base URL will remain stable in between loads, as it's only
-  // read at the first initialization of the application.
+  // the first navigation request, so there's no perceived delay.
   const sitemap$ = fetchSitemap2(config.base)
 
   // --------------------------------------------------------------------------
@@ -209,7 +303,7 @@ export function setupInstantNavigation(
   // Intercept navigation - to keep the number of event listeners down we use
   // the fact that uncaptured events bubble up to the body. This has the nice
   // property that we don't need to detach and then re-attach event listeners
-  // when instant navigation events occur.
+  // when the document is replaced after a navigation event.
   const instant$ =
     fromEvent<MouseEvent>(document.body, "click")
       .pipe(
@@ -218,234 +312,70 @@ export function setupInstantNavigation(
         share()
       )
 
-  // Emit URL for popstate event, e.g. when using the browser's back and forward
-  // buttons, and emit new location for fetching and parsing
+  // Intercept history change events, e.g. when the user uses the browser's
+  // back or forward buttons, and emit new location for fetching and parsing
   const history$ =
     fromEvent<PopStateEvent>(window, "popstate")
-      .pipe(map(getLocation))
+      .pipe(
+        map(getLocation),
+        share()
+      )
 
-  // While it would be better UX to defer the history state change until the
-  // document was fully fetched and parsed, we must schedule it here, since
-  // popstate events are emitted when history state changes happen. Moreover
-  // we need to back up the current viewport offset, so we can restore it
-  // when popstate events occur, e.g., when the browser's back and forward
-  // buttons are used for navigation.
+  // While it would be better UX to defer navigation events until the document
+  // is fully fetched and parsed, we must schedule it here to synchronize with
+  // popstate events, as they are emitted immediately. Moreover we need to
+  // store the current viewport offset for scroll restoration later on.
   instant$.pipe(withLatestFrom(viewport$))
     .subscribe(([url, { offset }]) => {
       history.replaceState(offset, "")
       history.pushState(null, "", url)
     })
 
-  // debug....
-  // @todo: understand why instant triggers history a well, when navigating to
-  // an anchor! we might be able to distinguish this, and we might nee it.
-
-  // -> @hack this is triggered by scroll restoration after document load...
-
-  instant$.subscribe(url => {
-    console.log("instant", url.toString())
-  })
-
-  history$.subscribe(url => {
-    // history is trigged on anchor navigation as well, so we might need to
-    // disable scroll restoration here as well
-    console.log("history", url.toString())
-  })
-
-  location$.subscribe(url => {
-    console.log("-> location", url.toString())
-  })
-
-  // Emit URL that should be fetched via instant navigation on location subject,
-  // which was passed into this function. Instant navigation can be intercepted
-  // by other parts of the application, which can synchronously back up or
-  // restore state before instant navigation happens.
-  instant$.subscribe(location$)
-
-  // @todo what if popstate happens? we must theoretically branch of windows
-  // in which we are allowed to make changes to the offset or whatever...
-  history$.subscribe(location$)
-
-  // --------------------------------------------------------------------------
-  // Navigation dispatch
-  // --------------------------------------------------------------------------
-
-  // // If prefetching is enabled, prefetch pages for links that would trigger
-  // // inter-site navigation on mouse events - this should improve performance,
-  // // since pages will be cached. Note that we exhaust map URLs, so we ensure
-  // // that loading is properly debounced and we don't fill caches up to quickly.
-  // if (feature("navigation.instant.prefetch"))
-  //   merge(
-  //     fromEvent<MouseEvent>(document.body, "mousemove"),
-  //     fromEvent<MouseEvent>(document.body, "focusin")
-  //   )
-  //     .pipe(
-  //       combineLatestWith(sitemap$),
-  //       switchMap(([ev, sitemap]) => handle(ev, sitemap)),
-  //       debounceTime(25),
-  //       distinct(({ href }) => href),
-  //       exhaustMap(href => {
-  //         const link = document.createElement("link")
-  //         link.rel = "prefetch"
-  //         link.href = href.toString()
-
-  //         // Instruct browser to prefetch link by adding a link tag of type
-  //         // prefetch to the head, and remove it again once the page was loaded
-  //         document.head.appendChild(link)
-  //         return fromEvent(link, "load")
-  //           .pipe(
-  //             map(() => link),
-  //             take(1)
-  //           )
-  //       })
-  //     )
-  //       .subscribe(link => link.remove())
+  // Emit URLs that should be fetched via instant navigation on location subject
+  // which was passed into this function. The state of instant navigation can be
+  // intercepted by other parts of the application, which can synchronously back
+  // up or restore state before or after instant navigation happens.
+  merge(instant$, history$)
+    .subscribe(location$)
 
   // --------------------------------------------------------------------------
   // Fetching and parsing
   // --------------------------------------------------------------------------
 
-  // Fetch document - when fetching, we could use `responseType: document`, but
-  // since all MkDocs links are relative, we need to make sure that the current
-  // location matches the document we just loaded. Otherwise any relative links
-  // in the document might use the old location. If the request fails for some
-  // reason, we fall back to regular navigation and set the location explicitly,
-  // which will force-load the page. Furthermore, we must pre-warm the buffer
-  // for the duplicate check, or the first click on an anchor link will also
-  // trigger an instant navigation event, which doesn't make sense.
-  const response$ = location$
+  // Fetch document - we deduplicate requests to the same location, so we don't
+  // end up with multiple requests for the same page. We use `switchMap`, since
+  // we want to cancel the previous request when a new one is triggered, which
+  // is automatically handled by the observable returned by `request`. This is
+  // essential to ensure a good user experience, as we don't want to load pages
+  // that are not needed anymore, e.g., when the user clicks multiple links in
+  // quick succession or on slow connections. If the request fails for some
+  // reason, we fall back and use regular navigation, forcing a reload.
+  const document$ = location$
     .pipe(
-      startWith(getLocation()),
       distinctUntilKeyChanged("pathname"),
-      skip(1),
-      switchMap(url => request(url, { progress$ })
+      switchMap(url => requestHTML(url, { progress$ })
         .pipe(
           catchError(() => {
             setLocation(url, true)
             return EMPTY
           })
         )
-      )
-    )
+      ),
 
-  // // Initialize the DOM parser, parse the returned HTML, and replace selected
-  // // components before handing control down to the application
-  const dom = new DOMParser()
-  const document$ = response$
-    .pipe(
-      switchMap(res => res.text()),
-      switchMap(res => {
-        const next = dom.parseFromString(res, "text/html")
-        for (const selector of [
-          "[data-md-component=announce]",
-          "[data-md-component=container]",
-          "[data-md-component=header-topic]",
-          "[data-md-component=outdated]",
-          "[data-md-component=logo]",
-          "[data-md-component=skip]",
-          ...feature("navigation.tabs.sticky")
-            ? ["[data-md-component=tabs]"]
-            : []
-        ]) {
-          const source = getOptionalElement(selector)
-          const target = getOptionalElement(selector, next)
-          if (
-            typeof source !== "undefined" &&
-            typeof target !== "undefined"
-          ) {
-            source.replaceWith(target)
-          }
-        }
-
-        // Update meta tags
-        const source = lookup(document.head)
-        const target = lookup(next.head)
-        for (const [html, el] of target) {
-
-          // Hack: skip stylesheets and scripts until we manage to replace them
-          // entirely in order to omit flashes of white content @todo refactor
-          if (
-            el.getAttribute("rel") === "stylesheet" ||
-            el.hasAttribute("src")
-          )
-            continue
-
-          if (source.has(html)) {
-            source.delete(html)
-          } else {
-            document.head.appendChild(el)
-          }
-        }
-
-        // Remove meta tags that are not present in the new document
-        for (const el of source.values())
-
-          // Hack: skip stylesheets and scripts until we manage to replace them
-          // entirely in order to omit flashes of white content @todo refactor
-          if (
-            el.getAttribute("rel") === "stylesheet" ||
-            el.hasAttribute("src")
-          )
-            continue
-          else
-            el.remove()
-
-        // After components and meta tags were replaced, re-evaluate scripts
-        // that were provided by the author as part of Markdown files
-        const container = getComponentElement("container")
-        return concat(getElements("script", container))
-          .pipe(
-            switchMap(el => {
-              const script = next.createElement("script")
-              if (el.src) {
-                for (const name of el.getAttributeNames())
-                  script.setAttribute(name, el.getAttribute(name)!)
-                el.replaceWith(script)
-
-                // Complete when script is loaded
-                return new Observable(observer => {
-                  script.onload = () => observer.complete()
-                })
-
-              // Complete immediately
-              } else {
-                script.textContent = el.textContent
-                el.replaceWith(script)
-                return EMPTY
-              }
-            }),
-            ignoreElements(),
-            endWith(next)
-          )
-      }),
+      // The document was successfully fetched and parsed, so we can inject its
+      // contents into the currently active document
+      switchMap(inject),
       share()
     )
 
-  // // After parsing the document, check if the current history entry has a state.
-  // // This may happen when users press the back or forward button to visit a page
-  // // that was already seen. If there's no state, it means a new page was visited
-  // // and we should scroll to the top, unless an anchor is given.
-  // document$.pipe(withLatestFrom(location$))
-  //   .subscribe(([, url]) => {
-  //     if (history.state !== null || !url.hash) {
-  //       window.scrollTo(0, history.state?.y ?? 0)
-  //     } else {
-  //       setLocationHash(url.hash)
-  //     }
-  //   })
-
-  // --------------------------------------------------------------------------
-  // Link resolution
-  // --------------------------------------------------------------------------
-
   // Since we might be on a slow connection, the user might trigger multiple
   // instant navigation events that overlap. MkDocs produces relative URLs for
-  // all internal links, which becomes a problem in this case, because the base
-  // URL already changes when the user clicks a link that should be intercepted,
-  // in order to be consistent with popstate, which means that the base URL is
-  // now incorrect when resolving another relative link from the same site. For
-  // this reason we always resolve all relative links to absolute links, so we
-  // can be sure that this never happens.
+  // all internal links, which becomes a problem in this case, because we need
+  // to change the base URL the moment the user clicks a link that should be
+  // intercepted in order to be consistent with popstate, which means that the
+  // base URL would now be incorrect when resolving another relative link from
+  // the same site. For this reason we always resolve all relative links to
+  // absolute links, so we can be sure that this never happens.
   document$
     .pipe(
       startWith(document),
@@ -458,7 +388,74 @@ export function setupInstantNavigation(
   // Scroll restoration
   // --------------------------------------------------------------------------
 
-  // Track scroll position, so we can restore it when the user navigates back
+  // Handle scroll restoration - we must restore the viewport offset after the
+  // document has been fetched and injected, and every time the user clicks an
+  // anchor that leads to an element on the same page, which might also happen
+  // when the user uses the back or forward button.
+  merge(
+    document$.pipe(withLatestFrom(location$, (_, url) => url)),
+
+    // Handle instant navigation events that are triggered by the user clicking
+    // on an anchor link with a hash fragment different from the current one, as
+    // well as from popstate events, which are emitted when the user navigates
+    // back and forth between pages. We use a two-layered subscription to scope
+    // the scroll restoration to the current page, as we don't need to restore
+    // the viewport offset when the user navigates to a different page, as this
+    // is already handled by the previous observable.
+    location$.pipe(
+      distinctUntilKeyChanged("pathname"),
+      switchMap(() => location$),
+      distinctUntilKeyChanged("hash"),
+    ),
+
+    // Handle instant navigation events that are triggered by the user clicking
+    // on an anchor link with the same hash fragment as the current one in the
+    // URL. Is is essential that we only intercept those from instant navigation
+    // events and not from history change events, or we'll end up in and endless
+    // loop. The top-level history entry must be removed, as it will be replaced
+    // with a new one, which would otherwise lead to a duplicate entry.
+    location$.pipe(
+      distinctUntilChanged((a, b) => (
+        a.pathname === b.pathname &&
+        a.hash     === b.hash
+      )),
+      switchMap(() => instant$),
+      tap(() => history.back())
+    )
+  )
+    .subscribe(url => {
+
+      // Check if the current history entry has a state, which happens when the
+      // user presses the back or forward button to visit a page we've already
+      // seen. If there's no state, it means a new page was visited and we must
+      // scroll to the top, unless an anchor is given.
+      if (history.state !== null || !url.hash) {
+        window.scrollTo(0, history.state?.y ?? 0)
+      } else {
+        history.scrollRestoration = "auto"
+        setLocationHash(url.hash)
+        history.scrollRestoration = "manual"
+      }
+    })
+
+  // Disable scroll restoration when an instant navigation event occurs, so the
+  // browser does not immediately set the viewport offset to the prior history
+  // entry, scrolling to the position on the same page, which would look odd.
+  // Instead, we manually restore the position once the page has loaded.
+  location$.subscribe(() => {
+    history.scrollRestoration = "manual"
+  })
+
+  // Enable scroll restoration before window unloads - this is essential to
+  // ensure that full reloads (F5) restore the viewport offset correctly. If
+  // only popstate events wouldn't reset the viewport offset prior to their
+  // emission, we could just reset this in popstate. Meh.
+  fromEvent(window, "beforeunload")
+    .subscribe(() => {
+      history.scrollRestoration = "auto"
+    })
+
+  // Track viewport offset, so we can restore it when the user navigates back
   // and forth between pages. Note that this must be debounced and cannot be
   // done in popstate, as popstate has already removed the entry from the
   // history, which means it is too late.
@@ -471,47 +468,40 @@ export function setupInstantNavigation(
         history.replaceState(offset, "")
       })
 
-  // Enable scroll restoration before window unloads - this is essential to
-  // ensure that full reloads (F5) restore the viewport offset correctly. If
-  // only popstate events wouldn't reset the scroll position prior to their
-  // emission, we could just reset this in popstate. Meh.
-  fromEvent(window, "beforeunload")
-    .subscribe(() => {
-      history.scrollRestoration = "auto"
-    })
+  // --------------------------------------------------------------------------
+  // Navigation prefetching
+  // --------------------------------------------------------------------------
 
-  // Disable scroll restoration when an instant navigation event occurs, since
-  // we must normalize and synchronize the behavior across all browsers. For
-  // instance, when the user clicks the back or forward button, the browser
-  // would immediately jump to the position of the previous document. We must
-  // do this only if we intercept at least one instant navigation event, or
-  // Safari will not be able to restore the scroll position on reload.
-  location$.subscribe(() => {
-    history.scrollRestoration = "manual"
-  })
+  // If prefetching is enabled, prefetch pages for links that would trigger
+  // inter-site navigation on mouse events - this should improve performance,
+  // since pages will be cached. Note that we exhaust map URLs, so we ensure
+  // that loading is properly debounced and we don't fill caches up to quickly.
+  if (feature("navigation.instant.prefetch"))
+    merge(
+      fromEvent<MouseEvent>(document.body, "mousemove"),
+      fromEvent<MouseEvent>(document.body, "focusin")
+    )
+      .pipe(
+        combineLatestWith(sitemap$),
+        switchMap(([ev, sitemap]) => handle(ev, sitemap)),
+        debounceTime(25),
+        distinct(({ href }) => href),
+        exhaustMap(href => {
+          const link = document.createElement("link")
+          link.rel = "prefetch"
+          link.href = href.toString()
 
-  // // Handle scroll restoration - note that we must filter all duplicate URLs, as
-  // // we would otherwise end up in a loop, since the location is set every time.
-  // // Moreover, we must perform the scroll restoration on each location change
-  // // and note only when instant navigation occur to capture history changes.
-  // location$
-  //   .pipe(
-  //     sample(document$),
-  //     distinctUntilChanged((prev, next) => (
-  //       prev.pathname === next.pathname &&
-  //       prev.hash     === next.hash
-  //     ))
-  //   )
-  //     .subscribe(url => {
-  //       if (history.state !== null || !url.hash) {
-  //         window.scrollTo(0, history.state?.y ?? 0)
-  //       } else {
-  //         console.log("restore scroll", url.hash)
-  //         history.scrollRestoration = "auto"
-  //         setLocationHash(url.hash)
-  //         history.scrollRestoration = "manual"
-  //       }
-  //     })
+          // Instruct browser to prefetch link by adding a link tag of type
+          // prefetch to the head, and remove it again once the page was loaded
+          document.head.appendChild(link)
+          return fromEvent(link, "load")
+            .pipe(
+              map(() => link),
+              take(1)
+            )
+        })
+      )
+        .subscribe(link => link.remove())
 
   // Return document
   return document$
