@@ -33,14 +33,12 @@ import {
   distinctUntilKeyChanged,
   endWith,
   exhaustMap,
-  filter,
   fromEvent,
   ignoreElements,
   map,
   merge,
   of,
   share,
-  startWith,
   switchMap,
   take,
   tap,
@@ -59,7 +57,7 @@ import {
 } from "~/browser"
 import { getComponentElement } from "~/components"
 
-import { Sitemap, fetchSitemap2 } from "../sitemap2"
+import { Sitemap, fetchSitemap } from "../sitemap"
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -134,50 +132,36 @@ function handle(
 /**
  * Create a map of head elements for lookup and replacement
  *
- * @param head - Document head
+ * @param document - Document
  *
- * @returns Element map
+ * @returns Tag map
  */
-function lookup(head: HTMLHeadElement): Map<string, HTMLElement> {
-
-  // @todo When resolving URLs, we must make sure to use the correct base for
-  // resolution. The next time we refactor instant loading, we should use the
-  // location subject as a source, which is also used for anchor links tracking,
-  // but for now we just rely on canonical.
-  const canonical = getOptionalElement<HTMLLinkElement>("[rel=canonical]", head)
-  if (typeof canonical !== "undefined")
-    canonical.href = canonical.href.replace("//localhost:", "//127.0.0.1:")
-
-  // Create tag map and index elements in head
+function head(document: Document): Map<string, HTMLElement> {
   const tags = new Map<string, HTMLElement>()
-  for (const el of getElements(":scope > *", head)) {
-    let html = el.outerHTML
-
-    // If the current element is a style sheet or script, we must resolve the
-    // URL relative to the current location and make it absolute, so it's easy
-    // to deduplicate it later on by comparing the outer HTML of tags. We must
-    // keep identical style sheets and scripts without replacing them.
-    for (const key of ["href", "src"]) {
-      const value = el.getAttribute(key)!
-      if (value === null)
-        continue
-
-      // Resolve URL relative to current location
-      const url = new URL(value, canonical?.href)
-      const ref = el.cloneNode() as HTMLElement
-
-      // Set resolved URL and retrieve HTML for deduplication
-      ref.setAttribute(key, `${url}`)
-      html = ref.outerHTML
-      break
-    }
-
-    // Index element in tag map
-    tags.set(html, el)
-  }
+  for (const el of getElements(":scope > *", document.head))
+    tags.set(el.outerHTML, el)
 
   // Return tag map
   return tags
+}
+
+/**
+ * Resolve relative URLs in the given document
+ *
+ * @param document - Document
+ *
+ * @returns Document observable
+ */
+function resolve(document: Document): Observable<Document> {
+  for (const el of getElements<HTMLLinkElement>("[href], [src]", document))
+    for (const key in ["href", "src"]) {
+      const value = el.getAttribute(key)
+      if (!/^(?:[a-z]+:)?\/\//i.test(value!))
+        el.href = el.href
+    }
+
+  // Return document observable
+  return of(document)
 }
 
 /**
@@ -210,37 +194,16 @@ function inject(next: Document): Observable<Document> {
   }
 
   // Update meta tags
-  const source = lookup(document.head)
-  const target = lookup(next.head)
-  for (const [html, el] of target) {
-
-    // Hack: skip stylesheets and scripts until we manage to replace them
-    // entirely in order to omit flashes of white content @todo refactor
-    if (
-      el.getAttribute("rel") === "stylesheet" ||
-      el.hasAttribute("src")
-    )
-      continue
-
-    if (source.has(html)) {
-      source.delete(html)
-    } else {
+  const tags = head(document)
+  for (const [html, el] of head(next))
+    if (tags.has(html))
+      tags.delete(html)
+    else
       document.head.appendChild(el)
-    }
-  }
 
   // Remove meta tags that are not present in the new document
-  for (const el of source.values())
-
-    // Hack: skip stylesheets and scripts until we manage to replace them
-    // entirely in order to omit flashes of white content @todo refactor
-    if (
-      el.getAttribute("rel") === "stylesheet" ||
-      el.hasAttribute("src")
-    )
-      continue
-    else
-      el.remove()
+  for (const el of tags.values())
+    el.remove()
 
   // After components and meta tags were replaced, re-evaluate scripts
   // that were provided by the author as part of Markdown files
@@ -294,7 +257,18 @@ export function setupInstantNavigation(
 
   // Load sitemap immediately, so we have it available when the user initiates
   // the first navigation request, so there's no perceived delay.
-  const sitemap$ = fetchSitemap2(config.base)
+  const sitemap$ = fetchSitemap(config.base)
+
+  // Since we might be on a slow connection, the user might trigger multiple
+  // instant navigation events that overlap. MkDocs produces relative URLs for
+  // all internal links, which becomes a problem in this case, because we need
+  // to change the base URL the moment the user clicks a link that should be
+  // intercepted in order to be consistent with popstate, which means that the
+  // base URL would now be incorrect when resolving another relative link from
+  // the same site. For this reason we always resolve all relative links to
+  // absolute links, so we can be sure this never happens.
+  of(document)
+    .subscribe(resolve)
 
   // --------------------------------------------------------------------------
   // Navigation interception
@@ -364,25 +338,10 @@ export function setupInstantNavigation(
 
       // The document was successfully fetched and parsed, so we can inject its
       // contents into the currently active document
+      switchMap(resolve),
       switchMap(inject),
       share()
     )
-
-  // Since we might be on a slow connection, the user might trigger multiple
-  // instant navigation events that overlap. MkDocs produces relative URLs for
-  // all internal links, which becomes a problem in this case, because we need
-  // to change the base URL the moment the user clicks a link that should be
-  // intercepted in order to be consistent with popstate, which means that the
-  // base URL would now be incorrect when resolving another relative link from
-  // the same site. For this reason we always resolve all relative links to
-  // absolute links, so we can be sure that this never happens.
-  document$
-    .pipe(
-      startWith(document),
-      switchMap(() => getElements<HTMLLinkElement>("[href]")),
-      filter(el => !/^(?:[a-z]+:)?\/\//i.test(el.getAttribute("href")!))
-    )
-      .subscribe(el => el.href = el.href)
 
   // --------------------------------------------------------------------------
   // Scroll restoration

@@ -119,7 +119,7 @@ export function setupAlternate(
             // sitemap that we resolved earlier
             const config = configuration()
             const path = location.href.replace(config.base, "")
-            const target = sitemap.includes(path.split("#")[0])
+            const target = sitemap.has(path.split("#")[0])
               ? new URL(`${url}/${path}`, config.base)
               : new URL(url)
 
