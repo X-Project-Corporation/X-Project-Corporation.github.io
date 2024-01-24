@@ -20,6 +20,7 @@
  * IN THE SOFTWARE.
  */
 
+import { ComponentChild } from "preact"
 import { h } from "~/utilities"
 
 /* ----------------------------------------------------------------------------
@@ -60,4 +61,22 @@ export function renderTooltip(
       </div>
     )
   }
+}
+
+/**
+ * Render a tooltip
+ *
+ * @param id - Tooltip identifier
+ * @param children - Child nodes
+ *
+ * @returns Element
+ */
+export function renderTooltip2(
+  id: string, ...children: ComponentChild[]
+): HTMLElement {
+  return (
+    <div class="md-tooltip2" id={id} role="tooltip">
+      <div class="md-tooltip2__inner md-typeset">{children}</div>
+    </div>
+  )
 }

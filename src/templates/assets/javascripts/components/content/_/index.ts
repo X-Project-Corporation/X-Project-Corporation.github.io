@@ -26,10 +26,11 @@ import { feature } from "~/_"
 import { Viewport, getElements } from "~/browser"
 
 import { Component } from "../../_"
+import { mountTooltip } from "../../tooltip"
 import {
   Tooltip,
-  mountTooltip
-} from "../../tooltip"
+  mountTooltip2
+} from "../../tooltip2"
 import {
   Annotation,
   mountAnnotationBlock
@@ -131,6 +132,17 @@ export function mountContent(
     /* Tooltips */
     ...getElements("[title]", el)
       .filter(() => feature("content.tooltips"))
-      .map(child => mountTooltip(child))
+      .map(child => mountTooltip(child)),
+
+    /* Footnotes */
+    ...getElements(".footnote-ref", el)
+      .filter(() => feature("content.footnote.tooltips"))
+      .map(child => mountTooltip2(child, () => {
+        // @ts-ignore - refactor into separate component
+        const hash = new URL(child.href).hash.slice(1)
+        return Array.from(document.getElementById(hash)!
+          // @ts-ignore
+          .cloneNode(true).children) as any
+      }, { viewport$ }))
   )
 }

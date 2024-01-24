@@ -1,0 +1,125 @@
+////
+/// Copyright (c) 2016-2024 Martin Donath <martin.donath@squidfunk.com>
+///
+/// Permission is hereby granted, free of charge, to any person obtaining a
+/// copy of this software and associated documentation files (the "Software"),
+/// to deal in the Software without restriction, including without limitation
+/// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+/// and/or sell copies of the Software, and to permit persons to whom the
+/// Software is furnished to do so, subject to the following conditions:
+///
+/// The above copyright notice and this permission notice shall be included in
+/// all copies or substantial portions of the Software.
+///
+/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+/// FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+/// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+/// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+/// DEALINGS
+////
+
+// ----------------------------------------------------------------------------
+// Rules
+// ----------------------------------------------------------------------------
+
+// Tooltip variables
+:root {
+  --md-tooltip-width: #{px2rem(400px)};
+}
+
+// ----------------------------------------------------------------------------
+
+// Tooltip
+.md-tooltip2 {
+  position: absolute;
+  top: var(--md-tooltip-y);
+  inline-size: 100%;
+  // Hack: set an explicit `z-index` so we can transition it to ensure that any
+  // following elements are not overlaying the tooltip during the transition.
+  z-index: 0;
+  font-family: var(--md-text-font-family);
+  color: var(--md-default-fg-color);
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    transform 0ms 250ms,
+    opacity 250ms,
+    z-index 250ms;
+  transform: translateY(px2rem(-8px));
+  // Hack: promote to own layer to reduce jitter
+  backface-visibility: hidden;
+
+  // Tooltip is visible
+  &--active {
+    z-index: 2;
+    opacity: 1;
+    transition:
+      transform 250ms cubic-bezier(0.1, 0.7, 0.1, 1),
+      opacity   250ms,
+      z-index     0ms;
+    transform: translateY(0);
+  }
+
+  // Tooltip handle
+  &::before {
+    position: absolute;
+    left: calc(var(--md-tooltip-x) - 3px);
+    z-index: 1;
+    display: block;
+    content: "";
+    border-inline: 6px solid transparent;
+  }
+
+  // Tooltip handle if rendered above target
+  &--top::before {
+    bottom: px2rem(-5.5px);
+    filter: drop-shadow(0 1px 0 hsla(0, 0%, 0%, 0.05));
+    border-top: 6px solid var(--md-default-bg-color);
+  }
+
+  // Tooltip handle if rendered below target
+  &--bottom::before {
+    top: px2rem(-5.5px);
+    filter: drop-shadow(0 -1px 0 hsla(0, 0%, 0%, 0.05));
+    border-bottom: 6px solid var(--md-default-bg-color);
+  }
+
+  // Show outline on target and for keyboard devices
+  :is(.focus-visible > &, &:target) {
+    outline: var(--md-accent-fg-color) auto;
+  }
+
+  // Tooltip wrapper
+  &__inner {
+    position: relative;
+    left:
+      clamp(
+        #{px2rem(16px)},
+        var(--md-tooltip-x) - #{px2rem(16px)},
+        100vw +
+        #{px2rem(16px)} -
+        var(--md-tooltip-width) -
+        2 * #{px2rem(16px)}
+      );
+    width: var(--md-tooltip-width);
+    max-width: calc(100vw - 2 * #{px2rem(16px)});
+    padding: px2rem(16px);
+    font-size: px2rem(12.8px);
+    pointer-events: initial;
+    background-color: var(--md-default-bg-color);
+    border-radius: px2rem(2px);
+    box-shadow: var(--md-shadow-z2);
+
+    // Adjust spacing on first child
+    &.md-typeset > :first-child {
+      margin-top: 0;
+    }
+
+    // Adjust spacing on last child
+    &.md-typeset > :last-child {
+      margin-bottom: 0;
+    }
+  }
+}

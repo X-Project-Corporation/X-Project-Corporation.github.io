@@ -34,6 +34,7 @@ export type Flag =
   | "content.code.annotate"            /* Code annotations */
   | "content.code.copy"                /* Code copy button */
   | "content.code.select"              /* Code selection */
+  | "content.footnote.tooltips"        /* Footnote tooltips */
   | "content.lazy"                     /* Lazy content elements */
   | "content.tabs.link"                /* Link content tabs */
   | "content.tooltips"                 /* Tooltips */

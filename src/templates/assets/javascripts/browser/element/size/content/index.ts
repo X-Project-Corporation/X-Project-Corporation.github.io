@@ -65,3 +65,35 @@ export function getElementContainer(
   /* Return overflowing container */
   return parent ? el : undefined
 }
+
+/**
+ * Retrieve all overflowing containers of an element, if any
+ *
+ * Note that this function has a slightly different behavior, so we should at
+ * some point consider refactoring how overflowing containers are handled.
+ *
+ * @param el - Element
+ *
+ * @returns Overflowing containers
+ */
+export function getElementContainers(
+  el: HTMLElement
+): HTMLElement[] {
+  const containers: HTMLElement[] = []
+
+  // Walk up the DOM tree until we find an overflowing container
+  let parent = el.parentElement
+  while (parent) {
+    if (
+      el.clientWidth  > parent.clientWidth ||
+      el.clientHeight > parent.clientHeight
+    )
+      containers.push(parent)
+
+    // Continue with parent element
+    parent = (el = parent).parentElement
+  }
+
+  // Return overflowing containers
+  return containers
+}

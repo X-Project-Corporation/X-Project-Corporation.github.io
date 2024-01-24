@@ -62,6 +62,23 @@ export function getElementOffset(
   }
 }
 
+/**
+ * Retrieve absolute element offset
+ *
+ * @param el - Element
+ *
+ * @returns Element offset
+ */
+export function getElementOffsetAbsolute(
+  el: HTMLElement
+): ElementOffset {
+  const rect = el.getBoundingClientRect()
+  return {
+    x: rect.x + window.scrollX,
+    y: rect.y + window.scrollY
+  }
+}
+
 /* ------------------------------------------------------------------------- */
 
 /**
