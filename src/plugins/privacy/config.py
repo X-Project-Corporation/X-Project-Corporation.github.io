@@ -22,7 +22,19 @@ import os
 
 from mkdocs.config.base import Config
 from mkdocs.config.config_options import (
-  Deprecated, DictOfItems, ListOfItems, Type
+  Choice, Deprecated, DictOfItems, ListOfItems, Type
+)
+
+# -----------------------------------------------------------------------------
+# Options
+# -----------------------------------------------------------------------------
+
+# Options for log level
+LogLevel = (
+    "error",
+    "warn",
+    "info",
+    "debug"
 )
 
 # -----------------------------------------------------------------------------
@@ -37,6 +49,10 @@ class PrivacyConfig(Config):
     # Settings for caching
     cache = Type(bool, default = True)
     cache_dir = Type(str, default = ".cache/plugin/privacy")
+
+    # Settings for logging
+    log = Type(bool, default = True)
+    log_level = Choice(LogLevel, default = "info")
 
     # Settings for external assets
     assets = Type(bool, default = True)

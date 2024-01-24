@@ -72,6 +72,13 @@ class PrivacyPlugin(BasePlugin[PrivacyConfig]):
             **self.config.assets_expr_map
         }
 
+        # Set log level or disable logging altogether - @todo when refactoring
+        # this plugin for the next time, we should put this into a factory
+        if not self.config.log:
+            log.disabled = True
+        else:
+            log.setLevel(self.config.log_level.upper())
+
     # Process external style sheets and scripts (run latest) - run this after
     # all other plugins, so they can add additional assets
     @event_priority(-100)
