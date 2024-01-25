@@ -27,6 +27,7 @@
 // Tooltip variables
 :root {
   --md-tooltip-width: #{px2rem(400px)};
+  --md-tooltip-tail: #{px2rem(6px)};
 }
 
 // ----------------------------------------------------------------------------
@@ -34,7 +35,13 @@
 // Tooltip
 .md-tooltip2 {
   position: absolute;
-  top: var(--md-tooltip-y);
+  // Note that the top offset is computed from the host element offset plus the
+  // tooltip offset, which is always measured relative to the host element
+  top:
+    calc(
+      var(--md-tooltip-host-y) +
+      var(--md-tooltip-y)
+    );
   inline-size: 100%;
   // Hack: set an explicit `z-index` so we can transition it to ensure that any
   // following elements are not overlaying the tooltip during the transition.
@@ -51,6 +58,11 @@
   // Hack: promote to own layer to reduce jitter
   backface-visibility: hidden;
 
+  // Show outline on target and for keyboard devices
+  :is(.focus-visible > &, &:target) {
+    outline: var(--md-accent-fg-color) auto;
+  }
+
   // Tooltip is visible
   &--active {
     z-index: 2;
@@ -62,46 +74,61 @@
     transform: translateY(0);
   }
 
-  // Tooltip handle
+  // Tooltip tail
   &::before {
     position: absolute;
-    left: calc(var(--md-tooltip-x) - 3px);
+    // The offset of the tooltip tail is computed from the host element offset,
+    // plus the tooltip offset, which equals the center of the host element,
+    // and minus the half width of the tooltip tail to center it. Then, on both
+    // sides, the tooltip tail is padded with 150% of the inset area.
+    left:
+      clamp(
+        1.5 * #{px2rem(16px)},
+        calc(
+          var(--md-tooltip-host-x) +
+          var(--md-tooltip-x) -
+          var(--md-tooltip-tail)
+        ),
+        calc(
+          100vw - 2 * var(--md-tooltip-tail) -
+          1.5 * #{px2rem(16px)}
+        )
+      );
     z-index: 1;
     display: block;
     content: "";
-    border-inline: 6px solid transparent;
+    border-inline: var(--md-tooltip-tail) solid transparent;
   }
 
-  // Tooltip handle if rendered above target
+  // Tooltip tail if rendered above target
   &--top::before {
-    bottom: px2rem(-5.5px);
+    bottom: calc(-1 * var(--md-tooltip-tail) + px2rem(0.5px));
     filter: drop-shadow(0 1px 0 hsla(0, 0%, 0%, 0.05));
-    border-top: 6px solid var(--md-default-bg-color);
+    border-top: var(--md-tooltip-tail) solid var(--md-default-bg-color);
   }
 
-  // Tooltip handle if rendered below target
+  // Tooltip tail if rendered below target
   &--bottom::before {
-    top: px2rem(-5.5px);
+    top: calc(-1 * var(--md-tooltip-tail) + px2rem(0.5px));
     filter: drop-shadow(0 -1px 0 hsla(0, 0%, 0%, 0.05));
-    border-bottom: 6px solid var(--md-default-bg-color);
-  }
-
-  // Show outline on target and for keyboard devices
-  :is(.focus-visible > &, &:target) {
-    outline: var(--md-accent-fg-color) auto;
+    border-bottom: var(--md-tooltip-tail) solid var(--md-default-bg-color);
   }
 
   // Tooltip wrapper
   &__inner {
     position: relative;
+    // The tooltip is slightly moved to the left, so it nicely aligns with the
+    // content of the tooltip set by the padding of this element. On both sides,
+    // the tooltip is padded with the inset area, so it never touches the edge
+    // of the window for a better user experience.
     left:
       clamp(
         #{px2rem(16px)},
-        var(--md-tooltip-x) - #{px2rem(16px)},
-        100vw +
-        #{px2rem(16px)} -
-        var(--md-tooltip-width) -
-        2 * #{px2rem(16px)}
+        var(--md-tooltip-host-x) - #{px2rem(16px)},
+        calc(
+          100vw - var(--md-tooltip-width) -
+          #{px2rem(16px)}
+        )
       );
     width: var(--md-tooltip-width);
     max-width: calc(100vw - 2 * #{px2rem(16px)});

@@ -494,7 +494,9 @@ export function mountCodeBlock(
         tap(state => push$.next(state)),
         finalize(() => push$.complete()),
         map(state => ({ ref: el, ...state })),
-        mergeWith(...content$),
+        mergeWith(merge(...content$).pipe(
+          takeUntil(done$)
+        )),
       )
   })
 

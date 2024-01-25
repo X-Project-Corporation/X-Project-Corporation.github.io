@@ -40,13 +40,12 @@ import {
   observeOn,
   queueScheduler,
   share,
-  skip,
   startWith,
   switchMap,
   tap,
+  throttleTime,
   timer,
-  withLatestFrom,
-  zip
+  withLatestFrom
 } from "rxjs"
 
 import {
@@ -62,6 +61,7 @@ import {
 import { renderTooltip2 } from "~/templates"
 
 import { Component } from "../_"
+import { mountContent } from "../content"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -84,6 +84,8 @@ export interface Tooltip {
  */
 interface Dependencies {
   viewport$: Observable<Viewport>      // Viewport observable
+  target$: Observable<HTMLElement>     // Location target observable
+  print$: Observable<boolean>          // Media print observable
 }
 
 /* ----------------------------------------------------------------------------
@@ -118,7 +120,7 @@ export function watchTooltip2(
   // Compute whether tooltip should be shown - we need to watch both focus and
   // hover events on the host element and emit if one of them is active. In case
   // of a hover event, we keep the element visible for a short amount of time
-  // after the pointer left the host element.
+  // after the pointer left the host element for a better user experience.
   const active$ =
     combineLatest([
       watchElementFocus(el),
@@ -135,10 +137,8 @@ export function watchTooltip2(
   // them and recompute the position of the tooltip if they change.
   const offset$ =
     defer(() => getElementContainers(el)).pipe(
-      mergeMap(container => watchElementContentOffset(container).pipe(
-        skip(1)
-      )),
-      startWith(undefined),
+      mergeMap(watchElementContentOffset),
+      throttleTime(1),
       map(() => getElementOffsetAbsolute(el))
     )
 
@@ -169,19 +169,20 @@ export function watchTooltip2(
  * @returns Tooltip component observable
  */
 export function mountTooltip2(
-  el: HTMLElement, factory: () => Node | string, dependencies: Dependencies
+  el: HTMLElement, factory: () => Array<Node | string>,
+  dependencies: Dependencies
 ): Observable<Component<Tooltip>> {
   const { viewport$ } = dependencies
 
   // Create a tooltip - @todo move this outside this function
   const id = `__tooltip2_${sequence++}`
   const tooltip$ = new Observable<HTMLElement>(observer => {
-    const tooltip = renderTooltip2(id, factory())
-    observer.next(tooltip)
+    const node = renderTooltip2(id, ...factory())
+    observer.next(node)
 
     // Append tooltip and remove on unsubscription
-    document.body.append(tooltip)
-    return () => tooltip.remove()
+    document.body.append(node)
+    return () => node.remove()
   })
 
   // Create component on subscription
@@ -212,7 +213,7 @@ export function mountTooltip2(
     )
 
     // Compute tooltip presence and visibility - the tooltip should be shown if
-    // the host element is focused or hovered, or the tooltip itself
+    // the host element or the tooltip itself is focused or hovered
     combineLatest([
       push$.pipe(map(({ active }) => active)),
       node$.pipe(
@@ -230,13 +231,14 @@ export function mountTooltip2(
     const origin$ = show$.pipe(
       filter(active => active),
       withLatestFrom(node$, viewport$),
-      map(([_, tooltip, { size }]) => {
+      map(([_, node, { size }]) => {
         const host = el.getBoundingClientRect()
+        const x = host.width / 2
         if (host.y >= size.height / 2) {
-          const { height } = getElementSize(tooltip)
-          return -16 - height
+          const { height } = getElementSize(node)
+          return { x, y: -16 - height }
         } else {
-          return +16 + host.height
+          return { x, y: +16 + host.height }
         }
       })
     )
@@ -244,14 +246,19 @@ export function mountTooltip2(
     // Update tooltip position - we always need to update the position of the
     // tooltip, as it might change depending on the viewport offset of the host
     combineLatest([push$, origin$, node$])
-      .subscribe(([{ offset }, origin, tooltip]) => {
-        tooltip.style.setProperty("--md-tooltip-x", `${offset.x}px`)
-        tooltip.style.setProperty("--md-tooltip-y", `${offset.y + origin}px`)
+      .subscribe(([{ offset }, origin, node]) => {
+        node.style.setProperty("--md-tooltip-host-x", `${offset.x}px`)
+        node.style.setProperty("--md-tooltip-host-y", `${offset.y}px`)
 
-        // Update tooltip origin, i.e., whether the tooltip is rendered above
-        // or below the host element, which depends on the available space
-        tooltip.classList.toggle("md-tooltip2--top",    origin <  0)
-        tooltip.classList.toggle("md-tooltip2--bottom", origin >= 0)
+        // Update tooltip origin - this is mainly set to determine the position
+        // of the tooltip tail, to show the direction it is originating from
+        node.style.setProperty("--md-tooltip-x", `${origin.x}px`)
+        node.style.setProperty("--md-tooltip-y", `${origin.y}px`)
+
+        // Update tooltip render location, i.e., whether the tooltip is shown
+        // above or below the host element, depending on the available space
+        node.classList.toggle("md-tooltip2--top",    origin.y <  0)
+        node.classList.toggle("md-tooltip2--bottom", origin.y >= 0)
       })
 
     // Update tooltip visibility - we defer to the next animation frame, because
@@ -263,9 +270,18 @@ export function mountTooltip2(
       observeOn(animationFrameScheduler),
       withLatestFrom(node$)
     )
-      .subscribe(([active, tooltip]) => {
-        tooltip.classList.toggle("md-tooltip2--active", active)
+      .subscribe(([active, node]) => {
+        node.classList.toggle("md-tooltip2--active", active)
       })
+
+    // Mount components in tooltip - since tooltips can host arbitrary content,
+    // we need to mount all components inside of it. @todo refactor
+    show$.pipe(
+      distinctUntilChanged(),
+      withLatestFrom(node$),
+      switchMap(([_, node]) => mountContent(node, dependencies))
+    )
+      .subscribe()
 
     // Create and return component
     return watchTooltip2(el)

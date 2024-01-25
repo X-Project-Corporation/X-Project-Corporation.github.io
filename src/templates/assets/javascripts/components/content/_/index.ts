@@ -101,8 +101,9 @@ interface MountOptions {
  * @returns Content component observable
  */
 export function mountContent(
-  el: HTMLElement, { viewport$, target$, print$ }: MountOptions
+  el: HTMLElement, dependencies: MountOptions
 ): Observable<Component<Content>> {
+  const { viewport$, target$, print$ } = dependencies
   return merge(
 
     /* Annotations */
@@ -143,6 +144,6 @@ export function mountContent(
         return Array.from(document.getElementById(hash)!
           // @ts-ignore
           .cloneNode(true).children) as any
-      }, { viewport$ }))
+      }, dependencies))
   )
 }
