@@ -43,8 +43,6 @@ import {
   share,
   startWith,
   switchMap,
-  take,
-  takeLast,
   tap,
   throttleTime,
   timer,
