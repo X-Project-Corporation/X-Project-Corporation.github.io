@@ -35,6 +35,7 @@ import {
   finalize,
   first,
   ignoreElements,
+  last,
   map,
   mergeMap,
   observeOn,
@@ -42,6 +43,8 @@ import {
   share,
   startWith,
   switchMap,
+  take,
+  takeLast,
   tap,
   throttleTime,
   timer,
@@ -282,6 +285,20 @@ export function mountTooltip2(
       switchMap(([_, node]) => mountContent(node, dependencies))
     )
       .subscribe()
+
+    // Set up ARIA attributes on subscription
+    show$.pipe(first())
+      .subscribe(() => {
+        el.setAttribute("aria-controls", id)
+        el.setAttribute("aria-haspopup", "dialog")
+      })
+
+    // Remove ARIA attributes on unsubscription
+    show$.pipe(last())
+      .subscribe(() => {
+        el.removeAttribute("aria-controls")
+        el.removeAttribute("aria-haspopup")
+      })
 
     // Create and return component
     return watchTooltip2(el)

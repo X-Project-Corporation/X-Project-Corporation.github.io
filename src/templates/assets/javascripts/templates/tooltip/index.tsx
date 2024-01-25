@@ -21,6 +21,7 @@
  */
 
 import { ComponentChild } from "preact"
+
 import { h } from "~/utilities"
 
 /* ----------------------------------------------------------------------------
@@ -75,7 +76,7 @@ export function renderTooltip2(
   id: string, ...children: ComponentChild[]
 ): HTMLElement {
   return (
-    <div class="md-tooltip2" id={id} role="tooltip">
+    <div class="md-tooltip2" id={id} role="dialog">
       <div class="md-tooltip2__inner md-typeset">{children}</div>
     </div>
   )
