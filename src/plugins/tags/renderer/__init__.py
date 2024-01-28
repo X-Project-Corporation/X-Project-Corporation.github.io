@@ -20,7 +20,7 @@
 
 from __future__ import annotations
 
-import os
+import posixpath
 
 from jinja2 import Environment
 from mkdocs.config.defaults import MkDocsConfig
@@ -87,8 +87,8 @@ class Renderer:
         Returns:
             The rendered template.
         """
-        path = os.path.join("fragments", "tags", name)
-        path = os.path.normpath(path)
+        path = posixpath.join("fragments", "tags", name)
+        path = posixpath.normpath(path)
 
         # Resolve and render template
         template = self.env.get_template(path)
