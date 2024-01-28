@@ -55,24 +55,16 @@
     opacity 250ms,
     z-index 250ms;
   transform: translateY(px2rem(-8px));
+  // We explicitly set the origin to the tooltip tail, allowing the author to
+  // easily add further transforms to the tooltip, customizing the transition
+  transform-origin:
+    calc(
+      var(--md-tooltip-host-x) +
+      var(--md-tooltip-x)
+    )
+    0;
   // Hack: promote to own layer to reduce jitter
   backface-visibility: hidden;
-
-  // Show outline on target and for keyboard devices
-  :is(.focus-visible > &, &:target) {
-    outline: var(--md-accent-fg-color) auto;
-  }
-
-  // Tooltip is visible
-  &--active {
-    z-index: 2;
-    opacity: 1;
-    transition:
-      transform 250ms cubic-bezier(0.1, 0.7, 0.1, 1),
-      opacity   250ms,
-      z-index     0ms;
-    transform: translateY(0);
-  }
 
   // Tooltip tail
   &::before {
@@ -90,7 +82,8 @@
           var(--md-tooltip-tail)
         ),
         calc(
-          100vw - 2 * var(--md-tooltip-tail) -
+          100vw -
+          2 * var(--md-tooltip-tail) -
           1.5 * #{px2rem(16px)}
         )
       );
@@ -114,6 +107,17 @@
     border-bottom: var(--md-tooltip-tail) solid var(--md-default-bg-color);
   }
 
+  // Tooltip is visible
+  &--active {
+    z-index: 2;
+    opacity: 1;
+    transition:
+      transform 400ms cubic-bezier(0, 1, 0.5, 1),
+      opacity   250ms,
+      z-index     0ms;
+    transform: translateY(0);
+  }
+
   // Tooltip wrapper
   &__inner {
     position: relative;
@@ -124,20 +128,110 @@
     left:
       clamp(
         #{px2rem(16px)},
-        var(--md-tooltip-host-x) - #{px2rem(16px)},
         calc(
-          100vw - var(--md-tooltip-width) -
+          var(--md-tooltip-host-x) -
+          #{px2rem(16px)}
+        ),
+        calc(
+          100vw -
+          var(--md-tooltip-width) -
           #{px2rem(16px)}
         )
       );
-    width: var(--md-tooltip-width);
     max-width: calc(100vw - 2 * #{px2rem(16px)});
-    padding: px2rem(16px);
-    font-size: px2rem(12.8px);
-    pointer-events: initial;
+    max-height: 40vh;
     background-color: var(--md-default-bg-color);
     border-radius: px2rem(2px);
     box-shadow: var(--md-shadow-z2);
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+
+    // Webkit scrollbar
+    &::-webkit-scrollbar {
+      width: px2rem(4px);
+      height: px2rem(4px);
+    }
+
+    // Webkit scrollbar thumb
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--md-default-fg-color--lighter);
+
+      // Webkit scrollbar thumb on hover
+      &:hover {
+        background-color: var(--md-accent-fg-color);
+      }
+    }
+
+    // Tooltip is used as a dialog - this role should be set if we intend to
+    // render typesetted content inside of the tooltip, e.g., from annotations,
+    // footnotes, or from other documents as fetched via instant previews. The
+    // content is rendered in the same size as other side content.
+    [role="dialog"] > & {
+      width: var(--md-tooltip-width);
+      padding: 0 px2rem(16px);
+      overflow: auto;
+      font-size: px2rem(12.8px);
+      pointer-events: initial;
+
+      // Overlay to fade out top and bottom
+      &::before,
+      &::after {
+        position: sticky;
+        z-index: 10;
+        display: block;
+        width: 100%;
+        height: px2rem(16px);
+        content: "";
+      }
+
+      // Overlay to fade out top
+      &::before {
+        top: 0;
+        background:
+          linear-gradient(
+            var(--md-default-bg-color),
+            transparent 75%
+          );
+      }
+
+      // Overlay to fade out bottom
+      &::after {
+        bottom: 0;
+        background:
+          linear-gradient(
+            transparent,
+            var(--md-default-bg-color) 75%
+          );
+      }
+    }
+
+    // Tooltip is non-interactive - this role should be set if the tooltip has
+    // only informational and non-interactive content, e.g., an actual tooltip.
+    // It has no explicitl width set, uses a smaller font, and is centered,
+    // other than a tooltip with typesetted content.
+    [role="tooltip"] > & {
+      left:
+        clamp(
+          #{px2rem(16px)},
+          calc(
+            var(--md-tooltip-host-x) +
+            var(--md-tooltip-x) -
+            var(--md-tooltip-width) / 2
+          ),
+          calc(
+            100vw -
+            var(--md-tooltip-width) -
+            #{px2rem(16px)}
+          )
+        );
+      width: fit-content;
+      padding: px2rem(4px) px2rem(8px);
+      font-size: px2rem(10px);
+      font-weight: 700;
+      // If the author wishes to keep the tooltip visible upon hover and make
+      // the text selectable, this property can be set to `initial`
+      user-select: none;
+    }
 
     // Adjust spacing on first child
     &.md-typeset > :first-child {

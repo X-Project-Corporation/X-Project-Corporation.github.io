@@ -67,17 +67,31 @@ export function renderTooltip(
 /**
  * Render a tooltip
  *
- * @param id - Tooltip identifier
  * @param children - Child nodes
  *
  * @returns Element
  */
 export function renderTooltip2(
-  id: string, ...children: ComponentChild[]
+  ...children: ComponentChild[]
 ): HTMLElement {
   return (
-    <div class="md-tooltip2" id={id} role="dialog">
-      <div class="md-tooltip2__inner md-typeset">{children}</div>
+    <div class="md-tooltip2" role="dialog">
+      <div class="md-tooltip2__inner md-typeset">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+// @todo: rename
+export function renderInlineTooltip2(
+  ...children: ComponentChild[]
+): HTMLElement {
+  return (
+    <div class="md-tooltip2" role="tooltip">
+      <div class="md-tooltip2__inner md-typeset">
+        {children}
+      </div>
     </div>
   )
 }

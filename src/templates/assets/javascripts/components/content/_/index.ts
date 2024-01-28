@@ -24,9 +24,13 @@ import { Observable, merge } from "rxjs"
 
 import { feature } from "~/_"
 import { Viewport, getElements } from "~/browser"
+import { Sitemap } from "~/integrations"
+import {
+  renderInlineTooltip2,
+  renderTooltip2
+} from "~/templates"
 
 import { Component } from "../../_"
-import { mountTooltip } from "../../tooltip"
 import {
   Tooltip,
   mountTooltip2
@@ -43,6 +47,10 @@ import {
   Details,
   mountDetails
 } from "../details"
+import {
+  Link,
+  mountLink
+} from "../link"
 import {
   Mermaid,
   mountMermaid
@@ -69,6 +77,7 @@ export type Content =
   | ContentTabs
   | DataTable
   | Details
+  | Link
   | Mermaid
   | Tooltip
 
@@ -77,12 +86,13 @@ export type Content =
  * ------------------------------------------------------------------------- */
 
 /**
- * Mount options
+ * Dependencies
  */
-interface MountOptions {
-  viewport$: Observable<Viewport>      /* Viewport observable */
-  target$: Observable<HTMLElement>     /* Location target observable */
-  print$: Observable<boolean>          /* Media print observable */
+interface Dependencies {
+  sitemap$: Observable<Sitemap>        // Sitemap observable
+  viewport$: Observable<Viewport>      // Viewport observable
+  target$: Observable<HTMLElement>     // Location target observable
+  print$: Observable<boolean>          // Media print observable
 }
 
 /* ----------------------------------------------------------------------------
@@ -96,54 +106,82 @@ interface MountOptions {
  * actual article, including code blocks, data tables and details.
  *
  * @param el - Content element
- * @param options - Options
+ * @param dependencies - Dependencies
  *
  * @returns Content component observable
  */
 export function mountContent(
-  el: HTMLElement, dependencies: MountOptions
+  el: HTMLElement, dependencies: Dependencies
 ): Observable<Component<Content>> {
   const { viewport$, target$, print$ } = dependencies
   return merge(
 
-    /* Annotations */
+    // Annotations
     ...getElements(".annotate:not(.highlight)", el)
       .map(child => mountAnnotationBlock(child, { target$, print$ })),
 
-    /* Code blocks */
+    // Code blocks
     ...getElements("pre:not(.mermaid) > code", el)
       .map(child => mountCodeBlock(child, { target$, print$ })),
 
-    /* Mermaid diagrams */
+    // Links
+    ...getElements("a:not([title])", el)
+      .map(child => mountLink(child, dependencies)),
+
+    // Mermaid diagrams
     ...getElements("pre.mermaid", el)
       .map(child => mountMermaid(child)),
 
-    /* Data tables */
+    // Data tables
     ...getElements("table:not([class])", el)
       .map(child => mountDataTable(child)),
 
-    /* Details */
+    // Details
     ...getElements("details", el)
       .map(child => mountDetails(child, { target$, print$ })),
 
-    /* Content tabs */
+    // Content tabs
     ...getElements("[data-tabs]", el)
       .map(child => mountContentTabs(child, { viewport$, target$ })),
 
-    /* Tooltips */
+    // Tooltips
     ...getElements("[title]", el)
       .filter(() => feature("content.tooltips"))
-      .map(child => mountTooltip(child)),
+      .map(child => mountTooltip2(child, {
+        content$: new Observable<HTMLElement>(observer => {
+          const title = child.title
+          const node = renderInlineTooltip2(title)
+          observer.next(node)
+          child.removeAttribute("title")
+          // Append tooltip and remove on unsubscription
+          document.body.append(node)
+          return () => {
+            node.remove()
+            child.setAttribute("title", title)
+          }
+        }),
+        ...dependencies
+      })),
 
-    /* Footnotes */
+    // Footnotes
     ...getElements(".footnote-ref", el)
       .filter(() => feature("content.footnote.tooltips"))
-      .map(child => mountTooltip2(child, () => {
-        // @ts-ignore - refactor into separate component
-        const hash = new URL(child.href).hash.slice(1)
-        return Array.from(document.getElementById(hash)!
+      // move into specific function! mountTooltip is a low level primitive...
+      .map(child => mountTooltip2(child, {
+        content$: new Observable<HTMLElement>(observer => {
           // @ts-ignore
-          .cloneNode(true).children) as any
-      }, dependencies))
+          const hash = new URL(child.href).hash.slice(1)
+          const arr = Array.from(document.getElementById(hash)!
+            // @ts-ignore
+            .cloneNode(true).children) as any
+          const node = renderTooltip2(...arr)
+          observer.next(node)
+
+          // Append tooltip and remove on unsubscription
+          document.body.append(node)
+          return () => node.remove()
+        }),
+        ...dependencies
+      }))
   )
 }

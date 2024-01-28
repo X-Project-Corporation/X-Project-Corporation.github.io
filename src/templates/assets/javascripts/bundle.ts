@@ -77,6 +77,7 @@ import {
 } from "./components"
 import {
   SearchIndex,
+  fetchSitemap,
   setupAlternate,
   setupClipboardJS,
   setupInstantNavigation,
@@ -152,9 +153,12 @@ setupAlternate({ document$ })
 /* Set up progress indicator */
 const progress$ = new Subject<number>()
 
+/* Set up sitemap for instant navigation and previews */
+const sitemap$ = fetchSitemap(config.base)
+
 /* Set up instant navigation, if enabled */
 if (feature("navigation.instant"))
-  setupInstantNavigation({ location$, viewport$, progress$ })
+  setupInstantNavigation({ sitemap$, location$, viewport$, progress$ })
     .subscribe(document$)
 
 /* Set up version selector */
@@ -259,7 +263,7 @@ const content$ = defer(() => merge(
 
   /* Content */
   ...getComponentElements("content")
-    .map(el => mountContent(el, { viewport$, target$, print$ })),
+    .map(el => mountContent(el, { sitemap$, viewport$, target$, print$ })),
 
   /* Search highlighting */
   ...getComponentElements("content")

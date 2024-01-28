@@ -44,6 +44,7 @@ export type Flag =
   | "navigation.instant"               /* Instant navigation */
   | "navigation.instant.prefetch"      /* Instant navigation prefetching */
   | "navigation.instant.progress"      /* Instant navigation progress */
+  | "navigation.instant.preview"       /* Instant preview */
   | "navigation.sections"              /* Section navigation */
   | "navigation.tabs"                  /* Tabs navigation */
   | "navigation.tabs.sticky"           /* Tabs navigation (sticky) */

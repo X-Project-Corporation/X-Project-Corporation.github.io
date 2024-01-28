@@ -35,7 +35,6 @@ import {
   finalize,
   first,
   ignoreElements,
-  last,
   map,
   mergeMap,
   observeOn,
@@ -52,6 +51,7 @@ import {
 import {
   ElementOffset,
   Viewport,
+  getElement,
   getElementContainers,
   getElementOffsetAbsolute,
   getElementSize,
@@ -59,10 +59,8 @@ import {
   watchElementFocus,
   watchElementHover
 } from "~/browser"
-import { renderTooltip2 } from "~/templates"
 
 import { Component } from "../_"
-import { mountContent } from "../content"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -84,6 +82,7 @@ export interface Tooltip {
  * Dependencies
  */
 interface Dependencies {
+  content$: Observable<HTMLElement>    // Tooltip content observable
   viewport$: Observable<Viewport>      // Viewport observable
   target$: Observable<HTMLElement>     // Location target observable
   print$: Observable<boolean>          // Media print observable
@@ -158,33 +157,29 @@ export function watchTooltip2(
 /**
  * Mount tooltip
  *
- * @todo this is our new tooltip implementation, which will become the standard,
- * as it doesn't suffer from the same positioning issues as the previous one.
- * However, we first test it on footnotes, and see if we don't introduce any new
- * issues, before moving entirely to it.
+ * This function renders a tooltip with the content from the provided `content$`
+ * observable as passed via the dependencies. If the returned element has a role
+ * of type `dialog`, the tooltip is considered to be interactive, and rendered
+ * either above or below the host element, depending on the available space.
+ *
+ * If the returned element has a role of type `tooltip`, the tooltip is always
+ * rendered below the host element and considered to be non-interactive. This
+ * allows us to reuse the same positioning logic for both interactive and
+ * non-interactive tooltips, as it is largely the same.
  *
  * @param el - Tooltip host element
- * @param factory - Node factory
  * @param dependencies - Dependencies
  *
  * @returns Tooltip component observable
  */
 export function mountTooltip2(
-  el: HTMLElement, factory: () => Array<Node | string>,
-  dependencies: Dependencies
+  el: HTMLElement, dependencies: Dependencies
 ): Observable<Component<Tooltip>> {
-  const { viewport$ } = dependencies
+  const { content$, viewport$ } = dependencies
 
-  // Create a tooltip - @todo move this outside this function
+  // Compute unique tooltip id - this is necessary to associate the tooltip host
+  // element with the tooltip element for ARIA purposes
   const id = `__tooltip2_${sequence++}`
-  const tooltip$ = new Observable<HTMLElement>(observer => {
-    const node = renderTooltip2(id, ...factory())
-    observer.next(node)
-
-    // Append tooltip and remove on unsubscription
-    document.body.append(node)
-    return () => node.remove()
-  })
 
   // Create component on subscription
   return defer(() => {
@@ -192,8 +187,8 @@ export function mountTooltip2(
 
     // Create subject to track tooltip presence and visibility - we use another
     // purely internal subject to track the tooltip's presence and visibility,
-    // as the tooltip should be shown if the host element or tooltip itself is
-    // focused or hovered to allow for smooth pointer migration
+    // as the tooltip should be visible if the host element or tooltip itself
+    // is focused or hovered to allow for smooth pointer migration
     const show$ = new BehaviorSubject(false)
     push$.pipe(ignoreElements(), endWith(false))
       .subscribe(show$)
@@ -209,7 +204,8 @@ export function mountTooltip2(
     const node$ = show$.pipe(
       debounce(active => timer(+!active * 250, queueScheduler)),
       distinctUntilChanged(),
-      switchMap(active => active ? tooltip$ : EMPTY),
+      switchMap(active => active ? content$ : EMPTY),
+      tap(node => node.id = id),
       share()
     )
 
@@ -235,7 +231,15 @@ export function mountTooltip2(
       map(([_, node, { size }]) => {
         const host = el.getBoundingClientRect()
         const x = host.width / 2
-        if (host.y >= size.height / 2) {
+
+        // If the tooltip is non-interactive, we always render it below the
+        // actual element because all operating systems do it that way
+        if (node.role === "tooltip") {
+          return { x, y: 8 + host.height }
+
+        // Otherwise, we determine where there is more space, and render the
+        // tooltip either above or below the host element
+        } else if (host.y >= size.height / 2) {
           const { height } = getElementSize(node)
           return { x, y: -16 - height }
         } else {
@@ -246,8 +250,8 @@ export function mountTooltip2(
 
     // Update tooltip position - we always need to update the position of the
     // tooltip, as it might change depending on the viewport offset of the host
-    combineLatest([push$, origin$, node$])
-      .subscribe(([{ offset }, origin, node]) => {
+    combineLatest([node$, push$, origin$])
+      .subscribe(([node, { offset }, origin]) => {
         node.style.setProperty("--md-tooltip-host-x", `${offset.x}px`)
         node.style.setProperty("--md-tooltip-host-y", `${offset.y}px`)
 
@@ -260,6 +264,22 @@ export function mountTooltip2(
         // above or below the host element, depending on the available space
         node.classList.toggle("md-tooltip2--top",    origin.y <  0)
         node.classList.toggle("md-tooltip2--bottom", origin.y >= 0)
+      })
+
+    // Update tooltip width - we only explicitly set the width of the tooltip
+    // if it is non-interactive, in case it should always be rendered centered
+    show$.pipe(
+      filter(active => active),
+      withLatestFrom(node$, (_, node) => node),
+      filter(node => node.role === "tooltip")
+    )
+      .subscribe(node => {
+        const size = getElementSize(getElement(":scope > *", node))
+
+        // Set tooltip width and remove tail by setting it to a width of zero -
+        // if authors want to keep the tail, we can move this to CSS later
+        node.style.setProperty("--md-tooltip-width", `${size.width}px`)
+        node.style.setProperty("--md-tooltip-tail",  `${0}px`)
       })
 
     // Update tooltip visibility - we defer to the next animation frame, because
@@ -275,26 +295,25 @@ export function mountTooltip2(
         node.classList.toggle("md-tooltip2--active", active)
       })
 
-    // Mount components in tooltip - since tooltips can host arbitrary content,
-    // we need to mount all components inside of it. @todo refactor
-    show$.pipe(
-      distinctUntilChanged(),
-      withLatestFrom(node$),
-      switchMap(([_, node]) => mountContent(node, dependencies))
-    )
-      .subscribe()
-
-    // Set up ARIA attributes on subscription
-    show$.pipe(first())
-      .subscribe(() => {
-        el.setAttribute("aria-controls", id)
-        el.setAttribute("aria-haspopup", "dialog")
+    // Set up ARIA attributes when tooltip is visible
+    combineLatest([
+      show$.pipe(filter(active => active)),
+      node$
+    ])
+      .subscribe(([_, node]) => {
+        if (node.role === "dialog") {
+          el.setAttribute("aria-controls", id)
+          el.setAttribute("aria-haspopup", "dialog")
+        } else {
+          el.setAttribute("aria-describedby", id)
+        }
       })
 
-    // Remove ARIA attributes on unsubscription
-    show$.pipe(last())
+    // Remove ARIA attributes when tooltip is hidden
+    show$.pipe(filter(active => !active))
       .subscribe(() => {
         el.removeAttribute("aria-controls")
+        el.removeAttribute("aria-describedby")
         el.removeAttribute("aria-haspopup")
       })
 
