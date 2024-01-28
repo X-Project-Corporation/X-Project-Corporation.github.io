@@ -20,6 +20,8 @@
 
 from __future__ import annotations
 
+import os
+
 from jinja2 import Environment
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.structure.pages import Page
@@ -85,7 +87,11 @@ class Renderer:
         Returns:
             The rendered template.
         """
-        template = self.env.get_template(f"fragments/tags/{name}")
+        path = os.path.join("fragments", "tags", name)
+        path = os.path.normpath(path)
+
+        # Resolve and render template
+        template = self.env.get_template(path)
         return template.render(
             config = self.config, page = page,
             base_url = get_relative_url(".", page.url),
