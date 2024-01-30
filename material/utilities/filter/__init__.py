@@ -23,7 +23,7 @@ from __future__ import annotations
 import logging
 
 from fnmatch import fnmatch
-from mkdocs.structure.pages import Page
+from mkdocs.structure.files import File
 
 from .config import FilterConfig
 
@@ -84,28 +84,28 @@ class Filter:
 
 # -----------------------------------------------------------------------------
 
-class PageFilter(Filter):
+class FileFilter(Filter):
     """
-    A page filter.
+    A file filter.
     """
 
-    def __call__(self, page: Page) -> bool:
+    def __call__(self, file: File) -> bool:
         """
-        Filter a page.
+        Filter a file by its source path.
 
         Arguments:
-            page: The page to filter.
+            file: The file to filter.
 
         Returns:
-            Whether the page should be included.
+            Whether the file should be included.
         """
-        if page.file.inclusion.is_excluded():
+        if file.inclusion.is_excluded():
             return False
 
-        # Filter page
+        # Filter file by source path
         return super().__call__(
-            page.file.src_uri,
-            page.file.src_path
+            file.src_uri,
+            file.src_path
         )
 
 # -----------------------------------------------------------------------------

@@ -25,7 +25,7 @@ import os
 import re
 
 from jinja2 import Environment
-from material.utilities.filter import PageFilter
+from material.utilities.filter import FileFilter
 from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, event_priority
@@ -47,8 +47,8 @@ class TagsPlugin(BasePlugin[TagsConfig]):
     A tags plugin.
 
     This plugin collects tags from the front matter of pages, and builds a tag
-    structure from them. The tag structure can be used to render tag listings
-    on pages, or to just create a site-wide tags index and export all tags and
+    structure from them. The tag structure can be used to render listings on
+    pages, or to just create a site-wide tags index and export all tags and
     mappings to a JSON file for consumption in another project.
     """
 
@@ -82,9 +82,9 @@ class TagsPlugin(BasePlugin[TagsConfig]):
     Listing manager.
     """
 
-    filter: PageFilter
+    filter: FileFilter
     """
-    Page filter.
+    File filter.
     """
 
     # -------------------------------------------------------------------------
@@ -106,10 +106,11 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         self.mappings = MappingManager(self.config)
         self.listings = ListingManager(self.config)
 
-        # Initialize page filter - the page filter can be used to include or
-        # exclude entire subsections of the documentation, allowing for using
-        # multiple instances of the plugin alongside each other
-        self.filter = PageFilter(self.config.filters)
+        # Initialize file filter - the file filter is used to include or exclude
+        # entire subsections of the documentation, allowing for using multiple
+        # instances of the plugin alongside each other. This can be necessary
+        # when creating multiple, potentially conflicting listings.
+        self.filter = FileFilter(self.config.filters)
 
         # Ensure presence of attribute lists extension
         for extension in config.markdown_extensions:
@@ -150,7 +151,7 @@ class TagsPlugin(BasePlugin[TagsConfig]):
             return
 
         # Skip if page should not be considered
-        if not self.filter(page):
+        if not self.filter(page.file):
             return
 
         # Handle deprecation of `tags_file` setting
@@ -219,7 +220,7 @@ class TagsPlugin(BasePlugin[TagsConfig]):
             return
 
         # Skip if page should not be considered
-        if not self.filter(page):
+        if not self.filter(page.file):
             return
 
         # Skip if tags should not be built
