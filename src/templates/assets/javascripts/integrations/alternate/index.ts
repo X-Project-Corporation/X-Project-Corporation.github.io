@@ -116,11 +116,14 @@ export function setupAlternate(
               return EMPTY
 
             // Isolate the part to which we navigate and check if it's in the
-            // sitemap that we resolved earlier
+            // sitemap that we resolved earlier @todo: refactor this, as the
+            // semantics slightly changed due to the new sitemap resolution
+            // implementation, which normalizes all URLs.
             const config = configuration()
-            const path = location.href.replace(config.base, "")
+            let path = location.href.replace(config.base, "")
+            path = `${url}/${path}`
             const target = sitemap.has(path.split("#")[0])
-              ? new URL(`${url}/${path}`, config.base)
+              ? new URL(path, config.base)
               : new URL(url)
 
             // Steal navigation and navigate to the correct page
