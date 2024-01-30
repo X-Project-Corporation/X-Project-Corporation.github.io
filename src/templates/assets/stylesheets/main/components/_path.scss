@@ -33,11 +33,15 @@
 
 // Navigation path (breadcrumbs)
 .md-path {
-  display: block;
   padding-top: px2rem(24px);
   margin: 0 px2rem(16px);
   overflow: auto;
   font-size: px2rem(14px);
+
+  // Navigation path is not hidden
+  &:not([hidden]) {
+    display: block;
+  }
 
   // [screen +]: Adjust spacing between content area and sidebars
   @include break-from-device(screen) {
