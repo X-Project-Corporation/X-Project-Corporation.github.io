@@ -30,6 +30,8 @@ import {
   startWith
 } from "rxjs"
 
+import { watchElementSize } from "../../size"
+
 /* ----------------------------------------------------------------------------
  * Types
  * ------------------------------------------------------------------------- */
@@ -99,5 +101,25 @@ export function watchElementOffset(
       auditTime(0, animationFrameScheduler),
       map(() => getElementOffset(el)),
       startWith(getElementOffset(el))
+    )
+}
+
+/**
+ * Watch absolute element offset
+ *
+ * @param el - Element
+ *
+ * @returns Element offset observable
+ */
+export function watchElementOffsetAbsolute(
+  el: HTMLElement
+): Observable<ElementOffset> {
+  return merge(
+    watchElementOffset(el),
+    watchElementSize(document.body) // @todo find a better way for this
+  )
+    .pipe(
+      map(() => getElementOffsetAbsolute(el)),
+      startWith(getElementOffsetAbsolute(el))
     )
 }

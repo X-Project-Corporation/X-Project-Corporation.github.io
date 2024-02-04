@@ -53,11 +53,11 @@ import {
   Viewport,
   getElement,
   getElementContainers,
-  getElementOffsetAbsolute,
   getElementSize,
   watchElementContentOffset,
   watchElementFocus,
-  watchElementHover
+  watchElementHover,
+  watchElementOffsetAbsolute
 } from "~/browser"
 
 import { Component } from "../_"
@@ -139,7 +139,7 @@ export function watchTooltip2(
     defer(() => getElementContainers(el)).pipe(
       mergeMap(watchElementContentOffset),
       throttleTime(1),
-      map(() => getElementOffsetAbsolute(el))
+      switchMap(() => watchElementOffsetAbsolute(el))
     )
 
   // Only track parent elements and compute offset of the tooltip host if the
