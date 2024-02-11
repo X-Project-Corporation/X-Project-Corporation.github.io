@@ -297,6 +297,11 @@ kbd {
     border-bottom: px2rem(1px) dotted var(--md-default-fg-color--light);
   }
 
+  // Instant previews
+  [data-preview] {
+    border-bottom: px2rem(1px) dotted var(--md-default-fg-color--light);
+  }
+
   // Small text
   small {
     opacity: 0.75;
