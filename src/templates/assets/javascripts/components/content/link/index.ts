@@ -148,10 +148,6 @@ export function mountLink(
     return EMPTY
 
   //
-  if (el.pathname === location.pathname)
-    return EMPTY
-
-  //
   if (!(
     feature("navigation.instant.preview") ||
     el.hasAttribute("data-preview")
