@@ -35,6 +35,7 @@ import {
 import { feature } from "~/_"
 import {
   Viewport,
+  getElements,
   getOptionalElement,
   requestHTML,
   watchElementFocus,
@@ -97,6 +98,36 @@ function extract(headline: HTMLElement): HTMLElement[] {
   return els
 }
 
+/**
+ * Resolve relative URLs in the given document
+ *
+ * @todo deduplicate with resolution in instant navigation. This functoion also
+ * adds the ability to resolve from a specific base URL, which is essential for
+ * instant previews to work, so we should generalize this functionality the
+ * next time we work on instant navigation.
+ *
+ * @param document - Document
+ * @param base - Base URL
+ *
+ * @returns Document observable
+ */
+function resolve(
+  document: Document, base: URL | string
+): Observable<Document> {
+  for (const el of getElements("[href], [src]", document))
+    for (const key of ["href", "src"]) {
+      const value = el.getAttribute(key)
+      if (value && !/^(?:[a-z]+:)?\/\//i.test(value)) {
+        // @ts-expect-error - trick: self-assign to resolve URL
+        el[key] = new URL(el.getAttribute(key), base).toString()
+        break
+      }
+    }
+
+  // Return document observable
+  return of(document)
+}
+
 /* ----------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------- */
@@ -152,7 +183,9 @@ export function mountLink(
       //
       return of(url)
     }),
-    switchMap(url => requestHTML(url)),
+    switchMap(url => requestHTML(url).pipe(
+      switchMap(doc => resolve(doc, url))
+    )),
     switchMap(doc => {
       const selector = el.hash
         ? `article [id="${el.hash.slice(1)}"]`
