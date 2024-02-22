@@ -190,6 +190,13 @@ markdown_extensions:
   - md_in_html
   - toc:
       permalink: true
+  - material.extensions.preview:
+      targets:
+        include:
+          - changelog/index.md
+          - customization.md
+          - insiders/changelog/*
+          - setup/extensions/*
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.betterem:
