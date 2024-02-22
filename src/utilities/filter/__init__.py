@@ -36,11 +36,6 @@ class Filter:
     A filter.
     """
 
-    config: FilterConfig
-    """
-    The filter configuration.
-    """
-
     def __init__(self, config: FilterConfig):
         """
         Initialize the filter.
@@ -53,6 +48,11 @@ class Filter:
     def __call__(self, value: str, ref: str | None = None) -> bool:
         """
         Filter a value.
+
+        First, the inclusion patterns are checked. Regardless of whether they
+        are present, the exclusion patterns are checked afterwards. This allows
+        to exclude values that are included by the inclusion patterns, so that
+        exclusion patterns can be used to refine inclusion patterns.
 
         Arguments:
             value: The value to filter.
@@ -67,11 +67,12 @@ class Filter:
         if self.config.include:
             for pattern in self.config.include:
                 if fnmatch(value, pattern):
-                    return True
+                    break
 
             # Value is not included
-            log.debug(f"Excluding '{ref}' due to inclusion patterns")
-            return False
+            else:
+                log.debug(f"Excluding '{ref}' due to inclusion patterns")
+                return False
 
         # Check if value matches one of the exclusion patterns
         for pattern in self.config.exclude:
@@ -81,6 +82,13 @@ class Filter:
 
         # Value is not excluded
         return True
+
+    # -------------------------------------------------------------------------
+
+    config: FilterConfig
+    """
+    The filter configuration.
+    """
 
 # -----------------------------------------------------------------------------
 
