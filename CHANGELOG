@@ -1,6 +1,11 @@
+mkdocs-material-9.5.10+insiders-4.52.3 (2024-02-21)
+
+  * Fixed resolution of URLs in instant previews
+  * Fixed instant previews not mounting for same-page links
+
 mkdocs-material-9.5.10 (2024-02-19)
 
-  * Added Bahasa Malaysia translations
+  * Updated Bahasa Malaysia translations
   * Fixed #6783: Hide continue reading link for blog posts without separators
   * Fixed #6779: Incorrect positioning of integrated table of contents
 
