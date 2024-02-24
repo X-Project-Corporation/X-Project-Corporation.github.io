@@ -39,12 +39,6 @@
     list-style: none;
   }
 
-  // Metadata list item
-  &__item {
-    display: inline-flex;
-    align-items: center;
-  }
-
   // Metadata item separator
   &__item:not(:last-child)::after {
     margin-inline: px2rem(4px);

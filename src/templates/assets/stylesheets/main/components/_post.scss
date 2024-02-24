@@ -129,6 +129,7 @@
 // Post is pinned
 .md-pin {
   padding: px2rem(4px);
+  margin-top: px2rem(-1px);
   background: var(--md-default-fg-color--lightest);
   border-radius: px2rem(20px);
 
