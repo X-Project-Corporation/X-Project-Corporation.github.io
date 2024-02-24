@@ -1,7 +1,11 @@
 {#-
   This file was automatically generated - do not edit
 -#}
-<article class="md-post md-post--excerpt">
+{% set class = "md-post md-post--excerpt" %}
+{% if post.config.pin %}
+  {% set class = class ~ " md-post--pin" %}
+{% endif %}
+<article class="{{ class }}">
   <header class="md-post__header">
     {% if post.authors %}
       <nav class="md-post__authors md-typeset">
@@ -14,6 +18,11 @@
     {% endif %}
     <div class="md-post__meta md-meta">
       <ul class="md-meta__list">
+        {% if post.config.pin %}
+          <li class="md-meta__item">
+            <span class="md-pin"></span>
+          </li>
+        {% endif %}
         <li class="md-meta__item">
           <time datetime="{{ post.config.date.created }}">
             {{- post.config.date.created | date -}}
@@ -57,6 +66,9 @@
           {{ lang.t("blog.continue") }}
         </a>
       </nav>
+    {% endif %}
+    {% if post.config.pin %}
+      <hr>
     {% endif %}
   </div>
 </article>

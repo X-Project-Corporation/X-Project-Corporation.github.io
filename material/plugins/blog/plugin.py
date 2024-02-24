@@ -133,7 +133,10 @@ class BlogPlugin(BasePlugin[BlogConfig]):
         self.blog = self._resolve(files, config)
         self.blog.posts = sorted(
             self._resolve_posts(files, config),
-            key = lambda post: post.config.date.created,
+            key = lambda post: (
+                post.config.pin,
+                post.config.date.created
+            ),
             reverse = True
         )
 
@@ -149,7 +152,7 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             # We always sort the list of categories by name first, so that any
             # custom sorting function that returns the same value for two items
             # returns them in a predictable and logical order, because sorting
-            # in Python is stable, i.e., order of equal items is preserved.
+            # in Python is stable, i.e., order of equal items is preserved
             self.blog.views.extend(sorted(
                 sorted(views, key = view_name),
                 key     = self.config.categories_sort_by,
