@@ -19,15 +19,8 @@
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
   IN THE SOFTWARE.
 -->
-
-<!-- Determine classes -->
-{% set class = "md-post md-post--excerpt" %}
-{% if post.config.pin %}
-  {% set class = class ~ " md-post--pin" %}
-{% endif %}
-
 <!-- Post excerpt -->
-<article class="{{ class }}">
+<article class="md-post md-post--excerpt">
   <header class="md-post__header">
 
     <!-- Post authors -->
@@ -44,13 +37,6 @@
     <!-- Post metadata -->
     <div class="md-post__meta md-meta">
       <ul class="md-meta__list">
-
-        <!-- Pin marker -->
-        {% if post.config.pin %}
-          <li class="md-meta__item">
-            <span class="md-pin"></span>
-          </li>
-        {% endif %}
 
         <!-- Post date -->
         <li class="md-meta__item">
@@ -85,6 +71,13 @@
             {% else %}
               {{ lang.t("readtime.other") | replace("#", time) }}
             {% endif %}
+          </li>
+        {% endif %}
+
+        <!-- Pin marker -->
+        {% if post.config.pin %}
+          <li class="md-meta__item">
+            <span class="md-pin"></span>
           </li>
         {% endif %}
       </ul>
