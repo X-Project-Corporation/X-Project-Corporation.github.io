@@ -172,7 +172,7 @@ function resolve(document: Document): Observable<Document> {
 }
 
 /**
- * Create a map of head elements for lookup and replacement
+ * Inject the contents of a document into the current one
  *
  * @param next - Next document
  *
@@ -209,8 +209,14 @@ function inject(next: Document): Observable<Document> {
       document.head.appendChild(el)
 
   // Remove meta tags that are not present in the new document
-  for (const el of tags.values())
-    el.remove()
+  for (const el of tags.values()) {
+    const name = el.getAttribute("name")
+    // @todo - find a better way to handle attributes we add dynamically in
+    // other components without mounting components on every navigation, as
+    // this might impact overall performance - see https://t.ly/ehp_O
+    if (name !== "theme-color" && name !== "color-scheme")
+      el.remove()
+  }
 
   // After components and meta tags were replaced, re-evaluate scripts
   // that were provided by the author as part of Markdown files
@@ -237,7 +243,7 @@ function inject(next: Document): Observable<Document> {
         }
       }),
       ignoreElements(),
-      endWith(next)
+      endWith(document)
     )
 }
 
@@ -327,8 +333,8 @@ export function setupInstantNavigation(
   // that are not needed anymore, e.g., when the user clicks multiple links in
   // quick succession or on slow connections. If the request fails for some
   // reason, we fall back and use regular navigation, forcing a reload.
-  const document$ = location$
-    .pipe(
+  const document$ =
+    location$.pipe(
       distinctUntilKeyChanged("pathname"),
       switchMap(url => requestHTML(url, { progress$ })
         .pipe(
@@ -421,14 +427,13 @@ export function setupInstantNavigation(
   // and forth between pages. Note that this must be debounced and cannot be
   // done in popstate, as popstate has already removed the entry from the
   // history, which means it is too late.
-  viewport$
-    .pipe(
-      distinctUntilKeyChanged("offset"),
-      debounceTime(100)
-    )
-      .subscribe(({ offset }) => {
-        history.replaceState(offset, "")
-      })
+  viewport$.pipe(
+    distinctUntilKeyChanged("offset"),
+    debounceTime(100)
+  )
+    .subscribe(({ offset }) => {
+      history.replaceState(offset, "")
+    })
 
   // --------------------------------------------------------------------------
   // Navigation prefetching
@@ -465,6 +470,6 @@ export function setupInstantNavigation(
       )
         .subscribe(link => link.remove())
 
-  // Return document
+  // Return document observable
   return document$
 }
