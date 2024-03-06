@@ -697,10 +697,11 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             # found, so errors are actually catched and reported
             file = files.get_file_from_path(url.path)
             if not file:
-                raise PluginError(
+                log.warning(
                     f"Error reading metadata of post '{path}' in '{docs}':\n"
                     f"Couldn't find file for link '{url.path}'"
                 )
+                continue
 
             # If the file linked to is not a page, but an asset or any other
             # file, we resolve the destination URL and continue
@@ -733,10 +734,14 @@ class BlogPlugin(BasePlugin[BlogConfig]):
             # found - authors can link to any anchor in the table of contents
             anchor = _find_anchor(file.page.toc, url.fragment)
             if not anchor:
-                raise PluginError(
+                log.warning(
                     f"Error reading metadata of post '{path}' in '{docs}':\n"
                     f"Couldn't find anchor '{url.fragment}' in '{url.path}'"
                 )
+
+                # Restore link to original state
+                link.url = url.geturl()
+                continue
 
             # Append anchor to URL and set subtitle
             link.url += f"#{anchor.id}"
