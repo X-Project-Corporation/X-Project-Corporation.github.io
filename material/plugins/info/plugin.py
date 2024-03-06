@@ -18,21 +18,24 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+import glob
 import json
 import logging
 import os
 import platform
-import re
+import regex
 import requests
+import site
 import sys
+import yaml
 
 from colorama import Fore, Style
 from importlib.metadata import distributions, version
 from io import BytesIO
 from markdown.extensions.toc import slugify
+from mkdocs.config.defaults import MkDocsConfig
 from mkdocs.plugins import BasePlugin, event_priority
-from mkdocs.structure.files import get_files
-from mkdocs.utils import get_theme_dir
+from mkdocs.utils.yaml import get_yaml_loader
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from .config import InfoConfig
@@ -50,6 +53,9 @@ class InfoPlugin(BasePlugin[InfoConfig]):
 
         # Initialize incremental builds
         self.is_serve = False
+
+        # Initialize empty members
+        self.exclusion_patterns = []
 
     # Determine whether we're serving the site
     def on_startup(self, *, command, dirty):
@@ -83,7 +89,7 @@ class InfoPlugin(BasePlugin[InfoConfig]):
             # Community edition might currently be in a beta release advertised
             # as the latest release. In this case, we need to skip the version
             # check, or users cannot easily create reproductions.
-            if not re.search(r"b\d+$", current):
+            if not regex.search(r"b\d+$", current):
                 log.error("Please upgrade to the latest version.")
                 self._help_on_versions_and_exit(present, current)
 
@@ -98,7 +104,7 @@ class InfoPlugin(BasePlugin[InfoConfig]):
         # hack to detect whether the custom_dir setting was used without parsing
         # mkdocs.yml again - we check at which position the directory provided
         # by the theme resides, and if it's not the first one, abort.
-        if config.theme.dirs.index(get_theme_dir(config.theme.name)):
+        if config.theme.custom_dir:
             log.error("Please remove 'custom_dir' setting.")
             self._help_on_customizations_and_exit()
 
@@ -110,6 +116,70 @@ class InfoPlugin(BasePlugin[InfoConfig]):
             log.error("Please remove 'hooks' setting.")
             self._help_on_customizations_and_exit()
 
+        # Assure all paths that will be validated are absolute. Convert possible
+        # relative config_file_path to absolute. Its absolute directory path is
+        # being later used to resolve other paths.
+        config.config_file_path = _convert_to_abs(config.config_file_path)
+        config_file_parent = os.path.dirname(config.config_file_path)
+
+        # Convert relative custom_dir path to absolute. The Theme.custom_dir
+        # property cannot be set, therefore a helper variable is used.
+        if config.theme.custom_dir:
+            abs_custom_dir = _convert_to_abs(
+                config.theme.custom_dir,
+                abs_prefix = config_file_parent
+            )
+        else:
+            abs_custom_dir = ""
+
+        # Extract the absolute path to projects plugin's directory to explicitly
+        # support path validation and dynamic exclusion for the plugin
+        projects_plugin = config.plugins.get("material/projects")
+        if projects_plugin:
+            abs_projects_dir = _convert_to_abs(
+                projects_plugin.config.projects_dir,
+                abs_prefix = config_file_parent
+            )
+        else:
+            abs_projects_dir = ""
+
+        # MkDocs removes the INHERIT configuration key during load, and doesn't
+        # expose the information in any way, as the parent configuration is
+        # merged into one. To validate that the INHERIT config file will be
+        # included in the ZIP file the current config file must be loaded again
+        # without parsing. Each file can have their own INHERIT key, so a list
+        # of configurations is supported. The INHERIT path is converted during
+        # load to absolute.
+        loaded_configs = _load_yaml(config.config_file_path)
+        if not isinstance(loaded_configs, list):
+            loaded_configs = [loaded_configs]
+
+        # We need to make sure the user put every file in the current working
+        # directory. To assure the reproduction inside the ZIP file can be run,
+        # validate that the MkDocs paths are children of the current root.
+        paths_to_validate = [
+            config.config_file_path,
+            config.docs_dir,
+            abs_custom_dir,
+            abs_projects_dir,
+            *[cfg.get("INHERIT", "") for cfg in loaded_configs]
+        ]
+
+        # Convert relative hook paths to absolute path
+        for hook in config.hooks:
+            path = _convert_to_abs(hook, abs_prefix = config_file_parent)
+            paths_to_validate.append(path)
+
+        # Remove valid paths from the list
+        for path in list(paths_to_validate):
+            if not path or path.startswith(os.getcwd()):
+                paths_to_validate.remove(path)
+
+        # Report the invalid paths to the user
+        if paths_to_validate:
+            log.error(f"One or more paths aren't children of root")
+            self._help_on_not_in_cwd(paths_to_validate)
+
         # Create in-memory archive and prompt author for a short descriptive
         # name for the archive, which is also used as the directory name. Note
         # that the name is slugified for better readability and stripped of any
@@ -119,17 +189,66 @@ class InfoPlugin(BasePlugin[InfoConfig]):
         example, _ = os.path.splitext(example)
         example = "-".join([present, slugify(example, "-")])
 
+        # Load exclusion patterns
+        self.exclusion_patterns = _load_exclusion_patterns()
+
+        # Exclude the site_dir at project root
+        if config.site_dir.startswith(os.getcwd()):
+            self.exclusion_patterns.append(_resolve_pattern(config.site_dir))
+
+        # Exclude the site-packages directory
+        for path in site.getsitepackages():
+            if path.startswith(os.getcwd()):
+                self.exclusion_patterns.append(_resolve_pattern(path))
+
+        # Exclude site_dir for projects
+        if projects_plugin:
+            for path in glob.iglob(
+                pathname = projects_plugin.config.projects_config_files,
+                root_dir = abs_projects_dir,
+                recursive = True
+            ):
+                current_config_file = os.path.join(abs_projects_dir, path)
+                project_config = _get_project_config(current_config_file)
+                pattern = _resolve_pattern(project_config.site_dir)
+                self.exclusion_patterns.append(pattern)
+
         # Create self-contained example from project
         files: list[str] = []
         with ZipFile(archive, "a", ZIP_DEFLATED, False) as f:
-            for path in ["mkdocs.yml", "requirements.txt"]:
-                if os.path.isfile(path):
-                    f.write(path, os.path.join(example, path))
+            for abs_root, dirnames, filenames in os.walk(os.getcwd()):
+                # Prune the folders in-place to prevent their processing
+                for name in list(dirnames):
+                    # Resolve the absolute directory path
+                    path = os.path.join(abs_root, name)
 
-            # Append all files visible to MkDocs
-            for file in get_files(config):
-                path = os.path.relpath(file.abs_src_path, os.path.curdir)
-                f.write(path, os.path.join(example, path))
+                    # Exclude the directory and all subdirectories
+                    if self._is_excluded(_resolve_pattern(path)):
+                        dirnames.remove(name)
+                        continue
+
+                    # Projects, which don't use the projects plugin for
+                    # multi-language support could have separate build folders
+                    # for each config file or language. Therefore, we exclude
+                    # them with the assumption a site_dir contains the sitemap
+                    # file. Example of such a setup: https://t.ly/DLQcy
+                    sitemap_gz = os.path.join(path, "sitemap.xml.gz")
+                    if os.path.exists(sitemap_gz):
+                        log.debug(f"Excluded site_dir: {path}")
+                        dirnames.remove(name)
+
+                # Write files to the in-memory archive
+                for name in filenames:
+                    # Resolve the absolute file path
+                    path = os.path.join(abs_root, name)
+
+                    # Exclude the file
+                    if self._is_excluded(_resolve_pattern(path)):
+                        continue
+
+                    # Resolve the relative path to create a matching structure
+                    path = os.path.relpath(path, os.path.curdir)
+                    f.write(path, os.path.join(example, path))
 
             # Add information on installed packages
             f.writestr(
@@ -146,7 +265,13 @@ class InfoPlugin(BasePlugin[InfoConfig]):
                 json.dumps(
                     {
                         "system": platform.platform(),
-                        "python": platform.python_version()
+                        "architecture": platform.architecture(),
+                        "python": platform.python_version(),
+                        "command": " ".join([
+                            sys.argv[0].rsplit(os.sep, 1)[-1],
+                            *sys.argv[1:]
+                        ]),
+                        "sys.path": sys.path
                     },
                     default = str,
                     indent = 2
@@ -224,11 +349,45 @@ class InfoPlugin(BasePlugin[InfoConfig]):
         print(Style.NORMAL)
         print("  - extra_css")
         print("  - extra_javascript")
+        print(Fore.YELLOW)
+        print("  If you're using customizations from the theme's documentation")
+        print("  and you want to report a bug specific to those customizations")
+        print("  then set the 'archive_stop_on_violation: false' option in the")
+        print("  info plugin config.")
         print(Style.RESET_ALL)
 
         # Exit, unless explicitly told not to
         if self.config.archive_stop_on_violation:
             sys.exit(1)
+
+    # Print help on not in current working directory and exit
+    def _help_on_not_in_cwd(self, outside_root):
+        print(Fore.RED)
+        print("  The current working (root) directory:\n")
+        print(f"    {os.getcwd()}\n")
+        print("  is not a parent of the following paths:")
+        print(Style.NORMAL)
+        for path in outside_root:
+            print(f"    {path}")
+        print("  \nTo assure that all project files are found please adjust")
+        print("  your config or file structure and put everything within the")
+        print("  root directory of the project.\n")
+        print("  Please also make sure `mkdocs build` is run in the actual")
+        print("  root directory of the project.")
+        print(Style.RESET_ALL)
+
+        # Exit, unless explicitly told not to
+        if self.config.archive_stop_on_violation:
+            sys.exit(1)
+
+    # Exclude files which we don't want in our zip file
+    def _is_excluded(self, posix_path: str) -> bool:
+        for pattern in self.exclusion_patterns:
+            if regex.match(pattern, posix_path):
+                log.debug(f"Excluded pattern '{pattern}': {posix_path}")
+                return True
+
+        return False
 
 # -----------------------------------------------------------------------------
 # Helper functions
@@ -243,6 +402,81 @@ def _size(value, factor = 1):
         if abs(value) < 1000.0:
             return f"{color}{value:3.1f} {unit}"
         value /= 1000.0
+
+# Get the absolute path with set prefix. To validate if a file is inside the
+# current working directory it needs to be absolute, so that it is possible to
+# check the prefix.
+def _convert_to_abs(path: str, abs_prefix: str = None) -> str:
+    if os.path.isabs(path): return path
+    if abs_prefix is None: abs_prefix = os.getcwd()
+    return os.path.normpath(os.path.join(abs_prefix, path))
+
+# Get the loaded config, or a list with all loaded configs. MkDocs removes the
+# INHERIT configuration key during load, and doesn't expose the information in
+# any way, as the parent configuration is merged into one. The INHERIT path is
+# needed for validation. This custom YAML loader replicates MkDocs' loading
+# logic. Side effect: It converts the INHERIT path to absolute.
+def _load_yaml(abs_src_path: str):
+
+    with open(abs_src_path, "r", encoding ="utf-8-sig") as file:
+        source = file.read()
+
+    try:
+        result = yaml.load(source, Loader = get_yaml_loader()) or {}
+    except yaml.YAMLError:
+        result = {}
+
+    if "INHERIT" in result:
+        relpath = result.get('INHERIT')
+        parent_path = os.path.dirname(abs_src_path)
+        abspath = _convert_to_abs(relpath, abs_prefix = parent_path)
+        if os.path.exists(abspath):
+            result["INHERIT"] = abspath
+            log.debug(f"Loading inherited configuration file: {abspath}")
+            parent = _load_yaml(abspath)
+            if isinstance(parent, list):
+                result = [result, *parent]
+            elif isinstance(parent, dict):
+                result = [result, parent]
+
+    return result
+
+# Load info.gitignore, ignore any empty lines or # comments
+def _load_exclusion_patterns(path: str = None):
+    if path is None:
+        path = os.path.dirname(os.path.abspath(__file__))
+        path = os.path.join(path, "info.gitignore")
+
+    with open(path, encoding = "utf-8") as file:
+        lines = map(str.strip, file.readlines())
+
+    return [line for line in lines if line and not line.startswith("#")]
+
+# Get a normalized POSIX path for the pattern matching with removed current
+# working directory prefix. Directory paths end with a '/' to allow more control
+# in the pattern creation for files and directories.
+def _resolve_pattern(abspath: str):
+    path = abspath.replace(os.getcwd(), "", 1).replace(os.sep, "/")
+
+    if not path:
+        return "/"
+
+    # Check abspath, as the file needs to exist
+    if not os.path.isfile(abspath):
+        return path.rstrip("/") + "/"
+
+    return path
+
+# Get project configuration with resolved absolute paths for validation
+def _get_project_config(project_config_file: str):
+    with open(project_config_file, encoding="utf-8") as file:
+        config = MkDocsConfig(config_file_path = project_config_file)
+        config.load_file(file)
+
+        # MkDocs transforms site_dir to absolute path during validation
+        config.validate()
+
+        return config
 
 # -----------------------------------------------------------------------------
 # Data
