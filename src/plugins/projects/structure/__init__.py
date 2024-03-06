@@ -124,7 +124,7 @@ class Project:
             # path, so the path of the project is equal to the top-level path.
             # In this case, we need to fall back to the path computed from the
             # slug - see https://t.ly/5vqMr
-            if target == "/":
+            if target == source:
                 target = self._path_from_slug(self.slug)
 
         # Otherwise, always compute the path from the slugs of both projects,
@@ -212,7 +212,15 @@ class Project:
     # correctly, since the site URL might or might not contain a trailing slash.
     def _path_from_config(self, config: MkDocsConfig):
         url = urlparse(config.site_url)
-        return posixpath.join(".", posixpath.normpath(url.path))
+
+        # Remove leading slash, if any
+        path = url.path
+        if path.startswith("/"):
+            path = path[1:]
+
+        # Return normalized path
+        path = posixpath.normpath(path) if path else path
+        return posixpath.join(".", path)
 
 # -----------------------------------------------------------------------------
 
