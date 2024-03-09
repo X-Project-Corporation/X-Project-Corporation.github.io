@@ -75,35 +75,46 @@ class PreviewProcessor(Treeprocessor):
         if not isinstance(processor, _RelativePathTreeprocessor):
             raise TypeError("Relative path processor not registered")
 
-        # Skip if page should not be considered
-        filter = get_filter(self.config, "sources")
-        if not filter(processor.file):
-            return
+        # Normalize configurations
+        configurations = self.config["configurations"]
+        configurations.append({
+            "sources": self.config.get("sources"),
+            "targets": self.config.get("targets")
+        })
 
-        # Walk through all links and add preview attributes where appropriate
-        filter = get_filter(self.config, "targets")
-        for el in root.iter("a"):
-            href = el.get("href")
-            if not href:
-                continue
+        # Walk through all configurations - @todo refactor so that we don't
+        # iterate multiple times over the same elements
+        for configuration in configurations:
 
-            # Skip external links
-            url = urlparse(href)
-            if url.scheme or url.netloc:
-                continue
+            # Skip if page should not be considered
+            filter = get_filter(configuration, "sources")
+            if not filter(processor.file):
+                return
 
-            # Add preview attribute to internal links
-            for path in processor._possible_target_uris(
-                processor.file, url.path,
-                processor.config.use_directory_urls
-            ):
-                target = processor.files.get_file_from_path(path)
-                if not target:
+            # Walk through all links and add preview attributes
+            filter = get_filter(configuration, "targets")
+            for el in root.iter("a"):
+                href = el.get("href")
+                if not href:
                     continue
 
-                # Include, if filter matches
-                if filter(target):
-                    el.set("data-preview", "")
+                # Skip external links
+                url = urlparse(href)
+                if url.scheme or url.netloc:
+                    continue
+
+                # Add preview attribute to internal links
+                for path in processor._possible_target_uris(
+                    processor.file, url.path,
+                    processor.config.use_directory_urls
+                ):
+                    target = processor.files.get_file_from_path(path)
+                    if not target:
+                        continue
+
+                    # Include, if filter matches
+                    if filter(target):
+                        el.set("data-preview", "")
 
 # -----------------------------------------------------------------------------
 
@@ -121,6 +132,7 @@ class PreviewExtension(Extension):
         """
         """
         self.config = {
+            "configurations": [[], "Filter configurations"],
             "sources": [{}, "Link sources"],
             "targets": [{}, "Link targets"]
         }
@@ -158,7 +170,7 @@ def get_filter(settings: dict, key: str):
         The file filter.
     """
     config = FilterConfig()
-    config.load_dict(settings[key])
+    config.load_dict(settings.get(key) or {})
 
     # Validate filter configuration
     errors, warnings = config.validate()
