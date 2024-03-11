@@ -48,7 +48,11 @@ RUN \
     git-fast-import \
     jpeg-dev \
     openssh \
+<<<<<<< HEAD
     pngquant \
+=======
+    tini \
+>>>>>>> upstream/master
     zlib-dev \
 && \
   apk add --no-cache --virtual .build \
@@ -98,5 +102,5 @@ WORKDIR /docs
 EXPOSE 8000
 
 # Start development server by default
-ENTRYPOINT ["mkdocs"]
-CMD ["serve", "--dev-addr=0.0.0.0:8000"]
+ENTRYPOINT ["/sbin/tini", "--", "mkdocs"]
+CMD [ "serve", "--dev-addr=0.0.0.0:8000"]
