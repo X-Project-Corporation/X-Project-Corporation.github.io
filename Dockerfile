@@ -48,11 +48,8 @@ RUN \
     git-fast-import \
     jpeg-dev \
     openssh \
-<<<<<<< HEAD
     pngquant \
-=======
     tini \
->>>>>>> upstream/master
     zlib-dev \
 && \
   apk add --no-cache --virtual .build \
