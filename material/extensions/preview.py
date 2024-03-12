@@ -89,7 +89,7 @@ class PreviewProcessor(Treeprocessor):
             # Skip if page should not be considered
             filter = get_filter(configuration, "sources")
             if not filter(processor.file):
-                return
+                continue
 
             # Walk through all links and add preview attributes
             filter = get_filter(configuration, "targets")
