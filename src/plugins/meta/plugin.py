@@ -22,6 +22,7 @@ import logging
 import os
 import posixpath
 
+from copy import deepcopy
 from mergedeep import Strategy, merge
 from mkdocs.exceptions import PluginError
 from mkdocs.structure.files import InclusionLevel
@@ -76,7 +77,14 @@ class MetaPlugin(BasePlugin[MetaConfig]):
         if not self.config.enabled:
             return
 
+        # Create a copy of the original metadata, as we're going to potentially
+        # merge multiple meta files with it, and we need to make sure that the
+        # actual page metadata comes last, or meta files will always override
+        # the page metadata - see https://t.ly/kvCRn
+        meta = deepcopy(page.meta)
+
         # Merge matching meta files in level-order
+        strategy = Strategy.TYPESAFE_ADDITIVE
         for path, defaults in self.meta.items():
             if not page.file.src_path.startswith(os.path.dirname(path)):
                 continue
@@ -90,9 +98,8 @@ class MetaPlugin(BasePlugin[MetaConfig]):
                 continue
 
             # Try to merge metadata
-            strategy = Strategy.TYPESAFE_ADDITIVE
             try:
-                merge(page.meta, defaults, strategy = strategy)
+                merge(meta, defaults, strategy = strategy)
                 page.meta["__extends"].append(path)
 
             # Merging the metadata with the given strategy resulted in an error,
@@ -103,6 +110,10 @@ class MetaPlugin(BasePlugin[MetaConfig]):
                     f"Error merging meta file '{path}' in '{docs}':\n"
                     f"{e}"
                 )
+
+        # Ensure page metadata is merged last, so the author can override any
+        # defaults from the meta files, or even remove them entirely
+        page.meta = merge(meta, page.meta, strategy = strategy)
 
 # -----------------------------------------------------------------------------
 # Data
