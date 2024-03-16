@@ -151,7 +151,7 @@ const assets$ = concat(
     })),
 
   /* Copy images and configurations */
-  ...["**/*.{jpg,png,svg,yml,gitignore}"]
+  ...["**/*.{jpg,png,svg,yml}"]
     .map(pattern => copyAll(pattern, {
       from: "src",
       to: base

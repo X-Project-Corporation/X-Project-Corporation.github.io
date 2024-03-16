@@ -76,7 +76,7 @@ class SearchPlugin(BasePlugin[SearchConfig]):
             )
 
         # Retrieve default value for pipeline
-        if not self.config.pipeline:
+        if self.config.pipeline is None:
             self.config.pipeline = list(filter(len, re.split(
                 r"\s*,\s*", self._translate(config, "search.config.pipeline")
             )))
