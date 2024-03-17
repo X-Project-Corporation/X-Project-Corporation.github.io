@@ -720,7 +720,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 continue
 
             # Open file and parse as YAML
-            with open(path, encoding = "utf-8") as f:
+            with open(path, encoding = "utf-8-sig") as f:
                 layout: Layout = Layout(config_file_path = path)
                 try:
                     layout.load_dict(yaml.load(f, SafeLoader) or {})
@@ -971,10 +971,10 @@ def _replace(data: any, env: Environment, config: MkDocsConfig, **kwargs):
 @functools.lru_cache(maxsize = None)
 def _compile(data: str, env: Environment):
     return env.from_string(html.unescape(data))
-    
+
 # Compute absolute path to internal templates directory,
 # we need to do it this way to assure compatibility with Python 3.8,
-# and also to allow users to install their Python site-packages 
+# and also to allow users to install their Python site-packages
 # to a different mount root than their documentation - see https://t.ly/GMeYP
 def _templates_dirpath():
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")

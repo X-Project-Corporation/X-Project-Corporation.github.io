@@ -149,7 +149,7 @@ class Project:
 
     # Resolve project configuration
     def _resolve_config(self, file: str):
-        with open(file, encoding = "utf-8") as f:
+        with open(file, encoding = "utf-8-sig") as f:
             config: MkDocsConfig = MkDocsConfig(config_file_path = file)
             config.load_file(f)
 

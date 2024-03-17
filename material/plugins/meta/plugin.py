@@ -58,7 +58,7 @@ class MetaPlugin(BasePlugin[MetaConfig]):
             file.inclusion = InclusionLevel.EXCLUDED
 
             # Open file and parse as YAML
-            with open(file.abs_src_path, encoding = "utf-8") as f:
+            with open(file.abs_src_path, encoding = "utf-8-sig") as f:
                 path = file.src_path
                 try:
                     self.meta[path] = load(f, SafeLoader)
