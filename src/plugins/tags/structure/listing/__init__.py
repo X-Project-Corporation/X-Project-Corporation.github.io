@@ -138,8 +138,8 @@ class Listing:
         # If the listing should only include tags within the current scope, we
         # check if the page is a child of the page the listing is embedded in
         if self.config.scope:
-            base = posixpath.dirname(self.page.url)
-            if not mapping.item.url.startswith(base):
+            base = posixpath.dirname(posixpath.normpath(self.page.url))
+            if not mapping.item.url.startswith(posixpath.join(base, "")):
                 return iter([])
 
         # If an exclusion list is given, expand each tag to check if the tag
