@@ -156,11 +156,11 @@ class TagsPlugin(BasePlugin[TagsConfig]):
 
         # Handle deprecation of `tags_file` setting
         if self.config.tags_file:
-            self._handle_deprecated_tags_file(page)
+            markdown = self._handle_deprecated_tags_file(page, markdown)
 
         # Handle deprecation of `tags_extra_files` setting
         if self.config.tags_extra_files:
-            self._handle_deprecated_tags_extra_files(page)
+            markdown = self._handle_deprecated_tags_extra_files(page, markdown)
 
         # Collect tags from page
         try:
@@ -236,7 +236,9 @@ class TagsPlugin(BasePlugin[TagsConfig]):
 
     # -------------------------------------------------------------------------
 
-    def _handle_deprecated_tags_file(self, page: Page) -> None:
+    def _handle_deprecated_tags_file(
+        self, page: Page, markdown: str
+    ) -> str:
         """
         Handle deprecation of `tags_file` setting.
 
@@ -245,20 +247,25 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         """
         directive = self.config.listings_directive
         if page.file.src_uri != self.config.tags_file:
-            return
+            return markdown
 
         # Try to find the legacy tags marker and replace with directive
-        if "[TAGS]" in page.markdown:
-            page.markdown = page.markdown.replace(
+        if "[TAGS]" in markdown:
+            markdown = markdown.replace(
                 "[TAGS]", f"<!-- {directive} -->"
             )
 
         # Try to find the directive and add it if not present
         pattern = r"<!--\s+{directive}".format(directive = directive)
-        if not re.search(pattern, page.markdown):
-            page.markdown += f"\n<!-- {directive} -->"
+        if not re.search(pattern, markdown):
+            markdown += f"\n<!-- {directive} -->"
 
-    def _handle_deprecated_tags_extra_files(self, page: Page) -> None:
+        # Return markdown
+        return markdown
+
+    def _handle_deprecated_tags_extra_files(
+        self, page: Page, markdown: str
+    ) -> str:
         """
         Handle deprecation of `tags_extra_files` setting.
 
@@ -267,7 +274,7 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         """
         directive = self.config.listings_directive
         if page.file.src_uri not in self.config.tags_extra_files:
-            return
+            return markdown
 
         # Compute tags to render on page
         tags = self.config.tags_extra_files[page.file.src_uri]
@@ -275,15 +282,18 @@ class TagsPlugin(BasePlugin[TagsConfig]):
             directive += f" {{ include: [{', '.join(tags)}] }}"
 
         # Try to find the legacy tags marker and replace with directive
-        if "[TAGS]" in page.markdown:
+        if "[TAGS]" in markdown:
             page.markdown = page.markdown.replace(
                 "[TAGS]", f"<!-- {directive} -->"
             )
 
         # Try to find the directive and add it if not present
         pattern = r"<!--\s+{directive}".format(directive = directive)
-        if not re.search(pattern, page.markdown):
-            page.markdown += f"\n<!-- {directive} -->"
+        if not re.search(pattern, markdown):
+            markdown += f"\n<!-- {directive} -->"
+
+        # Return markdown
+        return markdown
 
 # -----------------------------------------------------------------------------
 # Data
