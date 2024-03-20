@@ -87,6 +87,7 @@ class Line(Config):
 # Font
 class Font(Config):
     family = Type(str, default = "Roboto")
+    variant = Type(str, default = "")
     style = Type(str, default = "Regular")
 
 # Typography

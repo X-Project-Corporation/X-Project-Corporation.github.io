@@ -111,6 +111,12 @@ definitions:
       Roboto
     {%- endif -%}
 
+  # Font variant
+  - &font_variant >-
+    {%- if layout.font_variant -%}
+      {{ layout.font_variant }}
+    {%- endif -%}
+
   # Site name
   - &site_name >-
     {{ config.site_name }}
@@ -213,6 +219,7 @@ layers:
       color: *color
       font:
         family: *font_family
+        variant: *font_variant
         style: Bold
 
   # Page title
@@ -227,6 +234,7 @@ layers:
         height: 1.25
       font:
         family: *font_family
+        variant: *font_variant
         style: Bold
 
   # Page description
@@ -241,4 +249,5 @@ layers:
         height: 1.5
       font:
         family: *font_family
+        variant: *font_variant
         style: Regular

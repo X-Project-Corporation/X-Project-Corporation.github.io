@@ -515,10 +515,11 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
         # Retrieve font family and font style
         family = typography.font.family
-        styles = set([typography.font.style])
+        variant = typography.font.variant
+        style = typography.font.style
 
         # Resolve and load font and compute metrics
-        path = self._resolve_font(family, styles)
+        path = self._resolve_font(family, style, variant)
         current, spacing = _metrics(path, typography.line, input)
         font = ImageFont.truetype(path, current)
 
@@ -645,7 +646,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
     # Render overlay for debugging
     def _render_overlay(self, layout: Layout, input: _Image):
-        path = self._resolve_font("Roboto", { "Regular" })
+        path = self._resolve_font("Roboto", "Regular")
         font = ImageFont.truetype(path, 12)
 
         # Create image and initialize drawing context
@@ -793,7 +794,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     # the font family is first downloaded from Google Fonts and the styles are
     # saved to the cache directory. If the font cannot be resolved, the plugin
     # must abort with an error.
-    def _resolve_font(self, family: str, styles: "set[str]"):
+    def _resolve_font(self, family: str, style: str, variant = ""):
         path = os.path.join(self.config.cache_dir, "fonts", family)
 
         # Fetch font family, if it hasn't been fetched yet - we use a lock to
@@ -807,27 +808,48 @@ class SocialPlugin(BasePlugin[SocialConfig]):
                 if not os.path.isdir(path):
                     self._fetch_font_from_google_fonts(family)
 
+        # Assemble fully qualified style - see https://t.ly/soDF0
+        if variant:
+            style = f"{variant} {style}"
+
         # Check for availability of font style
         list = sorted(os.listdir(path))
         for file in list:
             name, _ = os.path.splitext(file)
-            if name in styles:
+            if name == style:
                 return os.path.join(path, file)
+
+        # Find regular variant of font family - we cannot rely on the fact that
+        # fonts always have a single regular variant - some of them have several
+        # of them, potentially prefixed with "Condensed" etc. For this reason we
+        # use the first font we find if we find no regular one.
+        fallback = ""
+        for file in list:
+            name, _ = os.path.splitext(file)
+
+            # 1. Fallback: use first font
+            if not fallback:
+                fallback = name
+
+            # 2. Fallback: use regular font - use the shortest one, i.e., prefer
+            # "10pt Regular" over "10pt Condensed Regular". This is a heuristic.
+            if "Regular" in name:
+                if not fallback or len(name) < len(fallback):
+                    fallback = name
 
         # Print warning in debug mode, since the font could not be resolved
         if self.config.debug:
-            styles = ", ".join(styles)
             log.warning(
-                f"Couldn't find style '{styles}' for font family '{family}'. " +
+                f"Couldn't find style '{style}' for font family '{family}'. " +
                 f"Styles available:\n\n" +
                 f"\n".join([os.path.splitext(file)[0] for file in list]) +
                 f"\n\n"
-                f"Falling back to: Regular\n"
+                f"Falling back to: {fallback}\n"
                 f"\n"
             )
 
-        # Fall back to regular font
-        return self._resolve_font(family, { "Regular" })
+        # Fall back to regular font (guess if there are multiple)
+        return self._resolve_font(family, fallback)
 
     # -------------------------------------------------------------------------
 
