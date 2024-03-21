@@ -22,7 +22,6 @@ import logging
 import os
 import posixpath
 
-from copy import deepcopy
 from mergedeep import Strategy, merge
 from mkdocs.exceptions import PluginError
 from mkdocs.structure.files import InclusionLevel
@@ -77,11 +76,11 @@ class MetaPlugin(BasePlugin[MetaConfig]):
         if not self.config.enabled:
             return
 
-        # Create a copy of the original metadata, as we're going to potentially
-        # merge multiple meta files with it, and we need to make sure that the
-        # actual page metadata comes last, or meta files will always override
-        # the page metadata - see https://t.ly/kvCRn
-        meta = deepcopy(page.meta)
+        # Start with a clean state, as we first need to apply all meta files
+        # that are relevant to the current page, and then merge the page meta
+        # on top of that to ensure that the page meta always takes precedence
+        # over meta files - see https://t.ly/kvCRn
+        meta = {}
 
         # Merge matching meta files in level-order
         strategy = Strategy.TYPESAFE_ADDITIVE
