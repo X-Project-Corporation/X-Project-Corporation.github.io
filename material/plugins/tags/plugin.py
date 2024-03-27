@@ -283,12 +283,12 @@ class TagsPlugin(BasePlugin[TagsConfig]):
 
         # Try to find the legacy tags marker and replace with directive
         if "[TAGS]" in markdown:
-            page.markdown = page.markdown.replace(
+            markdown = markdown.replace(
                 "[TAGS]", f"<!-- {directive} -->"
             )
 
         # Try to find the directive and add it if not present
-        pattern = r"<!--\s+{directive}".format(directive = directive)
+        pattern = r"<!--\s+{directive}".format(directive = re.escape(directive))
         if not re.search(pattern, markdown):
             markdown += f"\n<!-- {directive} -->"
 
