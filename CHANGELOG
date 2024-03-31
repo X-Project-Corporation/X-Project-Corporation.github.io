@@ -1,3 +1,15 @@
+mkdocs-material-9.5.16+insiders-4.53.4 (2024-03-31)
+
+  * Fixed #6973: Escaping issue in tags extra files deprecation helper
+
+mkdocs-material-9.5.16 (2024-03-31)
+
+  * Updated Russian translations
+  * Improved error handling and reporting in social plugin
+  * Improved error handling and reporting in privacy plugin
+  * Fixed blog plugin not allowing to use time in format strings
+  * Fixed #6983: Social plugin crashes because of Google Fonts API change
+
 mkdocs-material-9.5.15+insiders-4.53.3 (2024-03-23)
 
   * Added support for font variants in social plugin
