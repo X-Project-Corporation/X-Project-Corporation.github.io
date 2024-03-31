@@ -36,7 +36,6 @@ from concurrent.futures import Future
 from concurrent.futures.thread import ThreadPoolExecutor
 from copy import copy
 from fnmatch import fnmatch
-from glob import iglob
 from hashlib import sha1
 from io import BytesIO
 from jinja2 import Environment
@@ -49,7 +48,7 @@ from mkdocs.structure.files import File, InclusionLevel
 from mkdocs.structure.pages import Page
 from mkdocs.utils import copy_file
 from statistics import stdev
-from tempfile import TemporaryFile, TemporaryDirectory
+from tempfile import NamedTemporaryFile
 from threading import Lock
 from yaml import SafeLoader
 from zipfile import ZipFile
@@ -857,40 +856,40 @@ class SocialPlugin(BasePlugin[SocialConfig]):
     def _fetch_font_from_google_fonts(self, family: str):
         path = os.path.join(self.config.cache_dir, "fonts")
 
-        # Download archive from Google Fonts to in-memory archive
-        with TemporaryFile() as f:
-            url = f"https://fonts.google.com/download?family={family}"
-            res = requests.get(url, stream = True)
-            for chunk in res.iter_content(chunk_size = 8192):
-                f.write(chunk)
+        # Download manifest from Google Fonts - Google returns JSON with syntax
+        # errors, so we just treat the response as plain text and parse out all
+        # URLs to font files, as we're going to rename them anyway. This should
+        # be more resilient than trying to correct the JSON syntax.
+        url = f"https://fonts.google.com/download/list?family={family}"
+        res = requests.get(url)
 
-            # Ensure that the download succeeded
-            if res.status_code != 200:
-                raise PluginError(
-                    f"Couldn't find font family '{family}' on Google Fonts "
-                    f"({res.status_code}: {res.reason})"
-                )
+        # Ensure that the download succeeded
+        if res.status_code != 200:
+            raise PluginError(
+                f"Couldn't find font family '{family}' on Google Fonts "
+                f"({res.status_code}: {res.reason})"
+            )
 
-            # Extract fonts from archive
-            with TemporaryDirectory() as temp:
-                archive = ZipFile(f)
-                archive.extractall(temp, [
-                    file for file in archive.namelist()
-                        if re.search(r"\.[ot]tf$", file)
-                ])
+        # Extract font URLs from manifest
+        for match in re.findall(
+            r"\"(https:(?:.*?)\.[ot]tf)\"", str(res.content)
+        ):
+            with requests.get(match) as res:
+                res.raise_for_status()
 
-                # Rename and move fonts to cache directory
-                glob = os.path.join(temp, "**", "*.[ot]tf")
-                glob = iglob(os.path.normpath(glob), recursive = True)
-                for file in glob:
-                    font = ImageFont.truetype(file)
+                # Create a temporary file to download the font
+                with NamedTemporaryFile() as temp:
+                    temp.write(res.content)
+                    temp.flush()
 
                     # Extract font family name and style
+                    font = ImageFont.truetype(temp.name)
                     name, style = font.getname()
                     name = " ".join([name.replace(family, ""), style]).strip()
 
                     # Move fonts to cache directory
-                    copy_file(file, os.path.join(path, family, f"{name}.ttf"))
+                    target = os.path.join(path, family, f"{name}.ttf")
+                    copy_file(temp.name, target)
 
     # -------------------------------------------------------------------------
 
