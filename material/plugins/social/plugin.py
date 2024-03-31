@@ -51,7 +51,6 @@ from statistics import stdev
 from tempfile import NamedTemporaryFile
 from threading import Lock
 from yaml import SafeLoader
-from zipfile import ZipFile
 try:
     from cairosvg import svg2png
     from PIL import Image, ImageColor, ImageDraw, ImageFont
