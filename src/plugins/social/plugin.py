@@ -51,16 +51,26 @@ from statistics import stdev
 from tempfile import NamedTemporaryFile
 from threading import Lock
 from yaml import SafeLoader
-try:
-    from cairosvg import svg2png
-    from PIL import Image, ImageColor, ImageDraw, ImageFont
-    from PIL.Image import Image as _Image
-except ImportError:
-    pass
 
 from .config import SocialConfig
 from .layout import Layer, Layout, Line, get_offset, get_size
 from .templates import x_filter
+
+try:
+    from PIL import Image, ImageColor, ImageDraw, ImageFont
+    from PIL.Image import Image as _Image
+except ImportError as e:
+    import_errors = {repr(e)}
+else:
+    import_errors = set()
+
+cairosvg_error: str = ""
+try:
+    from cairosvg import svg2png
+except ImportError as e:
+    import_errors.add(repr(e))
+except OSError as e:
+    cairosvg_error = str(e)
 
 # -----------------------------------------------------------------------------
 # Classes
@@ -379,12 +389,27 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # is, at the absolute minimum, the 'pillow' package, and raise an error
         # to the caller, so he can decide what to do with the error. The caller
         # can treat this as a warning or an error to abort the build.
-        if not _supports("Image"):
-            docs = os.path.relpath(config.docs_dir)
-            path = os.path.relpath(page.file.abs_src_path, docs)
+        if import_errors:
+            # docs = os.path.relpath(config.docs_dir)
+            # path = os.path.relpath(page.file.abs_src_path, docs)
+            # raise PluginError(
+            #     f"Couldn't render card for '{path}' in '{docs}': install "
+            #     f"required dependencies – pip install 'mkdocs-material[imaging]'"
+            # )
+            # @todo improve formatting of error handling
             raise PluginError(
-                f"Couldn't render card for '{path}' in '{docs}': install "
-                f"required dependencies – pip install 'mkdocs-material[imaging]'"
+                "Required dependencies of \"social\" plugin not found:\n"
+                + str("\n".join(map(lambda x: "- " + x, import_errors)))
+                + "\n\n"
+                + "--> Install with: pip install \"mkdocs-material[imaging]\""
+            )
+        if cairosvg_error:
+            # @todo improve formatting of error handling
+            raise PluginError(
+                "\"cairosvg\" Python module is installed, but it crashed with:\n"
+                + cairosvg_error
+                + "\n\n"
+                + "--> Check out the troubleshooting guide: https://t.ly/MfX6u"
             )
 
         # Spawn concurrent jobs to render layers - we only need to render layers
@@ -917,13 +942,6 @@ class SocialPlugin(BasePlugin[SocialConfig]):
 
 # -----------------------------------------------------------------------------
 # Helper functions
-# -----------------------------------------------------------------------------
-
-# Check for presence of optional imports
-@functools.lru_cache(maxsize = None)
-def _supports(name: str):
-    return name in globals()
-
 # -----------------------------------------------------------------------------
 
 # Compute a stable hash from an object - since we're doing compositing, we can
