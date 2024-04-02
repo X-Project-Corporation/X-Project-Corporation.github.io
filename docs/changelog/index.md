@@ -2,6 +2,13 @@
 
 ## Material for MkDocs
 
+### 9.5.17 <small>April 2, 2024</small> { id="9.5.17" }
+
+- Updated Serbian translations
+- Fixed #7003: Confusing keyboard interaction for palette toggle
+- Fixed #7001: Blog posts now show time by default (9.5.16 regression)
+- Fixed edge case in backport of social plugin font loading logic
+
 ### 9.5.16 <small>March 31, 2024</small> { id="9.5.16" }
 
 - Updated Russian translations
@@ -998,7 +1005,7 @@ __Fixes__
 - Removed deprecated prebuilt search index support
 - Removed deprecated web app manifest – use customization
 - Removed `extracopyright` variable – use new `copyright` partial
-- Removed Disqus integation – use customization
+- Removed Disqus integration – use customization
 - Switched to `:is()` selectors for simple selector lists
 - Switched autoprefixer from `last 4 years` to `last 2 years`
 - Improved CSS overall to match modern standards
