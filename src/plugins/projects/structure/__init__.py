@@ -170,7 +170,7 @@ class Project:
 
             # Forward these settings of the plugin configuration to the project,
             # as we need to build nested projects consistently
-            for name in ["cache", "cache_dir", "projects", "hoisting"]:
+            for name in ["cache", "projects", "projects_root_dir", "hoisting"]:
                 settings[name] = plugin[name]
 
             # Forward these settings only if they have not been set in the

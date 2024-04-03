@@ -81,14 +81,22 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
         # Skip if projects should not be built - we can only exit here if we're
         # at the top-level, but not when building a nested project
-        root = os.path.dirname(config.config_file_path) == os.getcwd()
+        root = self.config.projects_root_dir is None
         if root and not self.config.projects:
             return
+
+        # Set projects root directory to the top-level project
+        if not self.config.projects_root_dir:
+            self.config.projects_root_dir = os.path.dirname(
+                config.config_file_path
+            )
 
         # Initialize manifest
         self.manifest: dict[str, str] = {}
         self.manifest_file = os.path.join(
-            self.config.cache_dir, "manifest.json"
+            self.config.projects_root_dir,
+            self.config.cache_dir,
+            "manifest.json"
         )
 
         # Load manifest if it exists and the cache should be used
@@ -163,10 +171,13 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
             source: Project | None = None
             target: Project | None = None
             for ref, file in self.manifest.items():
-                if file == os.path.relpath(config.config_file_path):
-                    source = Project(file, self.config, ref)
+                base = os.path.join(self.config.projects_root_dir, file)
+                if file == os.path.relpath(
+                    config.config_file_path, self.config.projects_root_dir
+                ):
+                    source = Project(base, self.config, ref)
                 if "." == ref:
-                    target = Project(file, self.config, ref)
+                    target = Project(base, self.config, ref)
 
             # Compute path for slug from source and target project
             path = target.path(source)
@@ -264,10 +275,13 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
         source: Project | None = None
         target: Project | None = None
         for ref, file in self.manifest.items():
-            if file == os.path.relpath(config.config_file_path):
-                source = Project(file, self.config, ref)
+            base = os.path.join(self.config.projects_root_dir, file)
+            if file == os.path.relpath(
+                config.config_file_path, self.config.projects_root_dir
+            ):
+                source = Project(base, self.config, ref)
             if slug == ref:
-                target = Project(file, self.config, ref)
+                target = Project(base, self.config, ref)
 
         # Abort if slug doesn't match a known project
         if not target:

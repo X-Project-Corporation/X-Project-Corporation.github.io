@@ -253,6 +253,10 @@ def _setup(project: Project, root: Project, serve: bool):
 def _build(project: Project, serve: bool, dirty: bool, level = logging.WARN):
     config = project.config
 
+    # Change working directory to project root - this is necessary, or relative
+    # paths used in extensions and plugins will be resolved incorrectly
+    os.chdir(os.path.dirname(config.config_file_path))
+
     # Validate configuration
     errors, warnings = config.validate()
     if not errors:
