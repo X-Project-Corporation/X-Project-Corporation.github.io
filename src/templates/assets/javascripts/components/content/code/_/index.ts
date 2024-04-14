@@ -62,16 +62,16 @@ import {
   watchLocationHash
 } from "~/browser"
 import {
+  Tooltip,
+  mountInlineTooltip2
+} from "~/components/tooltip2"
+import {
   renderClipboardButton,
   renderCodeBlockNavigation,
   renderSelectionButton
 } from "~/templates"
 
 import { Component } from "../../../_"
-import {
-  Tooltip,
-  mountTooltip
-} from "../../../tooltip"
 import {
   Annotation,
   mountAnnotationList
@@ -274,7 +274,7 @@ export function mountCodeBlock(
         const button = renderSelectionButton()
         buttons.push(button)
         if (feature("content.tooltips"))
-          content$.push(mountTooltip(button))
+          content$.push(mountInlineTooltip2(button, { viewport$ }))
 
         /* Selection state */
         const select$ = fromEvent(button, "click")
@@ -477,7 +477,7 @@ export function mountCodeBlock(
         const button = renderClipboardButton(parent.id)
         buttons.push(button)
         if (feature("content.tooltips"))
-          content$.push(mountTooltip(button))
+          content$.push(mountInlineTooltip2(button, { viewport$ }))
       }
     }
 

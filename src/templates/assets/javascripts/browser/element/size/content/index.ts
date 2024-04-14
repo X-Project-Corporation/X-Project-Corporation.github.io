@@ -97,7 +97,7 @@ export function getElementContainers(
   // If the page is short, the body might not be overflowing and there might be
   // no other containers, which is why we need to make sure the body is present
   if (containers.length === 0)
-    containers.push(document.body)
+    containers.push(document.documentElement)
 
   // Return overflowing containers
   return containers

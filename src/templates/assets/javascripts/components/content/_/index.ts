@@ -25,14 +25,12 @@ import { Observable, merge } from "rxjs"
 import { feature } from "~/_"
 import { Viewport, getElements } from "~/browser"
 import { Sitemap } from "~/integrations"
-import {
-  renderInlineTooltip2,
-  renderTooltip2
-} from "~/templates"
+import { renderTooltip2 } from "~/templates"
 
 import { Component } from "../../_"
 import {
   Tooltip,
+  mountInlineTooltip2,
   mountTooltip2
 } from "../../tooltip2"
 import {
@@ -147,21 +145,7 @@ export function mountContent(
     // Tooltips
     ...getElements("[title]", el)
       .filter(() => feature("content.tooltips"))
-      .map(child => mountTooltip2(child, {
-        content$: new Observable<HTMLElement>(observer => {
-          const title = child.title
-          const node = renderInlineTooltip2(title)
-          observer.next(node)
-          child.removeAttribute("title")
-          // Append tooltip and remove on unsubscription
-          document.body.append(node)
-          return () => {
-            node.remove()
-            child.setAttribute("title", title)
-          }
-        }),
-        ...dependencies
-      })),
+      .map(child => mountInlineTooltip2(child, { viewport$ })),
 
     // Footnotes
     ...getElements(".footnote-ref", el)
@@ -181,7 +165,7 @@ export function mountContent(
           document.body.append(node)
           return () => node.remove()
         }),
-        ...dependencies
+        viewport$
       }))
   )
 }

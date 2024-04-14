@@ -23,7 +23,7 @@
 import { Observable, map } from "rxjs"
 
 import { getElement, requestJSON } from "~/browser"
-import { mountTooltip } from "~/components"
+import { mountInlineTooltip2 } from "~/components/tooltip2"
 
 import {
   renderPrivateSponsor,
@@ -133,7 +133,7 @@ export function mountSponsorship(
       if (sponsor.type === "public") {
         const child = renderPublicSponsor(sponsor.user)
         list.appendChild(child)
-        mountTooltip(child).subscribe() // @todo, fix memleak
+        mountInlineTooltip2(child, { viewport$ }).subscribe() // @todo, fix memleak
       }
 
     /* Render combined private sponsors */

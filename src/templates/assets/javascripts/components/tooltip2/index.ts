@@ -53,12 +53,13 @@ import {
   Viewport,
   getElement,
   getElementContainers,
+  getElementOffsetAbsolute,
   getElementSize,
   watchElementContentOffset,
   watchElementFocus,
-  watchElementHover,
-  watchElementOffsetAbsolute
+  watchElementHover
 } from "~/browser"
+import { renderInlineTooltip2 } from "~/templates"
 
 import { Component } from "../_"
 
@@ -84,8 +85,6 @@ export interface Tooltip {
 interface Dependencies {
   content$: Observable<HTMLElement>    // Tooltip content observable
   viewport$: Observable<Viewport>      // Viewport observable
-  target$: Observable<HTMLElement>     // Location target observable
-  print$: Observable<boolean>          // Media print observable
 }
 
 /* ----------------------------------------------------------------------------
@@ -139,7 +138,7 @@ export function watchTooltip2(
     defer(() => getElementContainers(el)).pipe(
       mergeMap(watchElementContentOffset),
       throttleTime(1),
-      switchMap(() => watchElementOffsetAbsolute(el))
+      map(() => getElementOffsetAbsolute(el))
     )
 
   // Only track parent elements and compute offset of the tooltip host if the
@@ -195,7 +194,7 @@ export function mountTooltip2(
 
     // Create observable controlling tooltip element - we create and attach the
     // tooltip only if it is actually present, in order to keep the number of
-    // elements down. We need to keep the tooltip visible for a short time after
+    // elements low. We need to keep the tooltip visible for a short time after
     // the pointer left the host element or tooltip itself. For this, we use an
     // inner subscription to the tooltip observable, which we terminate when the
     // tooltip should not be shown, automatically removing the element. Moreover
@@ -324,5 +323,39 @@ export function mountTooltip2(
         finalize(() => push$.complete()),
         map(state => ({ ref: el, ...state }))
       )
+  })
+}
+
+// ----------------------------------------------------------------------------
+
+/**
+ * Mount inline tooltip
+ *
+ * @todo refactor this function
+ *
+ * @param el - Tooltip host element
+ * @param dependencies - Dependencies
+ * @param container - Container
+ *
+ * @returns Tooltip component observable
+ */
+export function mountInlineTooltip2(
+  el: HTMLElement, { viewport$ }: { viewport$: Observable<Viewport> },
+  container = document.body
+): Observable<Component<Tooltip>> {
+  return mountTooltip2(el, {
+    content$: new Observable<HTMLElement>(observer => {
+      const title = el.title
+      const node = renderInlineTooltip2(title)
+      observer.next(node)
+      el.removeAttribute("title")
+      // Append tooltip and remove on unsubscription
+      container.append(node)
+      return () => {
+        node.remove()
+        el.setAttribute("title", title)
+      }
+    }),
+    viewport$
   })
 }
