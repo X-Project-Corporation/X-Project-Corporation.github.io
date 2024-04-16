@@ -66,7 +66,7 @@ interface PatchOptions {
  * @param options - Options
  */
 export function patchEllipsis(
-  { document$ }: PatchOptions
+  { document$, viewport$ }: PatchOptions
 ): void {
   document$
     .pipe(

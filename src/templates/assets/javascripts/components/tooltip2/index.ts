@@ -109,11 +109,12 @@ let sequence = 0
  * host element's absolute position in the document.
  *
  * @param el - Tooltip host element
+ * @param timeout - Timeout
  *
  * @returns Tooltip observable
  */
 export function watchTooltip2(
-  el: HTMLElement
+  el: HTMLElement, timeout = 250
 ): Observable<Tooltip> {
 
   // Compute whether tooltip should be shown - we need to watch both focus and
@@ -123,7 +124,7 @@ export function watchTooltip2(
   const active$ =
     combineLatest([
       watchElementFocus(el),
-      watchElementHover(el, 250)
+      watchElementHover(el, timeout)
     ])
       .pipe(
         map(([focus, hover]) => focus || hover),
@@ -168,11 +169,12 @@ export function watchTooltip2(
  *
  * @param el - Tooltip host element
  * @param dependencies - Dependencies
+ * @param timeout - Timeout @todo move into options
  *
  * @returns Tooltip component observable
  */
 export function mountTooltip2(
-  el: HTMLElement, dependencies: Dependencies
+  el: HTMLElement, dependencies: Dependencies, timeout = 250
 ): Observable<Component<Tooltip>> {
   const { content$, viewport$ } = dependencies
 
@@ -317,7 +319,7 @@ export function mountTooltip2(
       })
 
     // Create and return component
-    return watchTooltip2(el)
+    return watchTooltip2(el, timeout)
       .pipe(
         tap(state => push$.next(state)),
         finalize(() => push$.complete()),
@@ -357,5 +359,5 @@ export function mountInlineTooltip2(
       }
     }),
     viewport$
-  })
+  }, 0)
 }
