@@ -107,7 +107,7 @@ definitions:
   - &font_family >-
     {%- if layout.font_family -%}
       {{ layout.font_family }}
-    {%- elif config.theme.font != false -%}
+    {%- elif config.theme.font is mapping -%}
       {{ config.theme.font.get("text", "Roboto") }}
     {%- else -%}
       Roboto
@@ -161,7 +161,7 @@ definitions:
 
   # Logo (icon)
   - &logo_icon >-
-    {%- if not layout.logo -%}
+    {%- if not layout.logo and config.theme.icon -%}
       {{ config.theme.icon.logo | x }}
     {%- endif -%}
 
