@@ -23,6 +23,7 @@
 import {
   EMPTY,
   Observable,
+  catchError,
   filter,
   fromEvent,
   map,
@@ -73,7 +74,8 @@ export function setupAlternate(
       filter(url => !alternate.has(url.toString())),
       mergeMap(url => fetchSitemap(url)
         .pipe(
-          map(sitemap => [url, sitemap] as const)
+          map(sitemap => [url, sitemap] as const),
+          catchError(() => EMPTY)
         )
       )
     )
@@ -101,7 +103,7 @@ export function setupAlternate(
           // and instead navigate to the correct page, if we can resolve it.
           if (el && !el.target) {
             const result = [...alternate].find(([url]) => (
-              el.href.startsWith(url)
+              el.href.startsWith(`${url}/`)
             ))
 
             // Check, that we got a sitemap at least, so we know that we either
