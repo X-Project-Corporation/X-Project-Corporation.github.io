@@ -21,9 +21,8 @@
 import os
 
 from mkdocs.config.base import Config
-from mkdocs.config.config_options import (
-  _LogLevel, Deprecated, ListOfItems, Type
-)
+from mkdocs.config.config_options import Deprecated, ListOfItems, Type
+from mkdocs.config.defaults import _LogLevel
 
 # -----------------------------------------------------------------------------
 # Classes
