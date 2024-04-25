@@ -109,6 +109,10 @@ class PreviewProcessor(Treeprocessor):
                 if not href:
                     continue
 
+                # Skip footnotes
+                if "footnote-ref" in el.get("class", ""):
+                    continue
+
                 # Skip external links
                 url = urlparse(href)
                 if url.scheme or url.netloc:
