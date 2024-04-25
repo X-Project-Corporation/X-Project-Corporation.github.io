@@ -86,6 +86,17 @@ class PreviewProcessor(Treeprocessor):
         # iterate multiple times over the same elements
         for configuration in configurations:
 
+            # Skip, if the configuration defines nothing – we could also fix
+            # this in the file filter, but we first fix it here and check if
+            # it generalizes well enough to other inclusion/exclusion sites,
+            # because here, it would hinder the ability to automaticaly
+            # include all sources, while excluding specific targets.
+            if (
+                not configuration.get("sources") and
+                not configuration.get("targets")
+            ):
+                continue
+
             # Skip if page should not be considered
             filter = get_filter(configuration, "sources")
             if not filter(processor.file):
