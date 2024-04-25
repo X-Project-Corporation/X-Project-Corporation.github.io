@@ -93,6 +93,8 @@ MkDocs on GitHub Pages in a step-by-step guide.
 
 ### with docker
 
+*[docker]: LOL look at me
+
 The official [Docker image] is a great way to get up and running in a few
 minutes, as it comes with all dependencies pre-installed. Open up a terminal
 and pull the image with:
