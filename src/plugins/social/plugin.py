@@ -46,9 +46,8 @@ from mkdocs.exceptions import PluginError
 from mkdocs.plugins import BasePlugin, event_priority
 from mkdocs.structure.files import File, InclusionLevel
 from mkdocs.structure.pages import Page
-from mkdocs.utils import copy_file
+from mkdocs.utils import write_file
 from statistics import stdev
-from tempfile import NamedTemporaryFile
 from threading import Lock
 from yaml import SafeLoader
 
@@ -890,19 +889,20 @@ class SocialPlugin(BasePlugin[SocialConfig]):
             with requests.get(match) as res:
                 res.raise_for_status()
 
-                # Create a temporary file to download the font
-                with NamedTemporaryFile() as temp:
-                    temp.write(res.content)
-                    temp.flush()
+                # Construct image font for analysis by directly reading the
+                # contents from the response without priorily writing to a
+                # temporary file (like we did before), as this might lead to
+                # problems on Windows machines, see https://t.ly/LiF_k
+                with BytesIO(res.content) as f:
+                    font = ImageFont.truetype(f)
 
-                    # Extract font family name and style
-                    font = ImageFont.truetype(temp.name)
-                    name, style = font.getname()
-                    name = " ".join([name.replace(family, ""), style]).strip()
+                # Extract font family name and style
+                name, style = font.getname()
+                name = " ".join([name.replace(family, ""), style]).strip()
 
-                    # Move fonts to cache directory
-                    target = os.path.join(path, family, f"{name}.ttf")
-                    copy_file(temp.name, target)
+                # Write file to cache directory
+                target = os.path.join(path, family, f"{name}.ttf")
+                write_file(res.content, target)
 
     # -------------------------------------------------------------------------
 
