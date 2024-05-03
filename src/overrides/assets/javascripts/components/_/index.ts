@@ -34,6 +34,7 @@ export type ComponentType =
   | "iconsearch"                       /* Icon search */
   | "iconsearch-query"                 /* Icon search input */
   | "iconsearch-result"                /* Icon search results */
+  | "iconsearch-select"                /* Icon search select */
   | "parallax"                         /* Parallax container */
   | "sponsorship"                      /* Sponsorship */
   | "sponsorship-count"                /* Sponsorship count */
@@ -65,6 +66,7 @@ interface ComponentTypeMap {
   "iconsearch": HTMLElement            /* Icon search */
   "iconsearch-query": HTMLInputElement /* Icon search input */
   "iconsearch-result": HTMLElement     /* Icon search results */
+  "iconsearch-select": HTMLSelectElement
   "parallax": HTMLElement              /* Parallax container */
   "sponsorship": HTMLElement           /* Sponsorship */
   "sponsorship-count": HTMLElement     /* Sponsorship count */
