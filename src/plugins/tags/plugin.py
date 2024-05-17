@@ -103,8 +103,18 @@ class TagsPlugin(BasePlugin[TagsConfig]):
         """
         Create mapping and listing managers.
         """
+
+        # Retrieve toc depth, so we know the maximum level at which we can add
+        # items to the table of contents - Python Markdown allows to set the
+        # toc depth as a range, e.g. `2-6`, so we need to account for that as
+        # well. We need this information for generating listings.
+        depth = config.mdx_configs.get("toc", {}).get("toc_depth", 6)
+        if not isinstance(depth, int) and "-" in depth:
+            _, depth = depth.split("-")
+
+        # Initialize mapping and listing managers
         self.mappings = MappingManager(self.config)
-        self.listings = ListingManager(self.config)
+        self.listings = ListingManager(self.config, int(depth))
 
         # Initialize file filter - the file filter is used to include or exclude
         # entire subsections of the documentation, allowing for using multiple

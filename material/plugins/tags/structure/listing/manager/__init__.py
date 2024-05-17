@@ -56,7 +56,7 @@ class ListingManager:
     tags annotated with links to listings.
     """
 
-    def __init__(self, config: TagsConfig):
+    def __init__(self, config: TagsConfig, depth: int = 6):
         """
         Initialize the listing manager.
 
@@ -65,6 +65,7 @@ class ListingManager:
         """
         self.config = config
         self.data = set()
+        self.depth = depth
 
     def __repr__(self) -> str:
         """
@@ -136,6 +137,11 @@ class ListingManager:
     The listings.
     """
 
+    depth: int
+    """
+    Table of contents maximum depth.
+    """
+
     # -------------------------------------------------------------------------
 
     def add(self, page: Page, markdown: str) -> str:
@@ -172,16 +178,16 @@ class ListingManager:
             id = f"{page.file.src_uri}:{match.start()}-{match.end()}"
             self.data.add(Listing(page, id, config))
 
-            # Replace directive with h6 headline if listings are enabled, or
+            # Replace directive with hx headline if listings are enabled, or
             # remove the listing entirely from the page and table of contents
             if self.config.listings:
-                return f"###### {id}/name {{ #{id}/slug }}"
+                return "#" * self.depth + f" {id}/name {{ #{id}/slug }}"
             else:
                 return
 
-        # Hack: replace directive with an h6 headline to mark the injection
+        # Hack: replace directive with an hx headline to mark the injection
         # point for the anchor links we will generate after parsing all pages.
-        # By using an h6 headline, we can make sure that the injection point
+        # By using an hx headline, we can make sure that the injection point
         # will always be a child of the preceding headline.
         directive = self.config.listings_directive
         return re.sub(
@@ -265,9 +271,12 @@ class ListingManager:
             # Get reference to first tag in listing
             head = next(iter(anchors.values()))
 
-            # Replace h6 with actual level of listing and listing ids with
+            # Replace hx with actual level of listing and listing ids with
             # placeholders to create a format string for the headline
-            hx = re.sub(r"<(/?)h6\b", r"<\g<1>h{}".format(head.level), hx)
+            hx = re.sub(
+                r"<(/?)h{}\b".format(self.depth),
+                r"<\g<1>h{}".format(head.level), hx
+            )
             hx = re.sub(
                 r"{id}\/(\w+)".format(id = listing.id),
                 r"{\1}", hx, flags = re.I | re.M
@@ -288,12 +297,14 @@ class ListingManager:
                     for tree in listing.tags.values()
             ])
 
-        # Hack: replace h6 headlines (injection points) we added when parsing
+        # Hack: replace hx headlines (injection points) we added when parsing
         # the page's Markdown with the actual listing content. Additionally,
         # replace anchor links in the table of contents with the hierarchy
         # generated from mapping over the listing, or remove them.
         page.content = re.sub(
-            r"<h6[^>]+{id}.*?</h6>".format(id = f"{listing.id}/slug"),
+            r"<h{x}[^>]+{id}.*?</h{x}>".format(
+                id = f"{listing.id}/slug", x = self.depth
+            ),
             replace, page.content, flags = re.I | re.M
         )
 
