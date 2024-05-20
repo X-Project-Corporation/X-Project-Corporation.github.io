@@ -228,7 +228,8 @@ class ProjectsPlugin(BasePlugin[ProjectsConfig]):
 
     # Serve projects
     def on_serve(self, server, *, config, builder):
-        self.builder.serve(server, self.is_dirty)
+        if self.config.enabled:
+            self.builder.serve(server, self.is_dirty)
 
     # -------------------------------------------------------------------------
 
