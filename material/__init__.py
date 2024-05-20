@@ -18,4 +18,4 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-__version__ = "9.5.24+insiders-4.53.9"
+__version__ = "9.5.24+insiders-4.53.10"
