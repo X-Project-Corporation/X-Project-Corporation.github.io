@@ -151,6 +151,13 @@ class ProjectsBuilder:
         # Create symbolic link, if we haven't already
         path = os.path.join(self.root.config.site_dir, path)
         if not os.path.islink(path):
+
+            # Ensure link target exists
+            target = os.path.realpath(os.path.dirname(path))
+            if not os.path.exists(target):
+                os.makedirs(target, exist_ok = True)
+
+            # Create symbolic link
             os.makedirs(os.path.dirname(path), exist_ok = True)
             os.symlink(project.config.site_dir, path)
 
