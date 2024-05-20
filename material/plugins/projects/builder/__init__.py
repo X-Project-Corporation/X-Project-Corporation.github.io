@@ -92,24 +92,28 @@ class ProjectsBuilder:
         for job in reversed(queue):
             if self._schedule(job, serve, dirty):
                 queue.remove(job)
-                built.append(job.project.slug)
 
         # Build loop - iteratively build more projects while there are still
-        # projects to be built, sticking to the topological order
-        for future in as_completed(self.pool_jobs.values()):
-            slug, errors, warnings = future.result()
+        # projects to be built, sticking to the topological order.
+        while len(built) < len(self.pool_jobs):
+            for future in as_completed(self.pool_jobs.values()):
+                slug, errors, warnings = future.result()
+                if slug in built:
+                    continue
 
-            # Schedule projects for building
-            for job in reversed(queue):
-                if self._schedule(job, serve, dirty):
-                    queue.remove(job)
-                    built.append(job.project.slug)
+                # Mark project as built
+                built.append(slug)
 
-            # Print errors and warnings
-            for project in self.projects:
-                if project.slug == slug:
-                    _print(get_log_for(project), errors, warnings)
-                    break
+                # Schedule projects for building
+                for job in reversed(queue):
+                    if self._schedule(job, serve, dirty):
+                        queue.remove(job)
+
+                # Print errors and warnings
+                for project in self.projects:
+                    if project.slug == slug:
+                        _print(get_log_for(project), errors, warnings)
+                        break
 
         # Shutdown process pool
         self.pool.shutdown()
