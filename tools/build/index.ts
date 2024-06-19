@@ -295,8 +295,9 @@ const icons$ = defer(() => resolve("**/*.svg", {
   )
 
 /* Compute emoji mappings (based on Twemoji) */
-const emojis$ = defer(() => resolve("venv/**/twemoji_db.py"))
+const emojis$ = defer(() => resolve("?(.)venv"))
   .pipe(
+    switchMap(directory => resolve(`${directory}/**/pymdownx/twemoji_db.py`)),
     switchMap(file => read(file)),
     map(data => {
       const [, payload] = data.match(/^emoji = ({.*})$.alias/ms)!
