@@ -68,6 +68,9 @@
   <a href="https://documentation.sailpoint.com/" target=_blank><img
     src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-sailpoint.png" height="120"
   /></a>
+  <a href="https://futureplc.com/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-future.svg" height="120"
+  /></a>
 </p>
 <p>&nbsp;</p>
 <p align="center"><strong>Bronze sponsors</strong></p>
@@ -263,6 +266,7 @@ For detailed installation instructions, configuration options, and a demo, visit
 [Datadog](https://datadoghq.dev/integrations-core/),
 [Google](https://google.github.io/accompanist/),
 [Hewlett Packard](https://hewlettpackard.github.io/squest/),
+[HSBC](https://hsbc.github.io/pyratings/),
 [ING](https://ing-bank.github.io/baker/),
 [Intel](https://open-amt-cloud-toolkit.github.io/docs/),
 [JetBrains](https://jetbrains.github.io/projector-client/mkdocs/),
@@ -271,7 +275,7 @@ For detailed installation instructions, configuration options, and a demo, visit
 [Mozilla](https://mozillafoundation.github.io/engineering-handbook/),
 [Netflix](https://netflix.github.io/titus/),
 [Red Hat](https://ansible.readthedocs.io/projects/lint/),
-[Salesforce](https://policy-sentry.readthedocs.io/en/latest/),
+[Salesforce](https://policy-sentry.readthedocs.io/),
 [SIEMENS](https://opensource.siemens.com/),
 [Slack](https://slackhq.github.io/circuit/),
 [Square](https://square.github.io/okhttp/),
