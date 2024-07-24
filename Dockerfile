@@ -54,6 +54,7 @@ RUN \
 && \
   apk add --no-cache --virtual .build \
     gcc \
+    g++ \
     libffi-dev \
     musl-dev \
 && \
