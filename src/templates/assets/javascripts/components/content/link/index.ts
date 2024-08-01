@@ -136,7 +136,7 @@ function resolve(
     }
 
   // Ensure ids are free of collisions (e.g. content tabs)
-  for (const el of getElements("[id^=__], [for^=__]", document))
+  for (const el of getElements("[name^=__], [for]", document))
     for (const key of ["id", "for", "name"]) {
       const value = el.getAttribute(key)
       if (value) {
