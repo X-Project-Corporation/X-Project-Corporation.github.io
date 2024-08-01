@@ -71,6 +71,15 @@ interface Dependencies {
 }
 
 /* ----------------------------------------------------------------------------
+ * Data
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Global sequence number for instant previews
+ */
+let sequence = 0
+
+/* ----------------------------------------------------------------------------
  * Helper functions
  * ------------------------------------------------------------------------- */
 
@@ -114,6 +123,8 @@ function extract(headline: HTMLElement): HTMLElement[] {
 function resolve(
   document: Document, base: URL | string
 ): Observable<Document> {
+
+  // Replace all links
   for (const el of getElements("[href], [src]", document))
     for (const key of ["href", "src"]) {
       const value = el.getAttribute(key)
@@ -124,7 +135,17 @@ function resolve(
       }
     }
 
+  // Ensure ids are free of collisions (e.g. content tabs)
+  for (const el of getElements("[id^=__], [for^=__]", document))
+    for (const key of ["id", "for", "name"]) {
+      const value = el.getAttribute(key)
+      if (value) {
+        el.setAttribute(key, `${value}$preview_${sequence}`)
+      }
+    }
+
   // Return document observable
+  sequence++
   return of(document)
 }
 
