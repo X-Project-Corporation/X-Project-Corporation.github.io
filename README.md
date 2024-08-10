@@ -65,7 +65,7 @@ We recommend you to secure your keys by exporting them.
 ### Steps to Buy Tokens
 
 1. **Paste a CA** or **Access Buy Tokens Menu:**
-    - Paste a CA to automatically 
+    - Paste a CA to automatically detect the chain and open the buy menu for you.
     - Click on "BUY TOKENS" on the home screen.
 
 2. **Enter Contract Address (CA):**
