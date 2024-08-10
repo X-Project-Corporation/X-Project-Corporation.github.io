@@ -11,6 +11,6 @@
 - Easy to use.
 
 [Get Started](#Introduction)
-[Launch](https://t.me/on_docker_dev_bot)
+[Launch](https://t.me/)
 [Support](https://t.me/Xshot_trading)
 
