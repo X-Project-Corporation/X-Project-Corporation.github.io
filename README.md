@@ -73,7 +73,8 @@ We recommend you to secure your keys by exporting them.
     - Alternatively, click "CA" to select from your previous buys.
 
 3. **Select Investment Amount:**
-    - Choose from the predefined amounts (0.15 ETH, 0.25 ETH, 0.3 ETH, 0.5 ETH).
+    - Choose from the predefined amounts from the smart keyboard (0.15 ETH, 0.25 ETH, 0.3 ETH, 0.5 ETH).
+    - This amount can be modified at any time in the settings.
 
 4. **Set Slippage:**
     - We recommend keeping slippage at "auto" for optimal trading.
