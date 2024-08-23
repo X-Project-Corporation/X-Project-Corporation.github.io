@@ -157,6 +157,7 @@ export function mountContent(
           const hash = new URL(child.href).hash.slice(1)
           const arr = Array.from(document.getElementById(hash)!
             // @ts-ignore
+            // eslint-disable-next-line
             .cloneNode(true).children) as any
           const node = renderTooltip2(...arr)
           observer.next(node)

@@ -37,8 +37,8 @@
   height: 100vh;
   margin-top: px2rem(-48px);
   overflow: hidden auto;
-  perspective: var(--md-parallax-perspective);
   overscroll-behavior-y: none;
+  perspective: var(--md-parallax-perspective);
   scroll-behavior: smooth;
 
   // Parallax group

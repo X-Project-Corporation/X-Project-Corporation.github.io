@@ -427,7 +427,7 @@ export function mountCodeBlock(
             takeUntil(done$),
             withLatestFrom(shift$),
             map(([anchor, shift]) => {
-              const target = getElement(`[id="${anchor.hash.slice(1)}"]`)!
+              const target = getElement(`[id="${anchor.hash.slice(1)}"]`)
 
               /* Determine focused line number */
               const active = +target.parentElement!.id.split("-").pop()!

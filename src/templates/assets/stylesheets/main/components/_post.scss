@@ -142,8 +142,8 @@
     content: "";
     background-color: currentcolor;
     mask-image: var(--md-post-pin-icon);
-    mask-position: center;
     mask-repeat: no-repeat;
+    mask-position: center;
     mask-size: contain;
   }
 }
