@@ -127,6 +127,9 @@
         },
         {
           "$ref": "https://raw.githubusercontent.com/timvink/mkdocs-table-reader-plugin/master/docs/schema.json"
+        },
+        {
+          "$ref": "https://gitlab.com/frederic-zinelli/mkdocs-addresses/-/raw/main/mkdocs-addresses-schema.json"
         }
       ]
     }
