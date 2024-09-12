@@ -177,6 +177,13 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # We must exclude all files related to layouts from here on, so MkDocs
         # doesn't copy them to the site directory when the project is built
         for file in files:
+
+            # As of MkDocs 1.6, abs_src_path is optional for generated files,
+            # so we need to exlude them - see https://t.ly/zRYj7
+            if not file.abs_src_path:
+                continue
+
+            # Exclude files from layout directory
             if file.abs_src_path.startswith(_templates_dirpath()):
                 file.inclusion = InclusionLevel.EXCLUDED
 
