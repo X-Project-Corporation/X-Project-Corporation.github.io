@@ -37,6 +37,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from copy import copy
 from fnmatch import fnmatch
 from hashlib import sha1
+from html import unescape
 from io import BytesIO
 from jinja2 import Environment
 from jinja2.meta import find_undeclared_variables
@@ -574,7 +575,7 @@ class SocialPlugin(BasePlugin[SocialConfig]):
         # line. For every other than the first word, account for the whitespace
         # between words. If the next word would exceed the width of the input
         # image, and thus overflow the line, start a new one.
-        words = re.split(r"\s+", typography.content)
+        words = re.split(r"\s+", unescape(typography.content))
         for word in words:
             length = context.textlength(word, font = font)
             lengths.append(length)
