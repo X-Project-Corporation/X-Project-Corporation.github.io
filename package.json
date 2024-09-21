@@ -1,6 +1,6 @@
 {
   "name": "mkdocs-material",
-  "version": "9.5.35+insiders-4.53.13",
+  "version": "9.5.36+insiders-4.53.13",
   "description": "Documentation that simply works",
   "keywords": [
     "mkdocs",
@@ -93,7 +93,7 @@
     "postcss-pseudo-is": "^0.3.0",
     "preact": "^10.24.0",
     "rimraf": "^6.0.1",
-    "sass": "^1.79.2",
+    "sass": "^1.79.3",
     "sharp": "^0.32.6",
     "simple-icons": "^13.10.0",
     "stylelint": "^16.9.0",
