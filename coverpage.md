@@ -11,6 +11,6 @@
 - Easy to use.
 
 [Get Started](#Introduction)
-[Launch](https://t.me/)
+[Launch](https://t.me/xshot_trading_bot)
 [Support](https://t.me/Xshot_trading)
 
