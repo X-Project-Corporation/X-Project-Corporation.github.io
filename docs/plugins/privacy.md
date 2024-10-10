@@ -471,6 +471,8 @@ plugins:
 
 ## Limitations
 
+### Dynamic URLs
+
 Dynamically created URLs as part of scripts are not detected, and thus cannot be
 downloaded automatically, as the plugin does not execute scripts – it only detects fully qualified URLs for downloading and replacement. In short, don't do this:
 
@@ -484,3 +486,19 @@ Instead, always use fully qualified URLs:
 ``` js
 const url ="https://example.com/script.js"
 ```
+
+### Embedded HTML
+
+By default, embedded HTML files (e.g. in iframes) are not scanned for external
+assets. This is a limitation of MkDocs, as it considers `.html` files to be
+templates, which must be explicitly listed under
+[`extra_templates`][mkdocs.extra_templates]. Thus, to self-host external assets
+of an embedded HTML file:
+
+``` yaml
+extra_templates:
+  - iframe.html
+```
+
+Note that the path to `iframe.html` is relative to the
+[`docs_dir`][mkdocs.docs_dir] directory.

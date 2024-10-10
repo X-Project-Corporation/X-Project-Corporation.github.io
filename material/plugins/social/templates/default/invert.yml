@@ -136,7 +136,7 @@ definitions:
     {%- if not page.is_homepage -%}
       {{ page.meta.get("title", page.title) }} - {{ config.site_name }}
     {%- else -%}
-      {{ page.meta.get("title", page.title) }}
+      {{ config.site_name }}
     {%- endif -%}
 
   # Page description
