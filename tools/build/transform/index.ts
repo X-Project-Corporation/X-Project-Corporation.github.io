@@ -93,7 +93,8 @@ export function transformStyle(
       "node_modules/modularscale-sass/stylesheets",
       "node_modules/material-design-color",
       "node_modules/material-shadows"
-    ]
+    ],
+    silenceDeprecations: ["global-builtin", "import"]
   })))
     .pipe(
       switchMap(({ css }) => postcss([
