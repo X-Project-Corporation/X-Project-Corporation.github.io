@@ -428,7 +428,7 @@ class InfoPlugin(BasePlugin[InfoConfig]):
         # Projects, which don't use the projects plugin for multi-language
         # support could have separate build folders for each config file or
         # language. Therefore, we exclude them with the assumption a site_dir
-        # contains the sitemap file. Example of such a setup: https://t.ly/DLQcy
+        # contains the sitemap file. Example of such a getting-started: https://t.ly/DLQcy
         sitemap_gz = os.path.join(abspath, "sitemap.xml.gz")
         if os.path.exists(sitemap_gz):
             log.debug(f"Excluded site_dir: {abspath}")

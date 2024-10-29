@@ -1,9 +1,9 @@
 ---
 template: home.html
-title: Material for MkDocs
+title: XSHOT Documentation
 social:
   cards_layout_options:
-    title: Documentation that simply works
+    title: Trade simply
 ---
 
-Welcome to Material for MkDocs.
+Welcome to your new trading desk.

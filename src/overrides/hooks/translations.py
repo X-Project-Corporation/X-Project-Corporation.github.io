@@ -30,11 +30,11 @@ from urllib.parse import urlencode, urlparse
 # Hooks
 # -----------------------------------------------------------------------------
 
-# Determine missing translations and render language overview in the setup
+# Determine missing translations and render language overview in the getting-started
 # guide, including links to provide missing translations.
 def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files):
     issue_url = "https://github.com/squidfunk/mkdocs-material/issues/new"
-    if page.file.src_uri != "setup/changing-the-language.md":
+    if page.file.src_uri != "getting-started/changing-the-language.md":
         return
 
     # Collect all existing languages

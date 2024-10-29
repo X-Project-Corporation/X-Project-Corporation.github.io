@@ -31,7 +31,7 @@ import { SearchIndex } from "../../config"
  * Search message type
  */
 export const enum SearchMessageType {
-  SETUP,                               /* Search index setup */
+  SETUP,                               /* Search index getting-started */
   READY,                               /* Search index ready */
   QUERY,                               /* Search query */
   RESULT                               /* Search results */
@@ -40,7 +40,7 @@ export const enum SearchMessageType {
 /* ------------------------------------------------------------------------- */
 
 /**
- * Message containing the data necessary to setup the search index
+ * Message containing the data necessary to getting-started the search index
  */
 export interface SearchSetupMessage {
   type: SearchMessageType.SETUP        /* Message type */

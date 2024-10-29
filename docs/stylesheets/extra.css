@@ -1,0 +1,17 @@
+.screenshot-shadow {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin: 20px 0;
+}
+
+.chain-icon-small {
+  height: 2em;
+  width: 2em;
+  vertical-align: middle;
+  margin-right: 0.3em;
+}
+
+.md-button {
+  margin-right: 0.5em;
+  margin-top: 0.5em;
+}

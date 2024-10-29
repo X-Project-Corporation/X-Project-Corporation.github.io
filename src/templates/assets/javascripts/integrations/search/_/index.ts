@@ -159,7 +159,7 @@ export class Search {
         this.use(lunr.multiLanguage(...config.lang))
       }
 
-      /* Set up custom tokenizer (must be after language setup) */
+      /* Set up custom tokenizer (must be after language getting-started) */
       this.tokenizer = tokenize as typeof lunr.tokenizer
       lunr.tokenizer.separator = new RegExp(config.separator)
 

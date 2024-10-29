@@ -146,7 +146,7 @@ export async function handler(
 ): Promise<SearchMessage> {
   switch (message.type) {
 
-    /* Search setup message */
+    /* Search getting-started message */
     case SearchMessageType.SETUP:
       await setupSearchLanguages(message.data.config)
       index = new Search(message.data)
