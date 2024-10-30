@@ -57,9 +57,9 @@ The picture include your referral code, you will inspire others while earning fr
 
 ### Multi-Chain Mastery
 
-Trading across different chains? No problem. XSHOT tracks everything:
+Trading across different chains? No problem. XSHOT tracks everything.
 
-!!! example "Your Complete Portfolio"
+!!! example "Multichain Tracking"
     Whether you're trading on Ethereum, BSC, Solana, or any other supported chain, see all your positions in one place. Each chain maintains its own tracking while giving you a complete portfolio overview.
 
 ## Making It Work for You

@@ -44,11 +44,11 @@ For detailed setup instructions, visit our [Setup Guide](setup-guide).
 
 - [Setup Guide](setup-guide.md)
 - [Supported Chains](../supported-chains/ethereum.md)
-- [Trading Features](../features/trading/buying)
-- [Premium Features](../premium-features/xcaller-ai)
-- [Security Features](../security/mev-protection)
-- [Upgrade Guide](../move-from-another-bot)
+- [Trading Features](../features/trading/buying.md)
+- [Premium Features](../premium-features/xcaller-ai.md)
+- [Security Features](../security/mev-protection.md)
+- [Upgrade Guide](../move-from-another-bot.md)
 
 ## Philosophy
 
-XSHOT Bot is built on the principles of accessibility, security, and efficiency. Learn more about our vision in our [Philosophy](philosophy) page.
+XSHOT Bot is built on the principles of accessibility, security, and efficiency. Learn more about our vision in our [Philosophy](../philosophy.md) page.

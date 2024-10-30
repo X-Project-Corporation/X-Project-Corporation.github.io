@@ -180,9 +180,10 @@ Choose your typical transaction size to optimize your trading interface:
     [Start Verification :fontawesome-solid-check:](https://t.me/xshot_trading_bot?start=verification){ .md-button .md-button--primary }
 
     The bot will guide you through:
-  1. Wallet connection
-  2. Stake verification
-  3. Premium activation
+
+       1. Wallet connection
+       2. Stake verification
+       3. Premium activation
 
 ### Quick Access
 

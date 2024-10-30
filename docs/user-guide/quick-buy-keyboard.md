@@ -3,7 +3,7 @@
 ## Initial Configuration
 
 !!! info "Setup-Based Configuration"
-    During your [initial setup](../getting-started/setup-guide.md#transaction-size-configuration), your trading preferences determine your Quick Buy Keyboard:
+    During your [initial setup](../getting-started/setup-guide.md#transaction-size-configuration), your trading preferences determine your Quick Buy Keyboard.
 
 === "Micro Trader"
        Based on your typical transaction size below $100:

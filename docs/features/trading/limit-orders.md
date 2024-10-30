@@ -62,8 +62,9 @@ Take your trading to the next level with XSHOT's powerful limit orders. Set your
 
     Watch for price changes
     Use quick adjusters:
+
     - +25%, +50% for upward targets
-      - -25%, -50% for dips
+    - -25%, -50% for dips
 
 === "💎 Market Cap"
 
@@ -134,6 +135,7 @@ Monitor and modify your active orders:
 ![Success Notification](../../assets/limits/order_submission_complete.png){ .screenshot-shadow }
 
 When your order hits:
+
 1. Get instant notification
 2. Review execution
 3. Track in holdings

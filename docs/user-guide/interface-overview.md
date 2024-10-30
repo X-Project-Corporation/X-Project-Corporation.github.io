@@ -122,7 +122,6 @@ The main interface displays your current blockchain, wallet address, and balance
     |---------|-----------|
     | `/profile` | Profile details |
     | `/w` | View wallets |
-    | `/settings` | Global settings |
 
 === "General Commands"
     | Command | Function |

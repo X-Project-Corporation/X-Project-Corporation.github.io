@@ -22,10 +22,10 @@ Each chain integration undergoes rigorous testing to ensure security and reliabi
 
 | Chain | Development Stage | Estimated Release | Initial DEX Support |
 |-------|-------------------|-------------------|-------------------|
-| SUI | Development       | 2025              | TBA |
+| SUI | Development       | 2024              | TBA |
 | BTC L2 | Planning          | 2025              | TBA |
 | TON | Planning          | 2025              | TBA |
-| S Chain | Planning          | 2025              | TBA |
+| S Chain | Planning          | 2024              | TBA |
 
 !!! note "Feature Support"
     Initial releases will support manual trading only. XCaller AI support will be evaluated post-launch based on performance and user demand.
