@@ -2,7 +2,7 @@
 Don't forget to take profit! See how:
 
 ## Just Bought Your Token?
-![Buy Success](../../assets/buy_sell/buy_success_2.png){ .screenshot-shadow }
+![Buy Success](../../assets/buy_sell/buy_success_2.png){ .screenshot-shadow style="width: 70%;" }
 
 Congratulations on your purchase! After a successful buy, you have two ways to manage your position:
 
@@ -15,7 +15,7 @@ Congratulations on your purchase! After a successful buy, you have two ways to m
 
 ## Accessing Your Selling Options
 
-![Main Menu](../../assets/main_interface/main_menu.png){ .screenshot-shadow }
+![Main Menu](../../assets/main_interface/main_menu.png){ .screenshot-shadow style="width: 50%;" }
 
 From the main menu, you can:
 
@@ -31,7 +31,7 @@ From the main menu, you can:
 ## Method 1: Selling Through Holdings
 
 ### Check Your Position
-![Holdings View](../../assets/buy_sell/sell_from_holding.png){ .screenshot-shadow }
+![Holdings View](../../assets/buy_sell/sell_from_holding.png){ .screenshot-shadow style="width: 50%;" }
 
 Your holdings show:
 
@@ -49,7 +49,7 @@ Your holdings show:
 
 
 ### Setting Up Your First Sell
-![Custom Sell](../../assets/buy_sell/sell_custom_from_holding.png){ .screenshot-shadow }
+![Custom Sell](../../assets/buy_sell/sell_custom_from_holding.png){ .screenshot-shadow style="width: 70%;" }
 
 Let's sell half our position:
 
@@ -58,7 +58,7 @@ Let's sell half our position:
 3. Review the amount
 
 ### Confirm Your Sale
-![Sell Confirmation](../../assets/buy_sell/sell_custom_from_holding_confirmation.png){ .screenshot-shadow }
+![Sell Confirmation](../../assets/buy_sell/sell_custom_from_holding_confirmation.png){ .screenshot-shadow style="width: 70%;" }
 
 The bot will show:
 

@@ -6,7 +6,7 @@ Ready to start trading? Let's master XSHOT's powerful buying features!
 
 ## ⚡ Quick Buy Process
 
-![Buying Interface](../../assets/buy_sell/buy_menu.png){ .screenshot-shadow }
+![Buying Interface](../../assets/buy_sell/buy_menu.png){ .screenshot-shadow style="width: 50%;" }
 
 === "🎯 One-Click Trading"
     Just paste any contract address and watch XSHOT:
@@ -71,7 +71,7 @@ graph LR
 
 ## 📊 Transaction Monitoring
 
-![Transaction Status](../../assets/buy_sell/submit_buy.png){ .screenshot-shadow }
+![Transaction Status](../../assets/buy_sell/submit_buy.png){ .screenshot-shadow style="width: 70%;" }
 
 Track your transaction status:
 
