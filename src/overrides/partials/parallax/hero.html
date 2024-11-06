@@ -35,70 +35,31 @@
       "--md-parallax-depth: " ~ layer["depth"],
       "--md-image-position: " ~ layer["position"]
     ] | join(";") ~ "\"" %}
-
-    <!-- Parallax layer: image as AVIF, WebP and PNG in 4 sizes -->
     <picture class="mdx-parallax__layer" {{ style }}>
       {% for type in ["avif", "webp"] %}
-        <source
-          type="image/{{ type }}"
-          srcset="
-            {{ image ~    '.' ~ type }} 1280w,
-            {{ image ~ '@2x.' ~ type }} 1920w,
-            {{ image ~ '@3x.' ~ type }} 2560w,
-            {{ image ~ '@4x.' ~ type }} 3840w
-          "
-        />
+        <source type="image/{{ type }}" srcset="{{ image ~    '.' ~ type }} 1280w, {{ image ~ '@2x.' ~ type }} 1920w, {{ image ~ '@3x.' ~ type }} 2560w, {{ image ~ '@4x.' ~ type }} 3840w">
       {% endfor %}
-      <img
-        srcset="
-          {{ image ~    '.png' }} 1280w,
-          {{ image ~ '@2x.png' }} 1920w,
-          {{ image ~ '@3x.png' }} 2560w,
-          {{ image ~ '@4x.png' }} 3840w
-        "
-        src="{{ image ~ '.png' }}"
-        alt=""
-        class="mdx-parallax__image"
-      />
+      <img srcset="{{ image ~    '.png' }} 1280w, {{ image ~ '@2x.png' }} 1920w, {{ image ~ '@3x.png' }} 2560w, {{ image ~ '@4x.png' }} 3840w" src="{{ image ~ '.png' }}" alt="" class="mdx-parallax__image">
     </picture>
   {% endfor %}
-
-  <!-- Parallax layer: gradient for blending -->
   <div class="mdx-parallax__layer mdx-parallax__blend"></div>
-
-  <!-- Hero -->
   <div class="mdx-hero" data-mdx-component="hero">
     <div class="mdx-hero__scrollwrap md-grid">
-
-      <!-- Navigation tabs (must be moved here) -->
       {% include "partials/tabs.html" %}
-
-      <!-- Hero content -->
       <div class="mdx-hero__inner">
         <div class="mdx-hero__teaser md-typeset">
-          <h1>Documentation that simply works</h1>
-          <p>{{ config.site_description }}.</p>
+          <h1>MASTER CRYPTO TRADING</h1>
+          <p>3,082X PROVEN RETURNS • BULLETPROOF MEV PROTECTION • AI PRECISION <a style="color: cadetblue;" href="/getting-started">START WINNING</a> LEARN MORE.</p>
           <a href="getting-started/" class="md-button">
             Get started
           </a>
-          <a
-            href="#everything-you-would-expect"
-            class="md-button md-button--secondary"
-          >
+          <a href="#your-unfair-advantage" class="md-button md-button--secondary">
             Learn more
           </a>
-
-          <!-- Attribution link -->
-          <a
-            href="https://ko-fi.com/bewilderedbird"
-            class="mdx-hero__attribution"
-            tabIndex="-1"
-          >
+          <a href="https://ko-fi.com/bewilderedbird" class="mdx-hero__attribution" tabindex="-1">
             <strong>© BewilderedBird</strong>
           </a>
         </div>
-
-        <!-- More indicator -->
         <div class="mdx-hero__more">
           {% include ".icons/material/arrow-down.svg" %}
         </div>

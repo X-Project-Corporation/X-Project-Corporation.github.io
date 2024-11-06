@@ -3,8 +3,7 @@ site_name: XSHOT Documentation
 site_url: https://xshot.xprojecterc.com/
 site_author: X Project
 site_description: >-
-  Trade everything faster
-
+  
 # Repository
 repo_name: xshot-documentation
 repo_url: https://github.com/X-Project-Corporation/X-Project-Corporation.github.io
@@ -69,8 +68,7 @@ theme:
     text: Roboto
     code: Roboto Mono
   favicon: assets/favicon.png
-  icon:
-    logo: logo
+  logo: /assets/favicon.png
 
 # Plugins
 plugins:
