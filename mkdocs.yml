@@ -68,7 +68,7 @@ theme:
     text: Roboto
     code: Roboto Mono
   favicon: assets/favicon.png
-  logo: assets/favicon.png
+  logo: assets/favicon-nobg.png
 
 # Plugins
 plugins:
@@ -114,6 +114,7 @@ extra_css:
 
 # Additional configuration
 extra:
+  generator: false
   annotate:
     json: [.s2]
   status:
