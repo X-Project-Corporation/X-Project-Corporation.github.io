@@ -74,6 +74,7 @@ theme:
 plugins:
   - blog
   - meta
+  - git-revision-date-localized
   - rss:
       match_path: blog/posts/.*
       date_from_meta:
