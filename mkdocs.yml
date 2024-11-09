@@ -74,7 +74,6 @@ theme:
 plugins:
   - blog
   - meta
-  - git-revision-date-localized
   - rss:
       match_path: blog/posts/.*
       date_from_meta:
@@ -90,20 +89,6 @@ plugins:
   - redirects:
       redirect_maps:
         upgrading.md: upgrade.md
-
-  # Continuous integration
-  - group:
-      enabled: !ENV CI
-      plugins:
-        - git-revision-date-localized:
-            enable_creation_date: true
-            type: timeago
-        - git-committers:
-            repository: squidfunk/mkdocs-material
-            token: !ENV GH_TOKEN
-        - optimize
-        - minify:
-            minify_html: true
 
 # Hooks
 hooks:
